@@ -21,6 +21,95 @@ import { format, parseISO, subDays, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+// Work Queue Overview Component
+function WorkQueueOverview({ calls, isLoading }) {
+  const { data: queueItems = [] } = useQuery({
+    queryKey: ['dashboardQueue'],
+    queryFn: () => base44.entities.WorkQueue.list(),
+    refetchInterval: 15000,
+  });
+
+  const { data: agents = [] } = useQuery({
+    queryKey: ['agents'],
+    queryFn: async () => {
+      const users = await base44.entities.User.list();
+      return users.filter(u => u.role === 'user');
+    },
+  });
+
+  const waitingInQueue = queueItems.filter(q => q.queue_status === 'waiting_in_queue').length;
+  const assignedToAgents = queueItems.filter(q => q.queue_status === 'assigned_to_agent').length;
+  const inProgress = queueItems.filter(q => q.queue_status === 'in_progress').length;
+  
+  const completed = queueItems.filter(q => q.queue_status === 'completed' && q.time_to_complete);
+  const avgTime = completed.length > 0
+    ? Math.round(completed.reduce((sum, q) => sum + q.time_to_complete, 0) / completed.length)
+    : 0;
+
+  // Agent breakdown
+  const agentStats = agents.map(agent => {
+    const count = queueItems.filter(q => 
+      q.assigned_to_agent === agent.email &&
+      ['assigned_to_agent', 'in_progress'].includes(q.queue_status)
+    ).length;
+    return { name: agent.full_name, count };
+  }).filter(a => a.count > 0);
+
+  if (isLoading) return <Skeleton className="h-64" />;
+
+  return (
+    <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-[20px] font-medium text-[#212121]">📋 תור העבודה</h3>
+        <Link to={createPageUrl('MyQueue')} className="text-[#0078D4] text-sm hover:underline">
+          הצג תור מלא →
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="text-center p-3 bg-[#FFF4E5] rounded-lg">
+          <p className="text-2xl font-bold text-[#ED6C02]">{waitingInQueue}</p>
+          <p className="text-xs text-[#616161]">בתור</p>
+        </div>
+        <div className="text-center p-3 bg-[#E3F2FD] rounded-lg">
+          <p className="text-2xl font-bold text-[#0288D1]">{assignedToAgents}</p>
+          <p className="text-xs text-[#616161]">משובץ</p>
+        </div>
+        <div className="text-center p-3 bg-[#E8F5E9] rounded-lg">
+          <p className="text-2xl font-bold text-[#2E7D32]">{inProgress}</p>
+          <p className="text-xs text-[#616161]">בטיפול</p>
+        </div>
+        <div className="text-center p-3 bg-[#F5F5F5] rounded-lg">
+          <p className="text-2xl font-bold text-[#616161]">{avgTime}'</p>
+          <p className="text-xs text-[#616161]">ממוצע</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm text-[#616161] mb-2">פילוח לפי נציגים:</p>
+        {agentStats.length === 0 ? (
+          <p className="text-center text-[#9E9E9E] py-4">אין קריאות פעילות</p>
+        ) : (
+          agentStats.map(agent => (
+            <div key={agent.name} className="flex items-center gap-3">
+              <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
+              <div className="flex-1 bg-[#E0E0E0] rounded-full h-2 overflow-hidden">
+                <div 
+                  className={`h-full ${agent.count >= 5 ? 'bg-[#ED6C02]' : 'bg-[#0078D4]'}`}
+                  style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
+                />
+              </div>
+              <span className="text-sm text-[#616161] w-20">
+                {agent.count} קריאות {agent.count >= 5 && '⚠️'}
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
@@ -201,6 +290,9 @@ export default function Dashboard() {
           </>
         )}
       </div>
+
+      {/* Work Queue Section */}
+      <WorkQueueOverview calls={calls} isLoading={isLoading} />
 
       {/* Charts Section */}
       <div className="grid lg:grid-cols-2 gap-6">
