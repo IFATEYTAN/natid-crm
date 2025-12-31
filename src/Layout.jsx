@@ -18,11 +18,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
-import TowTruckAnimation from '@/components/animations/TowTruckAnimation';
+
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [animationTrigger, setAnimationTrigger] = useState(0);
 
   const navigation = [
     { name: 'לוח בקרה', href: 'Dashboard', icon: LayoutDashboard },
@@ -182,7 +181,6 @@ export default function Layout({ children, currentPageName }) {
           <Link to={createPageUrl('NewCase')}>
             <Button 
               className="w-full bg-[#0078D4] hover:bg-[#1976D2] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5"
-              onClick={() => setAnimationTrigger(prev => prev + 1)}
             >
               <Plus className="w-5 h-5" />
               קריאה חדשה
@@ -250,9 +248,6 @@ export default function Layout({ children, currentPageName }) {
           {children}
         </main>
       </div>
-
-      {/* Tow Truck Animation */}
-      <TowTruckAnimation trigger={animationTrigger} />
     </div>
   );
 }
