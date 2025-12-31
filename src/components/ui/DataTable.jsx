@@ -20,12 +20,12 @@ export default function DataTable({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-[#E0E0E0] overflow-hidden">
+      <div className="bg-white rounded-[8px] border border-[#E0E0E0] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#FAFAFA]">
+            <TableRow className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
               {columns.map((col, idx) => (
-                <TableHead key={idx} className="text-right text-[#616161] font-medium">
+                <TableHead key={idx} className="text-right text-[#616161] font-medium text-sm h-12">
                   {col.header}
                 </TableHead>
               ))}
@@ -49,24 +49,24 @@ export default function DataTable({
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-[#E0E0E0] p-12 text-center">
-        <FileX className="w-12 h-12 text-[#9E9E9E] mx-auto mb-3" />
-        <p className="text-[#616161] font-medium">{emptyMessage}</p>
+      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-12 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <FileX className="w-12 h-12 text-[#9E9E9E] mx-auto mb-3" strokeWidth={1.5} />
+        <p className="text-[#616161] font-normal body-2">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-[#E0E0E0] overflow-hidden">
+    <div className="bg-white rounded-[8px] border border-[#E0E0E0] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#FAFAFA]">
+            <TableRow className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
               {columns.map((col, idx) => (
                 <TableHead 
                   key={idx} 
                   className={cn(
-                    "text-right text-[#616161] font-medium whitespace-nowrap",
+                    "text-right text-[#616161] font-medium text-sm whitespace-nowrap h-12",
                     col.className
                   )}
                 >
@@ -88,7 +88,7 @@ export default function DataTable({
                 {columns.map((col, colIdx) => (
                   <TableCell 
                     key={colIdx}
-                    className={cn("whitespace-nowrap", col.cellClassName)}
+                    className={cn("whitespace-nowrap body-2 h-14", col.cellClassName)}
                   >
                     {col.cell ? col.cell(row) : row[col.accessor]}
                   </TableCell>

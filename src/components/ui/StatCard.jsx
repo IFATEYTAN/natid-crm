@@ -22,26 +22,26 @@ export default function StatCard({
 
   return (
     <div className={cn(
-      "rounded-xl border p-5 transition-all duration-200 hover:shadow-md",
+      "rounded-[8px] border p-6 transition-all duration-300 shadow-[0_1px_3px_rgba(0,0,0,0.06)] card-hover",
       variants[variant]
     )}>
       <div className="flex items-start justify-between">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <p className={cn(
-            "text-sm font-medium",
+            "text-sm font-normal caption",
             isLight ? "text-[#616161]" : "text-white/80"
           )}>
             {title}
           </p>
           <p className={cn(
-            "text-2xl font-bold",
-            isLight ? "text-[#212121]" : "text-white"
+            "text-[32px] font-bold leading-tight",
+            isLight ? "text-[#0D47A1]" : "text-white"
           )}>
             {value}
           </p>
           {subtitle && (
             <p className={cn(
-              "text-xs",
+              "text-xs caption",
               isLight ? "text-[#9E9E9E]" : "text-white/70"
             )}>
               {subtitle}
@@ -50,13 +50,13 @@ export default function StatCard({
         </div>
         {Icon && (
           <div className={cn(
-            "p-2.5 rounded-lg",
+            "p-3 rounded-[4px]",
             isLight ? "bg-[#FAFAFA]" : "bg-white/10"
           )}>
             <Icon className={cn(
-              "w-5 h-5",
+              "w-6 h-6",
               isLight ? "text-[#0D47A1]" : "text-white"
-            )} />
+            )} strokeWidth={1.5} />
           </div>
         )}
       </div>

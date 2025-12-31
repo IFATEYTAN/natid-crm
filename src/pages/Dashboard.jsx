@@ -71,12 +71,12 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-[#212121]">שלום,</h2>
-          <p className="text-[#616161] text-sm">סקירת מצב מערכת</p>
+          <h1 className="text-[32px] font-bold text-[#0D47A1] leading-tight">שלום,</h1>
+          <p className="text-[#616161] text-sm body-2 mt-1">סקירת מצב מערכת</p>
         </div>
         <Link to={createPageUrl('NewCase')}>
-          <Button className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2">
-            <Plus className="w-4 h-4" />
+          <Button className="bg-[#0D47A1] hover:bg-[#1565C0] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5">
+            <Plus className="w-5 h-5" strokeWidth={2} />
             קריאה חדשה
           </Button>
         </Link>
@@ -122,12 +122,12 @@ export default function Dashboard() {
       {/* Active Cases & Available Providers */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Active Cases */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-[#E0E0E0] overflow-hidden">
-          <div className="p-4 border-b border-[#E0E0E0] flex items-center justify-between">
-            <h3 className="font-semibold text-[#212121]">קריאות פעילות</h3>
-            <Link to={createPageUrl('Cases')} className="text-[#0D47A1] text-sm hover:underline flex items-center gap-1">
+        <div className="lg:col-span-2 bg-white rounded-[8px] border border-[#E0E0E0] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] card-hover">
+          <div className="p-6 border-b border-[#E0E0E0] flex items-center justify-between">
+            <h3 className="text-[20px] font-medium text-[#212121]">קריאות פעילות</h3>
+            <Link to={createPageUrl('Cases')} className="text-[#0D47A1] text-sm hover:underline flex items-center gap-1 body-2">
               הצג הכל
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" strokeWidth={2} />
             </Link>
           </div>
           <div className="divide-y divide-[#E0E0E0]">
@@ -183,12 +183,12 @@ export default function Dashboard() {
         </div>
 
         {/* Available Providers */}
-        <div className="bg-white rounded-xl border border-[#E0E0E0] overflow-hidden">
-          <div className="p-4 border-b border-[#E0E0E0] flex items-center justify-between">
-            <h3 className="font-semibold text-[#212121]">נותני שירות זמינים</h3>
-            <Link to={createPageUrl('ServiceProviders')} className="text-[#0D47A1] text-sm hover:underline flex items-center gap-1">
+        <div className="bg-white rounded-[8px] border border-[#E0E0E0] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)] card-hover">
+          <div className="p-6 border-b border-[#E0E0E0] flex items-center justify-between">
+            <h3 className="text-[20px] font-medium text-[#212121]">נותני שירות זמינים</h3>
+            <Link to={createPageUrl('ServiceProviders')} className="text-[#0D47A1] text-sm hover:underline flex items-center gap-1 body-2">
               הצג הכל
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" strokeWidth={2} />
             </Link>
           </div>
           <div className="divide-y divide-[#E0E0E0]">
@@ -222,23 +222,23 @@ export default function Dashboard() {
 
       {/* Quick Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-[#E0E0E0] p-4 text-center">
-          <p className="text-2xl font-bold text-[#0D47A1]">{customers.length}</p>
-          <p className="text-sm text-[#616161]">לקוחות פעילים</p>
+        <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)] card-hover">
+          <p className="text-[32px] font-bold text-[#0D47A1] leading-tight">{customers.length}</p>
+          <p className="text-sm text-[#616161] caption mt-2">לקוחות פעילים</p>
         </div>
-        <div className="bg-white rounded-xl border border-[#E0E0E0] p-4 text-center">
-          <p className="text-2xl font-bold text-[#0D47A1]">{providers.length}</p>
-          <p className="text-sm text-[#616161]">נותני שירות</p>
+        <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)] card-hover">
+          <p className="text-[32px] font-bold text-[#0D47A1] leading-tight">{providers.length}</p>
+          <p className="text-sm text-[#616161] caption mt-2">נותני שירות</p>
         </div>
-        <div className="bg-white rounded-xl border border-[#E0E0E0] p-4 text-center">
-          <p className="text-2xl font-bold text-[#0D47A1]">{cases.length}</p>
-          <p className="text-sm text-[#616161]">סה"כ קריאות</p>
+        <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)] card-hover">
+          <p className="text-[32px] font-bold text-[#0D47A1] leading-tight">{cases.length}</p>
+          <p className="text-sm text-[#616161] caption mt-2">סה"כ קריאות</p>
         </div>
-        <div className="bg-white rounded-xl border border-[#E0E0E0] p-4 text-center">
-          <p className="text-2xl font-bold text-[#2E7D32]">
+        <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)] card-hover">
+          <p className="text-[32px] font-bold text-[#2E7D32] leading-tight">
             {cases.filter(c => c.status === 'completed').length}
           </p>
-          <p className="text-sm text-[#616161]">קריאות שהושלמו</p>
+          <p className="text-sm text-[#616161] caption mt-2">קריאות שהושלמו</p>
         </div>
       </div>
     </div>
