@@ -5,6 +5,7 @@ import ServiceProviders from './pages/ServiceProviders';
 import NewCase from './pages/NewCase';
 import CaseDetails from './pages/CaseDetails';
 import Settings from './pages/Settings';
+import Calls from './pages/Calls';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +17,7 @@ export const PAGES = {
     "NewCase": NewCase,
     "CaseDetails": CaseDetails,
     "Settings": Settings,
+    "Calls": Calls,
 }
 
 export const pagesConfig = {

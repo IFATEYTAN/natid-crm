@@ -12,7 +12,51 @@ import {
 } from 'lucide-react';
 
 const statusConfig = {
-  // Case statuses with Material Design inspired icons
+  // Call statuses
+  waiting_treatment: { 
+    label: 'ממתין לטיפול', 
+    bg: 'bg-[#FFF4E5]', 
+    text: 'text-[#ED6C02]',
+    icon: Clock
+  },
+  awaiting_assignment: { 
+    label: 'ממתין לשיוך', 
+    bg: 'bg-[#FFF4E5]', 
+    text: 'text-[#ED6C02]',
+    icon: Clock
+  },
+  assigning: { 
+    label: 'בשיוך', 
+    bg: 'bg-[#E3F2FD]', 
+    text: 'text-[#0288D1]',
+    icon: UserPlus
+  },
+  vendor_enroute: { 
+    label: 'ספק בדרך', 
+    bg: 'bg-[#E8F5E9]', 
+    text: 'text-[#2E7D32]',
+    icon: Truck
+  },
+  in_progress: { 
+    label: 'בטיפול', 
+    bg: 'bg-[#E3F2FD]', 
+    text: 'text-[#0288D1]',
+    icon: Wrench
+  },
+  completed: { 
+    label: 'הושלם', 
+    bg: 'bg-[#E8F5E9]', 
+    text: 'text-[#1B5E20]',
+    icon: CheckCircle
+  },
+  cancelled: { 
+    label: 'בוטל', 
+    bg: 'bg-[#FFEBEE]', 
+    text: 'text-[#C62828]',
+    icon: XCircle
+  },
+  
+  // Legacy case statuses (for backward compatibility)
   new: { 
     label: 'ממתין לטיפול', 
     bg: 'bg-[#FFF4E5]', 
@@ -36,24 +80,6 @@ const statusConfig = {
     bg: 'bg-[#E3F2FD]', 
     text: 'text-[#0288D1]',
     icon: RefreshCw
-  },
-  in_progress: { 
-    label: 'בטיפול', 
-    bg: 'bg-[#E3F2FD]', 
-    text: 'text-[#0288D1]',
-    icon: Wrench
-  },
-  completed: { 
-    label: 'הושלם', 
-    bg: 'bg-[#E8F5E9]', 
-    text: 'text-[#1B5E20]',
-    icon: CheckCircle
-  },
-  cancelled: { 
-    label: 'בוטל', 
-    bg: 'bg-[#FFEBEE]', 
-    text: 'text-[#C62828]',
-    icon: XCircle
   },
   sla_breach: { 
     label: 'חרג SLA', 
