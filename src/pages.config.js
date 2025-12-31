@@ -15,6 +15,7 @@ import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import QueueMonitor from './pages/QueueMonitor';
+import Reports from './pages/Reports';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "QueueMonitor": QueueMonitor,
+    "Reports": Reports,
 }
 
 export const pagesConfig = {

@@ -27,6 +27,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'לוח בקרה', href: 'Dashboard', icon: LayoutDashboard },
     { name: 'קריאות שירות', href: 'Cases', icon: FileText },
     { name: 'ניטור תורים', href: 'QueueMonitor', icon: LayoutDashboard },
+    { name: 'דוחות', href: 'Reports', icon: FileText },
     { name: 'לקוחות', href: 'Customers', icon: Users },
     { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
     { name: 'הגדרות', href: 'Settings', icon: Settings },
