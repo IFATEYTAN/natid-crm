@@ -1,0 +1,142 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { 
+  Building2, 
+  Bell, 
+  Shield, 
+  Clock,
+  Truck,
+  Save
+} from 'lucide-react';
+
+export default function Settings() {
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-[#212121]">הגדרות</h2>
+        <p className="text-[#616161] text-sm">ניהול הגדרות המערכת</p>
+      </div>
+
+      {/* Company Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-[#0D47A1]" />
+            פרטי חברה
+          </CardTitle>
+          <CardDescription>הגדרות בסיסיות של העסק</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>שם החברה</Label>
+              <Input defaultValue="נתי שירותי דרך" />
+            </div>
+            <div>
+              <Label>טלפון ראשי</Label>
+              <Input defaultValue="*6283" dir="ltr" className="text-right" />
+            </div>
+            <div>
+              <Label>דוא"ל</Label>
+              <Input type="email" defaultValue="info@natid.co.il" />
+            </div>
+            <div>
+              <Label>כתובת</Label>
+              <Input defaultValue="" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* SLA Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="w-4 h-4 text-[#0D47A1]" />
+            הגדרות SLA ברירת מחדל
+          </CardTitle>
+          <CardDescription>זמני תגובה והגעה ברירת מחדל ללקוחות חדשים</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>זמן תגובה (דקות)</Label>
+              <Input type="number" defaultValue="30" />
+            </div>
+            <div>
+              <Label>זמן הגעה (דקות)</Label>
+              <Input type="number" defaultValue="60" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Bell className="w-4 h-4 text-[#0D47A1]" />
+            התראות
+          </CardTitle>
+          <CardDescription>הגדרות התראות והודעות</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">התראת קריאה חדשה</p>
+              <p className="text-sm text-[#616161]">קבל התראה על כל קריאה חדשה</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">התראת SLA</p>
+              <p className="text-sm text-[#616161]">התראה כאשר קריאה מתקרבת לחריגה מה-SLA</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">סיכום יומי</p>
+              <p className="text-sm text-[#616161]">קבל סיכום יומי בדוא"ל</p>
+            </div>
+            <Switch />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Service Types */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Truck className="w-4 h-4 text-[#0D47A1]" />
+            סוגי שירות
+          </CardTitle>
+          <CardDescription>ניהול סוגי השירות הזמינים</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {['גרירה', 'פנצ\'ר', 'מצבר', 'פתיחת רכב', 'דלק', 'תאונה', 'תקלה מכנית'].map((service, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2 bg-[#FAFAFA] rounded-lg">
+                <span>{service}</span>
+                <Switch defaultChecked />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save */}
+      <div className="flex justify-end">
+        <Button className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2">
+          <Save className="w-4 h-4" />
+          שמור שינויים
+        </Button>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,541 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import StatusBadge from '@/components/ui/StatusBadge';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  ArrowRight, 
+  User, 
+  Car, 
+  MapPin, 
+  Wrench,
+  Clock,
+  Phone,
+  Truck,
+  CheckCircle2,
+  AlertTriangle,
+  MessageSquare,
+  Edit,
+  Save,
+  Loader2
+} from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { he } from 'date-fns/locale';
+
+const serviceTypeLabels = {
+  towing: 'גרירה',
+  flat_tire: 'פנצ\'ר',
+  battery: 'מצבר',
+  lockout: 'פתיחת רכב',
+  fuel: 'דלק',
+  accident: 'תאונה',
+  mechanical: 'תקלה מכנית',
+  other: 'אחר'
+};
+
+const vehicleTypeLabels = {
+  car: 'רכב פרטי',
+  motorcycle: 'אופנוע',
+  truck: 'משאית',
+  bus: 'אוטובוס',
+  van: 'ואן',
+  other: 'אחר'
+};
+
+const statusOptions = [
+  { value: 'new', label: 'חדש' },
+  { value: 'assigned', label: 'שובץ' },
+  { value: 'en_route', label: 'בדרך' },
+  { value: 'on_site', label: 'באתר' },
+  { value: 'in_progress', label: 'בטיפול' },
+  { value: 'completed', label: 'הושלם' },
+  { value: 'cancelled', label: 'בוטל' },
+];
+
+export default function CaseDetails() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const caseId = urlParams.get('id');
+  
+  const queryClient = useQueryClient();
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editData, setEditData] = useState({});
+  const [noteText, setNoteText] = useState('');
+
+  const { data: caseData, isLoading } = useQuery({
+    queryKey: ['case', caseId],
+    queryFn: async () => {
+      const cases = await base44.entities.Case.filter({ id: caseId });
+      return cases[0];
+    },
+    enabled: !!caseId,
+  });
+
+  const { data: providers = [] } = useQuery({
+    queryKey: ['providers-available'],
+    queryFn: () => base44.entities.ServiceProvider.filter({ status: 'available' }),
+  });
+
+  const { data: activities = [] } = useQuery({
+    queryKey: ['case-activities', caseId],
+    queryFn: () => base44.entities.CaseActivity.filter({ case_id: caseId }, '-created_date', 50),
+    enabled: !!caseId,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Case.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['case', caseId] });
+      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      setIsEditMode(false);
+    },
+  });
+
+  const addActivityMutation = useMutation({
+    mutationFn: (data) => base44.entities.CaseActivity.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['case-activities', caseId] });
+    },
+  });
+
+  const handleStatusChange = async (newStatus) => {
+    const previousStatus = caseData.status;
+    const updates = { status: newStatus };
+    
+    if (newStatus === 'completed' && !caseData.completed_at) {
+      updates.completed_at = new Date().toISOString();
+    }
+    
+    if (newStatus === 'on_site' && !caseData.arrived_at) {
+      updates.arrived_at = new Date().toISOString();
+      // Check SLA
+      if (caseData.sla_arrival_deadline) {
+        updates.sla_arrival_met = new Date() <= new Date(caseData.sla_arrival_deadline);
+      }
+    }
+
+    await updateMutation.mutateAsync({ id: caseId, data: updates });
+    
+    await addActivityMutation.mutateAsync({
+      case_id: caseId,
+      case_number: caseData.case_number,
+      activity_type: 'status_change',
+      description: `סטטוס שונה מ-${previousStatus} ל-${newStatus}`,
+      previous_value: previousStatus,
+      new_value: newStatus
+    });
+  };
+
+  const handleAssignProvider = async (providerId) => {
+    const provider = providers.find(p => p.id === providerId);
+    if (!provider) return;
+
+    const updates = {
+      assigned_provider_id: providerId,
+      assigned_provider_name: provider.name,
+      assigned_at: new Date().toISOString(),
+      status: 'assigned'
+    };
+
+    // Check response SLA
+    if (caseData.sla_response_deadline) {
+      updates.sla_response_met = new Date() <= new Date(caseData.sla_response_deadline);
+    }
+
+    await updateMutation.mutateAsync({ id: caseId, data: updates });
+    
+    await addActivityMutation.mutateAsync({
+      case_id: caseId,
+      case_number: caseData.case_number,
+      activity_type: 'assigned',
+      description: `שובץ לנותן שירות: ${provider.name}`
+    });
+
+    // Update provider status
+    await base44.entities.ServiceProvider.update(providerId, { status: 'busy' });
+    
+    setIsAssignDialogOpen(false);
+  };
+
+  const handleAddNote = async () => {
+    if (!noteText.trim()) return;
+    
+    await addActivityMutation.mutateAsync({
+      case_id: caseId,
+      case_number: caseData.case_number,
+      activity_type: 'note',
+      description: noteText
+    });
+    
+    setNoteText('');
+  };
+
+  const handleSaveEdit = () => {
+    updateMutation.mutate({ id: caseId, data: editData });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+          </div>
+          <Skeleton className="h-96" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!caseData) {
+    return (
+      <div className="text-center py-12">
+        <AlertTriangle className="w-12 h-12 mx-auto text-[#ED6C02] mb-4" />
+        <p className="text-[#616161]">קריאה לא נמצאה</p>
+        <Link to={createPageUrl('Cases')}>
+          <Button variant="outline" className="mt-4">חזרה לקריאות</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link to={createPageUrl('Cases')}>
+            <Button variant="ghost" size="icon">
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+          </Link>
+          <div>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold text-[#212121]">
+                {caseData.case_number || `#${caseData.id?.slice(-6)}`}
+              </h2>
+              <StatusBadge status={caseData.status} />
+              {caseData.priority && caseData.priority !== 'normal' && (
+                <StatusBadge status={caseData.priority} />
+              )}
+            </div>
+            <p className="text-[#616161] text-sm">
+              {serviceTypeLabels[caseData.service_type]} - {caseData.customer_name}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Select value={caseData.status} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="שנה סטטוס" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {!caseData.assigned_provider_id && caseData.status !== 'completed' && caseData.status !== 'cancelled' && (
+            <Button 
+              className="bg-[#0D47A1] hover:bg-[#1565C0]"
+              onClick={() => setIsAssignDialogOpen(true)}
+            >
+              <Truck className="w-4 h-4 ml-2" />
+              שבץ נותן שירות
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Customer & Contact */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <User className="w-4 h-4 text-[#0D47A1]" />
+                פרטי לקוח ומתקשר
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">לקוח</p>
+                  <p className="font-medium">{caseData.customer_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">מתקשר</p>
+                  <p className="font-medium">{caseData.caller_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">טלפון</p>
+                  <a href={`tel:${caseData.caller_phone}`} className="font-medium text-[#0D47A1] flex items-center gap-1">
+                    <Phone className="w-3 h-3" />
+                    {caseData.caller_phone}
+                  </a>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Vehicle */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Car className="w-4 h-4 text-[#0D47A1]" />
+                פרטי רכב
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">מספר רכב</p>
+                  <p className="font-medium">{caseData.vehicle_number || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">סוג</p>
+                  <p className="font-medium">{vehicleTypeLabels[caseData.vehicle_type] || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">דגם</p>
+                  <p className="font-medium">{caseData.vehicle_model || '-'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Location */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#0D47A1]" />
+                מיקום
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">מיקום נוכחי</p>
+                  <p className="font-medium">{caseData.location_address}</p>
+                  {caseData.location_city && (
+                    <p className="text-sm text-[#616161]">{caseData.location_city}</p>
+                  )}
+                </div>
+                {caseData.destination_address && (
+                  <div>
+                    <p className="text-xs text-[#9E9E9E]">יעד</p>
+                    <p className="font-medium">{caseData.destination_address}</p>
+                    {caseData.destination_city && (
+                      <p className="text-sm text-[#616161]">{caseData.destination_city}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Problem Description */}
+          {caseData.problem_description && (
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Wrench className="w-4 h-4 text-[#0D47A1]" />
+                  תיאור התקלה
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[#616161] whitespace-pre-wrap">{caseData.problem_description}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Add Note */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#0D47A1]" />
+                הוסף הערה
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Textarea
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="כתוב הערה..."
+                  rows={2}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={handleAddNote}
+                  disabled={!noteText.trim() || addActivityMutation.isPending}
+                  className="bg-[#0D47A1] hover:bg-[#1565C0]"
+                >
+                  {addActivityMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'שלח'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* SLA Status */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Clock className="w-4 h-4 text-[#0D47A1]" />
+                SLA
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-[#FAFAFA]">
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">תגובה</p>
+                  <p className="text-sm font-medium">
+                    {caseData.sla_response_deadline 
+                      ? format(parseISO(caseData.sla_response_deadline), 'HH:mm dd/MM', { locale: he })
+                      : '-'
+                    }
+                  </p>
+                </div>
+                {caseData.sla_response_met !== undefined && (
+                  caseData.sla_response_met 
+                    ? <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
+                    : <AlertTriangle className="w-5 h-5 text-[#D32F2F]" />
+                )}
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-[#FAFAFA]">
+                <div>
+                  <p className="text-xs text-[#9E9E9E]">הגעה</p>
+                  <p className="text-sm font-medium">
+                    {caseData.sla_arrival_deadline 
+                      ? format(parseISO(caseData.sla_arrival_deadline), 'HH:mm dd/MM', { locale: he })
+                      : '-'
+                    }
+                  </p>
+                </div>
+                {caseData.sla_arrival_met !== undefined && (
+                  caseData.sla_arrival_met 
+                    ? <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
+                    : <AlertTriangle className="w-5 h-5 text-[#D32F2F]" />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Assigned Provider */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Truck className="w-4 h-4 text-[#0D47A1]" />
+                נותן שירות
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {caseData.assigned_provider_name ? (
+                <div className="space-y-2">
+                  <p className="font-medium">{caseData.assigned_provider_name}</p>
+                  {caseData.assigned_at && (
+                    <p className="text-xs text-[#9E9E9E]">
+                      שובץ: {format(parseISO(caseData.assigned_at), 'HH:mm dd/MM', { locale: he })}
+                    </p>
+                  )}
+                  {caseData.arrived_at && (
+                    <p className="text-xs text-[#9E9E9E]">
+                      הגיע: {format(parseISO(caseData.arrived_at), 'HH:mm dd/MM', { locale: he })}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-[#9E9E9E] text-sm">לא שובץ</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Activity Log */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base">היסטוריה</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {activities.length === 0 ? (
+                  <p className="text-[#9E9E9E] text-sm text-center py-4">אין פעילות</p>
+                ) : (
+                  activities.map(activity => (
+                    <div key={activity.id} className="text-sm border-r-2 border-[#0D47A1] pr-3 py-1">
+                      <p className="text-[#212121]">{activity.description}</p>
+                      <p className="text-xs text-[#9E9E9E]">
+                        {activity.created_date && format(parseISO(activity.created_date), 'HH:mm dd/MM', { locale: he })}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Assign Provider Dialog */}
+      <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>שיבוץ נותן שירות</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {providers.length === 0 ? (
+              <p className="text-center py-8 text-[#616161]">אין נותני שירות זמינים</p>
+            ) : (
+              providers.map(provider => (
+                <div 
+                  key={provider.id}
+                  className="p-3 border border-[#E0E0E0] rounded-lg hover:border-[#0D47A1] hover:bg-[#FAFAFA] cursor-pointer transition-colors"
+                  onClick={() => handleAssignProvider(provider.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{provider.name}</p>
+                      <p className="text-sm text-[#616161]">{provider.phone}</p>
+                    </div>
+                    <StatusBadge status={provider.status} size="sm" />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
