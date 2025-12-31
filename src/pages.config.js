@@ -13,6 +13,7 @@ import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import MyQueue from './pages/MyQueue';
 import QueueSettings from './pages/QueueSettings';
+import BotIntegration from './pages/BotIntegration';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +33,7 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "MyQueue": MyQueue,
     "QueueSettings": QueueSettings,
+    "BotIntegration": BotIntegration,
 }
 
 export const pagesConfig = {
