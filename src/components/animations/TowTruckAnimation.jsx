@@ -71,66 +71,130 @@ const towTruckAnimation = {
   ]
 };
 
-export default function TowTruckAnimation({ trigger = 0, error = false }) {
+export default function TowTruckAnimation({ trigger = 0, state = 'idle' }) {
+  const [animationState, setAnimationState] = useState('idle');
   const [opacity, setOpacity] = useState(0.5);
   const [scale, setScale] = useState(1);
-  const [shake, setShake] = useState(false);
+  const [speed, setSpeed] = useState(1);
+
+  useEffect(() => {
+    switch (state) {
+      case 'loading':
+        setOpacity(1);
+        setScale(1);
+        setSpeed(1.5);
+        setAnimationState('loading');
+        break;
+      case 'success':
+        setOpacity(1);
+        setScale(1.1);
+        setSpeed(1);
+        setAnimationState('success');
+        setTimeout(() => {
+          setOpacity(0.5);
+          setScale(1);
+          setAnimationState('idle');
+        }, 2000);
+        break;
+      case 'error':
+        setOpacity(1);
+        setScale(1);
+        setSpeed(1);
+        setAnimationState('error');
+        setTimeout(() => {
+          setOpacity(0.5);
+          setScale(1);
+          setAnimationState('idle');
+        }, 1000);
+        break;
+      case 'driving':
+        setOpacity(1);
+        setScale(1.05);
+        setSpeed(1.5);
+        setAnimationState('driving');
+        break;
+      default:
+        setOpacity(0.5);
+        setScale(1);
+        setSpeed(1);
+        setAnimationState('idle');
+    }
+  }, [state]);
 
   useEffect(() => {
     if (trigger > 0) {
-      // Celebration animation on action
+      setAnimationState('success');
       setOpacity(1);
       setScale(1.1);
       setTimeout(() => {
+        setOpacity(0.5);
         setScale(1);
-        setTimeout(() => setOpacity(0.5), 300);
-      }, 200);
+        setAnimationState('idle');
+      }, 2000);
     }
   }, [trigger]);
 
-  useEffect(() => {
-    if (error) {
-      // Shake animation on error
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
-    }
-  }, [error]);
-
   return (
-    <div
-      className="fixed bottom-6 left-6 z-[999] pointer-events-none transition-all duration-300"
-      style={{
-        opacity,
-        transform: `scale(${scale}) ${shake ? 'translateX(-5px)' : ''}`,
-        animation: shake ? 'shake 0.5s' : 'none'
-      }}
-    >
+    <>
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
-        @keyframes driveIn {
-          from {
-            transform: translateX(-150px);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 0.5;
+
+        .lottie-container {
+          position: fixed;
+          bottom: 24px;
+          left: 24px;
+          width: 120px;
+          height: 120px;
+          z-index: 999;
+          pointer-events: none;
+          transition: all 0.3s ease;
+        }
+
+        .lottie-container.error {
+          animation: shake 0.5s ease-in-out;
+          filter: hue-rotate(-10deg) brightness(1.1);
+        }
+
+        @media (max-width: 1200px) {
+          .lottie-container {
+            width: 100px;
+            height: 100px;
+            bottom: 16px;
+            left: 16px;
           }
         }
-        .truck-container {
-          animation: driveIn 1s ease-out;
+
+        @media (max-width: 768px) {
+          .lottie-container {
+            width: 80px;
+            height: 80px;
+            bottom: 12px;
+            left: 12px;
+          }
         }
       `}</style>
       
-      <div className="truck-container w-[120px] h-[120px] md:w-[120px] md:h-[120px] sm:w-[80px] sm:h-[80px]">
-        <div className="w-full h-full bg-[#0D47A1]/5 rounded-full flex items-center justify-center">
-          <Truck className="w-12 h-12 text-[#0D47A1]" strokeWidth={1.5} />
+      <div 
+        className={`lottie-container ${animationState}`}
+        style={{ 
+          opacity: opacity,
+          transform: `scale(${scale})`
+        }}
+      >
+        <div className="w-full h-full bg-white/80 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center">
+          <Lottie
+            animationData={towTruckAnimation}
+            loop={true}
+            autoplay={true}
+            speed={speed}
+            style={{ width: '70%', height: '70%' }}
+          />
         </div>
       </div>
-    </div>
+    </>
   );
 }
