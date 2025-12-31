@@ -137,13 +137,11 @@ export default function Layout({ children, currentPageName }) {
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#E0E0E0]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#0D47A1] rounded-lg flex items-center justify-center shadow-sm">
-              <Truck className="w-6 h-6 text-white" strokeWidth={2} />
-            </div>
-            <div>
-              <span className="text-xl font-bold text-[#0D47A1] block leading-tight">נתי שירותי דרך</span>
-              <span className="text-[10px] text-[#616161] leading-tight">הדרך שלך, הפתרונות שלנו</span>
-            </div>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
+              alt="נתי לוגו" 
+              className="h-10 w-auto object-contain"
+            />
           </div>
           <Button 
             variant="ghost" 
@@ -167,7 +165,7 @@ export default function Layout({ children, currentPageName }) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-base font-medium transition-all duration-200",
                   isActive 
-                    ? "bg-[#0D47A1] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]" 
+                    ? "bg-[#0078D4] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]" 
                     : "text-[#616161] hover:bg-[#FAFAFA] hover:text-[#212121]"
                 )}
               >
@@ -182,7 +180,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="absolute bottom-20 left-4 right-4">
           <Link to={createPageUrl('NewCase')}>
             <Button 
-              className="w-full bg-[#0D47A1] hover:bg-[#1565C0] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5"
+              className="w-full bg-[#0078D4] hover:bg-[#1976D2] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5"
               onClick={() => setAnimationTrigger(prev => prev + 1)}
             >
               <Plus className="w-5 h-5" />
@@ -218,9 +216,11 @@ export default function Layout({ children, currentPageName }) {
               <Menu className="w-6 h-6 text-[#616161]" strokeWidth={2} />
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[#0D47A1] rounded-lg flex items-center justify-center shadow-sm lg:hidden">
-                <Truck className="w-5 h-5 text-white" strokeWidth={2} />
-              </div>
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
+                alt="נתי" 
+                className="h-8 w-auto object-contain lg:hidden"
+              />
               <h2 className="text-xl md:text-2xl font-semibold text-[#212121] leading-tight">
                 {navigation.find(n => n.href === currentPageName)?.name || 'נתי שירותי דרך'}
               </h2>
@@ -231,14 +231,14 @@ export default function Layout({ children, currentPageName }) {
             {/* Emergency Phone */}
             <a 
               href="tel:*6283"
-              className="hidden md:flex items-center gap-2 bg-[#E3F2FD] text-[#0D47A1] px-4 py-2 rounded-[4px] font-medium text-sm hover:bg-[#BBDEFB] transition-colors"
+              className="hidden md:flex items-center gap-2 bg-[#E3F2FD] text-[#0078D4] px-4 py-2 rounded-[4px] font-medium text-sm hover:bg-[#BBDEFB] transition-colors"
             >
               <Phone className="w-4 h-4" strokeWidth={2} />
               <span className="font-semibold">*6283</span>
             </a>
             
             {/* User Avatar Placeholder */}
-            <div className="w-10 h-10 rounded-full bg-[#0D47A1] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-[#0078D4] flex items-center justify-center">
               <User className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
           </div>
