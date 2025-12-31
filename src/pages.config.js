@@ -16,6 +16,7 @@ import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import QueueMonitor from './pages/QueueMonitor';
 import Reports from './pages/Reports';
+import AutomationSettings from './pages/AutomationSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -38,6 +39,7 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "QueueMonitor": QueueMonitor,
     "Reports": Reports,
+    "AutomationSettings": AutomationSettings,
 }
 
 export const pagesConfig = {

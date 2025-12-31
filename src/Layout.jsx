@@ -30,6 +30,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'דוחות', href: 'Reports', icon: FileText },
     { name: 'לקוחות', href: 'Customers', icon: Users },
     { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
+    { name: 'אוטומציה', href: 'AutomationSettings', icon: Settings },
     { name: 'הגדרות', href: 'Settings', icon: Settings },
   ];
 
