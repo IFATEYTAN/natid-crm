@@ -29,6 +29,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
+import ImportExport from '@/components/ImportExport';
 
 const serviceTypeLabels = {
   tow_truck: 'גרר',
@@ -234,13 +235,20 @@ export default function ServiceProviders() {
           <h2 className="text-xl font-bold text-[#212121]">נותני שירות</h2>
           <p className="text-[#616161] text-sm">{filteredProviders.length} נותני שירות</p>
         </div>
-        <Button 
-          className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <Plus className="w-4 h-4" />
-          נותן שירות חדש
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <ImportExport 
+            entityName="ServiceProvider" 
+            data={filteredProviders}
+            columns={columns}
+          />
+          <Button 
+            className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus className="w-4 h-4" />
+            נותן שירות חדש
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
