@@ -247,9 +247,9 @@ export default function CaseDetails() {
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Select value={caseData.status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-full sm:w-36">
               <SelectValue placeholder="שנה סטטוס" />
             </SelectTrigger>
             <SelectContent>
@@ -261,11 +261,12 @@ export default function CaseDetails() {
           
           {!caseData.assigned_provider_id && caseData.status !== 'completed' && caseData.status !== 'cancelled' && (
             <Button 
-              className="bg-[#0D47A1] hover:bg-[#1565C0]"
+              className="bg-[#0D47A1] hover:bg-[#1565C0] w-full sm:w-auto"
               onClick={() => setIsAssignDialogOpen(true)}
             >
               <Truck className="w-4 h-4 ml-2" />
-              שבץ נותן שירות
+              <span className="hidden sm:inline">שבץ נותן שירות</span>
+              <span className="sm:hidden">שבץ ספק</span>
             </Button>
           )}
         </div>
@@ -283,7 +284,7 @@ export default function CaseDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-[#9E9E9E]">לקוח</p>
                   <p className="font-medium">{caseData.customer_name}</p>
@@ -312,7 +313,7 @@ export default function CaseDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <p className="text-xs text-[#9E9E9E]">מספר רכב</p>
                   <p className="font-medium">{caseData.vehicle_number || '-'}</p>
@@ -338,7 +339,7 @@ export default function CaseDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-[#9E9E9E]">מיקום נוכחי</p>
                   <p className="font-medium">{caseData.location_address}</p>
@@ -383,7 +384,7 @@ export default function CaseDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Textarea
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
@@ -394,7 +395,7 @@ export default function CaseDetails() {
                 <Button 
                   onClick={handleAddNote}
                   disabled={!noteText.trim() || addActivityMutation.isPending}
-                  className="bg-[#0D47A1] hover:bg-[#1565C0]"
+                  className="bg-[#0D47A1] hover:bg-[#1565C0] sm:self-start"
                 >
                   {addActivityMutation.isPending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

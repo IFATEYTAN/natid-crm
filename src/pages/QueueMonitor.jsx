@@ -207,7 +207,7 @@ export default function QueueMonitor() {
             סטטוס נציגים
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -260,7 +260,7 @@ export default function QueueMonitor() {
               תור כללי - קריאות ללא שיבוץ ({waitingInQueue.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -335,7 +335,7 @@ export default function QueueMonitor() {
       {agentStats.filter(s => s.activeCount > 0).map(({ agent, calls: agentCalls }) => (
         <Card key={agent.id}>
           <CardHeader>
-            <CardTitle className="text-base flex items-center justify-between">
+            <CardTitle className="text-base flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 {agent.full_name} - {agentCalls.length} קריאות פעילות
@@ -345,7 +345,7 @@ export default function QueueMonitor() {
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
