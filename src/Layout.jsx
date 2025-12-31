@@ -27,6 +27,7 @@ export default function Layout({ children, currentPageName }) {
   const navigation = [
     { name: 'לוח בקרה', href: 'Dashboard', icon: LayoutDashboard },
     { name: 'קריאות שירות', href: 'Cases', icon: FileText },
+    { name: 'ניטור תורים', href: 'QueueMonitor', icon: LayoutDashboard },
     { name: 'לקוחות', href: 'Customers', icon: Users },
     { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
     { name: 'הגדרות', href: 'Settings', icon: Settings },

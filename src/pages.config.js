@@ -1,3 +1,4 @@
+import BotIntegration from './pages/BotIntegration';
 import CallDetailsVendor from './pages/CallDetailsVendor';
 import Calls from './pages/Calls';
 import CaseDetails from './pages/CaseDetails';
@@ -5,19 +6,20 @@ import Cases from './pages/Cases';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
 import MyCallsVendor from './pages/MyCallsVendor';
+import MyQueue from './pages/MyQueue';
 import NewCase from './pages/NewCase';
+import QueueSettings from './pages/QueueSettings';
 import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
 import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
-import MyQueue from './pages/MyQueue';
-import QueueSettings from './pages/QueueSettings';
-import BotIntegration from './pages/BotIntegration';
+import QueueMonitor from './pages/QueueMonitor';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "BotIntegration": BotIntegration,
     "CallDetailsVendor": CallDetailsVendor,
     "Calls": Calls,
     "CaseDetails": CaseDetails,
@@ -25,15 +27,15 @@ export const PAGES = {
     "Customers": Customers,
     "Dashboard": Dashboard,
     "MyCallsVendor": MyCallsVendor,
+    "MyQueue": MyQueue,
     "NewCase": NewCase,
+    "QueueSettings": QueueSettings,
     "ServiceProviders": ServiceProviders,
     "Settings": Settings,
     "VendorMap": VendorMap,
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
-    "MyQueue": MyQueue,
-    "QueueSettings": QueueSettings,
-    "BotIntegration": BotIntegration,
+    "QueueMonitor": QueueMonitor,
 }
 
 export const pagesConfig = {
