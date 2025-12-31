@@ -1,33 +1,37 @@
-import Dashboard from './pages/Dashboard';
+import CallDetailsVendor from './pages/CallDetailsVendor';
+import Calls from './pages/Calls';
+import CaseDetails from './pages/CaseDetails';
 import Cases from './pages/Cases';
 import Customers from './pages/Customers';
-import ServiceProviders from './pages/ServiceProviders';
-import NewCase from './pages/NewCase';
-import CaseDetails from './pages/CaseDetails';
-import Settings from './pages/Settings';
-import Calls from './pages/Calls';
-import VendorPortal from './pages/VendorPortal';
+import Dashboard from './pages/Dashboard';
 import MyCallsVendor from './pages/MyCallsVendor';
-import CallDetailsVendor from './pages/CallDetailsVendor';
-import VendorPayments from './pages/VendorPayments';
+import NewCase from './pages/NewCase';
+import ServiceProviders from './pages/ServiceProviders';
+import Settings from './pages/Settings';
 import VendorMap from './pages/VendorMap';
+import VendorPayments from './pages/VendorPayments';
+import VendorPortal from './pages/VendorPortal';
+import MyQueue from './pages/MyQueue';
+import QueueSettings from './pages/QueueSettings';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
+    "CallDetailsVendor": CallDetailsVendor,
+    "Calls": Calls,
+    "CaseDetails": CaseDetails,
     "Cases": Cases,
     "Customers": Customers,
-    "ServiceProviders": ServiceProviders,
-    "NewCase": NewCase,
-    "CaseDetails": CaseDetails,
-    "Settings": Settings,
-    "Calls": Calls,
-    "VendorPortal": VendorPortal,
+    "Dashboard": Dashboard,
     "MyCallsVendor": MyCallsVendor,
-    "CallDetailsVendor": CallDetailsVendor,
-    "VendorPayments": VendorPayments,
+    "NewCase": NewCase,
+    "ServiceProviders": ServiceProviders,
+    "Settings": Settings,
     "VendorMap": VendorMap,
+    "VendorPayments": VendorPayments,
+    "VendorPortal": VendorPortal,
+    "MyQueue": MyQueue,
+    "QueueSettings": QueueSettings,
 }
 
 export const pagesConfig = {
