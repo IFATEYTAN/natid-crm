@@ -18,7 +18,8 @@ import {
   AlertTriangle,
   MessageSquare,
   PlayCircle,
-  StopCircle
+  StopCircle,
+  Camera
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -323,6 +324,19 @@ export default function CallDetailsVendor() {
         </CardContent>
       </Card>
 
+      {/* Photos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Camera className="w-4 h-4 text-[#0078D4]" />
+            תמונות מהשטח
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PhotoGallery callId={callId} vendorId={currentVendor?.id} />
+        </CardContent>
+      </Card>
+
       {/* Add Note */}
       <Card>
         <CardHeader>
@@ -346,6 +360,174 @@ export default function CallDetailsVendor() {
           </Button>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Photo Gallery Component
+function PhotoGallery({ callId, vendorId }) {
+  const [uploading, setUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const queryClient = useQueryClient();
+
+  const { data: photos = [] } = useQuery({
+    queryKey: ['callPhotos', callId],
+    queryFn: async () => {
+      const data = await base44.entities.CallPhoto.filter({ call_id: callId, is_deleted: false });
+      return data;
+    },
+  });
+
+  const categoryLabels = {
+    before_treatment: 'לפני טיפול',
+    after_treatment: 'אחרי טיפול',
+    damage: 'תקלה/נזק',
+    customer_document: 'מסמך לקוח',
+    customer_signature: 'חתימת לקוח',
+    other: 'אחר'
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('הקובץ גדול מדי. מקסימום 10MB');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      
+      // Upload file
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      
+      // Prompt for category
+      const category = prompt(
+        'בחר קטגוריה:\n1. לפני טיפול\n2. אחרי טיפול\n3. תקלה/נזק\n4. מסמך לקוח\n5. חתימת לקוח\n6. אחר',
+        '1'
+      );
+      
+      const categoryMap = {
+        '1': 'before_treatment',
+        '2': 'after_treatment',
+        '3': 'damage',
+        '4': 'customer_document',
+        '5': 'customer_signature',
+        '6': 'other'
+      };
+      
+      const selectedCategory = categoryMap[category] || 'other';
+      const note = prompt('הערה (אופציונלי):');
+      
+      // Create photo record
+      await base44.entities.CallPhoto.create({
+        call_id: callId,
+        uploaded_by: vendorId,
+        file_url,
+        file_name: file.name,
+        file_size: Math.round(file.size / 1024),
+        category: selectedCategory,
+        note: note || ''
+      });
+      
+      // Log to history
+      await base44.entities.CallHistory.create({
+        call_id: callId,
+        change_type: 'other',
+        notes: `הועלתה תמונה: ${categoryLabels[selectedCategory]}`,
+        changed_by: vendorId
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
+      alert('התמונה הועלתה בהצלחה');
+    } catch (error) {
+      alert('שגיאה בהעלאת תמונה');
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Upload Button */}
+      <div>
+        <input
+          type="file"
+          accept="image/*"
+          id="photo-upload"
+          className="hidden"
+          onChange={handleFileUpload}
+          disabled={uploading}
+        />
+        <label htmlFor="photo-upload">
+          <Button 
+            variant="outline" 
+            className="gap-2 cursor-pointer"
+            disabled={uploading}
+            asChild
+          >
+            <span>
+              <Camera className="w-4 h-4" />
+              {uploading ? 'מעלה...' : 'הוסף תמונה'}
+            </span>
+          </Button>
+        </label>
+      </div>
+
+      {/* Photo Grid */}
+      {photos.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {photos.map(photo => (
+            <div 
+              key={photo.id}
+              className="relative aspect-square rounded-lg overflow-hidden border border-[#E0E0E0] cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setSelectedImage(photo)}
+            >
+              <img 
+                src={photo.file_url} 
+                alt={photo.note || 'תמונה'} 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                <p className="text-white text-xs font-medium">
+                  {categoryLabels[photo.category]}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-[#616161] text-sm py-8">
+          אין תמונות. לחץ 'הוסף תמונה' להעלאת תמונה ראשונה
+        </p>
+      )}
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="max-w-4xl w-full bg-white rounded-lg overflow-hidden">
+            <img 
+              src={selectedImage.file_url} 
+              alt={selectedImage.note || 'תמונה'}
+              className="w-full max-h-[70vh] object-contain"
+            />
+            <div className="p-4">
+              <p className="font-medium mb-1">{categoryLabels[selectedImage.category]}</p>
+              {selectedImage.note && (
+                <p className="text-sm text-[#616161] mb-2">{selectedImage.note}</p>
+              )}
+              <p className="text-xs text-[#9E9E9E]">
+                {selectedImage.created_date && format(parseISO(selectedImage.created_date), 'dd/MM/yy HH:mm', { locale: he })}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

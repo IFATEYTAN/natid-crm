@@ -9,6 +9,8 @@ import Calls from './pages/Calls';
 import VendorPortal from './pages/VendorPortal';
 import MyCallsVendor from './pages/MyCallsVendor';
 import CallDetailsVendor from './pages/CallDetailsVendor';
+import VendorPayments from './pages/VendorPayments';
+import VendorMap from './pages/VendorMap';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +26,8 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "MyCallsVendor": MyCallsVendor,
     "CallDetailsVendor": CallDetailsVendor,
+    "VendorPayments": VendorPayments,
+    "VendorMap": VendorMap,
 }
 
 export const pagesConfig = {
