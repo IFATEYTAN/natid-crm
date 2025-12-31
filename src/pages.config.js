@@ -6,6 +6,9 @@ import NewCase from './pages/NewCase';
 import CaseDetails from './pages/CaseDetails';
 import Settings from './pages/Settings';
 import Calls from './pages/Calls';
+import VendorPortal from './pages/VendorPortal';
+import MyCallsVendor from './pages/MyCallsVendor';
+import CallDetailsVendor from './pages/CallDetailsVendor';
 import __Layout from './Layout.jsx';
 
 
@@ -18,6 +21,9 @@ export const PAGES = {
     "CaseDetails": CaseDetails,
     "Settings": Settings,
     "Calls": Calls,
+    "VendorPortal": VendorPortal,
+    "MyCallsVendor": MyCallsVendor,
+    "CallDetailsVendor": CallDetailsVendor,
 }
 
 export const pagesConfig = {
