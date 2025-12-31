@@ -65,7 +65,7 @@ export default function Cases() {
       header: 'מספר קריאה',
       accessor: 'case_number',
       cell: (row) => (
-        <span className="font-medium text-[#0D47A1]">
+        <span className="font-semibold text-[#0D47A1]">
           {row.case_number || `#${row.id?.slice(-6)}`}
         </span>
       )
@@ -73,7 +73,7 @@ export default function Cases() {
     {
       header: 'סטטוס',
       accessor: 'status',
-      cell: (row) => <StatusBadge status={row.status} size="sm" />
+      cell: (row) => <StatusBadge status={row.status} />
     },
     {
       header: 'לקוח',
@@ -81,8 +81,8 @@ export default function Cases() {
       cell: (row) => (
         <div>
           <p className="font-medium text-[#212121]">{row.customer_name}</p>
-          <p className="text-xs text-[#616161] flex items-center gap-1">
-            <Phone className="w-3 h-3" />
+          <p className="text-xs text-[#616161] flex items-center gap-1 mt-1 caption">
+            <Phone className="w-3 h-3" strokeWidth={2} />
             {row.caller_phone}
           </p>
         </div>
@@ -91,14 +91,18 @@ export default function Cases() {
     {
       header: 'סוג שירות',
       accessor: 'service_type',
-      cell: (row) => serviceTypeLabels[row.service_type] || row.service_type
+      cell: (row) => (
+        <span className="text-[#212121]">
+          {serviceTypeLabels[row.service_type] || row.service_type}
+        </span>
+      )
     },
     {
       header: 'מיקום',
       accessor: 'location_city',
       cell: (row) => (
         <span className="flex items-center gap-1 text-[#616161]">
-          <MapPin className="w-3 h-3" />
+          <MapPin className="w-4 h-4" strokeWidth={2} />
           {row.location_city || row.location_address?.slice(0, 20)}
         </span>
       )
@@ -106,13 +110,17 @@ export default function Cases() {
     {
       header: 'נותן שירות',
       accessor: 'assigned_provider_name',
-      cell: (row) => row.assigned_provider_name || '-'
+      cell: (row) => (
+        <span className="text-[#212121]">
+          {row.assigned_provider_name || '-'}
+        </span>
+      )
     },
     {
       header: 'תאריך',
       accessor: 'created_date',
       cell: (row) => row.created_date ? (
-        <span className="text-[#616161] text-sm">
+        <span className="text-[#616161] caption">
           {format(parseISO(row.created_date), 'dd/MM HH:mm', { locale: he })}
         </span>
       ) : '-'
@@ -120,7 +128,7 @@ export default function Cases() {
     {
       header: 'עדיפות',
       accessor: 'priority',
-      cell: (row) => <StatusBadge status={row.priority || 'normal'} size="sm" />
+      cell: (row) => <StatusBadge status={row.priority || 'normal'} showIcon={row.priority === 'high' || row.priority === 'urgent'} />
     },
   ];
 

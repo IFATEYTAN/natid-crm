@@ -207,26 +207,39 @@ export default function Layout({ children, currentPageName }) {
       {/* Main Content */}
       <div className="lg:mr-64">
         {/* Top Bar */}
-        <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-4">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-[1100] flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="lg:hidden"
+              className="lg:hidden w-10 h-10 hover:bg-[rgba(0,0,0,0.04)] active:bg-[rgba(0,0,0,0.08)] transition-colors rounded-full"
               onClick={() => setSidebarOpen(true)}
             >
-              <Menu className="w-5 h-5 text-[#616161]" />
+              <Menu className="w-6 h-6 text-[#616161]" strokeWidth={2} />
             </Button>
-            <h2 className="text-2xl font-semibold text-[#212121]">
-              {navigation.find(n => n.href === currentPageName)?.name || 'נתי שירותי דרך'}
-            </h2>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-[#0D47A1] rounded-lg flex items-center justify-center shadow-sm lg:hidden">
+                <Truck className="w-5 h-5 text-white" strokeWidth={2} />
+              </div>
+              <h2 className="text-xl md:text-2xl font-semibold text-[#212121] leading-tight">
+                {navigation.find(n => n.href === currentPageName)?.name || 'נתי שירותי דרך'}
+              </h2>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {/* Emergency Phone */}
-            <div className="hidden md:flex items-center gap-2 text-[#0D47A1] font-medium">
-              <Phone className="w-4 h-4" />
-              <span>*6283</span>
+            <a 
+              href="tel:*6283"
+              className="hidden md:flex items-center gap-2 bg-[#E3F2FD] text-[#0D47A1] px-4 py-2 rounded-[4px] font-medium text-sm hover:bg-[#BBDEFB] transition-colors"
+            >
+              <Phone className="w-4 h-4" strokeWidth={2} />
+              <span className="font-semibold">*6283</span>
+            </a>
+            
+            {/* User Avatar Placeholder */}
+            <div className="w-10 h-10 rounded-full bg-[#0D47A1] flex items-center justify-center">
+              <User className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
           </div>
         </header>

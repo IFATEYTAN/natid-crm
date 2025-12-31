@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { FileX } from 'lucide-react';
+import { Inbox } from 'lucide-react';
 
 export default function DataTable({ 
   columns, 
@@ -49,9 +49,10 @@ export default function DataTable({
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-12 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-        <FileX className="w-12 h-12 text-[#9E9E9E] mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-[#616161] font-normal body-2">{emptyMessage}</p>
+      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-16 text-center shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <Inbox className="w-12 h-12 text-[#9E9E9E] mx-auto mb-4" strokeWidth={1.5} />
+        <p className="text-[#616161] font-normal text-base mb-1">{emptyMessage}</p>
+        <p className="text-[#9E9E9E] text-sm caption">לא נמצאו נתונים להצגה</p>
       </div>
     );
   }
@@ -61,12 +62,12 @@ export default function DataTable({
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
+            <TableRow className="bg-[#FAFAFA] border-b-2 border-[#E0E0E0]">
               {columns.map((col, idx) => (
                 <TableHead 
                   key={idx} 
                   className={cn(
-                    "text-right text-[#616161] font-medium text-sm whitespace-nowrap h-12",
+                    "text-right text-[#212121] font-medium text-[14px] whitespace-nowrap h-14 px-4",
                     col.className
                   )}
                 >
@@ -81,14 +82,17 @@ export default function DataTable({
                 key={row.id || rowIdx}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
-                  "transition-colors",
+                  "transition-colors border-b border-[#E0E0E0]",
                   onRowClick && "cursor-pointer hover:bg-[#FAFAFA]"
                 )}
               >
                 {columns.map((col, colIdx) => (
                   <TableCell 
                     key={colIdx}
-                    className={cn("whitespace-nowrap body-2 h-14", col.cellClassName)}
+                    className={cn(
+                      "whitespace-nowrap text-[14px] text-[#212121] h-16 px-4",
+                      col.cellClassName
+                    )}
                   >
                     {col.cell ? col.cell(row) : row[col.accessor]}
                   </TableCell>
