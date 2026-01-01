@@ -32,6 +32,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
     { name: 'אוטומציה', href: 'AutomationSettings', icon: Settings },
     { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Settings },
+    { name: 'הגדרות התראות', href: 'NotificationSettings', icon: Settings },
     { name: 'הגדרות', href: 'Settings', icon: Settings },
   ];
 
