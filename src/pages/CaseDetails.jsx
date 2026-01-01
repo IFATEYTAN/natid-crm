@@ -144,6 +144,26 @@ export default function CaseDetails() {
       previous_value: previousStatus,
       new_value: newStatus
     });
+
+    // Send SMS notification to customer
+    try {
+      const smsMessages = {
+        assigned: 'הקריאה שלך שובצה לטיפול. הספק בדרך אליך.',
+        en_route: 'הספק בדרך למיקומך. זמן הגעה משוער: 20-30 דקות.',
+        on_site: 'הספק הגיע למיקום.',
+        completed: 'הטיפול הושלם. תודה שבחרת בנתי שירותי דרך!'
+      };
+      
+      if (smsMessages[newStatus] && caseData?.caller_phone) {
+        await base44.functions.invoke('sendSMS', {
+          phone: caseData.caller_phone,
+          message: smsMessages[newStatus],
+          callId: caseId
+        });
+      }
+    } catch (smsError) {
+      console.log('SMS not sent:', smsError.message);
+    }
   };
 
   const handleAssignProvider = async (providerId) => {

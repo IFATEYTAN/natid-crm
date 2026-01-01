@@ -196,6 +196,19 @@ Deno.serve(async (req) => {
       changed_by: 'בוט'
     });
     
+    // Try auto-assign vendor if automation is enabled
+    try {
+      const autoAssignResult = await base44.functions.invoke('autoAssignVendor', {
+        callId: call.id
+      });
+      
+      if (autoAssignResult?.data?.success) {
+        console.log('Vendor auto-assigned:', autoAssignResult.data.vendor.name);
+      }
+    } catch (autoAssignError) {
+      console.log('Auto-assign not triggered:', autoAssignError.message);
+    }
+
     // Send SMS to customer
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
