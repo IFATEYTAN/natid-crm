@@ -393,7 +393,7 @@ export default function NotificationSettings() {
                         />
                         <Input
                           type="number"
-                          placeholder="רדיוס (ק\"מ)"
+                          placeholder="רדיוס (קמ)"
                           value={editingNotification.conditions.radius || ''}
                           onChange={(e) => setEditingNotification({
                             ...editingNotification,
