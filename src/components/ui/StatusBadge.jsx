@@ -27,8 +27,8 @@ const statusConfig = {
   },
   assigning: { 
     label: 'בשיוך', 
-    bg: 'bg-[#E3F2FD]', 
-    text: 'text-[#0288D1]',
+    bg: 'bg-[#FFE6E6]', 
+    text: 'text-[#FF0000]',
     icon: UserPlus
   },
   vendor_enroute: { 
@@ -39,8 +39,8 @@ const statusConfig = {
   },
   in_progress: { 
     label: 'בטיפול', 
-    bg: 'bg-[#E3F2FD]', 
-    text: 'text-[#0288D1]',
+    bg: 'bg-[#FFE6E6]', 
+    text: 'text-[#FF0000]',
     icon: Wrench
   },
   completed: { 
