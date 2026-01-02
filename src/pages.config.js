@@ -1,3 +1,4 @@
+import AllVendorsMap from './pages/AllVendorsMap';
 import AutomationSettings from './pages/AutomationSettings';
 import BotIntegration from './pages/BotIntegration';
 import CallDetailsVendor from './pages/CallDetailsVendor';
@@ -11,22 +12,22 @@ import MyCallsVendor from './pages/MyCallsVendor';
 import MyQueue from './pages/MyQueue';
 import NewCase from './pages/NewCase';
 import NotificationSettings from './pages/NotificationSettings';
+import OperatorDashboard from './pages/OperatorDashboard';
 import QueueMonitor from './pages/QueueMonitor';
 import QueueSettings from './pages/QueueSettings';
 import Reports from './pages/Reports';
 import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
+import UserManagement from './pages/UserManagement';
 import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
-import AllVendorsMap from './pages/AllVendorsMap';
-import OperatorDashboard from './pages/OperatorDashboard';
-import UserManagement from './pages/UserManagement';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AllVendorsMap": AllVendorsMap,
     "AutomationSettings": AutomationSettings,
     "BotIntegration": BotIntegration,
     "CallDetailsVendor": CallDetailsVendor,
@@ -40,18 +41,17 @@ export const PAGES = {
     "MyQueue": MyQueue,
     "NewCase": NewCase,
     "NotificationSettings": NotificationSettings,
+    "OperatorDashboard": OperatorDashboard,
     "QueueMonitor": QueueMonitor,
     "QueueSettings": QueueSettings,
     "Reports": Reports,
     "ServiceProviders": ServiceProviders,
     "Settings": Settings,
+    "UserManagement": UserManagement,
     "VendorMap": VendorMap,
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
-    "AllVendorsMap": AllVendorsMap,
-    "OperatorDashboard": OperatorDashboard,
-    "UserManagement": UserManagement,
 }
 
 export const pagesConfig = {

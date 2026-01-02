@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -11,20 +13,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download } from 'lucide-react';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { Download, Filter, X, TrendingUp } from 'lucide-react';
+import { format, subDays, startOfDay, endOfDay, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { toast } from 'sonner';
 import VendorPerformanceReport from '@/components/reports/VendorPerformanceReport';
 import SLAReport from '@/components/reports/SLAReport';
 import RevenueReport from '@/components/reports/RevenueReport';
+import CallStatusChart from '@/components/reports/CallStatusChart';
+import LiveResponseTimeChart from '@/components/reports/LiveResponseTimeChart';
 
 export default function Reports() {
   const [dateRange, setDateRange] = useState('30');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [selectedVendor, setSelectedVendor] = useState('all');
+  const [selectedCustomer, setSelectedCustomer] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   // Fetch data
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors-report'],
     queryFn: () => base44.entities.Vendor.list()
+  });
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers-report'],
+    queryFn: () => base44.entities.Customer.list()
   });
 
   const { data: calls = [] } = useQuery({
@@ -43,14 +59,38 @@ export default function Reports() {
   });
 
   // Calculate date range
-  const startDate = startOfDay(subDays(new Date(), parseInt(dateRange)));
-  const endDate = endOfDay(new Date());
+  const getDateRange = () => {
+    if (customStartDate && customEndDate) {
+      return {
+        startDate: startOfDay(new Date(customStartDate)),
+        endDate: endOfDay(new Date(customEndDate))
+      };
+    }
+    return {
+      startDate: startOfDay(subDays(new Date(), parseInt(dateRange))),
+      endDate: endOfDay(new Date())
+    };
+  };
 
-  // Filter by date
-  const filteredCalls = calls.filter(c => {
-    if (!c.created_date) return false;
-    const date = new Date(c.created_date);
-    return date >= startDate && date <= endDate;
+  const { startDate, endDate } = getDateRange();
+
+  // Apply filters
+  const filteredCalls = calls.filter(call => {
+    // Date filter
+    if (!call.created_date) return false;
+    const date = new Date(call.created_date);
+    if (date < startDate || date > endDate) return false;
+
+    // Vendor filter
+    if (selectedVendor !== 'all' && call.assigned_vendor_id !== selectedVendor) return false;
+
+    // Customer filter  
+    if (selectedCustomer !== 'all' && call.customer_name !== selectedCustomer) return false;
+
+    // Status filter
+    if (selectedStatus !== 'all' && call.call_status !== selectedStatus) return false;
+
+    return true;
   });
 
   const filteredRatings = ratings.filter(r => {
@@ -68,14 +108,14 @@ export default function Reports() {
   // Export to CSV
   const exportToCSV = (data, filename, headers) => {
     if (!data || data.length === 0) {
-      alert('אין נתונים לייצוא');
+      toast.error('אין נתונים לייצוא');
       return;
     }
 
     const csvHeaders = headers || Object.keys(data[0]);
     const csvRows = data.map(row => 
       csvHeaders.map(header => {
-        const value = row[header];
+        const value = row[header] ?? '';
         return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
       }).join(',')
     );
@@ -86,57 +126,267 @@ export default function Reports() {
     link.href = URL.createObjectURL(blob);
     link.download = `${filename}_${format(new Date(), 'dd-MM-yyyy')}.csv`;
     link.click();
+    toast.success('הדוח יוצא בהצלחה');
   };
 
+  // Export all calls
+  const exportAllCallsCSV = () => {
+    const data = filteredCalls.map(call => ({
+      'מספר_קריאה': call.call_number || call.id.slice(-6),
+      'תאריך': format(new Date(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he }),
+      'לקוח': call.customer_name,
+      'טלפון': call.customer_phone,
+      'סוג_תקלה': call.issue_type,
+      'אזור': call.pickup_location_area,
+      'כתובת': call.pickup_location_address,
+      'סטטוס': call.call_status,
+      'ספק_משובץ': call.assigned_vendor_name || '-',
+      'עדיפות': call.call_priority,
+      'זמן_תגובה_דקות': call.time_to_vendor_assignment || '-',
+      'זמן_השלמה_דקות': call.time_to_completion || '-',
+      'עלות': call.cost_to_vendor || '-'
+    }));
+    exportToCSV(data, 'כל_הקריאות');
+  };
 
+  const resetFilters = () => {
+    setDateRange('30');
+    setCustomStartDate('');
+    setCustomEndDate('');
+    setSelectedVendor('all');
+    setSelectedCustomer('all');
+    setSelectedStatus('all');
+  };
+
+  const activeFiltersCount = [
+    customStartDate && customEndDate ? 1 : 0,
+    selectedVendor !== 'all' ? 1 : 0,
+    selectedCustomer !== 'all' ? 1 : 0,
+    selectedStatus !== 'all' ? 1 : 0
+  ].reduce((a, b) => a + b, 0);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-[32px] font-bold text-[#0078D4]">דוחות מתקדמים</h1>
-          <p className="text-[#616161] text-sm">ניתוח מקיף של ביצועים, SLA והכנסות</p>
+          <p className="text-[#616161] text-sm">
+            ניתוח מקיף של ביצועים, SLA והכנסות • {filteredCalls.length} קריאות
+          </p>
         </div>
-        <Select value={dateRange} onValueChange={setDateRange}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7">7 ימים</SelectItem>
-            <SelectItem value="14">14 ימים</SelectItem>
-            <SelectItem value="30">30 ימים</SelectItem>
-            <SelectItem value="90">90 ימים</SelectItem>
-            <SelectItem value="180">6 חודשים</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2"
+          >
+            <Filter className="w-4 h-4" />
+            פילטרים
+            {activeFiltersCount > 0 && (
+              <span className="bg-[#0078D4] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                {activeFiltersCount}
+              </span>
+            )}
+          </Button>
+          <Button
+            className="bg-[#2E7D32] hover:bg-[#1B5E20] gap-2"
+            onClick={exportAllCallsCSV}
+          >
+            <Download className="w-4 h-4" />
+            ייצא הכל
+          </Button>
+        </div>
       </div>
 
-      {/* Summary */}
+      {/* Filters Panel */}
+      {showFilters && (
+        <Card className="border-[#0078D4]/20 bg-[#E3F2FD]/30">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Date Range */}
+              <div>
+                <Label>טווח תאריכים</Label>
+                <Select value={dateRange} onValueChange={setDateRange}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">7 ימים אחרונים</SelectItem>
+                    <SelectItem value="14">14 ימים אחרונים</SelectItem>
+                    <SelectItem value="30">30 ימים אחרונים</SelectItem>
+                    <SelectItem value="90">90 ימים אחרונים</SelectItem>
+                    <SelectItem value="180">6 חודשים</SelectItem>
+                    <SelectItem value="365">שנה</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Custom Start Date */}
+              <div>
+                <Label>מתאריך</Label>
+                <Input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Custom End Date */}
+              <div>
+                <Label>עד תאריך</Label>
+                <Input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Vendor Filter */}
+              <div>
+                <Label>ספק</Label>
+                <Select value={selectedVendor} onValueChange={setSelectedVendor}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל הספקים</SelectItem>
+                    {vendors.map(v => (
+                      <SelectItem key={v.id} value={v.id}>{v.vendor_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Customer Filter */}
+              <div>
+                <Label>לקוח</Label>
+                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל הלקוחות</SelectItem>
+                    {[...new Set(calls.map(c => c.customer_name))].filter(Boolean).map(name => (
+                      <SelectItem key={name} value={name}>{name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <Label>סטטוס קריאה</Label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל הסטטוסים</SelectItem>
+                    <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
+                    <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
+                    <SelectItem value="assigning">בשיוך</SelectItem>
+                    <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
+                    <SelectItem value="in_progress">בטיפול</SelectItem>
+                    <SelectItem value="completed">הושלם</SelectItem>
+                    <SelectItem value="cancelled">בוטל</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Reset Button */}
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={resetFilters}
+                  className="w-full gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  אפס פילטרים
+                </Button>
+              </div>
+            </div>
+
+            {/* Active Filters Display */}
+            {activeFiltersCount > 0 && (
+              <div className="mt-4 pt-4 border-t border-[#E0E0E0]">
+                <p className="text-sm text-[#616161] mb-2">פילטרים פעילים:</p>
+                <div className="flex flex-wrap gap-2">
+                  {customStartDate && customEndDate && (
+                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                      תאריך: {format(new Date(customStartDate), 'dd/MM/yy')} - {format(new Date(customEndDate), 'dd/MM/yy')}
+                    </span>
+                  )}
+                  {selectedVendor !== 'all' && (
+                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                      ספק: {vendors.find(v => v.id === selectedVendor)?.vendor_name}
+                    </span>
+                  )}
+                  {selectedCustomer !== 'all' && (
+                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                      לקוח: {selectedCustomer}
+                    </span>
+                  )}
+                  {selectedStatus !== 'all' && (
+                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                      סטטוס: {selectedStatus}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="card-hover">
           <CardContent className="pt-6">
             <div className="text-sm text-[#616161]">סה"כ קריאות</div>
-            <div className="text-2xl font-bold text-[#212121] mt-1">{filteredCalls.length}</div>
+            <div className="text-3xl font-bold text-[#0078D4] mt-1">{filteredCalls.length}</div>
+            <p className="text-xs text-[#616161] mt-2">
+              {Math.round((filteredCalls.length / calls.length) * 100)}% מכלל הקריאות
+            </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="card-hover">
           <CardContent className="pt-6">
             <div className="text-sm text-[#616161]">ספקים פעילים</div>
-            <div className="text-2xl font-bold text-[#212121] mt-1">{vendors.length}</div>
+            <div className="text-3xl font-bold text-[#2E7D32] mt-1">
+              {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
+            </div>
+            <p className="text-xs text-[#616161] mt-2">מתוך {vendors.length} ספקים</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="card-hover">
           <CardContent className="pt-6">
-            <div className="text-sm text-[#616161]">דירוגים</div>
-            <div className="text-2xl font-bold text-[#212121] mt-1">{filteredRatings.length}</div>
+            <div className="text-sm text-[#616161]">דירוג ממוצע</div>
+            <div className="text-3xl font-bold text-[#ED6C02] mt-1">
+              {filteredRatings.length > 0 
+                ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
+                : '0.0'}
+            </div>
+            <p className="text-xs text-[#616161] mt-2">{filteredRatings.length} דירוגים</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="card-hover">
           <CardContent className="pt-6">
-            <div className="text-sm text-[#616161]">תשלומים</div>
-            <div className="text-2xl font-bold text-[#212121] mt-1">{filteredPayments.length}</div>
+            <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
+            <div className="text-3xl font-bold text-[#2E7D32] mt-1">
+              ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+            </div>
+            <p className="text-xs text-[#616161] mt-2">{filteredPayments.length} תשלומים</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Live Charts */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        <CallStatusChart calls={filteredCalls} />
+        <LiveResponseTimeChart calls={filteredCalls} vendors={vendors} />
       </div>
 
       {/* Report Tabs */}
@@ -156,7 +406,8 @@ export default function Reports() {
                   'שם_ספק': v.vendor_name,
                   'סה_כ_קריאות': filteredCalls.filter(c => c.assigned_vendor_id === v.id).length,
                   'קריאות_הושלמו': filteredCalls.filter(c => c.assigned_vendor_id === v.id && c.call_status === 'completed').length,
-                  'דירוג_ממוצע': v.average_rating || 0
+                  'דירוג_ממוצע': v.average_rating || 0,
+                  'זמן_תגובה_ממוצע': v.average_response_time || 0
                 }));
                 exportToCSV(data, 'דוח_ביצועי_ספקים');
               }}
@@ -183,7 +434,7 @@ export default function Reports() {
                   'סוג_תקלה': c.issue_type,
                   'זמן_תגובה': c.time_to_vendor_assignment,
                   'יעד_SLA': c.sla_target,
-                  'עמד_ב_SLA': c.time_to_vendor_assignment <= c.sla_target ? 'כן' : 'לא'
+                  'עמד_ב_SLA': c.time_to_vendor_assignment && c.sla_target ? (c.time_to_vendor_assignment <= c.sla_target ? 'כן' : 'לא') : '-'
                 }));
                 exportToCSV(data, 'דוח_SLA');
               }}
