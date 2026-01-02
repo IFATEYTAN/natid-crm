@@ -200,7 +200,7 @@ export default function Reports() {
 
       {/* Filters Panel */}
       {showFilters && (
-        <Card className="border-[#0078D4]/20 bg-[#E3F2FD]/30">
+        <Card className="border-[#E0E0E0] bg-white">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Date Range */}
@@ -345,7 +345,7 @@ export default function Reports() {
         <Card className="card-hover">
           <CardContent className="pt-6">
             <div className="text-sm text-[#616161]">סה"כ קריאות</div>
-            <div className="text-3xl font-bold text-[#0078D4] mt-1">{filteredCalls.length}</div>
+            <div className="text-3xl font-bold text-[#212121] mt-1">{filteredCalls.length}</div>
             <p className="text-xs text-[#616161] mt-2">
               {Math.round((filteredCalls.length / calls.length) * 100)}% מכלל הקריאות
             </p>
@@ -363,7 +363,7 @@ export default function Reports() {
         <Card className="card-hover">
           <CardContent className="pt-6">
             <div className="text-sm text-[#616161]">דירוג ממוצע</div>
-            <div className="text-3xl font-bold text-[#ED6C02] mt-1">
+            <div className="text-3xl font-bold text-[#212121] mt-1">
               {filteredRatings.length > 0 
                 ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
                 : '0.0'}

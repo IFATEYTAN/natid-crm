@@ -361,7 +361,7 @@ export default function CaseDetails() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <User className="w-4 h-4 text-[#0D47A1]" />
+                <User className="w-4 h-4 text-[#212121]" />
                 פרטי לקוח ומתקשר
               </CardTitle>
             </CardHeader>
@@ -390,7 +390,7 @@ export default function CaseDetails() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <Car className="w-4 h-4 text-[#0D47A1]" />
+                <Car className="w-4 h-4 text-[#212121]" />
                 פרטי רכב
               </CardTitle>
             </CardHeader>
@@ -416,7 +416,7 @@ export default function CaseDetails() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#0D47A1]" />
+                <MapPin className="w-4 h-4 text-[#212121]" />
                 מיקום
               </CardTitle>
             </CardHeader>
@@ -447,7 +447,7 @@ export default function CaseDetails() {
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Wrench className="w-4 h-4 text-[#0D47A1]" />
+                  <Wrench className="w-4 h-4 text-[#212121]" />
                   תיאור התקלה
                 </CardTitle>
               </CardHeader>
@@ -461,7 +461,7 @@ export default function CaseDetails() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-[#0D47A1]" />
+                <MessageSquare className="w-4 h-4 text-[#212121]" />
                 הוסף הערה
               </CardTitle>
             </CardHeader>
@@ -496,7 +496,7 @@ export default function CaseDetails() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#0D47A1]" />
+                <Clock className="w-4 h-4 text-[#212121]" />
                 SLA
               </CardTitle>
             </CardHeader>
@@ -540,7 +540,7 @@ export default function CaseDetails() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <Truck className="w-4 h-4 text-[#0D47A1]" />
+                <Truck className="w-4 h-4 text-[#212121]" />
                 נותן שירות
               </CardTitle>
             </CardHeader>

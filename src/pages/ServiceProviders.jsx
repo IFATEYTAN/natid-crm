@@ -165,8 +165,8 @@ export default function ServiceProviders() {
       accessor: 'vendor_name',
       cell: (row) => (
         <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="flex items-center gap-2 hover:underline">
-          <div className="w-8 h-8 rounded-full bg-[#0D47A1]/10 flex items-center justify-center">
-            <Truck className="w-4 h-4 text-[#0D47A1]" />
+          <div className="w-8 h-8 rounded-full bg-[#F5F5F5] flex items-center justify-center">
+            <Truck className="w-4 h-4 text-[#212121]" />
           </div>
           <div>
             <div className="font-medium text-[#212121]">{row.vendor_name}</div>

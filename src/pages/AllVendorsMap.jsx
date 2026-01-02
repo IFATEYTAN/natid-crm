@@ -182,7 +182,7 @@ export default function AllVendorsMap() {
           {/* Sidebar Header */}
           <div className="p-4 border-b border-[#E0E0E0]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-[#0078D4]">
+              <h2 className="text-[24px] font-bold text-[#212121]">
                 🗺️ מעקב ספקים
               </h2>
               <Button 

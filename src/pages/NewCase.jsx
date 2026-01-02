@@ -130,7 +130,7 @@ export default function NewCase() {
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div>
-          <h2 className="text-xl font-bold text-[#212121]">קריאה חדשה</h2>
+          <h2 className="text-[32px] font-bold text-[#212121]">קריאה חדשה</h2>
           <p className="text-[#616161] text-sm">מלא את פרטי הקריאה</p>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function NewCase() {
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base flex items-center gap-2">
-              <User className="w-4 h-4 text-[#0D47A1]" />
+              <User className="w-4 h-4 text-[#212121]" />
               פרטי לקוח ומתקשר
             </CardTitle>
           </CardHeader>
@@ -198,7 +198,7 @@ export default function NewCase() {
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base flex items-center gap-2">
-              <Car className="w-4 h-4 text-[#0D47A1]" />
+              <Car className="w-4 h-4 text-[#212121]" />
               פרטי רכב
             </CardTitle>
           </CardHeader>
@@ -244,7 +244,7 @@ export default function NewCase() {
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#0D47A1]" />
+              <MapPin className="w-4 h-4 text-[#212121]" />
               מיקום
             </CardTitle>
           </CardHeader>
@@ -289,7 +289,7 @@ export default function NewCase() {
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-[#0D47A1]" />
+              <Wrench className="w-4 h-4 text-[#212121]" />
               פרטי שירות
             </CardTitle>
           </CardHeader>

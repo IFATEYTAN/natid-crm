@@ -195,7 +195,7 @@ export default function VendorProfile() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-[32px] font-bold text-[#0078D4]">{vendor.vendor_name}</h1>
+            <h1 className="text-[32px] font-bold text-[#212121]">{vendor.vendor_name}</h1>
             <div className="flex items-center gap-3 mt-1">
               <StatusBadge status={vendor.availability_status || (vendor.is_available_now ? 'available' : 'offline')} />
               {location && (
