@@ -167,7 +167,7 @@ export default function QueueMonitor() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[32px] font-bold text-[#0078D4]">ניטור תורי עבודה</h1>
+        <h1 className="text-[32px] font-bold text-[#212121]">ניטור תורי עבודה</h1>
         <p className="text-[#616161] text-sm">מסך מנהל משמרת - תצוגת נציגים ותורים</p>
       </div>
 

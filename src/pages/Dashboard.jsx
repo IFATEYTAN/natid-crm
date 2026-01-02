@@ -67,21 +67,21 @@ function WorkQueueOverview({ calls, isLoading }) {
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-3 bg-[#FFF4E5] rounded-lg">
+        <div className="text-center p-4 bg-white border-l-4 border-l-[#ED6C02] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
           <p className="text-2xl font-bold text-[#ED6C02]">{waitingInQueue}</p>
-          <p className="text-xs text-[#616161]">בתור</p>
+          <p className="text-sm text-[#616161] font-medium">בתור</p>
         </div>
-        <div className="text-center p-3 bg-[#E3F2FD] rounded-lg">
+        <div className="text-center p-4 bg-white border-l-4 border-l-[#0288D1] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
           <p className="text-2xl font-bold text-[#0288D1]">{assignedToAgents}</p>
-          <p className="text-xs text-[#616161]">משובץ</p>
+          <p className="text-sm text-[#616161] font-medium">משובץ</p>
         </div>
-        <div className="text-center p-3 bg-[#E8F5E9] rounded-lg">
+        <div className="text-center p-4 bg-white border-l-4 border-l-[#2E7D32] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
           <p className="text-2xl font-bold text-[#2E7D32]">{inProgress}</p>
-          <p className="text-xs text-[#616161]">בטיפול</p>
+          <p className="text-sm text-[#616161] font-medium">בטיפול</p>
         </div>
-        <div className="text-center p-3 bg-[#F5F5F5] rounded-lg">
+        <div className="text-center p-4 bg-white border-l-4 border-l-[#616161] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
           <p className="text-2xl font-bold text-[#616161]">{avgTime}'</p>
-          <p className="text-xs text-[#616161]">ממוצע</p>
+          <p className="text-sm text-[#616161] font-medium">ממוצע</p>
         </div>
       </div>
 
@@ -240,11 +240,11 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[32px] font-bold text-[#0D47A1] leading-tight">לוח בקרה</h1>
+          <h1 className="text-[32px] font-bold text-[#212121] leading-tight">לוח בקרה</h1>
           <p className="text-[#616161] text-sm body-2 mt-1">סקירת מצב מערכת</p>
         </div>
         <Link to={createPageUrl('NewCall')}>
-          <Button className="bg-[#0D47A1] hover:bg-[#1565C0] text-white gap-2 rounded-[4px]">
+          <Button className="bg-[#FF0000] hover:bg-[#CC0000] text-white gap-2 rounded-[4px] font-bold">
             <Plus className="w-5 h-5" strokeWidth={2} />
             קריאה חדשה
           </Button>
