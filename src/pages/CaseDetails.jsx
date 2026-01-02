@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import confetti from 'canvas-confetti';
 import {
   Select,
   SelectContent,
@@ -229,6 +230,31 @@ export default function CaseDetails() {
 
     // Update provider status
     await base44.entities.ServiceProvider.update(providerId, { status: 'busy' });
+    
+    // Celebration confetti!
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#FF0000', '#FFD700', '#00FF00']
+    });
+    
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#FF0000', '#FFD700']
+      });
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#FF0000', '#FFD700']
+      });
+    }, 250);
     
     setIsAssignDialogOpen(false);
   };
