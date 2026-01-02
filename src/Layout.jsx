@@ -25,6 +25,7 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigation = [
+    { name: 'תפריט מוקדן', href: 'OperatorDashboard', icon: LayoutDashboard },
     { name: 'לוח בקרה', href: 'Dashboard', icon: LayoutDashboard },
     { name: 'קריאות שירות', href: 'Cases', icon: FileText },
     { name: 'ניטור תורים', href: 'QueueMonitor', icon: LayoutDashboard },
