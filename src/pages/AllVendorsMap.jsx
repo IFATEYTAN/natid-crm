@@ -173,7 +173,7 @@ export default function AllVendorsMap() {
       {/* Sidebar */}
       <div 
         className={`
-          absolute right-0 top-0 bottom-0 w-96 bg-white border-l border-[#E0E0E0] 
+          fixed right-0 top-16 bottom-0 w-96 bg-white border-l border-[#E0E0E0] 
           shadow-lg z-[1000] transition-transform duration-300
           ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
