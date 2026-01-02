@@ -400,27 +400,27 @@ export default function AccessibilityWidget() {
         
         @media (max-width: 768px) {
           .accessibility-widget {
-            bottom: 80px;
+            bottom: 100px;
             left: 16px;
           }
           
           .accessibility-button {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
           }
           
           .accessibility-button svg {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
           }
           
           .accessibility-menu {
             position: fixed;
-            bottom: 140px;
+            bottom: 160px;
             left: 16px;
             right: 16px;
             width: auto;
-            max-height: calc(100vh - 180px);
+            max-height: calc(100vh - 200px);
           }
         }
       `}</style>
