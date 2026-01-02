@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
-
+import AccessibilityWidget from '@/components/AccessibilityWidget';
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -254,7 +254,10 @@ export default function Layout({ children, currentPageName }) {
         <main className="p-4 md:p-6">
           {children}
         </main>
-      </div>
-    </div>
-  );
-}
+        </div>
+
+        {/* Accessibility Widget */}
+        <AccessibilityWidget />
+        </div>
+        );
+        }
