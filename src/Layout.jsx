@@ -57,7 +57,7 @@ export default function Layout({ children, currentPageName }) {
         h1 {
           font-size: 32px;
           font-weight: 700;
-          color: #0D47A1;
+          color: #212121;
           line-height: 1.2;
         }
         
@@ -147,8 +147,8 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center gap-3">
             <img 
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-              alt="נתי לוגו" 
-              className="h-10 w-auto object-contain"
+              alt="נתי" 
+              className="h-12 w-auto object-contain"
             />
           </div>
           <Button 
@@ -173,8 +173,8 @@ export default function Layout({ children, currentPageName }) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-[4px] text-base font-medium transition-all duration-200",
                   isActive 
-                    ? "bg-[#0078D4] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]" 
-                    : "text-[#616161] hover:bg-[#FAFAFA] hover:text-[#212121]"
+                    ? "bg-[#FF0000] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)] font-semibold" 
+                    : "text-[#616161] hover:bg-[#FFF5F5] hover:text-[#212121]"
                 )}
               >
                 <item.icon className="w-5 h-5" />
@@ -188,7 +188,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="absolute bottom-20 left-4 right-4">
           <Link to={createPageUrl('NewCase')}>
             <Button 
-              className="w-full bg-[#0078D4] hover:bg-[#1976D2] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5"
+              className="w-full bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold"
             >
               <Plus className="w-5 h-5" />
               קריאה חדשה
@@ -228,24 +228,21 @@ export default function Layout({ children, currentPageName }) {
                 alt="נתי" 
                 className="h-8 w-auto object-contain lg:hidden"
               />
-              <h2 className="text-xl md:text-2xl font-semibold text-[#212121] leading-tight">
-                {navigation.find(n => n.href === currentPageName)?.name || 'נתי שירותי דרך'}
-              </h2>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             {/* Emergency Phone */}
             <a 
-              href="tel:*6283"
-              className="hidden md:flex items-center gap-2 bg-[#E3F2FD] text-[#0078D4] px-4 py-2 rounded-[4px] font-medium text-sm hover:bg-[#BBDEFB] transition-colors"
+              href="tel:*8808"
+              className="hidden md:flex items-center gap-2 bg-[#FF0000] text-white px-4 py-2 rounded-[4px] font-bold text-sm hover:bg-[#CC0000] transition-colors shadow-md"
             >
               <Phone className="w-4 h-4" strokeWidth={2} />
-              <span className="font-semibold">*6283</span>
+              <span className="font-bold">*8808</span>
             </a>
             
             {/* User Avatar Placeholder */}
-            <div className="w-10 h-10 rounded-full bg-[#0078D4] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-[#FF0000] flex items-center justify-center">
               <User className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
           </div>

@@ -7,14 +7,14 @@
 
 /* Root Variables */
 :root {
-  /* Brand Colors - Nati Logo Colors */
-  --color-primary: #0078D4;
-  --color-primary-hover: #1976D2;
-  --color-primary-light: #42A5F5;
-  --color-primary-bg: rgba(0, 120, 212, 0.08);
-  --color-accent: #E63946;
-  --color-accent-hover: #D32F2F;
-  --color-accent-bg: rgba(230, 57, 70, 0.08);
+  /* Brand Colors - Nati Red Theme */
+  --color-primary: #FF0000;
+  --color-primary-hover: #CC0000;
+  --color-primary-light: #FF3333;
+  --color-primary-bg: rgba(255, 0, 0, 0.08);
+  --color-accent: #000000;
+  --color-accent-hover: #333333;
+  --color-accent-bg: rgba(0, 0, 0, 0.05);
   
   /* Status Colors */
   --color-success: #2E7D32;
