@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import StatusBadge from '@/components/ui/StatusBadge';
+import NavigationMap from '@/components/maps/NavigationMap';
+import LiveLocationTracker from '@/components/maps/LiveLocationTracker';
 import { 
   ArrowRight,
   Phone,
@@ -40,6 +42,7 @@ export default function CallDetailsVendor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [note, setNote] = useState('');
+  const [distanceData, setDistanceData] = useState(null);
 
   const urlParams = new URLSearchParams(window.location.search);
   const callId = urlParams.get('id');
@@ -61,6 +64,24 @@ export default function CallDetailsVendor() {
   });
 
   const currentVendor = vendors.find(v => v.email === user?.email);
+
+  // Calculate distance and ETA
+  useEffect(() => {
+    const calculateDistance = async () => {
+      if (call && currentVendor && call.pickup_location_lat && call.pickup_location_lon) {
+        try {
+          const result = await base44.functions.invoke('calculateDistanceAndETA', {
+            callId: call.id,
+            vendorId: currentVendor.id
+          });
+          setDistanceData(result.data);
+        } catch (error) {
+          console.error('Failed to calculate distance:', error);
+        }
+      }
+    };
+    calculateDistance();
+  }, [call, currentVendor]);
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ status, additionalData = {} }) => {
@@ -131,6 +152,39 @@ export default function CallDetailsVendor() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      {/* Live Location Tracker */}
+      {currentVendor && (
+        <LiveLocationTracker 
+          vendorId={currentVendor.id}
+          onLocationUpdate={() => {
+            // Recalculate distance when location updates
+            if (call?.id && currentVendor?.id) {
+              base44.functions.invoke('calculateDistanceAndETA', {
+                callId: call.id,
+                vendorId: currentVendor.id
+              }).then(result => setDistanceData(result.data)).catch(console.error);
+            }
+          }}
+        />
+      )}
+
+      {/* Navigation Map */}
+      {call?.pickup_location_lat && call?.pickup_location_lon && distanceData && (
+        <NavigationMap
+          vendorLocation={distanceData.vendorLocation}
+          callLocation={{
+            lat: call.pickup_location_lat,
+            lon: call.pickup_location_lon,
+            address: call.pickup_location_address
+          }}
+          distance={distanceData.roadDistance}
+          duration={distanceData.duration}
+          onNavigate={() => {
+            window.open(distanceData.navigationUrl, '_blank');
+          }}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button 
@@ -283,15 +337,18 @@ export default function CallDetailsVendor() {
           <div>
             <p className="text-sm text-[#616161] mb-1">כתובת איסוף</p>
             <p className="font-medium">{call.pickup_location_address}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2"
-              onClick={() => openNavigation(call.pickup_location_address)}
-            >
-              <Navigation className="w-3 h-3 mr-1" />
-              ניווט
-            </Button>
+            {distanceData && (
+              <div className="mt-3 space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#616161]">מרחק:</span>
+                  <span className="font-medium">{distanceData.roadDistance} ק"מ</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#616161]">זמן נסיעה:</span>
+                  <span className="font-medium">{distanceData.duration} דק'</span>
+                </div>
+              </div>
+            )}
           </div>
           {call.dropoff_location_address && (
             <div>
