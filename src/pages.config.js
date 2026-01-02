@@ -10,6 +10,7 @@ import IntegrationSettings from './pages/IntegrationSettings';
 import MyCallsVendor from './pages/MyCallsVendor';
 import MyQueue from './pages/MyQueue';
 import NewCase from './pages/NewCase';
+import NotificationSettings from './pages/NotificationSettings';
 import QueueMonitor from './pages/QueueMonitor';
 import QueueSettings from './pages/QueueSettings';
 import Reports from './pages/Reports';
@@ -18,7 +19,7 @@ import Settings from './pages/Settings';
 import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
-import NotificationSettings from './pages/NotificationSettings';
+import VendorProfile from './pages/VendorProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -35,6 +36,7 @@ export const PAGES = {
     "MyCallsVendor": MyCallsVendor,
     "MyQueue": MyQueue,
     "NewCase": NewCase,
+    "NotificationSettings": NotificationSettings,
     "QueueMonitor": QueueMonitor,
     "QueueSettings": QueueSettings,
     "Reports": Reports,
@@ -43,7 +45,7 @@ export const PAGES = {
     "VendorMap": VendorMap,
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
-    "NotificationSettings": NotificationSettings,
+    "VendorProfile": VendorProfile,
 }
 
 export const pagesConfig = {
