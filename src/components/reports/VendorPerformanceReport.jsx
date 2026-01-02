@@ -124,25 +124,25 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">סה"כ ספקים</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">{vendors.length}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">ממוצע קריאות לספק</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">
               {vendors.length > 0 ? Math.round(calls.length / vendors.length) : 0}
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">דירוג ממוצע כללי</div>
-            <div className="text-2xl font-bold text-[#212121] mt-1 flex items-center gap-2">
+            <div className="text-2xl font-bold text-[#212121] mt-1 flex items-center justify-end gap-2">
               {ratings.length > 0 
                 ? (ratings.reduce((a, b) => a + b.overall_rating, 0) / ratings.length).toFixed(1)
                 : '0'}
@@ -150,8 +150,8 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">ספק מוביל</div>
             <div className="text-xl font-bold text-[#212121] mt-1">
               {vendorStats.length > 0 ? vendorStats[0].vendor_name : '-'}

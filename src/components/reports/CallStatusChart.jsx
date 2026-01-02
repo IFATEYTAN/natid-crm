@@ -115,9 +115,9 @@ export default function CallStatusChart({ calls }) {
   }, [calls]);
 
   return (
-    <Card>
+    <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <CardHeader>
-        <CardTitle className="text-base">התפלגות קריאות לפי סטטוס</CardTitle>
+        <CardTitle className="text-[20px] font-medium text-[#212121]">התפלגות קריאות לפי סטטוס</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="relative" style={{ height: '280px' }}>

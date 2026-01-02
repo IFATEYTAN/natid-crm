@@ -155,33 +155,33 @@ export default function SLAReport({ calls }) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">עמידה כללית ב-SLA</div>
             <div className="text-2xl font-bold text-[#2E7D32] mt-1">{overallSLARate}%</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">קריאות בזמן</div>
-            <div className="text-2xl font-bold text-[#2E7D32] mt-1 flex items-center gap-2">
+            <div className="text-2xl font-bold text-[#2E7D32] mt-1 flex items-center justify-end gap-2">
               {totalOnTime}
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">חריגות SLA</div>
-            <div className="text-2xl font-bold text-[#D32F2F] mt-1 flex items-center gap-2">
+            <div className="text-2xl font-bold text-[#D32F2F] mt-1 flex items-center justify-end gap-2">
               {totalBreached}
               <AlertTriangle className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">אזור עם הכי הרבה חריגות</div>
             <div className="text-xl font-bold text-[#212121] mt-1">
               {areaStats.length > 0 ? areaStats.sort((a, b) => b.breached - a.breached)[0].area : '-'}
@@ -191,21 +191,44 @@ export default function SLAReport({ calls }) {
       </div>
 
       {/* Chart */}
-      <Card>
+      <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <CardHeader>
-          <CardTitle className="text-base">עמידה ב-SLA וזמני תגובה לפי אזור</CardTitle>
+          <CardTitle className="text-[20px] font-medium text-[#212121]">עמידה ב-SLA וזמני תגובה לפי אזור</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="left" />
-              <Tooltip />
-              <Legend />
-              <Bar yAxisId="left" dataKey="עמידה ב-SLA" fill="#2E7D32" />
-              <Bar yAxisId="right" dataKey="זמן תגובה" fill="#0078D4" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
+                stroke="#E0E0E0"
+              />
+              <YAxis 
+                yAxisId="left" 
+                tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
+                stroke="#E0E0E0"
+              />
+              <YAxis 
+                yAxisId="right" 
+                orientation="left" 
+                tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
+                stroke="#E0E0E0"
+              />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E0E0E0',
+                  borderRadius: '4px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  fontFamily: 'Heebo',
+                  fontSize: 14,
+                  direction: 'rtl'
+                }}
+              />
+              <Legend wrapperStyle={{ fontFamily: 'Heebo', fontSize: 12 }} />
+              <Bar yAxisId="left" dataKey="עמידה ב-SLA" fill="#2E7D32" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="right" dataKey="זמן תגובה" fill="#FF0000" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -214,7 +237,7 @@ export default function SLAReport({ calls }) {
       {/* Tables */}
       <div className="grid lg:grid-cols-2 gap-6">
         <div>
-          <h3 className="text-lg font-semibold mb-4">לפי אזור</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4">לפי אזור</h3>
           <DataTable
             columns={areaColumns}
             data={areaStats}
@@ -222,7 +245,7 @@ export default function SLAReport({ calls }) {
           />
         </div>
         <div>
-          <h3 className="text-lg font-semibold mb-4">לפי סוג תקלה</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4">לפי סוג תקלה</h3>
           <DataTable
             columns={issueColumns}
             data={issueStats}

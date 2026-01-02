@@ -172,10 +172,10 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
   }, [calls, vendors]);
 
   return (
-    <Card>
+    <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">זמני תגובה ממוצעים - 10 ספקים מובילים</CardTitle>
+          <CardTitle className="text-[20px] font-medium text-[#212121]">זמני תגובה ממוצעים - 10 ספקים מובילים</CardTitle>
           <div className="flex items-center gap-1 text-xs text-[#2E7D32]">
             <TrendingUp className="w-4 h-4" />
             <span>עדכון בזמן אמת</span>
