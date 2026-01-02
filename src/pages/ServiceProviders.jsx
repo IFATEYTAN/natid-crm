@@ -27,7 +27,8 @@ import {
   Truck,
   Star,
   Edit,
-  Trash2
+  Trash2,
+  Eye
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -48,47 +49,49 @@ export default function ServiceProviders() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    service_type: 'tow_truck',
+    vendor_name: '',
     contact_person: '',
     phone: '',
-    secondary_phone: '',
+    phone_2: '',
     email: '',
-    status: 'available',
-    price_per_km: '',
-    base_price: '',
-    license_number: '',
-    insurance_expiry: '',
-    notes: ''
+    service_type: [],
+    coverage_areas: [],
+    availability_status: 'available',
+    is_active: true,
+    payment_rate_per_call: '',
+    notes: '',
+    working_hours_start: '08:00',
+    working_hours_end: '18:00',
+    works_24_7: false
   });
 
   const queryClient = useQueryClient();
 
   const { data: providers = [], isLoading } = useQuery({
-    queryKey: ['providers'],
-    queryFn: () => base44.entities.ServiceProvider.list('-created_date'),
+    queryKey: ['vendors'],
+    queryFn: () => base44.entities.Vendor.list('-created_date'),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.ServiceProvider.create(data),
+    mutationFn: (data) => base44.entities.Vendor.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['providers'] });
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
       resetForm();
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ServiceProvider.update(id, data),
+    mutationFn: ({ id, data }) => base44.entities.Vendor.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['providers'] });
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
       resetForm();
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.ServiceProvider.delete(id),
+    mutationFn: (id) => base44.entities.Vendor.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['providers'] });
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
     },
   });
 
@@ -96,36 +99,40 @@ export default function ServiceProviders() {
     setIsDialogOpen(false);
     setEditingProvider(null);
     setFormData({
-      name: '',
-      service_type: 'tow_truck',
+      vendor_name: '',
       contact_person: '',
       phone: '',
-      secondary_phone: '',
+      phone_2: '',
       email: '',
-      status: 'available',
-      price_per_km: '',
-      base_price: '',
-      license_number: '',
-      insurance_expiry: '',
-      notes: ''
+      service_type: [],
+      coverage_areas: [],
+      availability_status: 'available',
+      is_active: true,
+      payment_rate_per_call: '',
+      notes: '',
+      working_hours_start: '08:00',
+      working_hours_end: '18:00',
+      works_24_7: false
     });
   };
 
   const handleEdit = (provider) => {
     setEditingProvider(provider);
     setFormData({
-      name: provider.name || '',
-      service_type: provider.service_type || 'tow_truck',
+      vendor_name: provider.vendor_name || '',
       contact_person: provider.contact_person || '',
       phone: provider.phone || '',
-      secondary_phone: provider.secondary_phone || '',
+      phone_2: provider.phone_2 || '',
       email: provider.email || '',
-      status: provider.status || 'available',
-      price_per_km: provider.price_per_km || '',
-      base_price: provider.base_price || '',
-      license_number: provider.license_number || '',
-      insurance_expiry: provider.insurance_expiry || '',
-      notes: provider.notes || ''
+      service_type: provider.service_type || [],
+      coverage_areas: provider.coverage_areas || [],
+      availability_status: provider.availability_status || 'available',
+      is_active: provider.is_active !== undefined ? provider.is_active : true,
+      payment_rate_per_call: provider.payment_rate_per_call || '',
+      notes: provider.notes || '',
+      working_hours_start: provider.working_hours_start || '08:00',
+      working_hours_end: provider.working_hours_end || '18:00',
+      works_24_7: provider.works_24_7 || false
     });
     setIsDialogOpen(true);
   };
@@ -134,8 +141,7 @@ export default function ServiceProviders() {
     e.preventDefault();
     const data = {
       ...formData,
-      price_per_km: formData.price_per_km ? Number(formData.price_per_km) : null,
-      base_price: formData.base_price ? Number(formData.base_price) : null
+      payment_rate_per_call: formData.payment_rate_per_call ? Number(formData.payment_rate_per_call) : null
     };
     
     if (editingProvider) {
@@ -147,68 +153,97 @@ export default function ServiceProviders() {
 
   const filteredProviders = providers.filter(p => {
     const matchesSearch = !search || 
-      p.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.vendor_name?.toLowerCase().includes(search.toLowerCase()) ||
       p.phone?.includes(search);
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || p.availability_status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const columns = [
     {
       header: 'שם',
-      accessor: 'name',
+      accessor: 'vendor_name',
       cell: (row) => (
         <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="flex items-center gap-2 hover:underline">
           <div className="w-8 h-8 rounded-full bg-[#0D47A1]/10 flex items-center justify-center">
             <Truck className="w-4 h-4 text-[#0D47A1]" />
           </div>
-          <span className="font-medium text-[#212121]">{row.name}</span>
+          <div>
+            <div className="font-medium text-[#212121]">{row.vendor_name}</div>
+            {!row.is_active && (
+              <span className="text-xs text-[#D32F2F]">לא פעיל</span>
+            )}
+          </div>
         </Link>
       )
     },
     {
-      header: 'סוג שירות',
+      header: 'סוגי שירות',
       accessor: 'service_type',
-      cell: (row) => serviceTypeLabels[row.service_type] || row.service_type
+      cell: (row) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.service_type || []).slice(0, 2).map((type, idx) => (
+            <span key={idx} className="text-xs bg-[#E3F2FD] text-[#0078D4] px-2 py-1 rounded">
+              {type}
+            </span>
+          ))}
+          {(row.service_type || []).length > 2 && (
+            <span className="text-xs text-[#616161]">+{row.service_type.length - 2}</span>
+          )}
+        </div>
+      )
     },
     {
       header: 'טלפון',
       accessor: 'phone',
       cell: (row) => (
-        <span className="flex items-center gap-1 text-[#616161]">
+        <a href={`tel:${row.phone}`} className="flex items-center gap-1 text-[#0078D4] hover:underline">
           <Phone className="w-3 h-3" />
           {row.phone}
-        </span>
+        </a>
       )
     },
     {
-      header: 'סטטוס',
-      accessor: 'status',
-      cell: (row) => <StatusBadge status={row.status || 'available'} size="sm" />
+      header: 'סטטוס זמינות',
+      accessor: 'availability_status',
+      cell: (row) => <StatusBadge status={row.availability_status || 'available'} size="sm" />
     },
     {
       header: 'דירוג',
-      accessor: 'rating',
-      cell: (row) => row.rating ? (
+      accessor: 'average_rating',
+      cell: (row) => row.average_rating ? (
         <span className="flex items-center gap-1 text-[#ED6C02]">
           <Star className="w-3 h-3 fill-current" />
-          {row.rating.toFixed(1)}
+          {row.average_rating.toFixed(1)}
         </span>
       ) : '-'
     },
     {
-      header: 'עבודות',
-      accessor: 'total_jobs',
-      cell: (row) => row.total_jobs || 0
+      header: 'קריאות',
+      accessor: 'total_calls_completed',
+      cell: (row) => (
+        <div className="text-sm">
+          <div className="font-medium">{row.total_calls_completed || 0}</div>
+          <div className="text-xs text-[#616161]">
+            {row.completion_rate ? `${Math.round(row.completion_rate)}%` : '-'}
+          </div>
+        </div>
+      )
     },
     {
       header: 'פעולות',
       cell: (row) => (
         <div className="flex items-center gap-2">
+          <Link to={createPageUrl('VendorProfile') + '?id=' + row.id}>
+            <Button variant="ghost" size="icon" title="היסטוריה">
+              <Eye className="w-4 h-4 text-[#0078D4]" />
+            </Button>
+          </Link>
           <Button 
             variant="ghost" 
             size="icon"
             onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
+            title="עריכה"
           >
             <Edit className="w-4 h-4 text-[#616161]" />
           </Button>
@@ -217,10 +252,11 @@ export default function ServiceProviders() {
             size="icon"
             onClick={(e) => { 
               e.stopPropagation(); 
-              if (confirm('האם למחוק את נותן השירות?')) {
+              if (confirm('האם למחוק את הספק?')) {
                 deleteMutation.mutate(row.id);
               }
             }}
+            title="מחיקה"
           >
             <Trash2 className="w-4 h-4 text-[#D32F2F]" />
           </Button>
@@ -299,28 +335,12 @@ export default function ServiceProviders() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>שם *</Label>
+                <Label>שם ספק *</Label>
                 <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.vendor_name}
+                  onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
                   required
                 />
-              </div>
-              <div>
-                <Label>סוג שירות</Label>
-                <Select
-                  value={formData.service_type}
-                  onValueChange={(value) => setFormData({ ...formData, service_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(serviceTypeLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
               <div>
                 <Label>איש קשר</Label>
@@ -330,7 +350,7 @@ export default function ServiceProviders() {
                 />
               </div>
               <div>
-                <Label>טלפון *</Label>
+                <Label>טלפון ראשי *</Label>
                 <Input
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -338,10 +358,10 @@ export default function ServiceProviders() {
                 />
               </div>
               <div>
-                <Label>טלפון נוסף</Label>
+                <Label>טלפון משני</Label>
                 <Input
-                  value={formData.secondary_phone}
-                  onChange={(e) => setFormData({ ...formData, secondary_phone: e.target.value })}
+                  value={formData.phone_2}
+                  onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                 />
               </div>
               <div>
@@ -353,10 +373,10 @@ export default function ServiceProviders() {
                 />
               </div>
               <div>
-                <Label>סטטוס</Label>
+                <Label>סטטוס זמינות</Label>
                 <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  value={formData.availability_status}
+                  onValueChange={(value) => setFormData({ ...formData, availability_status: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -365,31 +385,74 @@ export default function ServiceProviders() {
                     <SelectItem value="available">זמין</SelectItem>
                     <SelectItem value="busy">בעבודה</SelectItem>
                     <SelectItem value="offline">לא זמין</SelectItem>
-                    <SelectItem value="inactive">לא פעיל</SelectItem>
+                    <SelectItem value="on_break">בהפסקה</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex items-center space-x-2 col-span-2">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <Label htmlFor="is_active" className="cursor-pointer">ספק פעיל במערכת</Label>
+              </div>
               <div>
-                <Label>מספר רישיון</Label>
+                <Label>שעת התחלה</Label>
                 <Input
-                  value={formData.license_number}
-                  onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                  type="time"
+                  value={formData.working_hours_start}
+                  onChange={(e) => setFormData({ ...formData, working_hours_start: e.target.value })}
                 />
               </div>
               <div>
-                <Label>מחיר בסיס</Label>
+                <Label>שעת סיום</Label>
+                <Input
+                  type="time"
+                  value={formData.working_hours_end}
+                  onChange={(e) => setFormData({ ...formData, working_hours_end: e.target.value })}
+                />
+              </div>
+              <div className="flex items-center space-x-2 col-span-2">
+                <input
+                  type="checkbox"
+                  id="works_24_7"
+                  checked={formData.works_24_7}
+                  onChange={(e) => setFormData({ ...formData, works_24_7: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <Label htmlFor="works_24_7" className="cursor-pointer">עובד 24/7</Label>
+              </div>
+              <div>
+                <Label>תעריף לקריאה (₪)</Label>
                 <Input
                   type="number"
-                  value={formData.base_price}
-                  onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
+                  value={formData.payment_rate_per_call}
+                  onChange={(e) => setFormData({ ...formData, payment_rate_per_call: e.target.value })}
                 />
               </div>
               <div>
-                <Label>מחיר לק"מ</Label>
+                <Label>סוגי שירות</Label>
                 <Input
-                  type="number"
-                  value={formData.price_per_km}
-                  onChange={(e) => setFormData({ ...formData, price_per_km: e.target.value })}
+                  placeholder="גרירה, פנצ'ר, רדיו דיסק (מופרד בפסיקים)"
+                  value={(formData.service_type || []).join(', ')}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    service_type: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                  })}
+                />
+              </div>
+              <div className="col-span-2">
+                <Label>אזורי כיסוי</Label>
+                <Input
+                  placeholder="מרכז, צפון, דרום (מופרד בפסיקים)"
+                  value={(formData.coverage_areas || []).join(', ')}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    coverage_areas: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                  })}
                 />
               </div>
               <div className="col-span-2">
