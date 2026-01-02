@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   Phone,
   LogOut,
-  User
+  User,
+  MapPin
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'לוח בקרה', href: 'Dashboard', icon: LayoutDashboard },
     { name: 'קריאות שירות', href: 'Cases', icon: FileText },
     { name: 'ניטור תורים', href: 'QueueMonitor', icon: LayoutDashboard },
+    { name: 'מפת ספקים', href: 'AllVendorsMap', icon: MapPin },
     { name: 'דוחות', href: 'Reports', icon: FileText },
     { name: 'לקוחות', href: 'Customers', icon: Users },
     { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
