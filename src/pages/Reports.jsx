@@ -314,22 +314,22 @@ export default function Reports() {
                 <p className="text-sm text-[#616161] mb-2">פילטרים פעילים:</p>
                 <div className="flex flex-wrap gap-2">
                   {customStartDate && customEndDate && (
-                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
                       תאריך: {format(new Date(customStartDate), 'dd/MM/yy')} - {format(new Date(customEndDate), 'dd/MM/yy')}
                     </span>
                   )}
                   {selectedVendor !== 'all' && (
-                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
                       ספק: {vendors.find(v => v.id === selectedVendor)?.vendor_name}
                     </span>
                   )}
                   {selectedCustomer !== 'all' && (
-                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
                       לקוח: {selectedCustomer}
                     </span>
                   )}
                   {selectedStatus !== 'all' && (
-                    <span className="px-3 py-1 bg-[#0078D4]/10 text-[#0078D4] rounded-full text-sm">
+                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
                       סטטוס: {selectedStatus}
                     </span>
                   )}
@@ -354,7 +354,7 @@ export default function Reports() {
         <Card className="card-hover">
           <CardContent className="pt-6">
             <div className="text-sm text-[#616161]">ספקים פעילים</div>
-            <div className="text-3xl font-bold text-[#2E7D32] mt-1">
+            <div className="text-3xl font-bold text-[#212121] mt-1">
               {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
             </div>
             <p className="text-xs text-[#616161] mt-2">מתוך {vendors.length} ספקים</p>
@@ -374,7 +374,7 @@ export default function Reports() {
         <Card className="card-hover">
           <CardContent className="pt-6">
             <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
-            <div className="text-3xl font-bold text-[#2E7D32] mt-1">
+            <div className="text-3xl font-bold text-[#212121] mt-1">
               ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
             </div>
             <p className="text-xs text-[#616161] mt-2">{filteredPayments.length} תשלומים</p>
