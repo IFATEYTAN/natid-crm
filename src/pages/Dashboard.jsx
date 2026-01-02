@@ -67,16 +67,16 @@ function WorkQueueOverview({ calls, isLoading }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-4 bg-white border-l-4 border-l-[#ED6C02] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
-          <p className="text-2xl font-bold text-[#ED6C02]">{waitingInQueue}</p>
+        <div className="text-center p-4 bg-white border-l-4 border-l-[#212121] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
+          <p className="text-2xl font-bold text-[#212121]">{waitingInQueue}</p>
           <p className="text-sm text-[#616161] font-medium">בתור</p>
         </div>
-        <div className="text-center p-4 bg-white border-l-4 border-l-[#0288D1] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
-          <p className="text-2xl font-bold text-[#0288D1]">{assignedToAgents}</p>
+        <div className="text-center p-4 bg-white border-l-4 border-l-[#212121] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
+          <p className="text-2xl font-bold text-[#212121]">{assignedToAgents}</p>
           <p className="text-sm text-[#616161] font-medium">משובץ</p>
         </div>
-        <div className="text-center p-4 bg-white border-l-4 border-l-[#2E7D32] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
-          <p className="text-2xl font-bold text-[#2E7D32]">{inProgress}</p>
+        <div className="text-center p-4 bg-white border-l-4 border-l-[#212121] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
+          <p className="text-2xl font-bold text-[#212121]">{inProgress}</p>
           <p className="text-sm text-[#616161] font-medium">בטיפול</p>
         </div>
         <div className="text-center p-4 bg-white border-l-4 border-l-[#616161] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">

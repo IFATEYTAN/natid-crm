@@ -213,7 +213,7 @@ export default function AllVendorsMap() {
               <Card>
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <Truck className="w-4 h-4 text-[#0078D4]" />
+                    <Truck className="w-4 h-4 text-[#212121]" />
                     <span className="text-xs text-[#616161]">ספקים</span>
                   </div>
                   <div className="text-2xl font-bold text-[#212121]">{stats.activeVendors}</div>
@@ -281,7 +281,7 @@ export default function AllVendorsMap() {
                         <div className="flex-1">
                           <Link 
                             to={createPageUrl(`VendorProfile?id=${vendor.id}`)}
-                            className="font-bold text-[#0078D4] hover:underline block mb-1"
+                            className="font-bold text-[#212121] hover:underline block mb-1"
                           >
                             {vendor.vendor_name}
                           </Link>
@@ -304,7 +304,7 @@ export default function AllVendorsMap() {
                             </span>
                           </div>
                         )}
-                        <a href={`tel:${vendor.phone}`} className="flex items-center gap-1 text-[#0078D4]">
+                        <a href={`tel:${vendor.phone}`} className="flex items-center gap-1 text-[#212121]">
                           <Phone className="w-3 h-3" />
                           <span className="text-xs">{vendor.phone}</span>
                         </a>
@@ -325,8 +325,8 @@ export default function AllVendorsMap() {
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between mb-2">
                         <Link 
-                          to={createPageUrl(`CaseDetails?id=${call.id}`)}
-                          className="font-bold text-[#0078D4] hover:underline"
+                        to={createPageUrl(`CaseDetails?id=${call.id}`)}
+                        className="font-bold text-[#212121] hover:underline"
                         >
                           {call.call_number || `#${call.id?.slice(-6)}`}
                         </Link>
@@ -395,7 +395,7 @@ export default function AllVendorsMap() {
               >
                 <Popup>
                   <div className="text-right" dir="rtl">
-                    <h3 className="font-bold mb-2 text-[#0078D4]">
+                    <h3 className="font-bold mb-2 text-[#212121]">
                       🚛 {vendor.vendor_name}
                     </h3>
                     <div className="space-y-1 text-sm mb-3">

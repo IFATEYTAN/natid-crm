@@ -251,15 +251,15 @@ export default function OperatorDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="border-l-4 border-l-[#2E7D32] hover:shadow-lg transition-all">
+          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#616161] mb-1">הושלמו היום</p>
-                  <p className="text-3xl font-bold text-[#2E7D32]">{stats.completedToday}</p>
+                  <p className="text-3xl font-bold text-[#212121]">{stats.completedToday}</p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-[#E8F5E9] flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-[#2E7D32]" />
+                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-[#212121]" />
                 </div>
               </div>
             </CardContent>
@@ -271,15 +271,15 @@ export default function OperatorDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="border-l-4 border-l-[#ED6C02] hover:shadow-lg transition-all">
+          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#616161] mb-1">ממתינות לשיוך</p>
-                  <p className="text-3xl font-bold text-[#ED6C02]">{stats.unassigned}</p>
+                  <p className="text-3xl font-bold text-[#212121]">{stats.unassigned}</p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-[#FFF4E5] flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-[#ED6C02]" />
+                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-[#212121]" />
                 </div>
               </div>
             </CardContent>
@@ -291,15 +291,15 @@ export default function OperatorDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="border-l-4 border-l-[#D32F2F] hover:shadow-lg transition-all">
+          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#616161] mb-1">דחופות</p>
-                  <p className="text-3xl font-bold text-[#D32F2F]">{stats.urgent}</p>
+                  <p className="text-3xl font-bold text-[#212121]">{stats.urgent}</p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-[#FFEBEE] flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-[#D32F2F]" />
+                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-[#212121]" />
                 </div>
               </div>
             </CardContent>
@@ -311,18 +311,18 @@ export default function OperatorDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="border-l-4 border-l-[#2E7D32] hover:shadow-lg transition-all">
+          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#616161] mb-1">ספקים זמינים</p>
-                  <p className="text-3xl font-bold text-[#2E7D32]">{stats.availableVendors}</p>
+                  <p className="text-3xl font-bold text-[#212121]">{stats.availableVendors}</p>
                   <div className="mt-2">
                     <AvatarStack users={availableVendors} max={4} size="sm" />
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-[#E8F5E9] flex items-center justify-center">
-                  <Truck className="w-6 h-6 text-[#2E7D32]" />
+                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
+                  <Truck className="w-6 h-6 text-[#212121]" />
                 </div>
               </div>
             </CardContent>
