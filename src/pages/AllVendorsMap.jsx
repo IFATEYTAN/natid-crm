@@ -110,8 +110,21 @@ const createCallMarker = (status) => {
 };
 
 export default function AllVendorsMap() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [selectedTab, setSelectedTab] = useState('vendors'); // 'vendors' or 'calls'
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [mapCenter] = useState([31.7683, 35.2137]); // Jerusalem default
 
   // Fetch all vendors

@@ -20,9 +20,10 @@ export default function DataTable({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-        <Table>
-          <TableHeader>
+          <div className="bg-white rounded-[8px] border border-[#E0E0E0] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-[#E0E0E0] scrollbar-track-transparent">
+              <Table>
+                <TableHeader>
             <TableRow className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
               {columns.map((col, idx) => (
                 <TableHead key={idx} className="text-right text-[#616161] font-medium text-sm h-12">
@@ -42,10 +43,11 @@ export default function DataTable({
               </TableRow>
             ))}
           </TableBody>
-        </Table>
-      </div>
-    );
-  }
+          </Table>
+          </div>
+          </div>
+          );
+          }
 
   if (!data || data.length === 0) {
     return (
@@ -59,7 +61,7 @@ export default function DataTable({
 
   return (
     <div className="bg-white rounded-[8px] border border-[#E0E0E0] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-[#E0E0E0] scrollbar-track-transparent">
         <Table>
           <TableHeader>
             <TableRow className="bg-[#FAFAFA] border-b-2 border-[#E0E0E0]">
@@ -67,17 +69,17 @@ export default function DataTable({
                 <TableHead 
                   key={idx} 
                   className={cn(
-                    "text-right text-[#212121] font-medium text-[14px] whitespace-nowrap h-14 px-4",
+                    "text-right text-[#212121] font-medium text-[13px] sm:text-[14px] whitespace-nowrap h-12 sm:h-14 px-3 sm:px-4",
                     col.className
                   )}
                 >
                   {col.header}
                 </TableHead>
               ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((row, rowIdx) => (
+              </TableRow>
+              </TableHeader>
+              <TableBody>
+              {data.map((row, rowIdx) => (
               <TableRow 
                 key={row.id || rowIdx}
                 onClick={() => onRowClick?.(row)}
@@ -90,7 +92,7 @@ export default function DataTable({
                   <TableCell 
                     key={colIdx}
                     className={cn(
-                      "whitespace-nowrap text-[14px] text-[#212121] h-16 px-4",
+                      "whitespace-nowrap text-[13px] sm:text-[14px] text-[#212121] h-14 sm:h-16 px-3 sm:px-4",
                       col.cellClassName
                     )}
                   >
@@ -98,7 +100,7 @@ export default function DataTable({
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
+              ))}
           </TableBody>
         </Table>
       </div>
