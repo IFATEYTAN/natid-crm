@@ -138,27 +138,27 @@ export default function RevenueReport({ payments, vendors, calls }) {
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
-            <div className="text-2xl font-bold text-[#2E7D32] mt-1">₪{totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[#FF0000] mt-1">₪{totalRevenue.toLocaleString()}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">שולם</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">₪{totalPaid.toLocaleString()}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">ממתין לתשלום</div>
-            <div className="text-2xl font-bold text-[#ED6C02] mt-1">₪{totalPending.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[#FF0000] mt-1">₪{totalPending.toLocaleString()}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">ממוצע לספק</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">
               ₪{vendorStats.length > 0 ? Math.round(totalRevenue / vendorStats.length).toLocaleString() : 0}
@@ -168,21 +168,37 @@ export default function RevenueReport({ payments, vendors, calls }) {
       </div>
 
       {/* Monthly Trend */}
-      <Card>
+      <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <CardHeader>
-          <CardTitle className="text-base">מגמת הכנסות חודשית</CardTitle>
+          <CardTitle className="text-[20px] font-medium text-[#212121]">מגמת הכנסות חודשית</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
+              <XAxis 
+                dataKey="month" 
+                tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
+                stroke="#E0E0E0"
+              />
+              <YAxis 
+                tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
+                stroke="#E0E0E0"
+              />
               <Tooltip 
                 formatter={(value) => `₪${value.toLocaleString()}`}
-                labelStyle={{ direction: 'rtl' }}
+                contentStyle={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E0E0E0',
+                  borderRadius: '4px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  fontFamily: 'Heebo',
+                  fontSize: 14,
+                  direction: 'rtl'
+                }}
+                labelStyle={{ fontWeight: 500, direction: 'rtl' }}
               />
-              <Line type="monotone" dataKey="revenue" stroke="#2E7D32" strokeWidth={2} name="הכנסות" />
+              <Line type="monotone" dataKey="revenue" stroke="#FF0000" strokeWidth={2} name="הכנסות" />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -191,7 +207,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
       {/* Tables */}
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-semibold mb-4">הכנסות לפי ספק</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4">הכנסות לפי ספק</h3>
           <DataTable
             columns={vendorColumns}
             data={vendorStats}
@@ -200,7 +216,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
         </div>
         
         <div>
-          <h3 className="text-lg font-semibold mb-4">הכנסות לפי סוג שירות</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4">הכנסות לפי סוג שירות</h3>
           <DataTable
             columns={issueColumns}
             data={issueStats}

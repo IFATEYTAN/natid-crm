@@ -243,7 +243,7 @@ export default function AccessibilityWidget() {
         .accessibility-widget {
           position: fixed;
           bottom: 24px;
-          right: 24px;
+          left: 24px;
           z-index: 9999;
           direction: rtl;
         }
@@ -276,7 +276,7 @@ export default function AccessibilityWidget() {
         .accessibility-menu {
           position: absolute;
           bottom: 70px;
-          right: 0;
+          left: 0;
           width: 320px;
           max-height: 500px;
           overflow-y: auto;
@@ -400,17 +400,27 @@ export default function AccessibilityWidget() {
         
         @media (max-width: 768px) {
           .accessibility-widget {
-            bottom: 16px;
-            right: 16px;
+            bottom: 80px;
+            left: 16px;
+          }
+          
+          .accessibility-button {
+            width: 48px;
+            height: 48px;
+          }
+          
+          .accessibility-button svg {
+            width: 24px;
+            height: 24px;
           }
           
           .accessibility-menu {
             position: fixed;
-            bottom: 80px;
+            bottom: 140px;
             left: 16px;
             right: 16px;
             width: auto;
-            max-height: calc(100vh - 100px);
+            max-height: calc(100vh - 180px);
           }
         }
       `}</style>
