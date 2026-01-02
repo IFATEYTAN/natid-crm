@@ -29,6 +29,8 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import ImportExport from '@/components/ImportExport';
 
 const serviceTypeLabels = {
@@ -156,12 +158,12 @@ export default function ServiceProviders() {
       header: 'שם',
       accessor: 'name',
       cell: (row) => (
-        <div className="flex items-center gap-2">
+        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="flex items-center gap-2 hover:underline">
           <div className="w-8 h-8 rounded-full bg-[#0D47A1]/10 flex items-center justify-center">
             <Truck className="w-4 h-4 text-[#0D47A1]" />
           </div>
           <span className="font-medium text-[#212121]">{row.name}</span>
-        </div>
+        </Link>
       )
     },
     {
