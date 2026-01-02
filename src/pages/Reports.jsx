@@ -170,7 +170,8 @@ export default function Reports() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <p className="text-[#616161] text-sm">
+          <h1 className="text-[32px] font-bold text-[#212121] leading-tight">דוחות</h1>
+          <p className="text-[#616161] text-sm body-2 mt-1">
             ניתוח מקיף של ביצועים, SLA והכנסות • {filteredCalls.length} קריאות
           </p>
         </div>

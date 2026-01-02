@@ -206,7 +206,8 @@ export default function OperatorDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[#616161]">סקירה מהירה וניהול קריאות שירות</p>
+          <h1 className="text-[32px] font-bold text-[#212121] leading-tight">תפריט מוקדן</h1>
+          <p className="text-[#616161] text-sm body-2 mt-1">סקירה מהירה וניהול קריאות שירות</p>
         </div>
         <div className="flex gap-2">
           <Link to={createPageUrl('NewCase')}>

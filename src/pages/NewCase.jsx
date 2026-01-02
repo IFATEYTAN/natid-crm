@@ -130,7 +130,7 @@ export default function NewCase() {
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div>
-          <h2 className="text-[32px] font-bold text-[#212121]">קריאה חדשה</h2>
+          <h1 className="text-[32px] font-bold text-[#212121]">קריאה חדשה</h1>
           <p className="text-[#616161] text-sm">מלא את פרטי הקריאה</p>
         </div>
       </div>
