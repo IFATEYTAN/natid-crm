@@ -405,8 +405,12 @@ export default function AccessibilityWidget() {
           }
           
           .accessibility-menu {
-            width: calc(100vw - 32px);
-            right: -16px;
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            width: auto;
+            max-height: calc(100vh - 100px);
           }
         }
       `}</style>
