@@ -169,11 +169,11 @@ export default function AllVendorsMap() {
   };
 
   return (
-    <div className="fixed inset-0 top-16 flex" dir="rtl">
+    <div className="h-[calc(100vh-4rem)] relative" dir="rtl">
       {/* Sidebar */}
       <div 
         className={`
-          fixed right-0 top-16 bottom-0 w-96 bg-white border-l border-[#E0E0E0] 
+          absolute right-0 top-0 bottom-0 w-96 bg-white border-l border-[#E0E0E0] 
           shadow-lg z-[1000] transition-transform duration-300
           ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
@@ -349,7 +349,7 @@ export default function AllVendorsMap() {
       </div>
 
       {/* Map */}
-      <div className="flex-1">
+      <div className={`absolute top-0 bottom-0 left-0 transition-all duration-300 ${sidebarOpen ? 'right-96' : 'right-0'}`}>
         {!sidebarOpen && (
           <Button 
             className="absolute top-4 right-4 z-[1001] bg-white shadow-lg"
