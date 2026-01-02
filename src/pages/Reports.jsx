@@ -343,17 +343,17 @@ export default function Reports() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="card-hover">
-          <CardContent className="pt-6">
+        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">סה"כ קריאות</div>
             <div className="text-3xl font-bold text-[#212121] mt-1">{filteredCalls.length}</div>
             <p className="text-xs text-[#616161] mt-2">
-              {Math.round((filteredCalls.length / calls.length) * 100)}% מכלל הקריאות
+              {calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות
             </p>
           </CardContent>
         </Card>
-        <Card className="card-hover">
-          <CardContent className="pt-6">
+        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">ספקים פעילים</div>
             <div className="text-3xl font-bold text-[#212121] mt-1">
               {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
@@ -361,8 +361,8 @@ export default function Reports() {
             <p className="text-xs text-[#616161] mt-2">מתוך {vendors.length} ספקים</p>
           </CardContent>
         </Card>
-        <Card className="card-hover">
-          <CardContent className="pt-6">
+        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">דירוג ממוצע</div>
             <div className="text-3xl font-bold text-[#212121] mt-1">
               {filteredRatings.length > 0 
@@ -372,10 +372,10 @@ export default function Reports() {
             <p className="text-xs text-[#616161] mt-2">{filteredRatings.length} דירוגים</p>
           </CardContent>
         </Card>
-        <Card className="card-hover">
-          <CardContent className="pt-6">
+        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <CardContent className="pt-6 text-right">
             <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
-            <div className="text-3xl font-bold text-[#212121] mt-1">
+            <div className="text-3xl font-bold text-[#FF0000] mt-1">
               ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
             </div>
             <p className="text-xs text-[#616161] mt-2">{filteredPayments.length} תשלומים</p>
