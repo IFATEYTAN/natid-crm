@@ -22,6 +22,7 @@ import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
 import AllVendorsMap from './pages/AllVendorsMap';
 import OperatorDashboard from './pages/OperatorDashboard';
+import UserManagement from './pages/UserManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -50,6 +51,7 @@ export const PAGES = {
     "VendorProfile": VendorProfile,
     "AllVendorsMap": AllVendorsMap,
     "OperatorDashboard": OperatorDashboard,
+    "UserManagement": UserManagement,
 }
 
 export const pagesConfig = {
