@@ -65,7 +65,7 @@ export default function Cases() {
       header: 'מספר קריאה',
       accessor: 'case_number',
       cell: (row) => (
-        <span className="font-semibold text-[#0D47A1]">
+        <span className="font-semibold text-[#FF0000]">
           {row.case_number || `#${row.id?.slice(-6)}`}
         </span>
       )
@@ -137,11 +137,10 @@ export default function Cases() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-[24px] font-semibold text-[#212121]">קריאות שירות</h2>
           <p className="text-[#616161] text-sm body-2 mt-1">{filteredCases.length} קריאות</p>
         </div>
         <Link to={createPageUrl('NewCase')}>
-          <Button className="bg-[#0D47A1] hover:bg-[#1565C0] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5">
+          <Button className="bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold">
             <Plus className="w-5 h-5" strokeWidth={2} />
             קריאה חדשה
           </Button>
