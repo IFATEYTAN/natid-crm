@@ -66,7 +66,7 @@ function WorkQueueOverview({ calls, isLoading }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="text-center p-4 bg-white border-l-4 border-l-[#ED6C02] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
           <p className="text-2xl font-bold text-[#ED6C02]">{waitingInQueue}</p>
           <p className="text-sm text-[#616161] font-medium">בתור</p>

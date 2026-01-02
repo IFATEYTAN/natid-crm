@@ -173,7 +173,7 @@ export default function AllVendorsMap() {
       {/* Sidebar */}
       <div 
         className={`
-          absolute right-0 top-0 bottom-0 w-96 bg-white border-l border-[#E0E0E0] 
+          absolute right-0 top-0 bottom-0 w-full sm:w-96 bg-white border-l border-[#E0E0E0] 
           shadow-lg z-[1000] transition-transform duration-300
           ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
@@ -196,7 +196,7 @@ export default function AllVendorsMap() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
               <Card>
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2 mb-1">
@@ -349,7 +349,7 @@ export default function AllVendorsMap() {
       </div>
 
       {/* Map */}
-      <div className={`absolute top-0 bottom-0 left-0 transition-all duration-300 ${sidebarOpen ? 'right-96' : 'right-0'}`}>
+      <div className={`absolute top-0 bottom-0 left-0 transition-all duration-300 ${sidebarOpen ? 'right-0 sm:right-96' : 'right-0'}`}>
         {!sidebarOpen && (
           <Button 
             className="absolute top-4 right-4 z-[1001] bg-white shadow-lg"
