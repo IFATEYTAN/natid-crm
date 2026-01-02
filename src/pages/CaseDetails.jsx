@@ -37,8 +37,10 @@ import {
   MessageSquare,
   Edit,
   Save,
-  Loader2
+  Loader2,
+  Navigation
 } from 'lucide-react';
+import NavigationMap from '@/components/maps/NavigationMap';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -81,6 +83,7 @@ export default function CaseDetails() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editData, setEditData] = useState({});
   const [noteText, setNoteText] = useState('');
+  const [distanceData, setDistanceData] = useState(null);
 
   const { data: caseData, isLoading } = useQuery({
     queryKey: ['case', caseId],
@@ -101,6 +104,39 @@ export default function CaseDetails() {
     queryFn: () => base44.entities.CaseActivity.filter({ case_id: caseId }, '-created_date', 50),
     enabled: !!caseId,
   });
+
+  // Fetch vendor location if assigned
+  const { data: vendorLocation } = useQuery({
+    queryKey: ['vendor-location', caseData?.assigned_provider_id],
+    queryFn: async () => {
+      const locations = await base44.entities.VendorLocation.filter(
+        { vendor_id: caseData.assigned_provider_id },
+        '-created_date',
+        1
+      );
+      return locations[0];
+    },
+    enabled: !!caseData?.assigned_provider_id,
+    refetchInterval: 30000 // Refresh every 30 seconds
+  });
+
+  // Calculate distance when vendor is assigned
+  useEffect(() => {
+    const calculateDistance = async () => {
+      if (caseData?.assigned_provider_id && caseData?.location_lat && caseData?.location_lng) {
+        try {
+          const result = await base44.functions.invoke('calculateDistanceAndETA', {
+            callId: caseData.id,
+            vendorId: caseData.assigned_provider_id
+          });
+          setDistanceData(result.data);
+        } catch (error) {
+          console.error('Failed to calculate distance:', error);
+        }
+      }
+    };
+    calculateDistance();
+  }, [caseData?.assigned_provider_id, caseData?.location_lat, caseData?.location_lng]);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Case.update(id, data),
@@ -496,12 +532,55 @@ export default function CaseDetails() {
                       הגיע: {format(parseISO(caseData.arrived_at), 'HH:mm dd/MM', { locale: he })}
                     </p>
                   )}
+                  {distanceData && (
+                    <div className="mt-3 pt-3 border-t border-[#E0E0E0]">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-[#616161]">מרחק:</span>
+                        <span className="font-medium">{distanceData.roadDistance} ק"מ</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-[#616161]">זמן הגעה:</span>
+                        <span className="font-medium">{distanceData.duration} דק'</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full mt-2 gap-2"
+                        onClick={() => window.open(distanceData.navigationUrl, '_blank')}
+                      >
+                        <Navigation className="w-3 h-3" />
+                        נווט לספק
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-[#9E9E9E] text-sm">לא שובץ</p>
               )}
             </CardContent>
           </Card>
+
+          {/* Navigation Map for Operator */}
+          {caseData?.assigned_provider_id && vendorLocation && caseData?.location_lat && caseData?.location_lng && (
+            <NavigationMap
+              vendorLocation={{
+                lat: vendorLocation.latitude,
+                lon: vendorLocation.longitude
+              }}
+              callLocation={{
+                lat: caseData.location_lat,
+                lon: caseData.location_lng,
+                address: caseData.location_address
+              }}
+              distance={distanceData?.roadDistance}
+              duration={distanceData?.duration}
+              onNavigate={() => {
+                if (distanceData?.navigationUrl) {
+                  window.open(distanceData.navigationUrl, '_blank');
+                }
+              }}
+            />
+          )}
 
           {/* Activity Log */}
           <Card>

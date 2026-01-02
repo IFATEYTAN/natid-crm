@@ -164,13 +164,32 @@ Deno.serve(async (req) => {
     const selectedVendor = scoredVendors[0].vendor;
     const scoringDetails = scoredVendors[0].details;
 
+    // Calculate distance and ETA
+    let distanceInfo = null;
+    try {
+      const distanceResult = await base44.asServiceRole.functions.invoke('calculateDistanceAndETA', {
+        callId,
+        vendorId: selectedVendor.id
+      });
+      distanceInfo = distanceResult.data;
+    } catch (distanceError) {
+      console.error('Failed to calculate distance:', distanceError);
+    }
+
     // Assign vendor to call
-    await base44.asServiceRole.entities.Call.update(callId, {
+    const updateData = {
       assigned_vendor_id: selectedVendor.id,
       assigned_vendor_name: selectedVendor.vendor_name,
       call_status: 'assigning',
       assigned_at: new Date().toISOString()
-    });
+    };
+
+    if (distanceInfo) {
+      updateData.estimated_distance_km = parseFloat(distanceInfo.roadDistance);
+      updateData.estimated_arrival_time = distanceInfo.eta;
+    }
+
+    await base44.asServiceRole.entities.Call.update(callId, updateData);
 
     // Log assignment with scoring details
     await base44.asServiceRole.entities.CallHistory.create({
