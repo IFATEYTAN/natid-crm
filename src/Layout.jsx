@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import {
@@ -11,7 +11,6 @@ import {
   X,
   Plus,
   ChevronLeft,
-  Phone,
   LogOut,
   User,
   MapPin
@@ -20,9 +19,32 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
+import { motion } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {
+        // User not logged in
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return parts[0][0] + parts[1][0];
+    }
+    return name.substring(0, 2);
+  };
 
   const navigation = [
     { name: 'תפריט מוקדן', href: 'OperatorDashboard', icon: LayoutDashboard },
@@ -232,19 +254,49 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Emergency Phone */}
-            <a 
-              href="tel:*8808"
-              className="hidden md:flex items-center gap-2 bg-[#FF0000] text-white px-4 py-2 rounded-[4px] font-bold text-sm hover:bg-[#CC0000] transition-colors shadow-md"
+            {/* User Profile Avatar */}
+            <motion.div 
+              className="relative group"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
             >
-              <Phone className="w-4 h-4" strokeWidth={2} />
-              <span className="font-bold">*8808</span>
-            </a>
-            
-            {/* User Avatar Placeholder */}
-            <div className="w-10 h-10 rounded-full bg-[#FF0000] flex items-center justify-center">
-              <User className="w-5 h-5 text-white" strokeWidth={2} />
-            </div>
+              <motion.div 
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF0000] to-[#CC0000] flex items-center justify-center cursor-pointer shadow-lg border-2 border-white"
+                whileHover={{ scale: 1.1, boxShadow: "0 8px 25px rgba(255, 0, 0, 0.3)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {currentUser?.profile_image ? (
+                  <img 
+                    src={currentUser.profile_image} 
+                    alt={currentUser.full_name} 
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white font-bold text-sm">
+                    {getInitials(currentUser?.full_name)}
+                  </span>
+                )}
+              </motion.div>
+              
+              {/* Online indicator */}
+              <motion.div 
+                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#2E7D32] rounded-full border-2 border-white"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring" }}
+              />
+              
+              {/* Hover tooltip */}
+              <motion.div 
+                className="absolute top-full mt-2 right-0 bg-[#212121] text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg"
+                initial={{ y: -5 }}
+                whileHover={{ y: 0 }}
+              >
+                {currentUser?.full_name || 'משתמש'}
+                <div className="text-[#9E9E9E] text-[10px]">{currentUser?.email}</div>
+              </motion.div>
+            </motion.div>
           </div>
         </header>
 
