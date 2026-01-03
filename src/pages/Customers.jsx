@@ -29,6 +29,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
+import ImportExport from '@/components/ImportExport';
 
 const customerTypeLabels = {
   insurance_company: 'חברת ביטוח',
