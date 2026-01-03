@@ -46,9 +46,9 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
     // Create gradient colors based on response time
     const colors = data.map(time => {
       if (time <= 20) return '#2E7D32'; // Green - excellent
-      if (time <= 30) return '#0078D4'; // Blue - good
-      if (time <= 40) return '#ED6C02'; // Orange - acceptable
-      return '#D32F2F'; // Red - needs improvement
+      if (time <= 30) return '#0288D1'; // Blue - good
+      if (time <= 40) return '#FF6B00'; // Orange - acceptable
+      return '#FF0000'; // Red - needs improvement
     });
 
     // Create new chart with live update animation
@@ -174,34 +174,34 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
   return (
     <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-[20px] font-medium text-[#212121]">זמני תגובה ממוצעים - 10 ספקים מובילים</CardTitle>
+        <div className="flex items-center justify-between flex-row-reverse">
+          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">זמני תגובה ממוצעים - 10 ספקים מובילים</CardTitle>
           <div className="flex items-center gap-1 text-xs text-[#2E7D32]">
             <TrendingUp className="w-4 h-4" />
             <span>עדכון בזמן אמת</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent dir="rtl">
         <div className="relative" style={{ height: '350px' }}>
           <canvas ref={chartRef} />
         </div>
-        <div className="mt-4 flex flex-wrap gap-3 justify-center text-xs">
+        <div className="mt-4 flex flex-wrap gap-3 justify-end text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#2E7D32]" />
             <span className="text-[#616161]">מצוין (≤20 דק')</span>
+            <div className="w-3 h-3 rounded-full bg-[#2E7D32]" />
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#0078D4]" />
             <span className="text-[#616161]">טוב (21-30 דק')</span>
+            <div className="w-3 h-3 rounded-full bg-[#0288D1]" />
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#ED6C02]" />
             <span className="text-[#616161]">סביר (31-40 דק')</span>
+            <div className="w-3 h-3 rounded-full bg-[#FF6B00]" />
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#D32F2F]" />
             <span className="text-[#616161]">דורש שיפור (>40 דק')</span>
+            <div className="w-3 h-3 rounded-full bg-[#FF0000]" />
           </div>
         </div>
       </CardContent>

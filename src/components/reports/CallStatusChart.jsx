@@ -16,12 +16,12 @@ const statusLabels = {
 
 const statusColors = {
   waiting_treatment: '#ED6C02',
-  awaiting_assignment: '#ED6C02',
-  assigning: '#0078D4',
+  awaiting_assignment: '#FF6B00',
+  assigning: '#FF0000',
   vendor_enroute: '#2E7D32',
-  in_progress: '#0078D4',
+  in_progress: '#0288D1',
   completed: '#1B5E20',
-  cancelled: '#D32F2F'
+  cancelled: '#9E9E9E'
 };
 
 export default function CallStatusChart({ calls }) {
@@ -117,9 +117,9 @@ export default function CallStatusChart({ calls }) {
   return (
     <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <CardHeader>
-        <CardTitle className="text-[20px] font-medium text-[#212121]">התפלגות קריאות לפי סטטוס</CardTitle>
+        <CardTitle className="text-[20px] font-medium text-[#212121] text-right">התפלגות קריאות לפי סטטוס</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent dir="rtl">
         <div className="relative" style={{ height: '280px' }}>
           <canvas ref={chartRef} />
         </div>

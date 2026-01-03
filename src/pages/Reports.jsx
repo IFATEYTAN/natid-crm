@@ -17,6 +17,8 @@ import { Download, Filter, X, TrendingUp } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import VendorPerformanceReport from '@/components/reports/VendorPerformanceReport';
 import SLAReport from '@/components/reports/SLAReport';
 import RevenueReport from '@/components/reports/RevenueReport';
@@ -343,44 +345,52 @@ export default function Reports() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
-            <div className="text-sm text-[#616161]">סה"כ קריאות</div>
-            <div className="text-3xl font-bold text-[#212121] mt-1">{filteredCalls.length}</div>
-            <p className="text-xs text-[#616161] mt-2">
-              {calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
-            <div className="text-sm text-[#616161]">ספקים פעילים</div>
-            <div className="text-3xl font-bold text-[#212121] mt-1">
-              {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
-            </div>
-            <p className="text-xs text-[#616161] mt-2">מתוך {vendors.length} ספקים</p>
-          </CardContent>
-        </Card>
-        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
-            <div className="text-sm text-[#616161]">דירוג ממוצע</div>
-            <div className="text-3xl font-bold text-[#212121] mt-1">
-              {filteredRatings.length > 0 
-                ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
-                : '0.0'}
-            </div>
-            <p className="text-xs text-[#616161] mt-2">{filteredRatings.length} דירוגים</p>
-          </CardContent>
-        </Card>
-        <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
-            <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
-            <div className="text-3xl font-bold text-[#FF0000] mt-1">
-              ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
-            </div>
-            <p className="text-xs text-[#616161] mt-2">{filteredPayments.length} תשלומים</p>
-          </CardContent>
-        </Card>
+        <Link to={createPageUrl('Calls')}>
+          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
+            <CardContent className="pt-6 text-right">
+              <div className="text-sm text-[#616161]">סה"כ קריאות</div>
+              <div className="text-3xl font-bold text-[#212121] mt-1">{filteredCalls.length}</div>
+              <p className="text-xs text-[#616161] mt-2">
+                {calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to={createPageUrl('ServiceProviders')}>
+          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
+            <CardContent className="pt-6 text-right">
+              <div className="text-sm text-[#616161]">ספקים פעילים</div>
+              <div className="text-3xl font-bold text-[#212121] mt-1">
+                {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
+              </div>
+              <p className="text-xs text-[#616161] mt-2">מתוך {vendors.length} ספקים</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to={createPageUrl('ServiceProviders')}>
+          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
+            <CardContent className="pt-6 text-right">
+              <div className="text-sm text-[#616161]">דירוג ממוצע</div>
+              <div className="text-3xl font-bold text-[#212121] mt-1">
+                {filteredRatings.length > 0 
+                  ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
+                  : '0.0'}
+              </div>
+              <p className="text-xs text-[#616161] mt-2">{filteredRatings.length} דירוגים</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to={createPageUrl('VendorPayments')}>
+          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
+            <CardContent className="pt-6 text-right">
+              <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
+              <div className="text-3xl font-bold text-[#FF0000] mt-1">
+                ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+              </div>
+              <p className="text-xs text-[#616161] mt-2">{filteredPayments.length} תשלומים</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Live Charts */}

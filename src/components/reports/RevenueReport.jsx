@@ -170,20 +170,22 @@ export default function RevenueReport({ payments, vendors, calls }) {
       {/* Monthly Trend */}
       <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <CardHeader>
-          <CardTitle className="text-[20px] font-medium text-[#212121]">מגמת הכנסות חודשית</CardTitle>
+          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">מגמת הכנסות חודשית</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent dir="rtl">
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyData}>
+            <LineChart data={monthlyData} margin={{ right: 30, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
               <XAxis 
                 dataKey="month" 
                 tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
                 stroke="#E0E0E0"
+                reversed={true}
               />
               <YAxis 
                 tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
                 stroke="#E0E0E0"
+                orientation="right"
               />
               <Tooltip 
                 formatter={(value) => `₪${value.toLocaleString()}`}
@@ -194,20 +196,21 @@ export default function RevenueReport({ payments, vendors, calls }) {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                   fontFamily: 'Heebo',
                   fontSize: 14,
-                  direction: 'rtl'
+                  direction: 'rtl',
+                  textAlign: 'right'
                 }}
                 labelStyle={{ fontWeight: 500, direction: 'rtl' }}
               />
-              <Line type="monotone" dataKey="revenue" stroke="#FF0000" strokeWidth={2} name="הכנסות" />
+              <Line type="monotone" dataKey="revenue" stroke="#FF0000" strokeWidth={3} name="הכנסות" dot={{ fill: '#FF0000', strokeWidth: 2, r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* Tables */}
-      <div className="space-y-6">
+      <div className="space-y-6" dir="rtl">
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4">הכנסות לפי ספק</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">הכנסות לפי ספק</h3>
           <DataTable
             columns={vendorColumns}
             data={vendorStats}
@@ -216,7 +219,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
         </div>
         
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4">הכנסות לפי סוג שירות</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">הכנסות לפי סוג שירות</h3>
           <DataTable
             columns={issueColumns}
             data={issueStats}

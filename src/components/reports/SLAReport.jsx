@@ -193,21 +193,23 @@ export default function SLAReport({ calls }) {
       {/* Chart */}
       <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <CardHeader>
-          <CardTitle className="text-[20px] font-medium text-[#212121]">עמידה ב-SLA וזמני תגובה לפי אזור</CardTitle>
+          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">עמידה ב-SLA וזמני תגובה לפי אזור</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent dir="rtl">
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
+            <BarChart data={chartData} margin={{ right: 30, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
               <XAxis 
                 dataKey="name" 
                 tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
                 stroke="#E0E0E0"
+                reversed={true}
               />
               <YAxis 
                 yAxisId="left" 
                 tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
                 stroke="#E0E0E0"
+                orientation="right"
               />
               <YAxis 
                 yAxisId="right" 
@@ -223,7 +225,8 @@ export default function SLAReport({ calls }) {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                   fontFamily: 'Heebo',
                   fontSize: 14,
-                  direction: 'rtl'
+                  direction: 'rtl',
+                  textAlign: 'right'
                 }}
               />
               <Legend wrapperStyle={{ fontFamily: 'Heebo', fontSize: 12 }} />
@@ -235,9 +238,9 @@ export default function SLAReport({ calls }) {
       </Card>
 
       {/* Tables */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6" dir="rtl">
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4">לפי אזור</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">לפי אזור</h3>
           <DataTable
             columns={areaColumns}
             data={areaStats}
@@ -245,7 +248,7 @@ export default function SLAReport({ calls }) {
           />
         </div>
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4">לפי סוג תקלה</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">לפי סוג תקלה</h3>
           <DataTable
             columns={issueColumns}
             data={issueStats}
