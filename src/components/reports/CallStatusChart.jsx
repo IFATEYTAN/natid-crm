@@ -33,15 +33,15 @@ export default function CallStatusChart({ calls }) {
 
     // Count calls by status
     const statusCounts = {};
-    calls.forEach(call => {
+    calls.forEach((call) => {
       const status = call.call_status || 'waiting_treatment';
       statusCounts[status] = (statusCounts[status] || 0) + 1;
     });
 
     const statuses = Object.keys(statusCounts);
     const counts = Object.values(statusCounts);
-    const colors = statuses.map(s => statusColors[s] || '#9E9E9E');
-    const labels = statuses.map(s => statusLabels[s] || s);
+    const colors = statuses.map((s) => statusColors[s] || '#9E9E9E');
+    const labels = statuses.map((s) => statusLabels[s] || s);
 
     // Destroy previous chart
     if (chartInstance.current) {
@@ -89,10 +89,10 @@ export default function CallStatusChart({ calls }) {
               size: 13
             },
             callbacks: {
-              label: function(context) {
+              label: function (context) {
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const value = context.parsed;
-                const percentage = ((value / total) * 100).toFixed(1);
+                const percentage = (value / total * 100).toFixed(1);
                 return ` ${context.label}: ${value} (${percentage}%)`;
               }
             }
@@ -121,9 +121,9 @@ export default function CallStatusChart({ calls }) {
       </CardHeader>
       <CardContent dir="rtl">
         <div className="relative" style={{ height: '280px' }}>
-          <canvas ref={chartRef} />
+          <canvas ref={chartRef} className="text-gray-900" />
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 }
