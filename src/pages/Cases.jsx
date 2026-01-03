@@ -23,6 +23,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import ImportExport from '@/components/ImportExport';
 import { he } from 'date-fns/locale';
 
 const serviceTypeLabels = {
@@ -139,12 +140,19 @@ export default function Cases() {
         <div>
           <p className="text-[#616161] text-sm body-2 mt-1">{filteredCases.length} קריאות</p>
         </div>
-        <Link to={createPageUrl('NewCase')}>
-          <Button className="bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold">
-            <Plus className="w-5 h-5" strokeWidth={2} />
-            קריאה חדשה
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <ImportExport 
+            entityName="Case" 
+            data={filteredCases}
+            columns={columns}
+          />
+          <Link to={createPageUrl('NewCase')}>
+            <Button className="bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold">
+              <Plus className="w-5 h-5" strokeWidth={2} />
+              קריאה חדשה
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

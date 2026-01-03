@@ -233,13 +233,20 @@ export default function Customers() {
         <div>
           <p className="text-[#616161] text-sm">{filteredCustomers.length} לקוחות</p>
         </div>
-        <Button 
-          className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <Plus className="w-4 h-4" />
-          לקוח חדש
-        </Button>
+        <div className="flex gap-2">
+          <ImportExport 
+            entityName="Customer" 
+            data={filteredCustomers}
+            columns={columns}
+          />
+          <Button 
+            className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus className="w-4 h-4" />
+            לקוח חדש
+          </Button>
+        </div>
       </div>
 
       {/* Search */}

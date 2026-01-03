@@ -274,7 +274,7 @@ export default function ServiceProviders() {
         </div>
         <div className="flex flex-wrap gap-2">
           <ImportExport 
-            entityName="ServiceProvider" 
+            entityName="Vendor" 
             data={filteredProviders}
             columns={columns}
           />

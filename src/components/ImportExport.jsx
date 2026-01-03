@@ -55,8 +55,8 @@ export default function ImportExport({ entityName, data, columns }) {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      if (!selectedFile.name.endsWith('.csv') && !selectedFile.name.endsWith('.xlsx')) {
-        toast.error('נא להעלות קובץ CSV או Excel');
+      if (!selectedFile.name.endsWith('.csv')) {
+        toast.error('נא להעלות קובץ CSV');
         return;
       }
       setFile(selectedFile);
@@ -170,7 +170,7 @@ export default function ImportExport({ entityName, data, columns }) {
               <Label>בחר קובץ CSV/Excel</Label>
               <Input
                 type="file"
-                accept=".csv,.xlsx"
+                accept=".csv"
                 onChange={handleFileChange}
                 disabled={importing}
               />
