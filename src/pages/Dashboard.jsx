@@ -61,7 +61,7 @@ function WorkQueueOverview({ calls, isLoading }) {
     <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[20px] font-medium text-[#212121]">📋 תור העבודה</h3>
-        <Link to={createPageUrl('MyQueue')} className="text-[#0078D4] text-sm hover:underline">
+        <Link to={createPageUrl('MyQueue')} className="text-[#FF0000] text-sm hover:underline">
           הצג תור מלא →
         </Link>
       </div>
@@ -95,7 +95,7 @@ function WorkQueueOverview({ calls, isLoading }) {
               <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
               <div className="flex-1 bg-[#E0E0E0] rounded-full h-2 overflow-hidden">
                 <div 
-                  className={`h-full ${agent.count >= 5 ? 'bg-[#ED6C02]' : 'bg-[#0078D4]'}`}
+                  className={`h-full ${agent.count >= 5 ? 'bg-[#ED6C02]' : 'bg-[#FF0000]'}`}
                   style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
                 />
               </div>
@@ -199,7 +199,7 @@ export default function Dashboard() {
       cell: (row) => (
         <Link 
           to={createPageUrl(`CallDetails?id=${row.id}`)}
-          className="font-semibold text-[#0D47A1] hover:underline"
+          className="font-semibold text-[#FF0000] hover:underline"
         >
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
@@ -326,7 +326,7 @@ export default function Dashboard() {
                   }}
                   labelStyle={{ fontWeight: 500 }}
                 />
-                <Bar dataKey="value" fill="#0D47A1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" fill="#FF0000" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -342,8 +342,8 @@ export default function Dashboard() {
               <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0D47A1" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#0D47A1" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#FF0000" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#FF0000" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
@@ -371,10 +371,10 @@ export default function Dashboard() {
                 <Line 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="#0D47A1" 
+                  stroke="#FF0000" 
                   strokeWidth={2}
                   fill="url(#colorValue)"
-                  dot={{ fill: '#0D47A1', r: 4 }}
+                  dot={{ fill: '#FF0000', r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -387,7 +387,7 @@ export default function Dashboard() {
       <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[20px] font-medium text-[#212121]">10 קריאות אחרונות</h3>
-          <Link to={createPageUrl('Calls')} className="text-[#0D47A1] text-sm hover:underline flex items-center gap-1">
+          <Link to={createPageUrl('Calls')} className="text-[#FF0000] text-sm hover:underline flex items-center gap-1">
             הצג הכל
             <ChevronLeft className="w-4 h-4" strokeWidth={2} />
           </Link>

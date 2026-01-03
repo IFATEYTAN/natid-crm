@@ -62,7 +62,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
     {
       header: 'ספק',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="text-[#0078D4] hover:underline font-medium">
+        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="text-[#FF0000] hover:underline font-medium">
           {row.vendor_name}
         </Link>
       )
@@ -95,7 +95,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
       header: 'זמן תגובה ממוצע',
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#0078D4]" />
+          <Clock className="w-4 h-4 text-[#FF0000]" />
           <span>{row.avg_response_time > 0 ? `${Math.round(row.avg_response_time)} דק'` : '-'}</span>
         </div>
       )

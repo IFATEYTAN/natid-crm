@@ -91,7 +91,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
     {
       header: 'ספק',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.vendor_id} className="text-[#0078D4] hover:underline font-medium">
+        <Link to={createPageUrl('VendorProfile') + '?id=' + row.vendor_id} className="text-[#FF0000] hover:underline font-medium">
           {row.vendor_name}
         </Link>
       )
