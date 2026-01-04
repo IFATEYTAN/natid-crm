@@ -25,6 +25,11 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
+  // Don't wrap auth pages in the main layout
+  if (currentPageName === 'SignIn' || currentPageName === 'Register') {
+    return children;
+  }
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
