@@ -16,51 +16,34 @@ export default function StatCard({
   to
 }) {
   // SOFT DESIGN SYSTEM: Soft colors with gentle borders
-  const softStyle = {
-    border: 'border-r-4 border-r-primary-soft-400',
-    iconBg: 'bg-primary-soft-50',
-    iconColor: 'text-primary-soft-600',
-    titleColor: 'text-neutral-soft-600',
-    valueColor: 'text-neutral-soft-800'
-  };
-
-  const isSimple = variant === 'simple';
-
   const cardClasses = cn(
-    "transition-all duration-300 bg-white",
-    isSimple 
-      ? "border border-[#E0E0E0] shadow-sm hover:shadow-md rounded-lg" 
-      : "border-r-4 hover:shadow-lg rounded-r-lg",
-    !isSimple && softStyle.border,
-    (onClick || to) && "cursor-pointer hover:scale-[1.02]",
+    "card-base transition-all duration-200", // Using global card-base class
+    (onClick || to) && "cursor-pointer hover:shadow-md",
     className
   );
 
   const cardContent = (
-    <CardContent className="pt-6">
-      <div className={cn("flex items-center justify-between flex-row-reverse", isSimple && "justify-end")}>
-          {Icon && !isSimple && (
-            <div className={cn(
-              "w-12 h-12 rounded-lg flex items-center justify-center transition-colors",
-              softStyle.iconBg
-            )}>
-              <Icon className={cn("w-6 h-6", softStyle.iconColor)} strokeWidth={2} />
-            </div>
+    <div className="flex flex-col h-full justify-between">
+      <div className="flex items-start justify-between">
+        <div className="text-right w-full">
+          <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+            {title}
+          </p>
+          <p className="text-3xl font-bold text-[var(--color-primary)] leading-tight">
+            {value}
+          </p>
+          {subtitle && (
+            <p className="text-sm text-[var(--color-text-disabled)] mt-1">
+              {subtitle}
+            </p>
           )}
-          <div className="text-right w-full">
-            <p className={cn("text-sm mb-1 font-medium", isSimple ? "text-[#616161]" : softStyle.titleColor)}>
-              {title}
-            </p>
-            <p className={cn("text-3xl font-bold", isSimple ? "text-[#FF0000]" : softStyle.valueColor)}>
-              {value}
-            </p>
-            {subtitle && (
-              <p className="text-xs text-neutral-soft-400 mt-1">
-                {subtitle}
-              </p>
-            )}
-          </div>
         </div>
+        {Icon && (
+          <div className="p-2 bg-gray-50 rounded-lg">
+            <Icon className="w-5 h-5 text-[var(--color-text-secondary)]" strokeWidth={1.5} />
+          </div>
+        )}
+      </div>
         {trend && (
           <div className={cn(
             "mt-3 flex items-center gap-1 text-xs font-medium flex-row-reverse justify-end",

@@ -247,12 +247,12 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[32px] font-bold text-[#212121] leading-tight">לוח בקרה</h1>
-          <p className="text-[#616161] text-sm body-2 mt-1">סקירת מצב מערכת</p>
+          <h1>לוח בקרה</h1>
+          <p className="text-[var(--color-text-secondary)]">סקירת מצב מערכת בזמן אמת</p>
         </div>
         <Link to={createPageUrl('NewCall')}>
-          <Button className="bg-[#FF0000] hover:bg-[#CC0000] text-white gap-2 rounded-[4px] font-bold">
-            <Plus className="w-5 h-5" strokeWidth={2} />
+          <Button className="btn-primary flex items-center gap-2">
+            <Plus className="w-5 h-5" />
             קריאה חדשה
           </Button>
         </Link>
@@ -302,8 +302,8 @@ export default function Dashboard() {
             <AIInsightsWidget />
             <div className="grid lg:grid-cols-2 gap-6">
         {/* Bar Chart - Calls by Status */}
-        <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4">קריאות לפי סטטוס</h3>
+        <div className="card-base">
+          <h3>קריאות לפי סטטוס</h3>
           {isLoading ? (
             <Skeleton className="h-64" />
           ) : (
@@ -338,8 +338,8 @@ export default function Dashboard() {
         </div>
 
         {/* Line Chart - Trend */}
-        <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4">מגמת קריאות - 7 ימים אחרונים</h3>
+        <div className="card-base">
+          <h3>מגמת קריאות - 7 ימים אחרונים</h3>
           {isLoading ? (
             <Skeleton className="h-64" />
           ) : (
@@ -391,12 +391,12 @@ export default function Dashboard() {
     </div>
 
       {/* Recent Calls Table */}
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+      <div className="card-base">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[20px] font-medium text-[#212121]">10 קריאות אחרונות</h3>
-          <Link to={createPageUrl('Calls')} className="text-[#FF0000] text-sm hover:underline flex items-center gap-1">
+          <h3>10 קריאות אחרונות</h3>
+          <Link to={createPageUrl('Calls')} className="text-[var(--color-primary)] text-sm hover:underline flex items-center gap-1">
             הצג הכל
-            <ChevronLeft className="w-4 h-4" strokeWidth={2} />
+            <ChevronLeft className="w-4 h-4" />
           </Link>
         </div>
         {isLoading ? (
