@@ -24,6 +24,7 @@ import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import __Layout from './Layout.jsx';
 
 
@@ -54,6 +55,7 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
     "Login": Login,
+    "Register": Register,
 }
 
 export const pagesConfig = {
