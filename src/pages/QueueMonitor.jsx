@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Table,
   TableBody,
@@ -27,12 +27,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { 
-  Users, 
-  Clock, 
   AlertTriangle, 
-  CheckCircle2, 
   ArrowRight,
-  RefreshCw,
   Phone,
   MapPin
 } from 'lucide-react';
@@ -167,71 +163,58 @@ export default function QueueMonitor() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[32px] font-bold text-[#212121]">ניטור תורי עבודה</h1>
-        <p className="text-[#616161] text-sm">מסך מנהל משמרת - תצוגת נציגים ותורים</p>
+        <h1>ניטור תורי עבודה</h1>
+        <p className="text-[var(--color-text-secondary)]">מסך מנהל משמרת - תצוגת נציגים ותורים</p>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="בתור כללי"
           value={waitingInQueue.length}
-          icon={Clock}
-          variant={waitingInQueue.length > 5 ? 'warning' : 'default'}
         />
         <StatCard
           title="משובץ לנציגים"
           value={assignedToAgents.length}
-          icon={Users}
-          variant="default"
         />
         <StatCard
           title="בטיפול"
           value={inProgress.length}
-          icon={RefreshCw}
-          variant="primary"
         />
         <StatCard
           title="זמן ממוצע"
           value={`${avgTime}'`}
-          icon={CheckCircle2}
-          variant="success"
         />
       </div>
 
       {/* Agents Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            סטטוס נציגים
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
+      <div className="card-base">
+        <h3 className="mb-4">סטטוס נציגים</h3>
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>נציג</TableHead>
-                <TableHead>קריאות פעילות</TableHead>
-                <TableHead>הושלמו היום</TableHead>
-                <TableHead>זמן ממוצע</TableHead>
-                <TableHead>עומס</TableHead>
+              <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
+                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">נציג</TableHead>
+                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">קריאות פעילות</TableHead>
+                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">הושלמו היום</TableHead>
+                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">זמן ממוצע</TableHead>
+                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">עומס</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {agentStats.map(({ agent, activeCount, completedToday, avgTime }) => (
-                <TableRow key={agent.id}>
-                  <TableCell className="font-medium">{agent.full_name}</TableCell>
+                <TableRow key={agent.id} className="border-b border-[var(--color-border)]">
+                  <TableCell className="font-medium text-[#212121]">{agent.full_name}</TableCell>
                   <TableCell>
-                    <Badge variant={activeCount >= 5 ? 'destructive' : 'default'}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${activeCount >= 5 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
                       {activeCount}
-                    </Badge>
+                    </span>
                   </TableCell>
-                  <TableCell>{completedToday}</TableCell>
-                  <TableCell>{avgTime > 0 ? `${avgTime}'` : '-'}</TableCell>
+                  <TableCell className="text-[#212121]">{completedToday}</TableCell>
+                  <TableCell className="text-[#212121]">{avgTime > 0 ? `${avgTime}'` : '-'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-[#E0E0E0] rounded-full h-2 w-24">
+                      <div className="flex-1 bg-[#E5E7EB] rounded-full h-2 w-24">
                         <div 
                           className={`h-full rounded-full ${
                             activeCount >= 5 ? 'bg-[#D32F2F]' : 
@@ -248,28 +231,23 @@ export default function QueueMonitor() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* General Queue */}
       {waitingInQueue.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#ED6C02]" />
-              תור כללי - קריאות ללא שיבוץ ({waitingInQueue.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
+        <div className="card-base">
+          <h3 className="mb-4">תור כללי - קריאות ללא שיבוץ ({waitingInQueue.length})</h3>
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>זמן בתור</TableHead>
-                  <TableHead>קריאה</TableHead>
-                  <TableHead>לקוח</TableHead>
-                  <TableHead>תקלה</TableHead>
-                  <TableHead>מיקום</TableHead>
-                  <TableHead>פעולות</TableHead>
+                <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">זמן בתור</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">קריאה</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">לקוח</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">תקלה</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">מיקום</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">פעולות</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -282,43 +260,34 @@ export default function QueueMonitor() {
                   );
                   
                   return (
-                    <TableRow key={queueItem.id}>
+                    <TableRow key={queueItem.id} className="border-b border-[var(--color-border)]">
                       <TableCell>
-                        <Badge variant={waitTime > 10 ? 'destructive' : 'default'}>
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${waitTime > 10 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
                           {waitTime} דקות
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Link 
                           to={createPageUrl(`CallDetails?id=${call.id}`)}
-                          className="text-[#0078D4] hover:underline"
+                          className="text-[#FF0000] hover:underline font-medium"
                         >
                           {call.call_number}
                         </Link>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{call.customer_name}</p>
-                          <p className="text-xs text-[#616161]">
-                            <Phone className="w-3 h-3 inline ml-1" />
-                            {call.customer_phone}
-                          </p>
+                          <p className="font-medium text-[#212121]">{call.customer_name}</p>
+                          <p className="text-xs text-[#616161]">{call.customer_phone}</p>
                         </div>
                       </TableCell>
-                      <TableCell>{issueTypeLabels[call.issue_type]}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <MapPin className="w-3 h-3" />
-                          {call.pickup_location_city}
-                        </div>
-                      </TableCell>
+                      <TableCell className="text-[#212121]">{issueTypeLabels[call.issue_type]}</TableCell>
+                      <TableCell className="text-[#212121]">{call.pickup_location_city}</TableCell>
                       <TableCell>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleTransferClick(queueItem)}
                         >
-                          <ArrowRight className="w-3 h-3 ml-1" />
                           שבץ
                         </Button>
                       </TableCell>
@@ -327,34 +296,29 @@ export default function QueueMonitor() {
                 })}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Agent Queues */}
       {agentStats.filter(s => s.activeCount > 0).map(({ agent, calls: agentCalls }) => (
-        <Card key={agent.id}>
-          <CardHeader>
-            <CardTitle className="text-base flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                {agent.full_name} - {agentCalls.length} קריאות פעילות
-              </span>
-              <Badge variant={agentCalls.length >= 5 ? 'destructive' : 'default'}>
-                {agentCalls.length >= 5 ? 'עומס גבוה' : 'פעיל'}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
+        <div key={agent.id} className="card-base">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <h3>{agent.full_name} - {agentCalls.length} קריאות פעילות</h3>
+            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${agentCalls.length >= 5 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+              {agentCalls.length >= 5 ? 'עומס גבוה' : 'פעיל'}
+            </span>
+          </div>
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>סטטוס</TableHead>
-                  <TableHead>קריאה</TableHead>
-                  <TableHead>לקוח</TableHead>
-                  <TableHead>תקלה</TableHead>
-                  <TableHead>מיקום</TableHead>
-                  <TableHead>פעולות</TableHead>
+                <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">סטטוס</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">קריאה</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">לקוח</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">תקלה</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">מיקום</TableHead>
+                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">פעולות</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -362,43 +326,34 @@ export default function QueueMonitor() {
                   if (!call) return null;
                   
                   return (
-                    <TableRow key={id}>
+                    <TableRow key={id} className="border-b border-[var(--color-border)]">
                       <TableCell>
-                        <Badge variant={queue_status === 'in_progress' ? 'default' : 'secondary'}>
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${queue_status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
                           {queue_status === 'in_progress' ? 'בטיפול' : 'משובץ'}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Link 
                           to={createPageUrl(`CallDetails?id=${call.id}`)}
-                          className="text-[#0078D4] hover:underline"
+                          className="text-[#FF0000] hover:underline font-medium"
                         >
                           {call.call_number}
                         </Link>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{call.customer_name}</p>
-                          <p className="text-xs text-[#616161]">
-                            <Phone className="w-3 h-3 inline ml-1" />
-                            {call.customer_phone}
-                          </p>
+                          <p className="font-medium text-[#212121]">{call.customer_name}</p>
+                          <p className="text-xs text-[#616161]">{call.customer_phone}</p>
                         </div>
                       </TableCell>
-                      <TableCell>{issueTypeLabels[call.issue_type]}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <MapPin className="w-3 h-3" />
-                          {call.pickup_location_city}
-                        </div>
-                      </TableCell>
+                      <TableCell className="text-[#212121]">{issueTypeLabels[call.issue_type]}</TableCell>
+                      <TableCell className="text-[#212121]">{call.pickup_location_city}</TableCell>
                       <TableCell>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => handleTransferClick(queueItems.find(q => q.id === id))}
                         >
-                          <ArrowRight className="w-3 h-3 ml-1" />
                           העבר
                         </Button>
                       </TableCell>
@@ -407,8 +362,8 @@ export default function QueueMonitor() {
                 })}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
 
       {/* Transfer Dialog */}
