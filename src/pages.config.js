@@ -26,6 +26,7 @@ import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
+import CoverageAreas from './pages/CoverageAreas';
 import __Layout from './Layout.jsx';
 
 
@@ -58,6 +59,7 @@ export const PAGES = {
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
+    "CoverageAreas": CoverageAreas,
 }
 
 export const pagesConfig = {

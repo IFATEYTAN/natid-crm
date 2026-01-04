@@ -266,28 +266,26 @@ export default function Dashboard() {
           ))
         ) : (
           <>
-            <Link to={createPageUrl('Calls?status=open')}>
-              <StatCard
-                title="קריאות פתוחות"
-                value={openCalls.length}
-                variant="simple"
-              />
-            </Link>
-            <Link to={createPageUrl('Calls?status=waiting_treatment')}>
-              <StatCard
-                title="ממתינות לשיוך"
-                value={waitingCalls.length}
-                variant="simple"
-              />
-            </Link>
             <StatCard
-              title="זמן ממוצע לטיפול"
-              value={avgCompletion}
+              title="זמן הגעה משוער (ETA)"
+              value="32"
+              subtitle="דקות ממוצע"
+              variant="simple"
+            />
+            <StatCard
+              title="זמן תגובה ראשוני"
+              value="1:45"
               subtitle="דקות"
               variant="simple"
             />
             <StatCard
-              title="שביעות רצון"
+              title="אחוז פתרון בשטח"
+              value="68%"
+              subtitle="ללא גרירה"
+              variant="simple"
+            />
+            <StatCard
+              title="ציון שביעות רצון (CSAT)"
               value={`${avgRating}/5.0`}
               variant="simple"
             />

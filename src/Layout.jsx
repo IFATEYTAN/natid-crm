@@ -60,6 +60,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'קריאות שירות', href: 'Cases' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
+        { name: 'אזורי כיסוי', href: 'CoverageAreas' },
       ]
     },
     {
@@ -68,6 +69,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'דוחות', href: 'Reports' },
         { name: 'לקוחות', href: 'Customers' },
         { name: 'נותני שירות', href: 'ServiceProviders' },
+        { name: 'פורטל ספקים', href: 'VendorPortal' },
       ]
     },
     {
@@ -77,7 +79,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'אוטומציה', href: 'AutomationSettings' },
         { name: 'אינטגרציות CRM', href: 'IntegrationSettings' },
         { name: 'הגדרות התראות', href: 'NotificationSettings' },
-        { name: 'הגדרות', href: 'Settings' },
+        { name: 'הגדרות מערכת', href: 'Settings' },
       ]
     }
   ];

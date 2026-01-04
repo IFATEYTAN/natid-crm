@@ -99,10 +99,10 @@ const statusConfig = {
   suspended: { label: 'מושהה', bg: 'bg-[#FFEBEE]', text: 'text-[#C62828]', icon: AlertTriangle },
   
   // Priority
-  low: { label: 'נמוך', bg: 'bg-[#F5F5F5]', text: 'text-[#616161]' },
-  normal: { label: 'רגיל', bg: 'bg-[#E3F2FD]', text: 'text-[#0288D1]' },
-  high: { label: 'גבוה', bg: 'bg-[#FFF4E5]', text: 'text-[#ED6C02]', icon: AlertTriangle },
-  urgent: { label: 'דחוף', bg: 'bg-[#FFEBEE]', text: 'text-[#C62828]', icon: AlertTriangle },
+  low: { label: 'נמוך', bg: 'bg-[#F5F5F5]', text: 'text-[#757575]' }, // Gray
+  normal: { label: 'רגיל', bg: 'bg-[#E3F2FD]', text: 'text-[#1976D2]' }, // Blue
+  high: { label: 'גבוה', bg: 'bg-[#FFEBEE]', text: 'text-[#D32F2F]', icon: AlertTriangle }, // Red-ish
+  urgent: { label: 'דחוף', bg: 'bg-[#FFCDD2]', text: 'text-[#B71C1C]', icon: AlertTriangle }, // Strong Red
   
   // Payment
   pending: { label: 'ממתין', bg: 'bg-[#FFF4E5]', text: 'text-[#ED6C02]', icon: Clock },
