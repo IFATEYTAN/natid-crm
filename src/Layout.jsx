@@ -239,7 +239,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Main Content */}
       <div className="lg:mr-64">
         {/* Top Bar */}
-        <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-[1100] flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 

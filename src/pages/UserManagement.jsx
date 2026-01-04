@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -234,13 +235,75 @@ export default function UserManagement() {
         <div>
           <p className="text-[#616161] text-sm">{filteredUsers.length} משתמשים במערכת</p>
         </div>
-        <Button 
-          className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
-          onClick={() => setIsInviteDialogOpen(true)}
-        >
-          <UserPlus className="w-4 h-4" />
-          הזמן משתמש חדש
-        </Button>
+        
+        <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2">
+              <UserPlus className="w-4 h-4" />
+              הזמן משתמש חדש
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>הזמן משתמש חדש</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleInvite} className="space-y-4">
+              <div>
+                <Label>כתובת אימייל *</Label>
+                <div className="relative mt-1">
+                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+                  <Input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    className="pr-10"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-[#616161] mt-1">
+                  המשתמש יקבל מייל עם קישור להרשמה למערכת
+                </p>
+              </div>
+              <div>
+                <Label>תפקיד במערכת *</Label>
+                <Select value={inviteRole} onValueChange={setInviteRole}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">מוקדן</SelectItem>
+                    <SelectItem value="admin">מנהל</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-[#616161] mt-1">
+                  {inviteRole === 'admin' 
+                    ? 'מנהל - גישה מלאה לכל המערכת' 
+                    : 'מוקדן - גישה לניהול קריאות בלבד'}
+                </p>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsInviteDialogOpen(false);
+                    setInviteEmail('');
+                  }}
+                >
+                  ביטול
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-[#0D47A1] hover:bg-[#1565C0]"
+                  disabled={inviteMutation.isPending}
+                >
+                  {inviteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'שלח הזמנה'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Info Card */}
@@ -330,69 +393,7 @@ export default function UserManagement() {
         emptyMessage="לא נמצאו משתמשים"
       />
 
-      {/* Invite Dialog */}
-      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>הזמן משתמש חדש</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleInvite} className="space-y-4">
-            <div>
-              <Label>כתובת אימייל *</Label>
-              <div className="relative mt-1">
-                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
-                <Input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="user@example.com"
-                  className="pr-10"
-                  required
-                />
-              </div>
-              <p className="text-xs text-[#616161] mt-1">
-                המשתמש יקבל מייל עם קישור להרשמה למערכת
-              </p>
-            </div>
-            <div>
-              <Label>תפקיד במערכת *</Label>
-              <Select value={inviteRole} onValueChange={setInviteRole}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">מוקדן</SelectItem>
-                  <SelectItem value="admin">מנהל</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-[#616161] mt-1">
-                {inviteRole === 'admin' 
-                  ? 'מנהל - גישה מלאה לכל המערכת' 
-                  : 'מוקדן - גישה לניהול קריאות בלבד'}
-              </p>
-            </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  setIsInviteDialogOpen(false);
-                  setInviteEmail('');
-                }}
-              >
-                ביטול
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-[#0D47A1] hover:bg-[#1565C0]"
-                disabled={inviteMutation.isPending}
-              >
-                שלח הזמנה
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Invite Dialog - Moved to Header */}
 
       {/* Upload Image Dialog */}
       <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
