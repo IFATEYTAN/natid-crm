@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import {
   LayoutDashboard,
@@ -11,6 +11,8 @@ import {
   X,
   Plus,
   ChevronLeft,
+  ChevronDown,
+  ChevronRight,
   LogOut,
   User,
   MapPin
@@ -19,11 +21,18 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+
+  // Collapsible groups state - by default, show essential items only
+  const [expandedGroups, setExpandedGroups] = useState({
+    'תפעול יומי': false,
+    'ניהול ונתונים': false,
+    'מערכת': false
+  });
 
   // Don't wrap auth pages in the main layout
   if (currentPageName === 'SignIn' || currentPageName === 'Register') {
@@ -51,12 +60,15 @@ export default function Layout({ children, currentPageName }) {
     return name.substring(0, 2);
   };
 
+  // Navigation structure with essential (always visible) and hidden items
   const navigationGroups = [
     {
       title: 'תפעול יומי',
-      items: [
-        { name: 'תפריט מוקדן', href: 'OperatorDashboard' },
+      essentialItems: [
         { name: 'לוח בקרה', href: 'Dashboard' },
+        { name: 'תפריט מוקדן', href: 'OperatorDashboard' },
+      ],
+      hiddenItems: [
         { name: 'קריאות שירות', href: 'Cases' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
@@ -65,8 +77,10 @@ export default function Layout({ children, currentPageName }) {
     },
     {
       title: 'ניהול ונתונים',
-      items: [
+      essentialItems: [
         { name: 'דוחות', href: 'Reports' },
+      ],
+      hiddenItems: [
         { name: 'לקוחות', href: 'Customers' },
         { name: 'נותני שירות', href: 'ServiceProviders' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
@@ -74,15 +88,25 @@ export default function Layout({ children, currentPageName }) {
     },
     {
       title: 'מערכת',
-      items: [
+      essentialItems: [
+        { name: 'הגדרות מערכת', href: 'Settings' },
+      ],
+      hiddenItems: [
         { name: 'ניהול משתמשים', href: 'UserManagement' },
         { name: 'אוטומציה', href: 'AutomationSettings' },
         { name: 'אינטגרציות CRM', href: 'IntegrationSettings' },
         { name: 'הגדרות התראות', href: 'NotificationSettings' },
-        { name: 'הגדרות מערכת', href: 'Settings' },
       ]
     }
   ];
+
+  // Toggle group expansion
+  const toggleGroup = (groupTitle) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupTitle]: !prev[groupTitle]
+    }));
+  };
 
   const handleLogout = async () => {
     await base44.auth.logout('/SignIn');
@@ -206,34 +230,89 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-6">
-          {navigationGroups.map((group, groupIdx) => (
-            <div key={groupIdx}>
-              <h3 className="text-xs font-semibold text-[#9E9E9E] px-3 mb-2 uppercase tracking-wider">
-                {group.title}
-              </h3>
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const isActive = currentPageName === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      to={createPageUrl(item.href)}
-                      onClick={() => setSidebarOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200",
-                        isActive 
-                          ? "bg-[#FF0000] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]" 
-                          : "text-[#424242] hover:bg-[#F5F5F5] hover:text-[#212121]"
-                      )}
+        <nav className="p-4 space-y-4">
+          {navigationGroups.map((group, groupIdx) => {
+            const isExpanded = expandedGroups[group.title];
+            const hasHiddenItems = group.hiddenItems && group.hiddenItems.length > 0;
+
+            return (
+              <div key={groupIdx}>
+                {/* Group Header - Clickable to expand/collapse */}
+                <button
+                  onClick={() => hasHiddenItems && toggleGroup(group.title)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2 mb-1 rounded-md transition-colors",
+                    hasHiddenItems ? "hover:bg-[#F5F5F5] cursor-pointer" : "cursor-default"
+                  )}
+                >
+                  <h3 className="text-xs font-semibold text-[#9E9E9E] uppercase tracking-wider">
+                    {group.title}
+                  </h3>
+                  {hasHiddenItems && (
+                    <span className="text-[#9E9E9E] text-sm">
+                      {isExpanded ? '▾' : '▸'}
+                    </span>
+                  )}
+                </button>
+
+                {/* Essential Items - Always Visible */}
+                <div className="space-y-1">
+                  {group.essentialItems.map((item) => {
+                    const isActive = currentPageName === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        to={createPageUrl(item.href)}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200",
+                          isActive
+                            ? "bg-[#FF0000] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]"
+                            : "text-[#424242] hover:bg-[#F5F5F5] hover:text-[#212121]"
+                        )}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {/* Hidden Items - Collapsible */}
+                <AnimatePresence>
+                  {isExpanded && hasHiddenItems && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: 'easeInOut' }}
+                      className="overflow-hidden"
                     >
-                      {item.name}
-                    </Link>
-                  );
-                })}
+                      <div className="space-y-1 pt-1 pr-2 border-r-2 border-[#E0E0E0] mr-2">
+                        {group.hiddenItems.map((item) => {
+                          const isActive = currentPageName === item.href;
+                          return (
+                            <Link
+                              key={item.href}
+                              to={createPageUrl(item.href)}
+                              onClick={() => setSidebarOpen(false)}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 rounded-[4px] text-[14px] font-medium transition-all duration-200",
+                                isActive
+                                  ? "bg-[#FF0000] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]"
+                                  : "text-[#616161] hover:bg-[#F5F5F5] hover:text-[#212121]"
+                              )}
+                            >
+                              {item.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Quick Actions */}

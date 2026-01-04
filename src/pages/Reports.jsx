@@ -169,29 +169,30 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header - Minimalist Design */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h1>דוחות וניתוחים</h1>
-          <p className="text-[var(--color-text-secondary)]">
+          <h1 className="text-2xl font-bold text-gray-900">דוחות וניתוחים</h1>
+          <p className="text-gray-500 mt-1">
             ניתוח מקיף של ביצועים, SLA והכנסות • {filteredCalls.length} קריאות
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
-            className="btn-secondary gap-2"
+            variant="outline"
+            className="gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="w-4 h-4" />
             פילטרים
             {activeFiltersCount > 0 && (
-              <span className="bg-[var(--color-primary)] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              <span className="bg-gray-900 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                 {activeFiltersCount}
               </span>
             )}
           </Button>
           <Button
-            className="btn-primary gap-2"
+            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white"
             onClick={exportAllCallsCSV}
           >
             <Download className="w-4 h-4" />
@@ -200,9 +201,9 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Filters Panel */}
+      {/* Filters Panel - Minimalist Design */}
       {showFilters && (
-        <Card className="border-[#E0E0E0] bg-white">
+        <Card className="border-gray-200 bg-white shadow-sm">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Date Range */}
@@ -310,28 +311,28 @@ export default function Reports() {
               </div>
             </div>
 
-            {/* Active Filters Display */}
+            {/* Active Filters Display - Minimalist */}
             {activeFiltersCount > 0 && (
-              <div className="mt-4 pt-4 border-t border-[#E0E0E0]">
-                <p className="text-sm text-[#616161] mb-2">פילטרים פעילים:</p>
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-500 mb-2">פילטרים פעילים:</p>
                 <div className="flex flex-wrap gap-2">
                   {customStartDate && customEndDate && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
                       תאריך: {format(new Date(customStartDate), 'dd/MM/yy')} - {format(new Date(customEndDate), 'dd/MM/yy')}
                     </span>
                   )}
                   {selectedVendor !== 'all' && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
                       ספק: {vendors.find(v => v.id === selectedVendor)?.vendor_name}
                     </span>
                   )}
                   {selectedCustomer !== 'all' && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
                       לקוח: {selectedCustomer}
                     </span>
                   )}
                   {selectedStatus !== 'all' && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
                       סטטוס: {selectedStatus}
                     </span>
                   )}
@@ -342,51 +343,51 @@ export default function Reports() {
         </Card>
       )}
 
-      {/* Summary Cards */}
+      {/* Summary Cards - Minimalist Design */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to={createPageUrl('Calls')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-400 transition-colors cursor-pointer">
             <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">סה"כ קריאות</div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">{filteredCalls.length}</div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">
+              <div className="text-sm text-gray-500 font-medium">סה"כ קריאות</div>
+              <div className="text-3xl font-bold text-gray-900 mt-1">{filteredCalls.length}</div>
+              <p className="text-xs text-gray-400 mt-2">
                 {calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות
               </p>
             </div>
           </div>
         </Link>
         <Link to={createPageUrl('ServiceProviders')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-400 transition-colors cursor-pointer">
             <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">ספקים פעילים</div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">
+              <div className="text-sm text-gray-500 font-medium">ספקים פעילים</div>
+              <div className="text-3xl font-bold text-gray-900 mt-1">
                 {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
               </div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">מתוך {vendors.length} ספקים</p>
+              <p className="text-xs text-gray-400 mt-2">מתוך {vendors.length} ספקים</p>
             </div>
           </div>
         </Link>
         <Link to={createPageUrl('ServiceProviders')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-400 transition-colors cursor-pointer">
             <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">דירוג ממוצע</div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">
-                {filteredRatings.length > 0 
+              <div className="text-sm text-gray-500 font-medium">דירוג ממוצע</div>
+              <div className="text-3xl font-bold text-gray-900 mt-1">
+                {filteredRatings.length > 0
                   ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
                   : '0.0'}
               </div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">{filteredRatings.length} דירוגים</p>
+              <p className="text-xs text-gray-400 mt-2">{filteredRatings.length} דירוגים</p>
             </div>
           </div>
         </Link>
         <Link to={createPageUrl('VendorPayments')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-400 transition-colors cursor-pointer">
             <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">סה"כ הכנסות</div>
-              <div className="text-3xl font-bold text-[var(--color-primary)] mt-1">
+              <div className="text-sm text-gray-500 font-medium">סה"כ הכנסות</div>
+              <div className="text-3xl font-bold text-gray-900 mt-1">
                 ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
               </div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">{filteredPayments.length} תשלומים</p>
+              <p className="text-xs text-gray-400 mt-2">{filteredPayments.length} תשלומים</p>
             </div>
           </div>
         </Link>

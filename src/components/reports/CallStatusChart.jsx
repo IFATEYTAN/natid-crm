@@ -14,15 +14,19 @@ const statusLabels = {
   cancelled: 'בוטל'
 };
 
-// Soft color palette for call statuses
+/**
+ * Minimalist color palette - 2-3 colors only
+ * Primary: Grays
+ * Accent: Blue for active states
+ */
 const statusColors = {
-  waiting_treatment: '#F59E0B',   // warning-soft-500 - כתום עדין
-  awaiting_assignment: '#FFA07A', // chart-soft-4 - כתום-ורוד עדין
-  assigning: '#FF6B6B',           // primary-soft-500 - אדום עדין
-  vendor_enroute: '#8B5CF6',      // info-soft-500 - סגול עדין
-  in_progress: '#0EA5E9',         // secondary-soft-500 - כחול עדין
-  completed: '#22C55E',           // success-soft-500 - ירוק עדין
-  cancelled: '#A3A3A3'            // neutral-soft-400 - אפור עדין
+  waiting_treatment: '#9CA3AF',  // Gray-400
+  awaiting_assignment: '#6B7280', // Gray-500
+  assigning: '#3B82F6',           // Blue-500 (active)
+  vendor_enroute: '#60A5FA',      // Blue-400 (active)
+  in_progress: '#2563EB',         // Blue-600 (active)
+  completed: '#374151',           // Gray-700
+  cancelled: '#D1D5DB'            // Gray-300
 };
 
 export default function CallStatusChart({ calls }) {
@@ -41,7 +45,7 @@ export default function CallStatusChart({ calls }) {
 
     const statuses = Object.keys(statusCounts);
     const counts = Object.values(statusCounts);
-    const colors = statuses.map((s) => statusColors[s] || '#9E9E9E');
+    const colors = statuses.map((s) => statusColors[s] || '#9CA3AF');
     const labels = statuses.map((s) => statusLabels[s] || s);
 
     // Destroy previous chart
@@ -65,6 +69,7 @@ export default function CallStatusChart({ calls }) {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '65%',
         plugins: {
           legend: {
             position: 'bottom',
@@ -74,21 +79,30 @@ export default function CallStatusChart({ calls }) {
                 family: 'Heebo, sans-serif',
                 size: 12
               },
-              padding: 15,
+              padding: 16,
               usePointStyle: true,
-              pointStyle: 'circle'
+              pointStyle: 'circle',
+              color: '#374151'
             }
           },
           tooltip: {
             rtl: true,
+            backgroundColor: '#FFFFFF',
+            titleColor: '#374151',
+            bodyColor: '#6B7280',
+            borderColor: '#E5E7EB',
+            borderWidth: 1,
             titleFont: {
               family: 'Heebo, sans-serif',
-              size: 14
+              size: 14,
+              weight: '600'
             },
             bodyFont: {
               family: 'Heebo, sans-serif',
               size: 13
             },
+            padding: 12,
+            cornerRadius: 6,
             callbacks: {
               label: function (context) {
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -102,8 +116,8 @@ export default function CallStatusChart({ calls }) {
         animation: {
           animateRotate: true,
           animateScale: true,
-          duration: 1000,
-          easing: 'easeInOutQuart'
+          duration: 800,
+          easing: 'easeOutQuart'
         }
       }
     });
@@ -116,15 +130,15 @@ export default function CallStatusChart({ calls }) {
   }, [calls]);
 
   return (
-    <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-      <CardHeader>
-        <CardTitle className="text-[20px] font-medium text-[#212121] text-right">התפלגות קריאות לפי סטטוס</CardTitle>
+    <Card className="bg-white border border-gray-200 shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-semibold text-gray-900 text-right">התפלגות קריאות לפי סטטוס</CardTitle>
       </CardHeader>
       <CardContent dir="rtl">
         <div className="relative" style={{ height: '280px' }}>
-          <canvas ref={chartRef} className="text-gray-900" />
+          <canvas ref={chartRef} />
         </div>
       </CardContent>
-    </Card>);
-
+    </Card>
+  );
 }

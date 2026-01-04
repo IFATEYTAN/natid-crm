@@ -1,10 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Chart, registerables } from 'chart.js';
-import { TrendingUp } from 'lucide-react';
 
 Chart.register(...registerables);
 
+/**
+ * LiveResponseTimeChart - Minimalist Design
+ * Uses only 2-3 colors: Gray scale + Blue accent
+ */
 export default function LiveResponseTimeChart({ calls, vendors }) {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -14,15 +17,15 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
 
     // Calculate average response time per vendor
     const vendorResponseTimes = vendors.map(vendor => {
-      const vendorCalls = calls.filter(c => 
-        c.assigned_vendor_id === vendor.id && 
+      const vendorCalls = calls.filter(c =>
+        c.assigned_vendor_id === vendor.id &&
         c.time_to_vendor_assignment !== null
       );
-      
+
       if (vendorCalls.length === 0) return null;
-      
+
       const avgTime = vendorCalls.reduce((sum, c) => sum + c.time_to_vendor_assignment, 0) / vendorCalls.length;
-      
+
       return {
         name: vendor.vendor_name,
         avgTime: Math.round(avgTime),
@@ -43,15 +46,15 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
       chartInstance.current.destroy();
     }
 
-    // Create soft gradient colors based on response time
+    // Minimalist color scheme - gray with blue accent for best performers
     const colors = data.map(time => {
-      if (time <= 20) return '#22C55E'; // success-soft-500 - ירוק עדין
-      if (time <= 30) return '#0EA5E9'; // secondary-soft-500 - כחול עדין
-      if (time <= 40) return '#F59E0B'; // warning-soft-500 - כתום עדין
-      return '#FF6B6B'; // primary-soft-500 - אדום עדין
+      if (time <= 20) return '#374151'; // Gray-700 (best - darker = better)
+      if (time <= 30) return '#6B7280'; // Gray-500
+      if (time <= 40) return '#9CA3AF'; // Gray-400
+      return '#D1D5DB'; // Gray-300 (needs improvement - lighter)
     });
 
-    // Create new chart with live update animation
+    // Create new chart
     const ctx = chartRef.current.getContext('2d');
     chartInstance.current = new Chart(ctx, {
       type: 'bar',
@@ -61,11 +64,11 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
           label: 'זמן תגובה ממוצע (דקות)',
           data,
           backgroundColor: colors,
-          borderColor: colors.map(c => c),
-          borderWidth: 2,
-          borderRadius: 8,
+          borderColor: colors,
+          borderWidth: 0,
+          borderRadius: 4,
           barThickness: 'flex',
-          maxBarThickness: 40
+          maxBarThickness: 32
         }]
       },
       options: {
@@ -78,16 +81,24 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
           },
           tooltip: {
             rtl: true,
+            backgroundColor: '#FFFFFF',
+            titleColor: '#374151',
+            bodyColor: '#6B7280',
+            borderColor: '#E5E7EB',
+            borderWidth: 1,
             titleFont: {
               family: 'Heebo, sans-serif',
-              size: 14
+              size: 14,
+              weight: '600'
             },
             bodyFont: {
               family: 'Heebo, sans-serif',
               size: 13
             },
+            padding: 12,
+            cornerRadius: 6,
             callbacks: {
-              label: function(context) {
+              label: function (context) {
                 const index = context.dataIndex;
                 const time = data[index];
                 const count = callCounts[index];
@@ -107,12 +118,14 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
                 family: 'Heebo, sans-serif',
                 size: 11
               },
-              callback: function(value) {
+              color: '#6B7280',
+              callback: function (value) {
                 return value + ' דק\'';
               }
             },
             grid: {
-              color: 'rgba(0, 0, 0, 0.05)'
+              color: '#F3F4F6',
+              drawBorder: false
             }
           },
           y: {
@@ -121,8 +134,9 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
                 family: 'Heebo, sans-serif',
                 size: 12
               },
+              color: '#374151',
               crossAlign: 'far',
-              padding: 10
+              padding: 8
             },
             grid: {
               display: false
@@ -130,41 +144,13 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
           }
         },
         animation: {
-          duration: 1500,
-          easing: 'easeInOutQuart',
-          delay: (context) => {
-            // Stagger animation for each bar
-            return context.dataIndex * 100;
-          },
-          onProgress: function(animation) {
-            // Create "live update" effect
-            const chart = animation.chart;
-            const ctx = chart.ctx;
-            ctx.save();
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = 'rgba(0, 120, 212, 0.3)';
-            ctx.restore();
-          }
-        },
-        transitions: {
-          active: {
-            animation: {
-              duration: 400
-            }
-          }
+          duration: 600,
+          easing: 'easeOutQuart'
         }
       }
     });
 
-    // Add periodic subtle animation (shimmer effect)
-    const shimmerInterval = setInterval(() => {
-      if (chartInstance.current) {
-        chartInstance.current.update('none');
-      }
-    }, 3000);
-
     return () => {
-      clearInterval(shimmerInterval);
       if (chartInstance.current) {
         chartInstance.current.destroy();
       }
@@ -172,36 +158,30 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
   }, [calls, vendors]);
 
   return (
-    <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-      <CardHeader>
-        <div className="flex items-center justify-between flex-row-reverse">
-          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">זמני תגובה ממוצעים - 10 ספקים מובילים</CardTitle>
-          <div className="flex items-center gap-1 text-xs text-[#2E7D32]">
-            <TrendingUp className="w-4 h-4" />
-            <span>עדכון בזמן אמת</span>
-          </div>
-        </div>
+    <Card className="bg-white border border-gray-200 shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-semibold text-gray-900 text-right">זמני תגובה ממוצעים - 10 ספקים מובילים</CardTitle>
       </CardHeader>
       <CardContent dir="rtl">
-        <div className="relative" style={{ height: '350px' }}>
+        <div className="relative" style={{ height: '320px' }}>
           <canvas ref={chartRef} />
         </div>
-        <div className="mt-4 flex flex-wrap gap-3 justify-end text-xs">
+        <div className="mt-4 flex flex-wrap gap-4 justify-end text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-[#616161]">מצוין (≤20 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#2E7D32]" />
+            <span className="text-gray-600">מצוין (≤20 דק')</span>
+            <div className="w-3 h-3 rounded bg-gray-700" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[#616161]">טוב (21-30 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#0288D1]" />
+            <span className="text-gray-600">טוב (21-30 דק')</span>
+            <div className="w-3 h-3 rounded bg-gray-500" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[#616161]">סביר (31-40 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#FF6B00]" />
+            <span className="text-gray-600">סביר (31-40 דק')</span>
+            <div className="w-3 h-3 rounded bg-gray-400" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[#616161]">דורש שיפור (>40 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#FF0000]" />
+            <span className="text-gray-600">לשיפור (>40 דק')</span>
+            <div className="w-3 h-3 rounded bg-gray-300" />
           </div>
         </div>
       </CardContent>
