@@ -125,7 +125,7 @@ body {
 h1 {
   font-size: 32px;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   line-height: 1.2;
   margin-bottom: var(--spacing-lg);
 }
