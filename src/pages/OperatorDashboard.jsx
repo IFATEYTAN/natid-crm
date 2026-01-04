@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import AvatarStack from '@/components/ui/AvatarStack';
@@ -14,14 +15,10 @@ import {
   Phone,
   Truck,
   AlertCircle,
-  CheckCircle,
-  Clock,
-  TrendingUp,
-  Users,
-  MapPin,
   Eye,
   Navigation,
-  Activity
+  Activity,
+  MapPin
 } from 'lucide-react';
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -227,115 +224,32 @@ export default function OperatorDashboard() {
 
       {/* Stats Cards - Elegant Minimal Design */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0 }}
-        >
-          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#616161] mb-1">קריאות פתוחות</p>
-                  <p className="text-3xl font-bold text-[#212121]">{stats.openCalls}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-[#212121]" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#616161] mb-1">הושלמו היום</p>
-                  <p className="text-3xl font-bold text-[#212121]">{stats.completedToday}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-[#212121]" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#616161] mb-1">ממתינות לשיוך</p>
-                  <p className="text-3xl font-bold text-[#212121]">{stats.unassigned}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-[#212121]" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#616161] mb-1">דחופות</p>
-                  <p className="text-3xl font-bold text-[#212121]">{stats.urgent}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-[#212121]" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="border-l-4 border-l-[#212121] hover:shadow-lg transition-all">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#616161] mb-1">ספקים זמינים</p>
-                  <p className="text-3xl font-bold text-[#212121]">{stats.availableVendors}</p>
-                  <div className="mt-2">
-                    <AvatarStack users={availableVendors} max={4} size="sm" />
-                  </div>
-                </div>
-                <div className="w-12 h-12 rounded-lg bg-[#F5F5F5] flex items-center justify-center">
-                  <Truck className="w-6 h-6 text-[#212121]" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        <StatCard
+          title="קריאות פתוחות"
+          value={stats.openCalls}
+        />
+        <StatCard
+          title="הושלמו היום"
+          value={stats.completedToday}
+        />
+        <StatCard
+          title="ממתינות לשיוך"
+          value={stats.unassigned}
+        />
+        <StatCard
+          title="דחופות"
+          value={stats.urgent}
+        />
+        <StatCard
+          title="ספקים זמינים"
+          value={stats.availableVendors}
+        />
       </div>
 
       {/* Quick Actions - Elegant Grid */}
       <Card className="border-t-4 border-t-[#212121]">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2 text-[#212121]">
-            <Navigation className="w-5 h-5" />
+          <CardTitle className="text-base text-[#212121]">
             קיצורי דרך
           </CardTitle>
         </CardHeader>
@@ -425,8 +339,7 @@ export default function OperatorDashboard() {
       {/* Open Calls Table */}
       <Card className="border-t-4 border-t-[#212121]">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2 text-[#212121]">
-            <Activity className="w-5 h-5" />
+          <CardTitle className="text-base text-[#212121]">
             קריאות פתוחות ({openCalls.length})
           </CardTitle>
         </CardHeader>
@@ -445,8 +358,7 @@ export default function OperatorDashboard() {
       <Card className="border-t-4 border-t-[#2E7D32]">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2 text-[#212121]">
-              <Truck className="w-5 h-5" />
+            <CardTitle className="text-base text-[#212121]">
               ספקים זמינים ({availableVendors.length})
             </CardTitle>
             <AvatarStack users={availableVendors} max={8} size="md" />

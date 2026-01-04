@@ -8,16 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
+import StatCard from '@/components/ui/StatCard';
 import {
   ArrowRight,
   MapPin,
   Phone,
   Mail,
   Star,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  DollarSign,
   FileText,
   Activity
 } from 'lucide-react';
@@ -225,60 +222,22 @@ export default function VendorProfile() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#616161]">קריאות הושלמו</p>
-                <p className="text-2xl font-bold text-[#212121] mt-1">{completedCalls}</p>
-              </div>
-              <CheckCircle2 className="w-8 h-8 text-[#2E7D32]" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#616161]">דירוג ממוצע</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <p className="text-2xl font-bold text-[#212121]">{avgRating}</p>
-                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                </div>
-              </div>
-              <Star className="w-8 h-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#616161]">זמן תגובה ממוצע</p>
-                <p className="text-2xl font-bold text-[#212121] mt-1">
-                  {vendor.average_response_time ? `${Math.round(vendor.average_response_time)} דק'` : '-'}
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-[#0078D4]" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#616161]">תשלומים ממתינים</p>
-                <p className="text-2xl font-bold text-[#212121] mt-1">
-                  ₪{vendor.pending_payments?.toLocaleString() || 0}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-[#ED6C02]" />
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="קריאות הושלמו"
+          value={completedCalls}
+        />
+        <StatCard
+          title="דירוג ממוצע"
+          value={avgRating}
+        />
+        <StatCard
+          title="זמן תגובה ממוצע"
+          value={vendor.average_response_time ? `${Math.round(vendor.average_response_time)} דק'` : '-'}
+        />
+        <StatCard
+          title="תשלומים ממתינים"
+          value={`₪${vendor.pending_payments?.toLocaleString() || 0}`}
+        />
       </div>
 
       {/* Contact & Contract Info */}

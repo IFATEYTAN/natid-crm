@@ -24,8 +24,7 @@ export default function Settings() {
       {/* Company Settings */}
       <Card className="card-base border-none shadow-none p-0">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2 text-[var(--color-text-primary)]">
-            <Building2 className="w-4 h-4 text-[var(--color-primary)]" />
+          <CardTitle className="text-base text-[var(--color-text-primary)]">
             פרטי חברה
           </CardTitle>
           <CardDescription>הגדרות בסיסיות של העסק</CardDescription>
@@ -55,8 +54,7 @@ export default function Settings() {
       {/* SLA Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[#0D47A1]" />
+          <CardTitle className="text-base">
             הגדרות SLA ברירת מחדל
           </CardTitle>
           <CardDescription>זמני תגובה והגעה ברירת מחדל ללקוחות חדשים</CardDescription>
@@ -78,8 +76,7 @@ export default function Settings() {
       {/* Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Bell className="w-4 h-4 text-[#0D47A1]" />
+          <CardTitle className="text-base">
             התראות
           </CardTitle>
           <CardDescription>הגדרות התראות והודעות</CardDescription>
@@ -112,8 +109,7 @@ export default function Settings() {
       {/* Service Types */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Truck className="w-4 h-4 text-[#0D47A1]" />
+          <CardTitle className="text-base">
             סוגי שירות
           </CardTitle>
           <CardDescription>ניהול סוגי השירות הזמינים</CardDescription>
@@ -133,7 +129,6 @@ export default function Settings() {
       {/* Save */}
       <div className="flex justify-end">
         <Button className="btn-primary flex items-center gap-2">
-          <Save className="w-4 h-4" />
           שמור שינויים
         </Button>
       </div>
