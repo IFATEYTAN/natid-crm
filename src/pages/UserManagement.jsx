@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -67,7 +68,9 @@ export default function UserManagement() {
       setInviteRole('user');
     },
     onError: (error) => {
-      toast.error('שגיאה בשליחת הזמנה: ' + error.message);
+      console.error('Invite error:', error);
+      const message = error?.response?.data?.message || error?.message || 'שגיאה לא ידועה';
+      toast.error('שגיאה בשליחת הזמנה: ' + message);
     },
   });
 
@@ -109,11 +112,12 @@ export default function UserManagement() {
 
   const handleInvite = (e) => {
     e.preventDefault();
-    if (!inviteEmail || !inviteEmail.includes('@')) {
+    const cleanEmail = inviteEmail.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
       toast.error('נא להזין כתובת אימייל תקינה');
       return;
     }
-    inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
+    inviteMutation.mutate({ email: cleanEmail, role: inviteRole });
   };
 
   const handleEditRole = (user) => {
@@ -246,6 +250,9 @@ export default function UserManagement() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>הזמן משתמש חדש</DialogTitle>
+              <DialogDescription>
+                הזמן משתמש חדש למערכת על ידי הזנת כתובת האימייל שלו ובחירת תפקיד.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleInvite} className="space-y-4">
               <div>
@@ -400,6 +407,9 @@ export default function UserManagement() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>עדכון תמונת פרופיל</DialogTitle>
+            <DialogDescription>
+              בחר תמונה חדשה למשתמש זה.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {uploadUser && (
@@ -455,6 +465,9 @@ export default function UserManagement() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>עריכת תפקיד משתמש</DialogTitle>
+            <DialogDescription>
+              שנה את תפקיד המשתמש במערכת.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateRole} className="space-y-4">
             {editingUser && (
