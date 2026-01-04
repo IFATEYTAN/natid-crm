@@ -1,17 +1,34 @@
 import React, { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 export default function Register() {
   useEffect(() => {
-    base44.auth.redirectToLogin();
+    // Attempt automatic redirect after a short delay
+    const timer = setTimeout(() => {
+        base44.auth.redirectToLogin();
+    }, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
+  const handleManualRedirect = () => {
+    base44.auth.redirectToLogin();
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
-        <p className="text-lg text-gray-600">מעביר להרשמה...</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 flex-col gap-6 p-4" dir="rtl">
+      <div className="text-center space-y-4">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto" />
+        <h2 className="text-xl font-semibold text-gray-900">מעביר למסך ההתחברות...</h2>
+        <p className="text-gray-600">אנא המתן מספר שניות</p>
+      </div>
+      
+      <div className="text-center bg-white p-6 rounded-lg shadow-sm border border-gray-200 max-w-sm w-full">
+        <p className="text-sm text-gray-600 mb-4">אם אינך מועבר אוטומטית:</p>
+        <Button onClick={handleManualRedirect} className="w-full bg-blue-600 hover:bg-blue-700">
+          לחץ כאן למעבר להרשמה / התחברות
+        </Button>
       </div>
     </div>
   );
