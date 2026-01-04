@@ -42,6 +42,8 @@ import {
   Navigation
 } from 'lucide-react';
 import NavigationMap from '@/components/maps/NavigationMap';
+import VendorRecommendation from '@/components/ai/VendorRecommendation';
+import PredictionBadge from '@/components/ai/PredictionBadge';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -495,10 +497,13 @@ export default function CaseDetails() {
           {/* SLA Status */}
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#212121]" />
-                SLA
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#212121]" />
+                  SLA
+                </CardTitle>
+                <PredictionBadge call={caseData} />
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between p-2 rounded-lg bg-[#FAFAFA]">
@@ -639,6 +644,23 @@ export default function CaseDetails() {
           <DialogHeader>
             <DialogTitle>שיבוץ נותן שירות</DialogTitle>
           </DialogHeader>
+          
+          <div className="px-1 mb-4">
+            <VendorRecommendation 
+              callDetails={caseData} 
+              onSelectVendor={(vendor) => handleAssignProvider(vendor.id)} 
+            />
+          </div>
+
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">או בחר מתוך הרשימה</span>
+            </div>
+          </div>
+
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {providers.length === 0 ? (
               <p className="text-center py-8 text-[#616161]">אין נותני שירות זמינים</p>
