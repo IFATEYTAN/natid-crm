@@ -248,8 +248,7 @@ export default function OperatorDashboard() {
       {/* Quick Actions - Elegant Grid */}
       <Card className="border-t-4 border-t-[#212121]">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2 text-[#212121]">
-            <Navigation className="w-5 h-5" />
+          <CardTitle className="text-base text-[#212121]">
             קיצורי דרך
           </CardTitle>
         </CardHeader>
@@ -339,8 +338,7 @@ export default function OperatorDashboard() {
       {/* Open Calls Table */}
       <Card className="border-t-4 border-t-[#212121]">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2 text-[#212121]">
-            <Activity className="w-5 h-5" />
+          <CardTitle className="text-base text-[#212121]">
             קריאות פתוחות ({openCalls.length})
           </CardTitle>
         </CardHeader>
@@ -359,8 +357,7 @@ export default function OperatorDashboard() {
       <Card className="border-t-4 border-t-[#2E7D32]">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2 text-[#212121]">
-              <Truck className="w-5 h-5" />
+            <CardTitle className="text-base text-[#212121]">
               ספקים זמינים ({availableVendors.length})
             </CardTitle>
             <AvatarStack users={availableVendors} max={8} size="md" />
