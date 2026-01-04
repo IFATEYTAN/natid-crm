@@ -69,7 +69,12 @@ export default function UserManagement() {
     },
     onError: (error) => {
       console.error('Invite error:', error);
-      const message = error?.response?.data?.message || error?.message || 'שגיאה לא ידועה';
+      let message = error?.response?.data?.message || error?.message || 'שגיאה לא ידועה';
+      
+      if (typeof message === 'string' && message.includes("Only paid users or users with a seat")) {
+        message = "לא ניתן להזמין מנהלים (Admins) בחבילה הנוכחית או למשתמשים מחוץ לארגון. נא לנסות להזמין כ'מוקדן' (User).";
+      }
+      
       toast.error('שגיאה בשליחת הזמנה: ' + message);
     },
   });
@@ -285,8 +290,8 @@ export default function UserManagement() {
                 </Select>
                 <p className="text-xs text-[#616161] mt-1">
                   {inviteRole === 'admin' 
-                    ? 'מנהל - גישה מלאה לכל המערכת' 
-                    : 'מוקדן - גישה לניהול קריאות בלבד'}
+                    ? 'מנהל - גישה מלאה (שים לב: ייתכן ומוגבל בחשבונות מסוימים)' 
+                    : 'מוקדן - גישה לניהול קריאות בלבד (מומלץ)'}
                 </p>
               </div>
               <div className="flex justify-end gap-3 pt-4">

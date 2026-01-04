@@ -8,6 +8,7 @@ import Cases from './pages/Cases';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
 import IntegrationSettings from './pages/IntegrationSettings';
+import Login from './pages/Login';
 import MyCallsVendor from './pages/MyCallsVendor';
 import MyQueue from './pages/MyQueue';
 import NewCase from './pages/NewCase';
@@ -15,17 +16,16 @@ import NotificationSettings from './pages/NotificationSettings';
 import OperatorDashboard from './pages/OperatorDashboard';
 import QueueMonitor from './pages/QueueMonitor';
 import QueueSettings from './pages/QueueSettings';
+import Register from './pages/Register';
 import Reports from './pages/Reports';
 import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
+import SignIn from './pages/SignIn';
 import UserManagement from './pages/UserManagement';
 import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import SignIn from './pages/SignIn';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +40,7 @@ export const PAGES = {
     "Customers": Customers,
     "Dashboard": Dashboard,
     "IntegrationSettings": IntegrationSettings,
+    "Login": Login,
     "MyCallsVendor": MyCallsVendor,
     "MyQueue": MyQueue,
     "NewCase": NewCase,
@@ -47,17 +48,16 @@ export const PAGES = {
     "OperatorDashboard": OperatorDashboard,
     "QueueMonitor": QueueMonitor,
     "QueueSettings": QueueSettings,
+    "Register": Register,
     "Reports": Reports,
     "ServiceProviders": ServiceProviders,
     "Settings": Settings,
+    "SignIn": SignIn,
     "UserManagement": UserManagement,
     "VendorMap": VendorMap,
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
-    "Login": Login,
-    "Register": Register,
-    "SignIn": SignIn,
 }
 
 export const pagesConfig = {
