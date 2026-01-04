@@ -449,35 +449,36 @@ export default function AllVendorsMap() {
               >
                 <Popup>
                   <div className="text-right" dir="rtl">
-                    <h3 className="font-bold mb-2 text-[#212121]">
-                      🚛 {vendor.vendor_name}
+                    <h3 className="font-bold mb-2 text-[var(--color-text-primary)]">
+                      {vendor.vendor_name}
                     </h3>
                     <div className="space-y-1 text-sm mb-3">
                       <div className="flex items-center gap-2">
                         <StatusBadge status={vendor.availability_status || 'available'} size="sm" />
                       </div>
                       {vendor.activeCalls > 0 && (
-                        <p className="text-[#ED6C02] font-medium">
+                        <p className="text-[var(--color-status-urgent)] font-medium">
                           {vendor.activeCalls} קריאות פעילות
                         </p>
                       )}
-                      <p>
-                        📞 <a href={`tel:${vendor.phone}`} className="text-[#0078D4]">
+                      <div className="flex items-center gap-1">
+                        <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
+                        <a href={`tel:${vendor.phone}`} className="text-[var(--color-status-normal)] hover:underline">
                           {vendor.phone}
                         </a>
-                      </p>
+                      </div>
                       {vendor.location.created_date && (
-                        <p className="text-xs text-[#616161]">
+                        <p className="text-xs text-[var(--color-text-disabled)]">
                           עדכון: {format(parseISO(vendor.location.created_date), 'HH:mm dd/MM', { locale: he })}
                         </p>
                       )}
                     </div>
                     <Link to={createPageUrl(`VendorProfile?id=${vendor.id}`)}>
-                      <Button size="sm" className="w-full">
+                      <Button size="sm" className="w-full btn-secondary h-8">
                         פרטים מלאים
                       </Button>
                     </Link>
-                    </div>
+                  </div>
                     </Popup>
                     </Marker>
                     )
@@ -503,25 +504,30 @@ export default function AllVendorsMap() {
             >
               <Popup>
                 <div className="text-right" dir="rtl">
-                  <h3 className="font-bold mb-2">
+                  <h3 className="font-bold mb-2 text-[var(--color-text-primary)]">
                     {call.call_number || `#${call.id?.slice(-6)}`}
                   </h3>
                   <div className="space-y-1 text-sm mb-3">
                     <StatusBadge status={call.call_status} size="sm" />
-                    <p>👤 {call.customer_name}</p>
-                    <p>
-                      📞 <a href={`tel:${call.customer_phone}`} className="text-[#0078D4]">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3 text-[var(--color-text-secondary)]" />
+                      <span>{call.customer_name}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
+                      <a href={`tel:${call.customer_phone}`} className="text-[var(--color-status-normal)] hover:underline">
                         {call.customer_phone}
                       </a>
-                    </p>
+                    </div>
                     {call.assigned_vendor_name && (
-                      <p className="text-[#2E7D32] font-medium">
-                        🚛 {call.assigned_vendor_name}
-                      </p>
+                      <div className="flex items-center gap-1 text-[var(--color-status-normal)] font-medium">
+                        <Truck className="w-3 h-3" />
+                        <span>{call.assigned_vendor_name}</span>
+                      </div>
                     )}
                   </div>
                   <Link to={createPageUrl(`CaseDetails?id=${call.id}`)}>
-                    <Button size="sm" className="w-full">
+                    <Button size="sm" className="w-full btn-secondary h-8">
                       פרטים מלאים
                     </Button>
                   </Link>
