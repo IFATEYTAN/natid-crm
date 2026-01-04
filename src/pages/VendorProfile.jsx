@@ -21,6 +21,7 @@ import {
   FileText,
   Activity
 } from 'lucide-react';
+import VendorAIInsights from '@/components/ai/VendorAIInsights';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -218,6 +219,9 @@ export default function VendorProfile() {
           </Button>
         </div>
       </div>
+
+      {/* AI Insights */}
+      <VendorAIInsights vendorId={vendorId} />
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

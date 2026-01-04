@@ -16,6 +16,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import AIInsightsWidget from '@/components/ai/AIInsightsWidget';
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, subDays, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -302,6 +303,9 @@ export default function Dashboard() {
 
       {/* Charts Section */}
       <div className="grid lg:grid-cols-2 gap-6">
+        <div className="col-span-full lg:col-span-2 space-y-6">
+            <AIInsightsWidget />
+            <div className="grid lg:grid-cols-2 gap-6">
         {/* Bar Chart - Calls by Status */}
         <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
           <h3 className="text-[20px] font-medium text-[#212121] mb-4">קריאות לפי סטטוס</h3>
@@ -387,7 +391,9 @@ export default function Dashboard() {
             </ResponsiveContainer>
           )}
         </div>
+            </div>
       </div>
+    </div>
 
       {/* Recent Calls Table */}
       <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
