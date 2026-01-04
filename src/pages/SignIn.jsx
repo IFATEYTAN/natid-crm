@@ -132,8 +132,8 @@ export default function SignIn() {
                 className="text-right h-10 text-sm"
               />
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between text-xs flex-row-reverse mt-2">
+              {/* Remember Me */}
+              <div className="flex items-center justify-end text-xs mt-2">
                 <label className="flex items-center gap-2 cursor-pointer flex-row-reverse">
                   <span className="text-neutral-soft-600">זכור אותי</span>
                   <input
@@ -141,13 +141,6 @@ export default function SignIn() {
                     className="w-3.5 h-3.5 rounded border-neutral-soft-300 text-primary-soft-600 focus:ring-primary-soft-500"
                   />
                 </label>
-                <button 
-                  type="button"
-                  onClick={() => base44.auth.redirectToLogin()}
-                  className="text-primary-soft-600 hover:text-primary-soft-700 hover:underline bg-transparent border-none p-0 cursor-pointer"
-                >
-                  שכחתי סיסמה
-                </button>
               </div>
 
               {/* Login Button */}
@@ -168,15 +161,8 @@ export default function SignIn() {
                 )}
               </Button>
               
-              <div className="text-center mt-4 text-xs text-neutral-soft-600">
-                <span>עדיין אין לך חשבון? </span>
-                <button 
-                  type="button"
-                  onClick={() => base44.auth.redirectToLogin()} 
-                  className="text-primary-soft-600 hover:text-primary-soft-700 font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
-                >
-                  הרשמה למערכת
-                </button>
+              <div className="text-center mt-4 text-xs text-neutral-soft-500">
+                <span>הכניסה למערכת למורשים בלבד</span>
               </div>
             </form>
 
