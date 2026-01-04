@@ -4,12 +4,12 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import AvatarStack from '@/components/ui/AvatarStack';
-import { motion } from 'framer-motion';
+
 import {
   Plus,
   Phone,
@@ -203,8 +203,8 @@ export default function OperatorDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-bold text-[#212121] leading-tight">תפריט מוקדן</h1>
-          <p className="text-[#616161] text-sm body-2 mt-1">סקירה מהירה וניהול קריאות שירות</p>
+          <h1>תפריט מוקדן</h1>
+          <p className="text-[var(--color-text-secondary)]">סקירה מהירה וניהול קריאות שירות</p>
         </div>
         <div className="flex gap-2">
           <Link to={createPageUrl('NewCase')}>
@@ -246,134 +246,93 @@ export default function OperatorDashboard() {
         />
       </div>
 
-      {/* Quick Actions - Elegant Grid */}
-      <Card className="border-t-4 border-t-[#212121]">
-        <CardHeader>
-          <CardTitle className="text-base text-[#212121]">
-            קיצורי דרך
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Link to={createPageUrl('NewCase')}>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-2 hover:border-[#FF0000] hover:bg-[#FFF5F5]">
-                  <Plus className="w-7 h-7 text-[#212121]" />
-                  <span className="text-sm font-medium">קריאה חדשה</span>
-                </Button>
-              </motion.div>
-            </Link>
-            <Link to={createPageUrl('Cases')}>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-2 hover:border-[#ED6C02] hover:bg-[#FFF4E5]">
-                  <AlertCircle className="w-7 h-7 text-[#212121]" />
-                  <span className="text-sm font-medium">קריאות פתוחות</span>
-                </Button>
-              </motion.div>
-            </Link>
-            <Link to={createPageUrl('ServiceProviders')}>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-2 hover:border-[#2E7D32] hover:bg-[#E8F5E9]">
-                  <Truck className="w-7 h-7 text-[#212121]" />
-                  <span className="text-sm font-medium">ספקים</span>
-                </Button>
-              </motion.div>
-            </Link>
-            <Link to={createPageUrl('AllVendorsMap')}>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button variant="outline" className="w-full h-24 flex flex-col gap-2 border-2 hover:border-[#212121] hover:bg-[#FAFAFA]">
-                  <MapPin className="w-7 h-7 text-[#212121]" />
-                  <span className="text-sm font-medium">מפת ספקים</span>
-                </Button>
-              </motion.div>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Quick Actions */}
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="text-[15px] font-semibold text-[#111827] mb-4">קיצורי דרך</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Link to={createPageUrl('NewCase')}>
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
+              <Plus className="w-6 h-6 text-[#374151]" />
+              <span className="text-[13px] font-medium text-[#374151]">קריאה חדשה</span>
+            </Button>
+          </Link>
+          <Link to={createPageUrl('Cases')}>
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
+              <AlertCircle className="w-6 h-6 text-[#374151]" />
+              <span className="text-[13px] font-medium text-[#374151]">קריאות פתוחות</span>
+            </Button>
+          </Link>
+          <Link to={createPageUrl('ServiceProviders')}>
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
+              <Truck className="w-6 h-6 text-[#374151]" />
+              <span className="text-[13px] font-medium text-[#374151]">ספקים</span>
+            </Button>
+          </Link>
+          <Link to={createPageUrl('AllVendorsMap')}>
+            <Button variant="outline" className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
+              <MapPin className="w-6 h-6 text-[#374151]" />
+              <span className="text-[13px] font-medium text-[#374151]">מפת ספקים</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
 
       {/* Urgent Calls Alert */}
       {urgentCalls.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          <Card className="border-l-4 border-l-error-soft-500 bg-gradient-to-r from-error-soft-50 to-white">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2 text-neutral-soft-800">
-                <AlertCircle className="w-5 h-5 text-error-soft-500" />
-                קריאות דחופות ({urgentCalls.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {urgentCalls.map((call, index) => (
-                  <motion.div
-                    key={call.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-center justify-between p-4 bg-white rounded-lg border border-[#E0E0E0] hover:border-[#D32F2F] hover:shadow-md transition-all"
-                  >
-                    <div className="flex-1">
-                      <Link to={createPageUrl('CaseDetails') + '?id=' + call.id} className="font-semibold text-[#212121] hover:text-[#D32F2F]">
-                        {call.call_number || `#${call.id?.slice(-6)}`}
-                      </Link>
-                      <p className="text-sm text-[#616161]">{call.customer_name} - {call.pickup_location_city}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={call.call_status} size="sm" />
-                      <Link to={createPageUrl('CaseDetails') + '?id=' + call.id}>
-                        <Button size="sm" variant="outline" className="hover:bg-[#FFF5F5]">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </motion.div>
-                ))}
+        <div className="bg-white border border-[#E5E7EB] rounded-lg p-5 border-r-4 border-r-[#DC2626]">
+          <h3 className="text-[15px] font-semibold text-[#111827] mb-4">קריאות דחופות ({urgentCalls.length})</h3>
+          <div className="space-y-3">
+            {urgentCalls.map((call) => (
+              <div
+                key={call.id}
+                className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] hover:border-[#D1D5DB] transition-all"
+              >
+                <div className="flex-1">
+                  <Link to={createPageUrl('CaseDetails') + '?id=' + call.id} className="font-medium text-[#111827] hover:text-[#DC2626]">
+                    {call.call_number || `#${call.id?.slice(-6)}`}
+                  </Link>
+                  <p className="text-[13px] text-[#6B7280]">{call.customer_name} - {call.pickup_location_city}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={call.call_status} size="sm" />
+                  <Link to={createPageUrl('CaseDetails') + '?id=' + call.id}>
+                    <Button size="sm" variant="ghost">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Open Calls Table */}
-      <Card className="border-t-4 border-t-[#212121]">
-        <CardHeader>
-          <CardTitle className="text-base text-[#212121]">
-            קריאות פתוחות ({openCalls.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={callColumns}
-            data={openCalls}
-            isLoading={callsLoading}
-            onRowClick={(row) => window.location.href = createPageUrl('CaseDetails') + '?id=' + row.id}
-            emptyMessage="אין קריאות פתוחות"
-          />
-        </CardContent>
-      </Card>
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="text-[15px] font-semibold text-[#111827] mb-4">קריאות פתוחות ({openCalls.length})</h3>
+        <DataTable
+          columns={callColumns}
+          data={openCalls}
+          isLoading={callsLoading}
+          onRowClick={(row) => window.location.href = createPageUrl('CaseDetails') + '?id=' + row.id}
+          emptyMessage="אין קריאות פתוחות"
+        />
+      </div>
 
       {/* Available Vendors */}
-      <Card className="border-t-4 border-t-[#2E7D32]">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base text-[#212121]">
-              ספקים זמינים ({availableVendors.length})
-            </CardTitle>
-            <AvatarStack users={availableVendors} max={8} size="md" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={vendorColumns}
-            data={availableVendors}
-            isLoading={vendorsLoading}
-            onRowClick={(row) => window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id}
-            emptyMessage="אין ספקים זמינים כרגע"
-          />
-        </CardContent>
-      </Card>
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[15px] font-semibold text-[#111827]">ספקים זמינים ({availableVendors.length})</h3>
+          <AvatarStack users={availableVendors} max={8} size="md" />
+        </div>
+        <DataTable
+          columns={vendorColumns}
+          data={availableVendors}
+          isLoading={vendorsLoading}
+          onRowClick={(row) => window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id}
+          emptyMessage="אין ספקים זמינים כרגע"
+        />
+      </div>
     </div>
   );
 }
