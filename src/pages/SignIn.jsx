@@ -82,19 +82,19 @@ export default function SignIn() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-sm mx-4" 
+        className="relative z-10 w-full max-w-[340px] mx-4" 
       >
         <Card className="border-0 shadow-xl bg-white/85 backdrop-blur-sm"> 
-          <CardHeader className="text-center pb-2 pt-6">
-            <CardTitle className="text-2xl font-bold text-neutral-soft-800 mb-1">
+          <CardHeader className="text-center pb-2 pt-6 px-4">
+            <CardTitle className="text-xl font-bold text-neutral-soft-800 mb-1">
               NATI GROUP SERVICE
             </CardTitle>
-            <CardDescription className="text-sm text-neutral-soft-600">
+            <CardDescription className="text-xs text-neutral-soft-600">
               מערכת ניהול CRM
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="pt-4 px-6 pb-6">
+          <CardContent className="pt-2 px-6 pb-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Error Alert */}
               {error && (
@@ -154,7 +154,7 @@ export default function SignIn() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-5 text-base rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-5 text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
               >
                 {isLoading ? (
                   <>
@@ -164,7 +164,6 @@ export default function SignIn() {
                 ) : (
                   <>
                     <span>כניסה למערכת</span>
-                    <LogIn className="w-4 h-4" />
                   </>
                 )}
               </Button>
