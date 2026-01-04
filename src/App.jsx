@@ -12,12 +12,19 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+const LayoutWrapper = ({ children, currentPageName }) => {
+  // Login page should not have Layout (no sidebar)
+  if (currentPageName === 'Login') {
+    return <>{children}</>;
+  }
+
+  return Layout ?
+    <Layout currentPageName={currentPageName}>{children}</Layout>
+    : <>{children}</>;
+};
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -33,9 +40,9 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      // Show our custom Login page instead of redirecting to external login
+      const LoginPage = Pages['Login'];
+      return <LoginPage />;
     }
   }
 

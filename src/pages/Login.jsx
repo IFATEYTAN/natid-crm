@@ -7,6 +7,7 @@ import FormInput from '@/components/ui/FormInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogIn, Truck, ShieldCheck, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -44,13 +45,14 @@ export default function Login() {
       <div
         className="absolute inset-0 z-0"
         style={{
-        backgroundImage: `url('/src/AdobeStock_328133100.jpeg')`,          backgroundSize: 'cover',
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
       >
         {/* Gradient Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-soft-900/90 via-primary-soft-800/85 to-neutral-soft-900/90" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-soft-900/70 via-primary-soft-800/60 to-neutral-soft-900/75" />
       </div>
 
       {/* Animated Background Elements */}
@@ -106,10 +108,10 @@ export default function Login() {
             </motion.div>
 
             <CardTitle className="text-3xl font-bold text-neutral-soft-800 mb-2">
-              נתיד CRM
+              NATI GROUP SERVICE
             </CardTitle>
             <CardDescription className="text-base text-neutral-soft-600">
-              מערכת ניהול שירותי סיוע בדרכים
+              מערכת ניהול CRM
             </CardDescription>
           </CardHeader>
 
