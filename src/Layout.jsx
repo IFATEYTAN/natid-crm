@@ -172,6 +172,13 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
 
+      {/* Accessibility Widget Hider */}
+      <style>{`
+        #accessibility-widget, .accessibility-widget, [aria-label="Accessibility options"] {
+          display: none !important;
+        }
+      `}</style>
+
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 

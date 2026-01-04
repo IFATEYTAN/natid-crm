@@ -7,11 +7,6 @@ import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import { 
-  FileText, 
-  Clock,
-  Timer,
-  Star,
-  Phone,
   Plus,
   ChevronLeft
 } from 'lucide-react';
