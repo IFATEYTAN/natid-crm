@@ -61,7 +61,7 @@ function WorkQueueOverview({ calls, isLoading }) {
   return (
     <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <div className="flex items-center justify-between mb-4 flex-row-reverse">
-        <h3 className="text-[20px] font-medium text-neutral-soft-800">📋 תור העבודה</h3>
+        <h3 className="text-[20px] font-medium text-neutral-soft-800">תור העבודה</h3>
         <Link to={createPageUrl('MyQueue')} className="text-primary-soft-600 hover:text-primary-soft-700 text-sm hover:underline">
           ← הצג תור מלא
         </Link>
@@ -270,29 +270,26 @@ export default function Dashboard() {
               <StatCard
                 title="קריאות פתוחות"
                 value={openCalls.length}
-                icon={FileText}
-                variant="primary"
+                variant="simple"
               />
             </Link>
             <Link to={createPageUrl('Calls?status=waiting_treatment')}>
               <StatCard
                 title="ממתינות לשיוך"
                 value={waitingCalls.length}
-                icon={Clock}
-                variant="warning"
+                variant="simple"
               />
             </Link>
             <StatCard
               title="זמן ממוצע לטיפול"
               value={avgCompletion}
               subtitle="דקות"
-              icon={Timer}
+              variant="simple"
             />
             <StatCard
               title="שביעות רצון"
               value={`${avgRating}/5.0`}
-              icon={Star}
-              variant="success"
+              variant="simple"
             />
           </>
         )}

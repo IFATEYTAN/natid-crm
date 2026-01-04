@@ -24,17 +24,22 @@ export default function StatCard({
     valueColor: 'text-neutral-soft-800'
   };
 
+  const isSimple = variant === 'simple';
+
   const cardClasses = cn(
-    "border-r-4 hover:shadow-lg transition-all duration-300 bg-white",
-    softStyle.border,
+    "transition-all duration-300 bg-white",
+    isSimple 
+      ? "border border-[#E0E0E0] shadow-sm hover:shadow-md rounded-lg" 
+      : "border-r-4 hover:shadow-lg rounded-r-lg",
+    !isSimple && softStyle.border,
     (onClick || to) && "cursor-pointer hover:scale-[1.02]",
     className
   );
 
   const cardContent = (
     <CardContent className="pt-6">
-      <div className="flex items-center justify-between flex-row-reverse">
-          {Icon && (
+      <div className={cn("flex items-center justify-between flex-row-reverse", isSimple && "justify-end")}>
+          {Icon && !isSimple && (
             <div className={cn(
               "w-12 h-12 rounded-lg flex items-center justify-center transition-colors",
               softStyle.iconBg
@@ -42,11 +47,11 @@ export default function StatCard({
               <Icon className={cn("w-6 h-6", softStyle.iconColor)} strokeWidth={2} />
             </div>
           )}
-          <div className="text-right">
-            <p className={cn("text-sm mb-1 font-medium", softStyle.titleColor)}>
+          <div className="text-right w-full">
+            <p className={cn("text-sm mb-1 font-medium", isSimple ? "text-[#616161]" : softStyle.titleColor)}>
               {title}
             </p>
-            <p className={cn("text-3xl font-bold", softStyle.valueColor)}>
+            <p className={cn("text-3xl font-bold", isSimple ? "text-[#FF0000]" : softStyle.valueColor)}>
               {value}
             </p>
             {subtitle && (
