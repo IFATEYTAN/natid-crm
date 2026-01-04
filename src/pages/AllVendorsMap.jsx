@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Circle } from 'react-leaflet';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
@@ -112,6 +116,11 @@ const createCallMarker = (status) => {
 export default function AllVendorsMap() {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [selectedTab, setSelectedTab] = useState('vendors'); // 'vendors' or 'calls'
+  
+  // Filters
+  const [showAvailableOnly, setShowAvailableOnly] = useState(false);
+  const [showRadius, setShowRadius] = useState(false);
+  const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
 
   useEffect(() => {
     const handleResize = () => {
@@ -156,16 +165,34 @@ export default function AllVendorsMap() {
   );
 
   // Match vendors with their latest locations
-  const vendorsWithLocations = vendors.map(vendor => {
-    const location = vendorLocations.find(loc => loc.vendor_id === vendor.id);
-    const vendorCalls = activeCalls.filter(call => call.assigned_vendor_id === vendor.id);
-    return {
-      ...vendor,
-      location,
-      activeCalls: vendorCalls.length,
-      hasLocation: !!location
-    };
-  }).filter(v => v.hasLocation);
+  const vendorsWithLocations = useMemo(() => {
+    const mapped = vendors.map(vendor => {
+      const location = vendorLocations.find(loc => loc.vendor_id === vendor.id);
+      const vendorCalls = activeCalls.filter(call => call.assigned_vendor_id === vendor.id);
+      return {
+        ...vendor,
+        location,
+        activeCalls: vendorCalls.length,
+        hasLocation: !!location
+      };
+    }).filter(v => v.hasLocation);
+
+    return mapped.filter(v => {
+      // Availability filter
+      if (showAvailableOnly && v.availability_status !== 'available') {
+        return false;
+      }
+
+      // Service Type filter
+      if (serviceTypeFilter !== 'all') {
+         // Assuming service_type is an array or string. Handling both safely.
+         const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type];
+         if (!types.includes(serviceTypeFilter)) return false;
+      }
+
+      return true;
+    });
+  }, [vendors, vendorLocations, activeCalls, showAvailableOnly, serviceTypeFilter]);
 
   const handleRefresh = () => {
     refetchVendors();
@@ -230,6 +257,39 @@ export default function AllVendorsMap() {
                   <div className="text-xs text-[#9E9E9E]">{stats.unassignedCalls} לא משובצות</div>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Filters */}
+            <div className="space-y-3 bg-[#FAFAFA] p-3 rounded-md border border-[#E0E0E0] mb-4">
+               <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id="showAvailable" 
+                    checked={showAvailableOnly} 
+                    onCheckedChange={setShowAvailableOnly} 
+                  />
+                  <Label htmlFor="showAvailable" className="text-sm cursor-pointer">הצג זמינים בלבד</Label>
+               </div>
+               <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id="showRadius" 
+                    checked={showRadius} 
+                    onCheckedChange={setShowRadius} 
+                  />
+                  <Label htmlFor="showRadius" className="text-sm cursor-pointer">הצג רדיוס כיסוי</Label>
+               </div>
+               <div>
+                 <Select value={serviceTypeFilter} onValueChange={setServiceTypeFilter}>
+                   <SelectTrigger className="h-8 text-sm bg-white border-[#E0E0E0]">
+                     <SelectValue placeholder="סוג שירות" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">כל השירותים</SelectItem>
+                     <SelectItem value="towing">גרירה</SelectItem>
+                     <SelectItem value="mechanic">ניידת שירות</SelectItem>
+                     <SelectItem value="tire_service">פנצ'ריה ניידת</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
             </div>
 
             {/* Tabs */}
@@ -423,11 +483,22 @@ export default function AllVendorsMap() {
                         פרטים מלאים
                       </Button>
                     </Link>
-                  </div>
-                </Popup>
-              </Marker>
-            )
-          ))}
+                    </div>
+                    </Popup>
+                    </Marker>
+                    )
+                    ))}
+                    {/* Coverage Radius Circle */}
+                    {showRadius && vendorsWithLocations.map(vendor => (
+                    vendor.location && (
+                    <Circle 
+                    key={`circle-${vendor.id}`}
+                    center={[vendor.location.latitude, vendor.location.longitude]} 
+                    radius={20000} // Default 20km radius for visualization
+                    pathOptions={{ color: '#2196F3', fillColor: '#2196F3', fillOpacity: 0.1, weight: 1 }} 
+                    />
+                    )
+                    ))}
 
           {/* Call Markers */}
           {activeCalls.map(call => (
