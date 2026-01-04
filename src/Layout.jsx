@@ -2,28 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  Truck,
-  Settings,
   Menu,
   X,
   Plus,
-  ChevronLeft,
   LogOut,
-  User,
-  MapPin
+  ChevronDown,
+  ChevronLeft
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 
-import { motion } from 'framer-motion';
-
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  // Initialize with the first group expanded ("תפעול יומי")
+  const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
 
   // Don't wrap auth pages in the main layout
   if (currentPageName === 'SignIn' || currentPageName === 'Register') {
@@ -51,12 +45,19 @@ export default function Layout({ children, currentPageName }) {
     return name.substring(0, 2);
   };
 
+  const toggleGroup = (title) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
+
   const navigationGroups = [
     {
       title: 'תפעול יומי',
       items: [
-        { name: 'תפריט מוקדן', href: 'OperatorDashboard' },
         { name: 'לוח בקרה', href: 'Dashboard' },
+        { name: 'תפריט מוקדן', href: 'OperatorDashboard' },
         { name: 'קריאות שירות', href: 'Cases' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
@@ -170,10 +171,7 @@ export default function Layout({ children, currentPageName }) {
           box-shadow: 0 4px 12px rgba(0,0,0,0.1);
           transform: translateY(-2px);
         }
-      `}</style>
 
-      {/* Accessibility Widget Hider */}
-      <style>{`
         #accessibility-widget, .accessibility-widget, [aria-label="Accessibility options"] {
           display: none !important;
         }
@@ -213,32 +211,43 @@ export default function Layout({ children, currentPageName }) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-6">
+        <nav className="p-4 space-y-2">
           {navigationGroups.map((group, groupIdx) => (
-            <div key={groupIdx}>
-              <h3 className="text-xs font-semibold text-[#9E9E9E] px-3 mb-2 uppercase tracking-wider">
-                {group.title}
-              </h3>
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const isActive = currentPageName === item.href;
-                  return (
-                    <Link
-                      key={item.href}
-                      to={createPageUrl(item.href)}
-                      onClick={() => setSidebarOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200",
-                        isActive 
-                          ? "bg-[#FF0000] text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]" 
-                          : "text-[#424242] hover:bg-[#F5F5F5] hover:text-[#212121]"
-                      )}
-                    >
-                      {item.name}
-                    </Link>
-                  );
-                })}
-              </div>
+            <div key={groupIdx} className="mb-2">
+              <button
+                onClick={() => toggleGroup(group.title)}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-[#9E9E9E] uppercase tracking-wider hover:bg-gray-50 rounded transition-colors"
+              >
+                <span>{group.title}</span>
+                {expandedGroups[group.title] ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronLeft className="w-4 h-4" />
+                )}
+              </button>
+              
+              {expandedGroups[group.title] && (
+                <div className="space-y-1 mt-1">
+                  {group.items.map((item) => {
+                    const isActive = currentPageName === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        to={createPageUrl(item.href)}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200",
+                          isActive 
+                            ? "bg-[#F5F5F5] text-[#212121] shadow-sm border border-[#E0E0E0]" 
+                            : "text-[#424242] hover:bg-[#FAFAFA] hover:text-[#212121]"
+                        )}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </nav>

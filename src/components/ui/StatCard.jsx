@@ -29,7 +29,7 @@ export default function StatCard({
           <p className="text-sm font-medium text-[var(--color-text-secondary)] mb-1">
             {title}
           </p>
-          <p className="text-3xl font-bold text-[var(--color-primary)] leading-tight">
+          <p className="text-3xl font-bold text-[#000000] leading-tight">
             {value}
           </p>
           {subtitle && (

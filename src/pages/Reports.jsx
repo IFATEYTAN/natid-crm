@@ -345,10 +345,10 @@ export default function Reports() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to={createPageUrl('Calls')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
             <div className="text-right">
               <div className="text-sm text-[var(--color-text-secondary)]">סה"כ קריאות</div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">{filteredCalls.length}</div>
+              <div className="text-3xl font-bold text-black mt-1">{filteredCalls.length}</div>
               <p className="text-xs text-[var(--color-text-disabled)] mt-2">
                 {calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות
               </p>
@@ -356,10 +356,10 @@ export default function Reports() {
           </div>
         </Link>
         <Link to={createPageUrl('ServiceProviders')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
             <div className="text-right">
               <div className="text-sm text-[var(--color-text-secondary)]">ספקים פעילים</div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">
+              <div className="text-3xl font-bold text-black mt-1">
                 {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
               </div>
               <p className="text-xs text-[var(--color-text-disabled)] mt-2">מתוך {vendors.length} ספקים</p>
@@ -367,10 +367,10 @@ export default function Reports() {
           </div>
         </Link>
         <Link to={createPageUrl('ServiceProviders')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
             <div className="text-right">
               <div className="text-sm text-[var(--color-text-secondary)]">דירוג ממוצע</div>
-              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">
+              <div className="text-3xl font-bold text-black mt-1">
                 {filteredRatings.length > 0 
                   ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
                   : '0.0'}
@@ -380,10 +380,10 @@ export default function Reports() {
           </div>
         </Link>
         <Link to={createPageUrl('VendorPayments')}>
-          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
             <div className="text-right">
               <div className="text-sm text-[var(--color-text-secondary)]">סה"כ הכנסות</div>
-              <div className="text-3xl font-bold text-[var(--color-primary)] mt-1">
+              <div className="text-3xl font-bold text-black mt-1">
                 ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
               </div>
               <p className="text-xs text-[var(--color-text-disabled)] mt-2">{filteredPayments.length} תשלומים</p>
