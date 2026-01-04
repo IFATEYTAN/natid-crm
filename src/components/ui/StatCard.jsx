@@ -38,11 +38,7 @@ export default function StatCard({
             </p>
           )}
         </div>
-        {Icon && (
-          <div className="p-2 bg-gray-50 rounded-lg">
-            <Icon className="w-5 h-5 text-[var(--color-text-secondary)]" strokeWidth={1.5} />
-          </div>
-        )}
+        {/* Icon removed for clean look */}
       </div>
         {trend && (
           <div className={cn(
