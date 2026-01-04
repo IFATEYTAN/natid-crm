@@ -50,15 +50,15 @@ css
 
   /* Typography System */
   h1 {
-    @apply text-3xl font-bold text-[var(--color-text-primary)] leading-tight mb-6;
+    @apply text-[26px] font-bold text-[#111827] leading-tight;
   }
 
   h2 {
-    @apply text-xl font-semibold text-[var(--color-text-primary)] leading-snug mb-4;
+    @apply text-[20px] font-semibold text-[#111827] leading-snug;
   }
   
   h3 {
-    @apply text-lg font-medium text-[var(--color-text-primary)] mb-3;
+    @apply text-[15px] font-semibold text-[#111827];
   }
 
   p {
@@ -79,7 +79,7 @@ css
   }
 
   .card-base {
-    @apply bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius)] shadow-sm p-[var(--card-padding)];
+    @apply bg-white border border-[#E5E7EB] rounded-lg p-5;
   }
 
   .input-base {
