@@ -28,6 +28,8 @@ Deno.serve(async (req) => {
         Analyze the following service call data for a roadside assistance company.
         Identify patterns, bottlenecks, and provide actionable recommendations.
         
+        IMPORTANT: All output must be in Hebrew (עברית).
+        
         Data: ${JSON.stringify(callsSummary)}
         
         Focus on:
@@ -44,24 +46,24 @@ Deno.serve(async (req) => {
                     patterns: {
                         type: "array",
                         items: { type: "string" },
-                        description: "Identified patterns in the data"
+                        description: "Identified patterns in the data, in Hebrew"
                     },
                     bottlenecks: {
                         type: "array",
                         items: {
                             type: "object",
                             properties: {
-                                title: { type: "string" },
+                                title: { type: "string", description: "Title in Hebrew" },
                                 severity: { type: "string", enum: ["low", "medium", "high"] },
-                                description: { type: "string" }
+                                description: { type: "string", description: "Description in Hebrew" }
                             }
                         },
-                        description: "Identified bottlenecks"
+                        description: "Identified bottlenecks, with titles and descriptions in Hebrew"
                     },
                     recommendations: {
                         type: "array",
                         items: { type: "string" },
-                        description: "Actionable recommendations for improvement"
+                        description: "Actionable recommendations for improvement, in Hebrew"
                     },
                     summary: {
                         type: "string",
