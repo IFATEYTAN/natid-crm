@@ -11,13 +11,14 @@ import DataTable from '@/components/ui/DataTable';
 import AvatarStack from '@/components/ui/AvatarStack';
 import { motion } from 'framer-motion';
 import {
-Plus,
-Phone,
-Truck,
-AlertCircle,
-Eye,
-Navigation,
-Activity
+  Plus,
+  Phone,
+  Truck,
+  AlertCircle,
+  Eye,
+  Navigation,
+  Activity,
+  MapPin
 } from 'lucide-react';
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
