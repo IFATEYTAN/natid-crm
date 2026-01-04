@@ -47,13 +47,13 @@ export default function StatCard({
         {trend && (
           <div className={cn(
             "mt-3 flex items-center gap-1 text-xs font-medium flex-row-reverse justify-end",
-            trend === 'up' ? "text-success-soft-600" : "text-error-soft-600"
+            trend === 'up' ? "text-[var(--color-status-normal)]" : "text-[var(--color-status-urgent)]"
           )}>
             <span>{trendValue}</span>
             <span>{trend === 'up' ? '↑' : '↓'}</span>
           </div>
         )}
-      </CardContent>
+      </div>
   );
 
   // If 'to' prop is provided, wrap in Link
