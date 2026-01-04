@@ -257,7 +257,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {isLoading ? (
           [...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-[8px]" />
+            <Skeleton key={i} className="h-32 rounded-[8px]" />
           ))
         ) : (
           <>
@@ -265,24 +265,20 @@ export default function Dashboard() {
               title="זמן הגעה משוער (ETA)"
               value="32"
               subtitle="דקות ממוצע"
-              variant="simple"
             />
             <StatCard
               title="זמן תגובה ראשוני"
               value="1:45"
               subtitle="דקות"
-              variant="simple"
             />
             <StatCard
               title="אחוז פתרון בשטח"
               value="68%"
               subtitle="ללא גרירה"
-              variant="simple"
             />
             <StatCard
               title="ציון שביעות רצון (CSAT)"
               value={`${avgRating}/5.0`}
-              variant="simple"
             />
           </>
         )}
@@ -291,99 +287,108 @@ export default function Dashboard() {
       {/* Work Queue Section */}
       <WorkQueueOverview calls={calls} isLoading={isLoading} />
 
+      {/* AI Insights */}
+      <div className="w-full">
+        <AIInsightsWidget />
+      </div>
+
       {/* Charts Section */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="col-span-full lg:col-span-2 space-y-6">
-            <AIInsightsWidget />
-            <div className="grid lg:grid-cols-2 gap-6">
         {/* Bar Chart - Calls by Status */}
-        <div className="card-base">
-          <h3>קריאות לפי סטטוס</h3>
+        <div className="card-base p-6">
+          <h3 className="mb-6">קריאות לפי סטטוס</h3>
           {isLoading ? (
             <Skeleton className="h-64" />
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={statusData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
-                  stroke="#E0E0E0"
-                />
-                <YAxis 
-                  tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
-                  stroke="#E0E0E0"
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #E0E0E0',
-                    borderRadius: '4px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    fontFamily: 'Heebo',
-                    fontSize: 14,
-                    direction: 'rtl'
-                  }}
-                  labelStyle={{ fontWeight: 500 }}
-                />
-                <Bar dataKey="value" fill="#FF0000" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="h-[300px] w-full" style={{ direction: 'ltr' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={statusData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                    stroke="#E5E7EB"
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                    stroke="#E5E7EB"
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#F9FAFB' }}
+                    contentStyle={{
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      fontSize: 14,
+                      padding: '8px 12px'
+                    }}
+                  />
+                  <Bar dataKey="value" fill="#212121" radius={[4, 4, 0, 0]} barSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
 
         {/* Line Chart - Trend */}
-        <div className="card-base">
-          <h3>מגמת קריאות - 7 ימים אחרונים</h3>
+        <div className="card-base p-6">
+          <h3 className="mb-6">מגמת קריאות - 7 ימים אחרונים</h3>
           {isLoading ? (
             <Skeleton className="h-64" />
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF0000" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#FF0000" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
-                  stroke="#E0E0E0"
-                />
-                <YAxis 
-                  tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
-                  stroke="#E0E0E0"
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #E0E0E0',
-                    borderRadius: '4px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    fontFamily: 'Heebo',
-                    fontSize: 14,
-                    direction: 'rtl'
-                  }}
-                  labelStyle={{ fontWeight: 500 }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#FF0000" 
-                  strokeWidth={2}
-                  fill="url(#colorValue)"
-                  dot={{ fill: '#FF0000', r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-[300px] w-full" style={{ direction: 'ltr' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#212121" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="#212121" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                    stroke="#E5E7EB"
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                    stroke="#E5E7EB"
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      fontSize: 14,
+                      padding: '8px 12px'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#212121" 
+                    strokeWidth={3}
+                    dot={{ fill: '#212121', strokeWidth: 2, r: 4, stroke: '#fff' }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                    fill="url(#colorValue)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
-            </div>
       </div>
-    </div>
 
       {/* Recent Calls Table */}
       <div className="card-base">
