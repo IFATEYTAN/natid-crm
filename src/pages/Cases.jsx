@@ -138,7 +138,8 @@ export default function Cases() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[#616161] text-sm body-2 mt-1">{filteredCases.length} קריאות</p>
+          <h1>קריאות שירות</h1>
+          <p className="text-[var(--color-text-secondary)]">{filteredCases.length} קריאות במערכת</p>
         </div>
         <div className="flex gap-2">
           <ImportExport 
@@ -147,8 +148,8 @@ export default function Cases() {
             columns={columns}
           />
           <Link to={createPageUrl('NewCase')}>
-            <Button className="bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold">
-              <Plus className="w-5 h-5" strokeWidth={2} />
+            <Button className="btn-primary flex items-center gap-2">
+              <Plus className="w-5 h-5" />
               קריאה חדשה
             </Button>
           </Link>
@@ -156,19 +157,19 @@ export default function Cases() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+      <div className="card-base">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9E9E9E]" strokeWidth={2} />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-disabled)]" />
             <Input
               placeholder="חיפוש לפי מספר קריאה, לקוח, טלפון..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pr-11 h-10 body-1"
+              className="input-base pr-11"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-40">
+            <SelectTrigger className="w-full md:w-40 input-base">
               <SelectValue placeholder="סטטוס" />
             </SelectTrigger>
             <SelectContent>

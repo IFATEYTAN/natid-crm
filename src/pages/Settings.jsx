@@ -17,15 +17,15 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-[#212121]">הגדרות</h2>
-        <p className="text-[#616161] text-sm">ניהול הגדרות המערכת</p>
+        <h1>הגדרות מערכת</h1>
+        <p className="text-[var(--color-text-secondary)]">ניהול הגדרות המערכת, התראות ופרטי חברה</p>
       </div>
 
       {/* Company Settings */}
-      <Card>
+      <Card className="card-base border-none shadow-none p-0">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-[#0D47A1]" />
+          <CardTitle className="text-base flex items-center gap-2 text-[var(--color-text-primary)]">
+            <Building2 className="w-4 h-4 text-[var(--color-primary)]" />
             פרטי חברה
           </CardTitle>
           <CardDescription>הגדרות בסיסיות של העסק</CardDescription>
@@ -132,7 +132,7 @@ export default function Settings() {
 
       {/* Save */}
       <div className="flex justify-end">
-        <Button className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2">
+        <Button className="btn-primary flex items-center gap-2">
           <Save className="w-4 h-4" />
           שמור שינויים
         </Button>

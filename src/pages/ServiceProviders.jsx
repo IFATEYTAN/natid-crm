@@ -270,7 +270,8 @@ export default function ServiceProviders() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[#616161] text-sm">{filteredProviders.length} נותני שירות</p>
+          <h1>נותני שירות</h1>
+          <p className="text-[var(--color-text-secondary)]">{filteredProviders.length} ספקים פעילים</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <ImportExport 
@@ -279,7 +280,7 @@ export default function ServiceProviders() {
             columns={columns}
           />
           <Button 
-            className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+            className="btn-primary flex items-center gap-2"
             onClick={() => setIsDialogOpen(true)}
           >
             <Plus className="w-4 h-4" />
@@ -289,19 +290,19 @@ export default function ServiceProviders() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-[#E0E0E0] p-4">
+      <div className="card-base">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-disabled)]" />
             <Input
               placeholder="חיפוש לפי שם, טלפון..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pr-10"
+              className="input-base pr-10"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-40">
+            <SelectTrigger className="w-full md:w-40 input-base">
               <SelectValue placeholder="סטטוס" />
             </SelectTrigger>
             <SelectContent>

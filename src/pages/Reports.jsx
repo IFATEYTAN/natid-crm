@@ -172,27 +172,26 @@ export default function Reports() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-bold text-[#212121] leading-tight">דוחות</h1>
-          <p className="text-[#616161] text-sm body-2 mt-1">
+          <h1>דוחות וניתוחים</h1>
+          <p className="text-[var(--color-text-secondary)]">
             ניתוח מקיף של ביצועים, SLA והכנסות • {filteredCalls.length} קריאות
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
-            variant="outline"
+            className="btn-secondary gap-2"
             onClick={() => setShowFilters(!showFilters)}
-            className="gap-2"
           >
             <Filter className="w-4 h-4" />
             פילטרים
             {activeFiltersCount > 0 && (
-              <span className="bg-[#0078D4] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              <span className="bg-[var(--color-primary)] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                 {activeFiltersCount}
               </span>
             )}
           </Button>
           <Button
-            className="bg-[#2E7D32] hover:bg-[#1B5E20] gap-2"
+            className="btn-primary gap-2"
             onClick={exportAllCallsCSV}
           >
             <Download className="w-4 h-4" />
@@ -346,50 +345,50 @@ export default function Reports() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to={createPageUrl('Calls')}>
-          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
-            <CardContent className="pt-6 text-right">
-              <div className="text-sm text-[#616161]">סה"כ קריאות</div>
-              <div className="text-3xl font-bold text-[#212121] mt-1">{filteredCalls.length}</div>
-              <p className="text-xs text-[#616161] mt-2">
+          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+            <div className="text-right">
+              <div className="text-sm text-[var(--color-text-secondary)]">סה"כ קריאות</div>
+              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">{filteredCalls.length}</div>
+              <p className="text-xs text-[var(--color-text-disabled)] mt-2">
                 {calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </Link>
         <Link to={createPageUrl('ServiceProviders')}>
-          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
-            <CardContent className="pt-6 text-right">
-              <div className="text-sm text-[#616161]">ספקים פעילים</div>
-              <div className="text-3xl font-bold text-[#212121] mt-1">
+          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+            <div className="text-right">
+              <div className="text-sm text-[var(--color-text-secondary)]">ספקים פעילים</div>
+              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">
                 {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
               </div>
-              <p className="text-xs text-[#616161] mt-2">מתוך {vendors.length} ספקים</p>
-            </CardContent>
-          </Card>
+              <p className="text-xs text-[var(--color-text-disabled)] mt-2">מתוך {vendors.length} ספקים</p>
+            </div>
+          </div>
         </Link>
         <Link to={createPageUrl('ServiceProviders')}>
-          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
-            <CardContent className="pt-6 text-right">
-              <div className="text-sm text-[#616161]">דירוג ממוצע</div>
-              <div className="text-3xl font-bold text-[#212121] mt-1">
+          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+            <div className="text-right">
+              <div className="text-sm text-[var(--color-text-secondary)]">דירוג ממוצע</div>
+              <div className="text-3xl font-bold text-[var(--color-text-primary)] mt-1">
                 {filteredRatings.length > 0 
                   ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
                   : '0.0'}
               </div>
-              <p className="text-xs text-[#616161] mt-2">{filteredRatings.length} דירוגים</p>
-            </CardContent>
-          </Card>
+              <p className="text-xs text-[var(--color-text-disabled)] mt-2">{filteredRatings.length} דירוגים</p>
+            </div>
+          </div>
         </Link>
         <Link to={createPageUrl('VendorPayments')}>
-          <Card className="card-hover bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:border-[#FF0000] transition-colors">
-            <CardContent className="pt-6 text-right">
-              <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
-              <div className="text-3xl font-bold text-[#FF0000] mt-1">
+          <div className="card-base hover:border-[var(--color-primary)] transition-colors cursor-pointer">
+            <div className="text-right">
+              <div className="text-sm text-[var(--color-text-secondary)]">סה"כ הכנסות</div>
+              <div className="text-3xl font-bold text-[var(--color-primary)] mt-1">
                 ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
               </div>
-              <p className="text-xs text-[#616161] mt-2">{filteredPayments.length} תשלומים</p>
-            </CardContent>
-          </Card>
+              <p className="text-xs text-[var(--color-text-disabled)] mt-2">{filteredPayments.length} תשלומים</p>
+            </div>
+          </div>
         </Link>
       </div>
 

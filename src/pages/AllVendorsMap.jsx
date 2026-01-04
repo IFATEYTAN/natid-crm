@@ -222,9 +222,7 @@ export default function AllVendorsMap() {
           {/* Sidebar Header */}
           <div className="p-4 border-b border-[#E0E0E0]">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-[24px] font-bold text-[#212121]">
-                🗺️ מעקב ספקים
-              </h1>
+              <h1>מעקב ספקים</h1>
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -237,30 +235,26 @@ export default function AllVendorsMap() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-              <Card>
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Truck className="w-4 h-4 text-[#212121]" />
-                    <span className="text-xs text-[#616161]">ספקים</span>
-                  </div>
-                  <div className="text-2xl font-bold text-[#212121]">{stats.activeVendors}</div>
-                  <div className="text-xs text-[#9E9E9E]">מתוך {stats.totalVendors}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <AlertCircle className="w-4 h-4 text-[#ED6C02]" />
-                    <span className="text-xs text-[#616161]">קריאות</span>
-                  </div>
-                  <div className="text-2xl font-bold text-[#212121]">{stats.activeCalls}</div>
-                  <div className="text-xs text-[#9E9E9E]">{stats.unassignedCalls} לא משובצות</div>
-                </CardContent>
-              </Card>
+              <div className="card-base p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Truck className="w-4 h-4 text-[var(--color-text-secondary)]" />
+                  <span className="text-xs text-[var(--color-text-secondary)]">ספקים</span>
+                </div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.activeVendors}</div>
+                <div className="text-xs text-[var(--color-text-disabled)]">מתוך {stats.totalVendors}</div>
+              </div>
+              <div className="card-base p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertCircle className="w-4 h-4 text-[var(--color-status-urgent)]" />
+                  <span className="text-xs text-[var(--color-text-secondary)]">קריאות</span>
+                </div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.activeCalls}</div>
+                <div className="text-xs text-[var(--color-text-disabled)]">{stats.unassignedCalls} לא משובצות</div>
+              </div>
             </div>
 
             {/* Filters */}
-            <div className="space-y-3 bg-[#FAFAFA] p-3 rounded-md border border-[#E0E0E0] mb-4">
+            <div className="space-y-3 card-base p-4 mb-4">
                <div className="flex items-center gap-2">
                   <Checkbox 
                     id="showAvailable" 
