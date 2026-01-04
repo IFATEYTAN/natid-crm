@@ -8,7 +8,6 @@ import Cases from './pages/Cases';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
 import IntegrationSettings from './pages/IntegrationSettings';
-import Login from './pages/Login';
 import MyCallsVendor from './pages/MyCallsVendor';
 import MyQueue from './pages/MyQueue';
 import NewCase from './pages/NewCase';
@@ -24,6 +23,7 @@ import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
+import Login from './pages/Login';
 import __Layout from './Layout.jsx';
 
 
@@ -38,7 +38,6 @@ export const PAGES = {
     "Customers": Customers,
     "Dashboard": Dashboard,
     "IntegrationSettings": IntegrationSettings,
-    "Login": Login,
     "MyCallsVendor": MyCallsVendor,
     "MyQueue": MyQueue,
     "NewCase": NewCase,
@@ -54,10 +53,11 @@ export const PAGES = {
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
+    "Login": Login,
 }
 
 export const pagesConfig = {
-    mainPage: "Login",
+    mainPage: "Dashboard",
     Pages: PAGES,
     Layout: __Layout,
 };

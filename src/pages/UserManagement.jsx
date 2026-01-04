@@ -25,7 +25,9 @@ import {
   Shield,
   User,
   Edit,
-  AlertCircle
+  AlertCircle,
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -38,6 +40,9 @@ export default function UserManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const [editRole, setEditRole] = useState('user');
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [uploadUser, setUploadUser] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -78,6 +83,29 @@ export default function UserManagement() {
     },
   });
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !uploadUser) return;
+
+    try {
+      setIsUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      
+      await base44.entities.User.update(uploadUser.id, {
+        profile_image: file_url
+      });
+
+      toast.success('תמונת פרופיל עודכנה בהצלחה');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setIsUploadOpen(false);
+      setUploadUser(null);
+    } catch (error) {
+      toast.error('שגיאה בהעלאת תמונה: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleInvite = (e) => {
     e.preventDefault();
     if (!inviteEmail || !inviteEmail.includes('@')) {
@@ -116,8 +144,12 @@ export default function UserManagement() {
       accessor: 'full_name',
       cell: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#0078D4]/10 flex items-center justify-center">
-            <User className="w-5 h-5 text-[#0078D4]" />
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+            {row.profile_image ? (
+              <img src={row.profile_image} alt={row.full_name} className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-5 h-5 text-gray-500" />
+            )}
           </div>
           <div>
             <div className="font-medium text-[#212121]">{row.full_name || 'לא צוין'}</div>
@@ -160,6 +192,20 @@ export default function UserManagement() {
               disabled={row.id === currentUser?.id}
             >
               <Edit className="w-4 h-4 text-[#616161]" />
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                setUploadUser(row);
+                setIsUploadOpen(true);
+              }}
+              title="העלאת תמונת פרופיל"
+            >
+              <Upload className="w-4 h-4 text-[#616161]" />
             </Button>
           )}
         </div>
@@ -345,6 +391,61 @@ export default function UserManagement() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Image Dialog */}
+      <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>עדכון תמונת פרופיל</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {uploadUser && (
+              <div className="text-center mb-4">
+                <div className="w-20 h-20 mx-auto rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 mb-2">
+                  {uploadUser.profile_image ? (
+                    <img src={uploadUser.profile_image} alt={uploadUser.full_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-10 h-10 text-gray-400" />
+                  )}
+                </div>
+                <p className="font-medium">{uploadUser.full_name}</p>
+                <p className="text-sm text-gray-500">{uploadUser.email}</p>
+              </div>
+            )}
+            
+            <div className="flex flex-col gap-4">
+              <Label htmlFor="picture" className="text-center cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 hover:bg-gray-50 transition-colors">
+                {isUploading ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <span>מעלה תמונה...</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="w-8 h-8 text-gray-400" />
+                    <span>לחץ לבחירת תמונה</span>
+                    <span className="text-xs text-gray-400">PNG, JPG עד 5MB</span>
+                  </div>
+                )}
+                <Input 
+                  id="picture" 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={handleFileUpload}
+                  disabled={isUploading}
+                />
+              </Label>
+            </div>
+            
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={() => setIsUploadOpen(false)} disabled={isUploading}>
+                ביטול
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
