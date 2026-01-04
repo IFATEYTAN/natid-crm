@@ -35,7 +35,7 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen flex items-center justify-start px-[10%] relative overflow-hidden" dir="rtl">
       {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 z-0"
@@ -46,7 +46,7 @@ export default function SignIn() {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-soft-900/60 via-primary-soft-800/50 to-neutral-soft-900/60" />
+        <div className="absolute inset-0 bg-white/40" />
       </div>
 
       {/* Animated Background Elements - Reduced opacity */}
@@ -84,7 +84,7 @@ export default function SignIn() {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-[340px] mx-4" 
       >
-        <Card className="border-0 shadow-xl bg-white/85 backdrop-blur-sm"> 
+        <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-md ring-1 ring-black/5"> 
           <CardHeader className="text-center pb-2 pt-6 px-4">
             <CardTitle className="text-xl font-bold text-neutral-soft-800 mb-1">
               NATI GROUP SERVICE
