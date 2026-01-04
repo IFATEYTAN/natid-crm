@@ -7,32 +7,60 @@
 
 /* Root Variables */
 :root {
-  /* Brand Colors - Nati Red Theme */
-  --color-primary: #FF0000;
-  --color-primary-hover: #CC0000;
-  --color-primary-light: #FF3333;
-  --color-primary-bg: rgba(255, 0, 0, 0.08);
-  --color-accent: #000000;
-  --color-accent-hover: #333333;
-  --color-accent-bg: rgba(0, 0, 0, 0.05);
-  
-  /* Status Colors */
-  --color-success: #2E7D32;
-  --color-success-bg: #E8F5E9;
-  --color-warning: #ED6C02;
-  --color-warning-bg: #FFF4E5;
-  --color-error: #D32F2F;
-  --color-error-bg: #FFEBEE;
-  --color-info: #0288D1;
-  --color-info-bg: #E3F2FD;
-  
-  /* Neutral Colors */
-  --color-text-primary: #212121;
-  --color-text-secondary: #616161;
-  --color-text-disabled: #9E9E9E;
-  --color-divider: #E0E0E0;
+  /* Brand Colors - Soft Red/Pink Theme - צבעים עדינים */
+  --color-primary: #FF6B6B;
+  --color-primary-hover: #E85555;
+  --color-primary-light: #FF8A8A;
+  --color-primary-bg: #FFF5F5;
+  --color-primary-border: #FFD1D1;
+
+  /* Secondary Colors - Soft Blue/Cyan - צבעים משניים עדינים */
+  --color-secondary: #0EA5E9;
+  --color-secondary-hover: #0284C7;
+  --color-secondary-light: #38BDF8;
+  --color-secondary-bg: #F0F9FF;
+  --color-secondary-border: #B9E6FE;
+
+  /* Status Colors - Soft Palette - צבעי סטטוס עדינים */
+  --color-success: #22C55E;
+  --color-success-hover: #16A34A;
+  --color-success-bg: #F0FDF4;
+  --color-success-border: #BBF7D0;
+
+  --color-warning: #F59E0B;
+  --color-warning-hover: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-warning-border: #FDE68A;
+
+  --color-error: #EF4444;
+  --color-error-hover: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-error-border: #FECACA;
+
+  --color-info: #8B5CF6;
+  --color-info-hover: #7C3AED;
+  --color-info-bg: #F5F3FF;
+  --color-info-border: #DDD6FE;
+
+  /* Neutral Colors - Soft Gray Palette - צבעי אפור עדינים */
+  --color-text-primary: #262626;
+  --color-text-secondary: #525252;
+  --color-text-disabled: #A3A3A3;
+  --color-divider: #E5E5E5;
   --color-background: #FAFAFA;
   --color-surface: #FFFFFF;
+
+  /* Chart Colors - צבעי גרפים עדינים */
+  --color-chart-1: #FF6B6B;
+  --color-chart-2: #4ECDC4;
+  --color-chart-3: #45B7D1;
+  --color-chart-4: #FFA07A;
+  --color-chart-5: #98D8C8;
+  --color-chart-6: #F7B731;
+  --color-chart-7: #5F27CD;
+  --color-chart-8: #00D2D3;
+  --color-chart-9: #FF6348;
+  --color-chart-10: #1DD1A1;
   
   /* Typography */
   --font-family: 'Heebo', 'Assistant', Arial, sans-serif;
@@ -152,6 +180,59 @@ input[type="number"],
 .number-field {
   direction: ltr;
   text-align: right;
+  unicode-bidi: isolate;
+}
+
+/* RTL Flex & Grid Utilities */
+.flex-rtl {
+  flex-direction: row-reverse;
+}
+
+.flex-col-rtl {
+  flex-direction: column;
+}
+
+/* RTL Spacing Utilities */
+.mr-rtl {
+  margin-left: var(--spacing-sm);
+  margin-right: 0;
+}
+
+.ml-rtl {
+  margin-right: var(--spacing-sm);
+  margin-left: 0;
+}
+
+.pr-rtl {
+  padding-left: var(--spacing-sm);
+  padding-right: 0;
+}
+
+.pl-rtl {
+  padding-right: var(--spacing-sm);
+  padding-left: 0;
+}
+
+/* RTL Border Utilities */
+.border-l-rtl {
+  border-left: none;
+  border-right: 4px solid;
+}
+
+.border-r-rtl {
+  border-right: none;
+  border-left: 4px solid;
+}
+
+/* Icon Positioning for RTL */
+.icon-before-rtl {
+  margin-left: var(--spacing-xs);
+  margin-right: 0;
+}
+
+.icon-after-rtl {
+  margin-right: var(--spacing-xs);
+  margin-left: 0;
 }
 
 /* ====================================

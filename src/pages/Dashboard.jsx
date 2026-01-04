@@ -59,47 +59,53 @@ function WorkQueueOverview({ calls, isLoading }) {
 
   return (
     <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[20px] font-medium text-[#212121]">📋 תור העבודה</h3>
-        <Link to={createPageUrl('MyQueue')} className="text-[#FF0000] text-sm hover:underline">
-          הצג תור מלא →
+      <div className="flex items-center justify-between mb-4 flex-row-reverse">
+        <h3 className="text-[20px] font-medium text-neutral-soft-800">📋 תור העבודה</h3>
+        <Link to={createPageUrl('MyQueue')} className="text-primary-soft-600 hover:text-primary-soft-700 text-sm hover:underline">
+          ← הצג תור מלא
         </Link>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-4 bg-white border-l-4 border-l-[#212121] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
-          <p className="text-2xl font-bold text-[#212121]">{waitingInQueue}</p>
-          <p className="text-sm text-[#616161] font-medium">בתור</p>
-        </div>
-        <div className="text-center p-4 bg-white border-l-4 border-l-[#212121] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
-          <p className="text-2xl font-bold text-[#212121]">{assignedToAgents}</p>
-          <p className="text-sm text-[#616161] font-medium">משובץ</p>
-        </div>
-        <div className="text-center p-4 bg-white border-l-4 border-l-[#212121] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
-          <p className="text-2xl font-bold text-[#212121]">{inProgress}</p>
-          <p className="text-sm text-[#616161] font-medium">בטיפול</p>
-        </div>
-        <div className="text-center p-4 bg-white border-l-4 border-l-[#616161] rounded-r-lg shadow-sm border border-y-[#E0E0E0] border-r-[#E0E0E0]">
-          <p className="text-2xl font-bold text-[#616161]">{avgTime}'</p>
-          <p className="text-sm text-[#616161] font-medium">ממוצע</p>
+        <Link to={createPageUrl('MyQueue')} className="block">
+          <div className="text-center p-4 bg-white border-r-4 border-r-warning-soft-400 rounded-lg shadow-sm border border-neutral-soft-200 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+            <p className="text-2xl font-bold text-warning-soft-700">{waitingInQueue}</p>
+            <p className="text-sm text-neutral-soft-600 font-medium">בתור</p>
+          </div>
+        </Link>
+        <Link to={createPageUrl('MyQueue')} className="block">
+          <div className="text-center p-4 bg-white border-r-4 border-r-secondary-soft-400 rounded-lg shadow-sm border border-neutral-soft-200 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+            <p className="text-2xl font-bold text-secondary-soft-700">{assignedToAgents}</p>
+            <p className="text-sm text-neutral-soft-600 font-medium">משובץ</p>
+          </div>
+        </Link>
+        <Link to={createPageUrl('Calls') + '?status=in_progress'} className="block">
+          <div className="text-center p-4 bg-white border-r-4 border-r-info-soft-400 rounded-lg shadow-sm border border-neutral-soft-200 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer">
+            <p className="text-2xl font-bold text-info-soft-700">{inProgress}</p>
+            <p className="text-sm text-neutral-soft-600 font-medium">בטיפול</p>
+          </div>
+        </Link>
+        <div className="text-center p-4 bg-white border-r-4 border-r-neutral-soft-400 rounded-lg shadow-sm border border-neutral-soft-200">
+          <p className="text-2xl font-bold text-neutral-soft-700">{avgTime}'</p>
+          <p className="text-sm text-neutral-soft-600 font-medium">ממוצע</p>
         </div>
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm text-[#616161] mb-2">פילוח לפי נציגים:</p>
+        <p className="text-sm text-neutral-soft-600 mb-2">פילוח לפי נציגים:</p>
         {agentStats.length === 0 ? (
-          <p className="text-center text-[#9E9E9E] py-4">אין קריאות פעילות</p>
+          <p className="text-center text-neutral-soft-400 py-4">אין קריאות פעילות</p>
         ) : (
           agentStats.map(agent => (
-            <div key={agent.name} className="flex items-center gap-3">
-              <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
-              <div className="flex-1 bg-[#E0E0E0] rounded-full h-2 overflow-hidden">
-                <div 
-                  className={`h-full ${agent.count >= 5 ? 'bg-[#ED6C02]' : 'bg-[#FF0000]'}`}
+            <div key={agent.name} className="flex items-center gap-3 flex-row-reverse">
+              <span className="text-sm font-medium w-32 truncate text-right">{agent.name}</span>
+              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden">
+                <div
+                  className={`h-full ${agent.count >= 5 ? 'bg-warning-soft-500' : 'bg-success-soft-500'}`}
                   style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
                 />
               </div>
-              <span className="text-sm text-[#616161] w-20">
+              <span className="text-sm text-neutral-soft-600 w-20 text-right">
                 {agent.count} קריאות {agent.count >= 5 && '⚠️'}
               </span>
             </div>

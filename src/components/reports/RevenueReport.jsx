@@ -91,7 +91,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
     {
       header: 'ספק',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.vendor_id} className="text-[#FF0000] hover:underline font-medium">
+        <Link to={createPageUrl('VendorProfile') + '?id=' + row.vendor_id} className="text-primary-soft-600 hover:text-primary-soft-700 hover:underline font-medium">
           {row.vendor_name}
         </Link>
       )
@@ -175,25 +175,25 @@ export default function RevenueReport({ payments, vendors, calls }) {
         <CardContent dir="rtl">
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlyData} margin={{ right: 30, left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-              <XAxis 
-                dataKey="month" 
-                tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
-                stroke="#E0E0E0"
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+              <XAxis
+                dataKey="month"
+                tick={{ fill: '#525252', fontFamily: 'Heebo', fontSize: 12 }}
+                stroke="#E5E5E5"
                 reversed={true}
               />
-              <YAxis 
-                tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
-                stroke="#E0E0E0"
+              <YAxis
+                tick={{ fill: '#525252', fontFamily: 'Heebo', fontSize: 12 }}
+                stroke="#E5E5E5"
                 orientation="right"
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value) => `₪${value.toLocaleString()}`}
                 contentStyle={{
                   backgroundColor: '#FFFFFF',
-                  border: '1px solid #E0E0E0',
-                  borderRadius: '4px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                   fontFamily: 'Heebo',
                   fontSize: 14,
                   direction: 'rtl',
@@ -201,7 +201,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
                 }}
                 labelStyle={{ fontWeight: 500, direction: 'rtl' }}
               />
-              <Line type="monotone" dataKey="revenue" stroke="#FF0000" strokeWidth={3} name="הכנסות" dot={{ fill: '#FF0000', strokeWidth: 2, r: 4 }} />
+              <Line type="monotone" dataKey="revenue" stroke="#FF6B6B" strokeWidth={3} name="הכנסות" dot={{ fill: '#FF6B6B', strokeWidth: 2, r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
