@@ -1,19 +1,22 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 export default function Register() {
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Attempt automatic redirect after a short delay
     const timer = setTimeout(() => {
-        base44.auth.redirectToLogin();
+        navigate('/SignIn');
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
   const handleManualRedirect = () => {
-    base44.auth.redirectToLogin();
+    navigate('/SignIn');
   };
 
   return (
