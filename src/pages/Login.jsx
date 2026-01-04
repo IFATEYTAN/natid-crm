@@ -108,10 +108,10 @@ export default function Login() {
             </motion.div>
 
             <CardTitle className="text-3xl font-bold text-neutral-soft-800 mb-2">
-              נתיד CRM
+              NATI GROUP SERVICE
             </CardTitle>
             <CardDescription className="text-base text-neutral-soft-600">
-              מערכת ניהול שירותי סיוע בדרכים
+              מערכת ניהול CRM
             </CardDescription>
           </CardHeader>
 
