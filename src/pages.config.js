@@ -5,6 +5,7 @@ import CallDetailsVendor from './pages/CallDetailsVendor';
 import Calls from './pages/Calls';
 import CaseDetails from './pages/CaseDetails';
 import Cases from './pages/Cases';
+import CoverageAreas from './pages/CoverageAreas';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
 import IntegrationSettings from './pages/IntegrationSettings';
@@ -26,7 +27,6 @@ import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
-import CoverageAreas from './pages/CoverageAreas';
 import __Layout from './Layout.jsx';
 
 
@@ -38,6 +38,7 @@ export const PAGES = {
     "Calls": Calls,
     "CaseDetails": CaseDetails,
     "Cases": Cases,
+    "CoverageAreas": CoverageAreas,
     "Customers": Customers,
     "Dashboard": Dashboard,
     "IntegrationSettings": IntegrationSettings,
@@ -59,7 +60,6 @@ export const PAGES = {
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
-    "CoverageAreas": CoverageAreas,
 }
 
 export const pagesConfig = {

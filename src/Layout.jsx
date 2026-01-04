@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
-import AccessibilityWidget from '@/components/AccessibilityWidget';
+
 import { motion } from 'framer-motion';
 
 export default function Layout({ children, currentPageName }) {
@@ -284,49 +284,30 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* User Profile Avatar */}
-            <motion.div 
-              className="relative group"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            >
-              <motion.div 
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF0000] to-[#CC0000] flex items-center justify-center cursor-pointer shadow-lg border-2 border-white"
-                whileHover={{ scale: 1.1, boxShadow: "0 8px 25px rgba(255, 0, 0, 0.3)" }}
-                whileTap={{ scale: 0.95 }}
-              >
+            {/* User Profile - Clean Design */}
+            <div className="flex items-center gap-3 pl-2">
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-medium text-[#212121] leading-none">
+                  {currentUser?.full_name || 'משתמש'}
+                </p>
+                <p className="text-[11px] text-[#616161] mt-1 leading-none">
+                  {currentUser?.email}
+                </p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#F5F5F5] border border-[#E0E0E0] flex items-center justify-center overflow-hidden">
                 {currentUser?.profile_image ? (
                   <img 
                     src={currentUser.profile_image} 
                     alt={currentUser.full_name} 
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-white font-bold text-sm">
+                  <span className="text-[#616161] text-xs font-medium">
                     {getInitials(currentUser?.full_name)}
                   </span>
                 )}
-              </motion.div>
-              
-              {/* Online indicator */}
-              <motion.div 
-                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#2E7D32] rounded-full border-2 border-white"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, type: "spring" }}
-              />
-              
-              {/* Hover tooltip */}
-              <motion.div 
-                className="absolute top-full mt-2 right-0 bg-[#212121] text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg"
-                initial={{ y: -5 }}
-                whileHover={{ y: 0 }}
-              >
-                {currentUser?.full_name || 'משתמש'}
-                <div className="text-[#9E9E9E] text-[10px]">{currentUser?.email}</div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -336,8 +317,6 @@ export default function Layout({ children, currentPageName }) {
         </main>
         </div>
 
-        {/* Accessibility Widget */}
-        <AccessibilityWidget />
         </div>
         );
         }

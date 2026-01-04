@@ -69,26 +69,26 @@ function WorkQueueOverview({ calls, isLoading }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Link to={createPageUrl('MyQueue')} className="block">
-          <div className="text-center p-4 bg-white border-r-4 border-r-warning-soft-400 rounded-lg shadow-sm border border-neutral-soft-200 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer">
-            <p className="text-2xl font-bold text-warning-soft-700">{waitingInQueue}</p>
-            <p className="text-sm text-neutral-soft-600 font-medium">בתור</p>
+          <div className="card-base p-4 text-center hover:border-gray-300 transition-colors">
+            <p className="text-2xl font-bold text-[var(--color-text-primary)]">{waitingInQueue}</p>
+            <p className="text-sm text-[var(--color-text-secondary)] mt-1">בתור</p>
           </div>
         </Link>
         <Link to={createPageUrl('MyQueue')} className="block">
-          <div className="text-center p-4 bg-white border-r-4 border-r-secondary-soft-400 rounded-lg shadow-sm border border-neutral-soft-200 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer">
-            <p className="text-2xl font-bold text-secondary-soft-700">{assignedToAgents}</p>
-            <p className="text-sm text-neutral-soft-600 font-medium">משובץ</p>
+          <div className="card-base p-4 text-center hover:border-gray-300 transition-colors">
+            <p className="text-2xl font-bold text-[var(--color-text-primary)]">{assignedToAgents}</p>
+            <p className="text-sm text-[var(--color-text-secondary)] mt-1">משובץ</p>
           </div>
         </Link>
         <Link to={createPageUrl('Calls') + '?status=in_progress'} className="block">
-          <div className="text-center p-4 bg-white border-r-4 border-r-info-soft-400 rounded-lg shadow-sm border border-neutral-soft-200 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 cursor-pointer">
-            <p className="text-2xl font-bold text-info-soft-700">{inProgress}</p>
-            <p className="text-sm text-neutral-soft-600 font-medium">בטיפול</p>
+          <div className="card-base p-4 text-center hover:border-gray-300 transition-colors">
+            <p className="text-2xl font-bold text-[var(--color-text-primary)]">{inProgress}</p>
+            <p className="text-sm text-[var(--color-text-secondary)] mt-1">בטיפול</p>
           </div>
         </Link>
-        <div className="text-center p-4 bg-white border-r-4 border-r-neutral-soft-400 rounded-lg shadow-sm border border-neutral-soft-200">
-          <p className="text-2xl font-bold text-neutral-soft-700">{avgTime}'</p>
-          <p className="text-sm text-neutral-soft-600 font-medium">ממוצע</p>
+        <div className="card-base p-4 text-center">
+          <p className="text-2xl font-bold text-[var(--color-text-primary)]">{avgTime}'</p>
+          <p className="text-sm text-[var(--color-text-secondary)] mt-1">זמן טיפול ממוצע</p>
         </div>
       </div>
 
