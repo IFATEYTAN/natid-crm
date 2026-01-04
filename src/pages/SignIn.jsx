@@ -82,7 +82,7 @@ export default function SignIn() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-[340px] mx-4" 
+        className="relative z-10 w-full max-w-[380px] mx-4" 
       >
         <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-md ring-1 ring-black/5"> 
           <CardHeader className="text-center pb-2 pt-6 px-4">
