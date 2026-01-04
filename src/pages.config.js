@@ -8,6 +8,7 @@ import Cases from './pages/Cases';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
 import IntegrationSettings from './pages/IntegrationSettings';
+import Login from './pages/Login';
 import MyCallsVendor from './pages/MyCallsVendor';
 import MyQueue from './pages/MyQueue';
 import NewCase from './pages/NewCase';
@@ -37,6 +38,7 @@ export const PAGES = {
     "Customers": Customers,
     "Dashboard": Dashboard,
     "IntegrationSettings": IntegrationSettings,
+    "Login": Login,
     "MyCallsVendor": MyCallsVendor,
     "MyQueue": MyQueue,
     "NewCase": NewCase,

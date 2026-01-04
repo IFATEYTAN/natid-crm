@@ -383,10 +383,10 @@ export default function OperatorDashboard() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          <Card className="border-l-4 border-l-[#D32F2F] bg-gradient-to-r from-[#FFEBEE] to-white">
+          <Card className="border-l-4 border-l-error-soft-500 bg-gradient-to-r from-error-soft-50 to-white">
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2 text-[#D32F2F]">
-                <AlertCircle className="w-5 h-5" />
+              <CardTitle className="text-base flex items-center gap-2 text-neutral-soft-800">
+                <AlertCircle className="w-5 h-5 text-error-soft-500" />
                 קריאות דחופות ({urgentCalls.length})
               </CardTitle>
             </CardHeader>

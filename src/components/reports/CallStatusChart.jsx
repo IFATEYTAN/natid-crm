@@ -14,14 +14,15 @@ const statusLabels = {
   cancelled: 'בוטל'
 };
 
+// Soft color palette for call statuses
 const statusColors = {
-  waiting_treatment: '#ED6C02',
-  awaiting_assignment: '#FF6B00',
-  assigning: '#FF0000',
-  vendor_enroute: '#2E7D32',
-  in_progress: '#0288D1',
-  completed: '#1B5E20',
-  cancelled: '#9E9E9E'
+  waiting_treatment: '#F59E0B',   // warning-soft-500 - כתום עדין
+  awaiting_assignment: '#FFA07A', // chart-soft-4 - כתום-ורוד עדין
+  assigning: '#FF6B6B',           // primary-soft-500 - אדום עדין
+  vendor_enroute: '#8B5CF6',      // info-soft-500 - סגול עדין
+  in_progress: '#0EA5E9',         // secondary-soft-500 - כחול עדין
+  completed: '#22C55E',           // success-soft-500 - ירוק עדין
+  cancelled: '#A3A3A3'            // neutral-soft-400 - אפור עדין
 };
 
 export default function CallStatusChart({ calls }) {

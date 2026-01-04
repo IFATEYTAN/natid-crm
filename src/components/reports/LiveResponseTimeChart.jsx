@@ -43,12 +43,12 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
       chartInstance.current.destroy();
     }
 
-    // Create gradient colors based on response time
+    // Create soft gradient colors based on response time
     const colors = data.map(time => {
-      if (time <= 20) return '#2E7D32'; // Green - excellent
-      if (time <= 30) return '#0288D1'; // Blue - good
-      if (time <= 40) return '#FF6B00'; // Orange - acceptable
-      return '#FF0000'; // Red - needs improvement
+      if (time <= 20) return '#22C55E'; // success-soft-500 - ירוק עדין
+      if (time <= 30) return '#0EA5E9'; // secondary-soft-500 - כחול עדין
+      if (time <= 40) return '#F59E0B'; // warning-soft-500 - כתום עדין
+      return '#FF6B6B'; // primary-soft-500 - אדום עדין
     });
 
     // Create new chart with live update animation

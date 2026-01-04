@@ -23,23 +23,24 @@ export default function AvatarStack({ users, max = 5, size = 'md', onShowAll }) 
   };
 
   const getColorForName = (name) => {
-    if (!name) return 'bg-gray-500';
+    if (!name) return 'bg-neutral-soft-500';
+    // Soft color palette for avatars
     const colors = [
-      'bg-red-500',
-      'bg-blue-500',
-      'bg-green-500',
-      'bg-yellow-500',
-      'bg-purple-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-orange-500'
+      'bg-primary-soft-500',
+      'bg-secondary-soft-500',
+      'bg-success-soft-500',
+      'bg-warning-soft-500',
+      'bg-info-soft-500',
+      'bg-[#4ECDC4]', // chart-soft-2
+      'bg-[#45B7D1]', // chart-soft-3
+      'bg-[#FFA07A]'  // chart-soft-4
     ];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
   };
 
   return (
-    <div className="flex items-center -space-x-2">
+    <div className="flex items-center -space-x-2 space-x-reverse">
       {displayUsers.map((user, index) => (
         <motion.div
           key={user.id || index}
@@ -69,14 +70,14 @@ export default function AvatarStack({ users, max = 5, size = 'md', onShowAll }) 
             <User className="w-1/2 h-1/2" />
           )}
           
-          {/* Status indicator */}
+          {/* Status indicator - RTL: left instead of right */}
           {user.is_available !== undefined && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               className={cn(
-                "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white",
-                user.is_available ? "bg-green-500" : "bg-gray-400"
+                "absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full border-2 border-white",
+                user.is_available ? "bg-success-soft-500" : "bg-neutral-soft-400"
               )}
             />
           )}
@@ -96,7 +97,7 @@ export default function AvatarStack({ users, max = 5, size = 'md', onShowAll }) 
           whileHover={{ scale: 1.1 }}
           onClick={onShowAll}
           className={cn(
-            "relative rounded-full border-2 border-white bg-gray-700 flex items-center justify-center font-semibold text-white shadow-md cursor-pointer",
+            "relative rounded-full border-2 border-white bg-neutral-soft-700 flex items-center justify-center font-semibold text-white shadow-md cursor-pointer",
             sizes[size]
           )}
         >
