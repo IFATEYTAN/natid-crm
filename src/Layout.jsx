@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
+import AccessibilityWidget from '@/components/AccessibilityWidget';
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -171,10 +172,6 @@ export default function Layout({ children, currentPageName }) {
           box-shadow: 0 4px 12px rgba(0,0,0,0.1);
           transform: translateY(-2px);
         }
-
-        #accessibility-widget, .accessibility-widget, [aria-label="Accessibility options"] {
-          display: none !important;
-        }
       `}</style>
 
       {/* Mobile Overlay */}
@@ -331,8 +328,9 @@ export default function Layout({ children, currentPageName }) {
         <main className="p-4 md:p-6">
           {children}
         </main>
-        </div>
-
-        </div>
-        );
-        }
+        
+        <AccessibilityWidget />
+      </div>
+    </div>
+  );
+}
