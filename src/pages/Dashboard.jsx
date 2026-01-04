@@ -387,6 +387,7 @@ export default function Dashboard() {
         </div>
             </div>
       </div>
+    </div>
 
       {/* Recent Calls Table */}
       <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
