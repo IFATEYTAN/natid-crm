@@ -371,6 +371,9 @@ export default function ServiceProviders() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
+                <p className="text-[11px] text-[#616161] mt-1">
+                  * יש להזמין את המשתמש בנפרד דרך מסך "ניהול משתמשים" עם כתובת אימייל זו כדי לאפשר לו גישה לפורטל
+                </p>
               </div>
               <div>
                 <Label>סטטוס זמינות</Label>

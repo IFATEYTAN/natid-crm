@@ -16,7 +16,8 @@ import {
   MapPin,
   Navigation,
   Eye,
-  CheckCircle2
+  CheckCircle2,
+  User
 } from 'lucide-react';
 import { format, parseISO, startOfWeek, endOfWeek } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -184,9 +185,21 @@ export default function VendorPortal() {
   if (!currentVendor) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-xl text-[#616161] mb-2">לא נמצא ספק מקושר למשתמש זה</p>
-          <p className="text-sm text-[#9E9E9E]">אנא פנה למנהל המערכת</p>
+        <div className="text-center max-w-md p-6 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+          <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="h-8 w-8 text-gray-400" />
+          </div>
+          <p className="text-xl font-semibold text-[#111827] mb-2">לא נמצא פרופיל ספק מקושר</p>
+          <p className="text-sm text-[#616161] mb-4">
+            המשתמש שלך ({user?.email}) אינו מקושר לכרטיס ספק במערכת.
+          </p>
+          <div className="text-sm text-right bg-blue-50 p-4 rounded-lg text-blue-800">
+            <p className="font-medium mb-1">כיצד מסדרים זאת?</p>
+            <ol className="list-decimal list-inside space-y-1 text-blue-700">
+              <li>יש לוודא שקיים כרטיס ספק במערכת</li>
+              <li>יש לוודא שכתובת האימייל בכרטיס הספק תואמת לכתובת האימייל שלך</li>
+            </ol>
+          </div>
         </div>
       </div>
     );
