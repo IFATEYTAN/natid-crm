@@ -65,6 +65,9 @@ export default function CallDetailsVendor() {
 
   const currentVendor = vendors.find(v => v.email === user?.email);
 
+  // Import Chat
+  const CallChat = React.lazy(() => import('@/components/chat/CallChat'));
+
   // Calculate distance and ETA
   useEffect(() => {
     const calculateDistance = async () => {
@@ -395,29 +398,14 @@ export default function CallDetailsVendor() {
         </CardContent>
       </Card>
 
-      {/* Add Note */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-[#0078D4]" />
-            הוסף הערה
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="כתוב הערה או עדכון..."
-            rows={3}
-          />
-          <Button 
-            onClick={() => addNoteMutation.mutate()}
-            disabled={!note || addNoteMutation.isPending}
-          >
-            שמור הערה
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Chat / Messages */}
+      <React.Suspense fallback={<div>טוען צ'אט...</div>}>
+        <CallChat 
+          callId={callId} 
+          currentUserRole="vendor" 
+          currentUserName={currentVendor?.vendor_name || 'ספק'} 
+        />
+      </React.Suspense>
     </div>
   );
 }
