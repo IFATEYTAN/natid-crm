@@ -23,10 +23,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Plus, 
   Search, 
-  Phone,
-  Mail,
-  Building2,
-  Edit,
+  Phone, 
+  Mail, 
+  Building2, 
+  Edit, 
   Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
