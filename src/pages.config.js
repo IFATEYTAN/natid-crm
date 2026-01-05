@@ -3,12 +3,15 @@ import AllVendorsMap from './pages/AllVendorsMap';
 import AutomationSettings from './pages/AutomationSettings';
 import BotIntegration from './pages/BotIntegration';
 import CallDetailsVendor from './pages/CallDetailsVendor';
+import Calls from './pages/Calls';
 import CaseDetails from './pages/CaseDetails';
 import Cases from './pages/Cases';
 import CoverageAreas from './pages/CoverageAreas';
 import CustomerDetails from './pages/CustomerDetails';
 import Customers from './pages/Customers';
+import Dashboard from './pages/Dashboard';
 import IntegrationSettings from './pages/IntegrationSettings';
+import Login from './pages/Login';
 import MyCallsVendor from './pages/MyCallsVendor';
 import MyQueue from './pages/MyQueue';
 import MyVendorProfile from './pages/MyVendorProfile';
@@ -26,9 +29,7 @@ import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
-import Calls from './pages/Calls';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
+import AuthLogin from './pages/AuthLogin';
 import __Layout from './Layout.jsx';
 
 
@@ -38,12 +39,15 @@ export const PAGES = {
     "AutomationSettings": AutomationSettings,
     "BotIntegration": BotIntegration,
     "CallDetailsVendor": CallDetailsVendor,
+    "Calls": Calls,
     "CaseDetails": CaseDetails,
     "Cases": Cases,
     "CoverageAreas": CoverageAreas,
     "CustomerDetails": CustomerDetails,
     "Customers": Customers,
+    "Dashboard": Dashboard,
     "IntegrationSettings": IntegrationSettings,
+    "Login": Login,
     "MyCallsVendor": MyCallsVendor,
     "MyQueue": MyQueue,
     "MyVendorProfile": MyVendorProfile,
@@ -61,9 +65,7 @@ export const PAGES = {
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
-    "Calls": Calls,
-    "Dashboard": Dashboard,
-    "Login": Login,
+    "AuthLogin": AuthLogin,
 }
 
 export const pagesConfig = {
