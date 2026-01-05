@@ -16,8 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Plus, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Plus,
   Search,
   Phone,
   MapPin,
@@ -28,7 +35,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Inbox
+  Inbox,
+  MoreVertical,
+  Navigation,
+  UserCheck,
+  Ban,
+  FileText
 } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -245,20 +257,70 @@ export default function Calls() {
       header: 'פעולות',
       accessor: 'actions',
       cell: (row) => (
-        <div className="flex items-center gap-1">
-          <Link to={createPageUrl(`CallDetails?id=${row.id}`)}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Eye className="w-4 h-4" strokeWidth={2} />
+              <MoreVertical className="w-4 h-4" strokeWidth={2} />
             </Button>
-          </Link>
-          {row.call_status === 'waiting_treatment' && (
-            <Link to={createPageUrl(`AssignVendor?id=${row.id}`)}>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Truck className="w-4 h-4" strokeWidth={2} />
-              </Button>
-            </Link>
-          )}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+              <Link to={createPageUrl(`CallDetails?id=${row.id}`)}>
+                <Eye className="w-4 h-4" />
+                צפייה בפרטים
+              </Link>
+            </DropdownMenuItem>
+
+            {(row.call_status === 'waiting_treatment' || row.call_status === 'awaiting_assignment') && (
+              <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+                <Link to={createPageUrl(`AssignVendor?id=${row.id}`)}>
+                  <Truck className="w-4 h-4" />
+                  שיוך ספק
+                </Link>
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+              <Link to={createPageUrl(`EditCall?id=${row.id}`)}>
+                <Edit className="w-4 h-4" />
+                עריכת קריאה
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {row.customer_phone && (
+              <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+                <a href={`tel:${row.customer_phone}`}>
+                  <Phone className="w-4 h-4" />
+                  התקשר ללקוח
+                </a>
+              </DropdownMenuItem>
+            )}
+
+            {row.pickup_location_address && (
+              <DropdownMenuItem
+                className="gap-2 cursor-pointer"
+                onClick={() => window.open(`https://waze.com/ul?q=${encodeURIComponent(row.pickup_location_address)}`, '_blank')}
+              >
+                <Navigation className="w-4 h-4" />
+                ניווט למיקום
+              </DropdownMenuItem>
+            )}
+
+            {row.call_status !== 'completed' && row.call_status !== 'cancelled' && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="gap-2 cursor-pointer text-red-600 focus:text-red-600">
+                  <Link to={createPageUrl(`CallDetails?id=${row.id}&action=cancel`)}>
+                    <Ban className="w-4 h-4" />
+                    ביטול קריאה
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
   ];
