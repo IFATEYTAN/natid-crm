@@ -21,6 +21,9 @@ import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
+import OfflineIndicator from '@/components/pwa/OfflineIndicator';
+import UpdatePrompt from '@/components/pwa/UpdatePrompt';
 import anime from 'animejs';
 
 export default function Layout({ children, currentPageName }) {
@@ -53,24 +56,8 @@ export default function Layout({ children, currentPageName }) {
     // Link handling handled by Link component
   };
 
-  useEffect(() => {
-    if (mainContentRef.current) {
-      anime({
-        targets: mainContentRef.current,
-        opacity: [0, 1],
-        translateY: [10, 0],
-        duration: 600,
-        easing: 'easeOutQuad'
-      });
-    }
-  }, [currentPageName]);
   // Initialize with the first group expanded ("תפעול יומי")
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
-
-  // Don't wrap auth pages in the main layout
-  if (currentPageName === 'SignIn' || currentPageName === 'Register') {
-    return children;
-  }
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -83,6 +70,23 @@ export default function Layout({ children, currentPageName }) {
     };
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (mainContentRef.current) {
+      anime({
+        targets: mainContentRef.current,
+        opacity: [0, 1],
+        translateY: [10, 0],
+        duration: 600,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, [currentPageName]);
+
+  // Don't wrap auth pages in the main layout
+  if (currentPageName === 'SignIn' || currentPageName === 'Register') {
+    return children;
+  }
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -434,6 +438,11 @@ export default function Layout({ children, currentPageName }) {
         </main>
 
         <AccessibilityWidget />
+
+        {/* PWA Components */}
+        <InstallPrompt />
+        <OfflineIndicator />
+        <UpdatePrompt />
         </div>
     </div>
   );
