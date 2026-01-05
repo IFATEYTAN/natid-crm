@@ -41,6 +41,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { triggerNotification } from '@/utils/notifications';
 
 export default function CustomerDetails() {
   const [searchParams] = useSearchParams();
@@ -97,7 +98,7 @@ export default function CustomerDetails() {
         performed_by: user?.full_name || 'System'
       });
     },
-    onSuccess: () => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['customer-interactions', customerId] });
       setIsInteractionDialogOpen(false);
       setInteractionForm({
@@ -108,6 +109,17 @@ export default function CustomerDetails() {
         interaction_date: new Date().toISOString().slice(0, 16)
       });
       toast.success('האינטראקציה נשמרה בהצלחה');
+      
+      // Trigger Notification
+      const user = await base44.auth.me();
+      await triggerNotification('new_interaction', {
+        customer_name: customer.name,
+        type: interactionForm.type,
+        summary: interactionForm.summary,
+        link: `/CustomerDetails?id=${customerId}`,
+        id: customerId,
+        entityType: 'customer'
+      }, user);
     },
     onError: (error) => toast.error('שגיאה בשמירת האינטראקציה: ' + error.message)
   });

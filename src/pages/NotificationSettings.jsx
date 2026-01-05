@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -100,15 +102,49 @@ export default function NotificationSettings() {
   const [editingNotification, setEditingNotification] = useState(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('notificationSettings');
-    if (saved) {
-      setNotifications(JSON.parse(saved));
-    }
   }, []);
 
+  // Fetch settings from DB
+  const { data: dbSettings, isLoading } = useQuery({
+    queryKey: ['notification-settings'],
+    queryFn: () => base44.entities.NotificationSetting.list(),
+  });
+
+  useEffect(() => {
+    if (dbSettings) {
+      setNotifications(dbSettings);
+    }
+  }, [dbSettings]);
+
+  const saveMutation = useMutation({
+    mutationFn: (setting) => {
+      if (setting.id && typeof setting.id === 'string' && setting.id.length > 10) { // Check if it's a real ID
+        return base44.entities.NotificationSetting.update(setting.id, setting);
+      } else {
+        // Remove temp ID
+        const { id, ...data } = setting;
+        return base44.entities.NotificationSetting.create(data);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
+      toast.success('ההתראה נשמרה');
+      setIsDialogOpen(false);
+      setEditingNotification(null);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.NotificationSetting.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
+      toast.success('ההתראה נמחקה');
+    }
+  });
+
   const handleSave = () => {
-    localStorage.setItem('notificationSettings', JSON.stringify(notifications));
-    toast.success('הגדרות ההתראות נשמרו');
+    // Not needed as we save individually now, but could be bulk save
+    toast.info('הגדרות נשמרות אוטומטית בעת עריכה');
   };
 
   const handleAddNotification = (template = null) => {
@@ -140,24 +176,20 @@ export default function NotificationSettings() {
       toast.error('נא למלא שם להתראה');
       return;
     }
-
-    const exists = notifications.find(n => n.id === editingNotification.id);
-    if (exists) {
-      setNotifications(notifications.map(n => 
-        n.id === editingNotification.id ? editingNotification : n
-      ));
-    } else {
-      setNotifications([...notifications, editingNotification]);
-    }
     
-    setIsDialogOpen(false);
-    setEditingNotification(null);
-    toast.success('ההתראה נשמרה');
+    // Map to entity structure
+    const settingData = {
+      ...editingNotification,
+      message_template: editingNotification.message // Map UI 'message' to DB 'message_template'
+    };
+    
+    saveMutation.mutate(settingData);
   };
 
   const handleDeleteNotification = (id) => {
-    setNotifications(notifications.filter(n => n.id !== id));
-    toast.success('ההתראה נמחקה');
+    if (confirm('האם למחוק את ההתראה?')) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const toggleNotification = (id) => {
@@ -530,13 +562,7 @@ export default function NotificationSettings() {
         )}
       </div>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} className="btn-primary gap-2">
-          <Save className="w-4 h-4" />
-          שמור הגדרות
-        </Button>
-      </div>
+
 
       {/* Info */}
       <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5">

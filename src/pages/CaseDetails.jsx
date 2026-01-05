@@ -46,6 +46,7 @@ import VendorRecommendation from '@/components/ai/VendorRecommendation';
 import PredictionBadge from '@/components/ai/PredictionBadge';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { triggerNotification } from '@/utils/notifications';
 
 const serviceTypeLabels = {
   towing: 'גרירה',
@@ -184,6 +185,18 @@ export default function CaseDetails() {
       new_value: newStatus
     });
 
+    // Trigger Notification
+    const user = await base44.auth.me();
+    await triggerNotification('call_status_change', {
+      call_number: caseData.case_number || caseId.substring(0,8),
+      customer_name: caseData.customer_name,
+      status: newStatus,
+      old_status: previousStatus,
+      link: `/CaseDetails?id=${caseId}`,
+      id: caseId,
+      entityType: 'case'
+    }, user);
+
     // Send SMS notification to customer
     try {
       const smsMessages = {
@@ -229,6 +242,17 @@ export default function CaseDetails() {
       activity_type: 'assigned',
       description: `שובץ לנותן שירות: ${provider.name}`
     });
+
+    // Trigger Notification
+    const user = await base44.auth.me();
+    await triggerNotification('call_assigned', {
+      call_number: caseData.case_number || caseId.substring(0,8),
+      customer_name: caseData.customer_name,
+      provider_name: provider.name,
+      link: `/CaseDetails?id=${caseId}`,
+      id: caseId,
+      entityType: 'case'
+    }, user);
 
     // Update provider status
     await base44.entities.ServiceProvider.update(providerId, { status: 'busy' });
