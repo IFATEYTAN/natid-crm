@@ -58,8 +58,6 @@ export default function Layout({ children, currentPageName }) {
       title: 'תפעול יומי',
       items: [
         { name: 'לוח בקרה', href: 'Dashboard' },
-        { name: 'תפריט מוקדן', href: 'OperatorDashboard' },
-        { name: 'קריאות שירות', href: 'Cases' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
