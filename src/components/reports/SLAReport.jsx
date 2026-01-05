@@ -94,8 +94,8 @@ export default function SLAReport({ calls }) {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-[#E0E0E0] rounded-full h-2">
-            <div 
-              className="bg-[#2E7D32] h-2 rounded-full"
+            <div
+              className="bg-[#22C55E] h-2 rounded-full"
               style={{ width: `${row.slaRate}%` }}
             />
           </div>
@@ -106,7 +106,7 @@ export default function SLAReport({ calls }) {
     {
       header: 'חריגות',
       cell: (row) => row.breached > 0 ? (
-        <span className="text-[#D32F2F] font-medium">{row.breached}</span>
+        <span className="text-[#FF6B6B] font-medium">{row.breached}</span>
       ) : (
         <span className="text-[#616161]">0</span>
       )
@@ -125,8 +125,8 @@ export default function SLAReport({ calls }) {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-[#E0E0E0] rounded-full h-2">
-            <div 
-              className="bg-[#2E7D32] h-2 rounded-full"
+            <div
+              className="bg-[#22C55E] h-2 rounded-full"
               style={{ width: `${row.slaRate}%` }}
             />
           </div>
@@ -153,35 +153,35 @@ export default function SLAReport({ calls }) {
   const overallSLARate = totalCalls > 0 ? ((totalOnTime / totalCalls) * 100).toFixed(1) : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">עמידה כללית ב-SLA</div>
-            <div className="text-2xl font-bold text-[#2E7D32] mt-1">{overallSLARate}%</div>
+            <div className="text-2xl font-bold text-[#22C55E] mt-1">{overallSLARate}%</div>
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">קריאות בזמן</div>
-            <div className="text-2xl font-bold text-[#2E7D32] mt-1 flex items-center justify-end gap-2">
+            <div className="text-2xl font-bold text-[#22C55E] mt-1 flex items-center justify-end gap-2">
               {totalOnTime}
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">חריגות SLA</div>
-            <div className="text-2xl font-bold text-[#D32F2F] mt-1 flex items-center justify-end gap-2">
+            <div className="text-2xl font-bold text-[#FF6B6B] mt-1 flex items-center justify-end gap-2">
               {totalBreached}
               <AlertTriangle className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">אזור עם הכי הרבה חריגות</div>
             <div className="text-xl font-bold text-[#212121] mt-1">
               {areaStats.length > 0 ? areaStats.sort((a, b) => b.breached - a.breached)[0].area : '-'}
@@ -230,8 +230,8 @@ export default function SLAReport({ calls }) {
                 }}
               />
               <Legend wrapperStyle={{ fontFamily: 'Heebo', fontSize: 12 }} />
-              <Bar yAxisId="left" dataKey="עמידה ב-SLA" fill="#2E7D32" radius={[4, 4, 0, 0]} />
-              <Bar yAxisId="right" dataKey="זמן תגובה" fill="#FF0000" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="left" dataKey="עמידה ב-SLA" fill="#22C55E" radius={[4, 4, 0, 0]} />
+              <Bar yAxisId="right" dataKey="זמן תגובה" fill="#FF6B6B" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
