@@ -17,7 +17,8 @@ import {
   Star,
   FileText,
   Activity,
-  Truck
+  Truck,
+  DollarSign
 } from 'lucide-react';
 import VendorAIInsights from '@/components/ai/VendorAIInsights';
 import { format, parseISO } from 'date-fns';

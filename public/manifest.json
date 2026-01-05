@@ -1,0 +1,49 @@
+{
+  "name": "NatID CRM - מערכת ניהול קריאות דרך",
+  "short_name": "NatID CRM",
+  "description": "מערכת ניהול קריאות דרך וספקי שירות",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0D47A1",
+  "orientation": "portrait-primary",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "קריאה חדשה",
+      "short_name": "קריאה חדשה",
+      "description": "יצירת קריאת דרך חדשה",
+      "url": "/NewCase"
+    },
+    {
+      "name": "מפה חיה",
+      "short_name": "מפה",
+      "description": "צפייה במפה עם מיקומי קריאות",
+      "url": "/AllVendorsMap"
+    },
+    {
+      "name": "ניטור תורים",
+      "short_name": "תורים",
+      "description": "מעקב אחר קריאות בתור",
+      "url": "/QueueMonitor"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

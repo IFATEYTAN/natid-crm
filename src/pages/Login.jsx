@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import FormInput from '@/components/ui/FormInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogIn, Truck, ShieldCheck, AlertCircle, ArrowRight, Mail, CheckCircle } from 'lucide-react';
+import { LogIn, ShieldCheck, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
@@ -123,23 +125,8 @@ export default function Login() {
         className="relative z-10 w-full max-w-md mx-4"
       >
         <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
-          <CardHeader className="text-center pb-4">
-            {/* Logo/Icon */}
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 260,
-                damping: 20,
-                delay: 0.2
-              }}
-              className="mx-auto mb-4 w-20 h-20 bg-gradient-to-br from-primary-soft-500 to-primary-soft-600 rounded-2xl flex items-center justify-center shadow-lg"
-            >
-              <Truck className="w-10 h-10 text-white" strokeWidth={2.5} />
-            </motion.div>
-
-            <CardTitle className="text-3xl font-bold text-neutral-soft-800 mb-2">
+          <CardHeader className="text-center pb-2 sm:pb-4 pt-4 sm:pt-6">
+            <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-soft-800 mb-1 sm:mb-2">
               NATI GROUP SERVICE
             </CardTitle>
             <CardDescription className="text-base text-neutral-soft-600">
@@ -183,6 +170,83 @@ export default function Login() {
                     <span className="text-right flex-1">{successMessage}</span>
                     <CheckCircle className="w-5 h-5" />
                   </motion.div>
+            <CardDescription className="text-sm sm:text-base text-neutral-soft-600">
+              מערכת ניהול CRM
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="pt-3 sm:pt-6 px-4 sm:px-6">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-5">
+              {/* Error Alert */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-2 p-3 bg-error-soft-50 border border-error-soft-200 rounded-lg text-error-soft-700 text-sm flex-row-reverse"
+                >
+                  <span className="text-right flex-1">{error}</span>
+                  <AlertCircle className="w-5 h-5" />
+                </motion.div>
+              )}
+
+              {/* Email Input */}
+              <FormInput
+                label="שם משתמש / אימייל"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                disabled={isLoading}
+                className="text-right"
+              />
+
+              {/* Password Input */}
+              <FormInput
+                label="סיסמה"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                disabled={isLoading}
+                className="text-right"
+              />
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between text-sm flex-row-reverse">
+                <label className="flex items-center gap-2 cursor-pointer flex-row-reverse">
+                  <span className="text-neutral-soft-600">זכור אותי</span>
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-neutral-soft-300 text-primary-soft-600 focus:ring-primary-soft-500"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => toast.info('לשחזור סיסמה יש לפנות למנהל המערכת')}
+                  className="text-primary-soft-600 hover:text-primary-soft-700 hover:underline bg-transparent border-0 p-0 cursor-pointer text-sm"
+                >
+                  שכחתי סיסמה
+                </button>
+              </div>
+
+              {/* Login Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>מתחבר...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>כניסה למערכת</span>
+                    <LogIn className="w-5 h-5" />
+                  </>
                 )}
 
                 <p className="text-neutral-soft-600 text-sm text-right">
@@ -303,7 +367,7 @@ export default function Login() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="mt-6 flex items-center justify-center gap-2 text-xs text-neutral-soft-500 flex-row-reverse"
+              className="mt-4 sm:mt-6 flex items-center justify-center gap-2 text-xs text-neutral-soft-500 flex-row-reverse"
             >
               <span>חיבור מאובטח</span>
               <ShieldCheck className="w-4 h-4 text-success-soft-500" />
@@ -316,7 +380,7 @@ export default function Login() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
-          className="mt-6 text-center text-white/90 text-sm"
+          className="mt-4 sm:mt-6 text-center text-white/90 text-xs sm:text-sm"
         >
           <p className="font-medium mb-1">שירותי סיוע בדרכים מקצועיים</p>
           <p className="text-white/70 text-xs">זמינים 24/7 לשירותכם</p>

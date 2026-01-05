@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
+import ExportMenu from '@/components/ui/ExportMenu';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,7 +39,7 @@ import {
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
-import ImportExport from '@/components/ImportExport';
+import { PageTransition } from '@/components/animations/AnimatedComponents';
 
 const serviceTypeLabels = {
   tow_truck: 'גרר',
@@ -314,65 +316,113 @@ export default function ServiceProviders() {
     },
   ];
 
+  // Status labels for export
+  const statusLabels = {
+    available: 'זמין',
+    busy: 'בעבודה',
+    offline: 'לא זמין',
+    inactive: 'לא פעיל',
+  };
+
+  const exportColumns = [
+    { header: 'שם ספק', accessor: 'vendor_name' },
+    { header: 'איש קשר', accessor: 'contact_person' },
+    { header: 'טלפון', accessor: 'phone' },
+    { header: 'אימייל', accessor: 'email' },
+    { header: 'סוגי שירות', accessor: 'service_types' },
+    { header: 'אזורי כיסוי', accessor: 'coverage_areas_str' },
+    { header: 'סטטוס', accessor: 'status' },
+    { header: 'דירוג', accessor: 'rating' },
+    { header: 'קריאות', accessor: 'total_calls_completed' },
+  ];
+
+  // Prepare export data with formatted values
+  const exportData = filteredProviders.map(provider => ({
+    ...provider,
+    service_types: (provider.service_type || []).join(', '),
+    coverage_areas_str: (provider.coverage_areas || []).join(', '),
+    status: statusLabels[provider.availability_status] || provider.availability_status || '',
+    rating: provider.average_rating ? provider.average_rating.toFixed(1) : '',
+  }));
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1>נותני שירות</h1>
-          <p className="text-[var(--color-text-secondary)]">{filteredProviders.length} ספקים פעילים</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <ImportExport 
-            entityName="Vendor" 
-            data={filteredProviders}
-            columns={columns}
-            title="דוח נותני שירות"
-          />
-          <Button 
-            className="btn-primary flex items-center gap-2"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Plus className="w-4 h-4" />
-            נותן שירות חדש
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="card-base">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-disabled)]" />
-            <Input
-              placeholder="חיפוש לפי שם, טלפון..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="input-base pr-10"
-            />
+    <PageTransition>
+      <div className="space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div>
+            <h1 className="text-2xl font-bold text-[#0D47A1]">נותני שירות</h1>
+            <p className="text-[var(--color-text-secondary)]">{filteredProviders.length} ספקים פעילים</p>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-40 input-base">
-              <SelectValue placeholder="סטטוס" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">כל הסטטוסים</SelectItem>
-              <SelectItem value="available">זמין</SelectItem>
-              <SelectItem value="busy">בעבודה</SelectItem>
-              <SelectItem value="offline">לא זמין</SelectItem>
-              <SelectItem value="inactive">לא פעיל</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+          <div className="flex flex-wrap gap-2">
+            <ExportMenu
+              data={exportData}
+              columns={exportColumns}
+              filename="vendors"
+              title="רשימת נותני שירות"
+              subtitle={`סה"כ ${filteredProviders.length} ספקים`}
+            />
+            <Button
+              className="btn-primary flex items-center gap-2"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4" />
+              נותן שירות חדש
+            </Button>
+          </div>
+        </motion.div>
 
-      {/* Table */}
-      <DataTable
-        columns={columns}
-        data={filteredProviders}
-        isLoading={isLoading}
-        emptyMessage="לא נמצאו נותני שירות"
-      />
+        {/* Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="card-base"
+        >
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-disabled)]" />
+              <Input
+                placeholder="חיפוש לפי שם, טלפון..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="input-base pr-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full md:w-40 input-base">
+                <SelectValue placeholder="סטטוס" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">כל הסטטוסים</SelectItem>
+                <SelectItem value="available">זמין</SelectItem>
+                <SelectItem value="busy">בעבודה</SelectItem>
+                <SelectItem value="offline">לא זמין</SelectItem>
+                <SelectItem value="inactive">לא פעיל</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </motion.div>
+
+        {/* Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <DataTable
+            columns={columns}
+            data={filteredProviders}
+            isLoading={isLoading}
+            emptyMessage="לא נמצאו נותני שירות"
+            emptyPreset="vendors"
+          />
+        </motion.div>
 
       {/* Provider Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -615,6 +665,7 @@ export default function ServiceProviders() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </PageTransition>
   );
 }

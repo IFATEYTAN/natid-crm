@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -108,6 +108,8 @@ function WorkQueueOverview({ calls, isLoading }) {
             <div key={agent.name} className="flex items-center gap-3">
               <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
               <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden" dir="ltr">
+              <span className="text-sm font-medium w-32 truncate text-right">{agent.name}</span>
+              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden">
                 <div
                   className={`h-full ${agent.count >= 5 ? 'bg-warning-soft-500' : 'bg-success-soft-500'}`}
                   style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
@@ -150,8 +152,18 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setCurrentUser).catch(() => {});
+  }, []);
   
   const today = new Date();
+
+  const { data: workQueue = [] } = useQuery({
+    queryKey: ['workQueue'],
+    queryFn: () => base44.entities.WorkQueue.list(),
+  });
 
   const { data: calls = [], isLoading: callsLoading } = useQuery({
     queryKey: ['calls'],
@@ -181,10 +193,20 @@ export default function Dashboard() {
   const waitingCalls = calls.filter(c => c.call_status === 'waiting_treatment');
   
   // Operator stats
-  const completedToday = calls.filter(call => {
+  const myWorkItems = workQueue.filter(wq => wq.assigned_to_agent === currentUser?.email);
+  const myCallIds = myWorkItems.map(wq => wq.call_id);
+  
+  // Filter calls assigned to this operator
+  const myOpenCalls = openCalls.filter(c => myCallIds.includes(c.id));
+  const myCompletedToday = calls.filter(call => {
     const callDate = new Date(call.created_date);
-    return call.call_status === 'completed' && callDate >= startOfDay(today) && callDate <= endOfDay(today);
+    return call.call_status === 'completed' && 
+           myCallIds.includes(call.id) &&
+           callDate >= startOfDay(today) && 
+           callDate <= endOfDay(today);
   });
+  const myUrgentCalls = myOpenCalls.filter(c => c.call_priority === 'urgent' || c.call_priority === 'critical');
+
   const unassignedCalls = openCalls.filter(c => !c.assigned_vendor_id);
   const urgentCalls = openCalls.filter(c => c.call_priority === 'urgent' || c.call_priority === 'critical');
   
@@ -576,11 +598,34 @@ export default function Dashboard() {
         <TabsContent value="operator" className="space-y-6 mt-6">
           {/* Operator Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <StatCard title="קריאות פתוחות" value={openCalls.length} />
-            <StatCard title="הושלמו היום" value={completedToday.length} />
-            <StatCard title="ממתינות לשיוך" value={unassignedCalls.length} />
-            <StatCard title="דחופות" value={urgentCalls.length} />
-            <StatCard title="ספקים זמינים" value={availableVendors.length} />
+            <StatCard 
+              title="הקריאות שלי" 
+              value={myOpenCalls.length} 
+              to={createPageUrl('MyQueue')}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+            />
+            <StatCard 
+              title="הושלמו היום" 
+              value={myCompletedToday.length} 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+            />
+            <StatCard 
+              title="ממתינות לשיוך" 
+              value={unassignedCalls.length} 
+              to={createPageUrl('Calls') + '?status=waiting_treatment'}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+            />
+            <StatCard 
+              title="דחופות שלי" 
+              value={myUrgentCalls.length} 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+            />
+            <StatCard 
+              title="ספקים זמינים" 
+              value={availableVendors.length} 
+              to={createPageUrl('AllVendorsMap')}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+            />
           </div>
 
           {/* Quick Actions */}
@@ -639,13 +684,13 @@ export default function Dashboard() {
 
           {/* Open Calls Table */}
           <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-            <h3 className="mb-4">קריאות פתוחות ({openCalls.length})</h3>
+            <h3 className="mb-4">הקריאות שלי בטיפול ({myOpenCalls.length})</h3>
             <DataTable
               columns={operatorCallColumns}
-              data={openCalls}
+              data={myOpenCalls}
               isLoading={callsLoading}
               onRowClick={(row) => window.location.href = createPageUrl('CaseDetails') + '?id=' + row.id}
-              emptyMessage="אין קריאות פתוחות"
+              emptyMessage="אין קריאות משויכות אליך"
             />
           </div>
 

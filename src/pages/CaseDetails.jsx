@@ -47,6 +47,7 @@ import PredictionBadge from '@/components/ai/PredictionBadge';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { triggerNotification } from '@/components/NotificationsUtils';
+import CallChat from '@/components/chat/CallChat';
 
 const serviceTypeLabels = {
   towing: 'גרירה',
@@ -483,12 +484,23 @@ export default function CaseDetails() {
             </Card>
           )}
 
-          {/* Add Note */}
+          {/* Chat with Vendor */}
+          {caseData.assigned_provider_id && (
+            <div className="mb-6">
+               <CallChat 
+                 callId={caseId} 
+                 currentUserRole="operator" 
+                 currentUserName="מוקד" 
+               />
+            </div>
+          )}
+
+          {/* Add Note (Internal) */}
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-[#212121]" />
-                הוסף הערה
+                <Edit className="w-4 h-4 text-[#212121]" />
+                הערה פנימית (לא גלויה לספק)
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -496,19 +508,19 @@ export default function CaseDetails() {
                 <Textarea
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="כתוב הערה..."
+                  placeholder="כתוב הערה פנימית..."
                   rows={2}
                   className="flex-1"
                 />
                 <Button 
                   onClick={handleAddNote}
                   disabled={!noteText.trim() || addActivityMutation.isPending}
-                  className="bg-[#0D47A1] hover:bg-[#1565C0] sm:self-start"
+                  className="bg-gray-600 hover:bg-gray-700 sm:self-start"
                 >
                   {addActivityMutation.isPending ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    'שלח'
+                    'שמור'
                   )}
                 </Button>
               </div>

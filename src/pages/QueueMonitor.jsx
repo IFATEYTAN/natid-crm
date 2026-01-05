@@ -163,6 +163,15 @@ export default function QueueMonitor() {
     }
   };
 
+  const autoAssignMutation = useMutation({
+    mutationFn: async (callId) => {
+      await base44.functions.invoke('autoAssignVendor', { callId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calls'] });
+    }
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -269,6 +278,8 @@ export default function QueueMonitor() {
                     (new Date() - new Date(queueItem.added_to_queue_at)) / 60000
                   );
                   
+                  const isAssigning = call.call_status === 'assigning';
+
                   return (
                     <TableRow key={queueItem.id} className="border-b border-[var(--color-border)]">
                       <TableCell>
@@ -278,11 +289,23 @@ export default function QueueMonitor() {
                       </TableCell>
                       <TableCell>
                         <Link 
-                          to={createPageUrl(`CallDetails?id=${call.id}`)}
+                          to={createPageUrl(`CaseDetails?id=${call.id}`)}
                           className="text-[#FF0000] hover:underline font-medium"
                         >
                           {call.call_number}
                         </Link>
+                        {isAssigning && (
+                          <div className="mt-1">
+                            <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded animate-pulse">
+                              ממתין לאישור ספק...
+                            </span>
+                            {call.assigned_provider_name && (
+                              <p className="text-[10px] text-gray-500 mt-0.5">
+                                הוצע ל: {call.assigned_provider_name}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div>
@@ -293,13 +316,27 @@ export default function QueueMonitor() {
                       <TableCell className="text-[#212121]">{issueTypeLabels[call.issue_type]}</TableCell>
                       <TableCell className="text-[#212121]">{call.pickup_location_city}</TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleTransferClick(queueItem)}
-                        >
-                          שבץ
-                        </Button>
+                        <div className="flex gap-2">
+                          {!isAssigning && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="bg-purple-600 hover:bg-purple-700 h-8 text-xs"
+                              onClick={() => autoAssignMutation.mutate(call.id)}
+                              disabled={autoAssignMutation.isPending}
+                            >
+                              AI שבץ
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs"
+                            onClick={() => handleTransferClick(queueItem)}
+                          >
+                            {isAssigning ? 'דרוס שיבוץ' : 'ידני'}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -344,7 +381,7 @@ export default function QueueMonitor() {
                       </TableCell>
                       <TableCell>
                         <Link 
-                          to={createPageUrl(`CallDetails?id=${call.id}`)}
+                          to={createPageUrl(`CaseDetails?id=${call.id}`)}
                           className="text-[#FF0000] hover:underline font-medium"
                         >
                           {call.call_number}

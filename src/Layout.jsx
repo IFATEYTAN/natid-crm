@@ -21,6 +21,11 @@ import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
+import OfflineIndicator from '@/components/pwa/OfflineIndicator';
+import UpdatePrompt from '@/components/pwa/UpdatePrompt';
+import { NotificationPermissionBanner } from '@/components/notifications/PushNotifications';
+import { ConnectionStatusIndicator } from '@/components/useRealtimeUpdates';
 import { Toaster } from 'sonner';
 import anime from 'animejs';
 
@@ -54,24 +59,8 @@ export default function Layout({ children, currentPageName }) {
     // Link handling handled by Link component
   };
 
-  useEffect(() => {
-    if (mainContentRef.current) {
-      anime({
-        targets: mainContentRef.current,
-        opacity: [0, 1],
-        translateY: [10, 0],
-        duration: 600,
-        easing: 'easeOutQuad'
-      });
-    }
-  }, [currentPageName]);
   // Initialize with the first group expanded ("תפעול יומי")
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
-
-  // Don't wrap auth pages in the main layout
-  if (currentPageName === 'SignIn' || currentPageName === 'Register') {
-    return children;
-  }
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -84,6 +73,23 @@ export default function Layout({ children, currentPageName }) {
     };
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (mainContentRef.current) {
+      anime({
+        targets: mainContentRef.current,
+        opacity: [0, 1],
+        translateY: [10, 0],
+        duration: 600,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, [currentPageName]);
+
+  // Don't wrap auth pages in the main layout
+  if (currentPageName === 'SignIn' || currentPageName === 'Register') {
+    return children;
+  }
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -429,12 +435,25 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </header>
 
+        {/* Notification Permission Banner */}
+        <NotificationPermissionBanner />
+
         {/* Page Content */}
         <main ref={mainContentRef} className="p-4 md:p-6">
           {children}
         </main>
 
         <AccessibilityWidget />
+
+        {/* PWA Components */}
+        <InstallPrompt />
+        <OfflineIndicator />
+        <UpdatePrompt />
+
+        {/* Connection Status (bottom left) */}
+        <div className="fixed bottom-4 left-4 z-40">
+          <ConnectionStatusIndicator />
+        </div>
         <Toaster position="top-center" richColors />
         </div>
     </div>

@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import AppAccessDeniedError from '@/components/AppAccessDeniedError';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -43,6 +44,9 @@ const AuthenticatedApp = () => {
       // Show our custom Login page instead of redirecting to external login
       const LoginPage = Pages['Login'];
       return <LoginPage />;
+    } else {
+      // Handle app_private, unknown, and other error types
+      return <AppAccessDeniedError />;
     }
   }
 

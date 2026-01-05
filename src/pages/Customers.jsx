@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
+import ExportMenu from '@/components/ui/ExportMenu';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,18 +22,17 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Plus, 
-  Search, 
-  Phone, 
-  Mail, 
-  Building2, 
-  Edit, 
+import {
+  Plus,
+  Search,
+  Phone,
+  Building2,
+  Edit,
   Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import ImportExport from '@/components/ImportExport';
+import { PageTransition } from '@/components/animations/AnimatedComponents';
 
 const customerTypeLabels = {
   insurance_company: 'חברת ביטוח',
@@ -236,194 +237,235 @@ export default function Customers() {
     },
   ];
 
+  // Export columns
+  const exportColumns = [
+    { header: 'שם לקוח', accessor: 'name' },
+    { header: 'סוג', accessor: 'customer_type' },
+    { header: 'איש קשר', accessor: 'contact_person' },
+    { header: 'טלפון', accessor: 'phone' },
+    { header: 'דוא"ל', accessor: 'email' },
+    { header: 'עיר', accessor: 'city' },
+    { header: 'חוזה', accessor: 'contract_type' },
+    { header: 'סטטוס', accessor: 'status' },
+  ];
+
+  // Prepare export data with formatted values
+  const exportData = filteredCustomers.map(customer => ({
+    ...customer,
+    customer_type: customerTypeLabels[customer.customer_type] || customer.customer_type || '',
+    contract_type: contractTypeLabels[customer.contract_type] || '',
+    status: customer.status === 'active' ? 'פעיל' : customer.status === 'inactive' ? 'לא פעיל' : 'מושהה',
+  }));
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-[#616161] text-sm">{filteredCustomers.length} לקוחות</p>
-        </div>
-        <div className="flex gap-2">
-          <ImportExport 
-            entityName="Customer" 
-            data={filteredCustomers}
+    <PageTransition>
+      <div className="space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div>
+            <h1 className="text-2xl font-bold text-[#0D47A1]">לקוחות</h1>
+            <p className="text-[#616161] text-sm">{filteredCustomers.length} לקוחות</p>
+          </div>
+          <div className="flex gap-2">
+            <ExportMenu
+              data={exportData}
+              columns={exportColumns}
+              filename="customers"
+              title="רשימת לקוחות"
+              subtitle={`סה"כ ${filteredCustomers.length} לקוחות`}
+            />
+            <Button
+              className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4" />
+              לקוח חדש
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="bg-white rounded-xl border border-[#E0E0E0] p-4"
+        >
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+            <Input
+              placeholder="חיפוש לפי שם, טלפון..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pr-10"
+            />
+          </div>
+        </motion.div>
+
+        {/* Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <DataTable
             columns={columns}
-            title="דוח לקוחות"
+            data={filteredCustomers}
+            isLoading={isLoading}
+            emptyMessage="לא נמצאו לקוחות"
+            emptyPreset="customers"
           />
-          <Button 
-            className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Plus className="w-4 h-4" />
-            לקוח חדש
-          </Button>
-        </div>
+        </motion.div>
+
+        {/* Customer Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingCustomer ? 'עריכת לקוח' : 'לקוח חדש'}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>שם לקוח *</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>סוג לקוח</Label>
+                  <Select
+                    value={formData.customer_type}
+                    onValueChange={(value) => setFormData({ ...formData, customer_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(customerTypeLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>איש קשר</Label>
+                  <Input
+                    value={formData.contact_person}
+                    onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>טלפון *</Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>דוא"ל</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>עיר</Label>
+                  <Input
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label>כתובת</Label>
+                  <Input
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>סוג חוזה</Label>
+                  <Select
+                    value={formData.contract_type}
+                    onValueChange={(value) => setFormData({ ...formData, contract_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(contractTypeLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>סטטוס</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">פעיל</SelectItem>
+                      <SelectItem value="inactive">לא פעיל</SelectItem>
+                      <SelectItem value="suspended">מושהה</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>SLA תגובה (דקות)</Label>
+                  <Input
+                    type="number"
+                    value={formData.sla_response_minutes}
+                    onChange={(e) => setFormData({ ...formData, sla_response_minutes: Number(e.target.value) })}
+                  />
+                </div>
+                <div>
+                  <Label>SLA הגעה (דקות)</Label>
+                  <Input
+                    type="number"
+                    value={formData.sla_arrival_minutes}
+                    onChange={(e) => setFormData({ ...formData, sla_arrival_minutes: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label>הערות</Label>
+                  <Textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  ביטול
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-[#0D47A1] hover:bg-[#1565C0]"
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  {editingCustomer ? 'עדכון' : 'הוספה'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Search */}
-      <div className="bg-white rounded-xl border border-[#E0E0E0] p-4">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
-          <Input
-            placeholder="חיפוש לפי שם, טלפון..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pr-10"
-          />
-        </div>
-      </div>
-
-      {/* Table */}
-      <DataTable
-        columns={columns}
-        data={filteredCustomers}
-        isLoading={isLoading}
-        emptyMessage="לא נמצאו לקוחות"
-      />
-
-      {/* Customer Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCustomer ? 'עריכת לקוח' : 'לקוח חדש'}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>שם לקוח *</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label>סוג לקוח</Label>
-                <Select
-                  value={formData.customer_type}
-                  onValueChange={(value) => setFormData({ ...formData, customer_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(customerTypeLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>איש קשר</Label>
-                <Input
-                  value={formData.contact_person}
-                  onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>טלפון *</Label>
-                <Input
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label>דוא"ל</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>עיר</Label>
-                <Input
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                />
-              </div>
-              <div className="col-span-2">
-                <Label>כתובת</Label>
-                <Input
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>סוג חוזה</Label>
-                <Select
-                  value={formData.contract_type}
-                  onValueChange={(value) => setFormData({ ...formData, contract_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(contractTypeLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>סטטוס</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">פעיל</SelectItem>
-                    <SelectItem value="inactive">לא פעיל</SelectItem>
-                    <SelectItem value="suspended">מושהה</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>SLA תגובה (דקות)</Label>
-                <Input
-                  type="number"
-                  value={formData.sla_response_minutes}
-                  onChange={(e) => setFormData({ ...formData, sla_response_minutes: Number(e.target.value) })}
-                />
-              </div>
-              <div>
-                <Label>SLA הגעה (דקות)</Label>
-                <Input
-                  type="number"
-                  value={formData.sla_arrival_minutes}
-                  onChange={(e) => setFormData({ ...formData, sla_arrival_minutes: Number(e.target.value) })}
-                />
-              </div>
-              <div className="col-span-2">
-                <Label>הערות</Label>
-                <Textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={3}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={resetForm}>
-                ביטול
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-[#0D47A1] hover:bg-[#1565C0]"
-                disabled={createMutation.isPending || updateMutation.isPending}
-              >
-                {editingCustomer ? 'עדכון' : 'הוספה'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </PageTransition>
   );
 }
