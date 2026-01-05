@@ -26,7 +26,6 @@ import RevenueReport from '@/components/reports/RevenueReport';
 import CallStatusChart from '@/components/reports/CallStatusChart';
 import LiveResponseTimeChart from '@/components/reports/LiveResponseTimeChart';
 import ImportExport from '@/components/ImportExport';
-import ImportExport from '@/components/ImportExport';
 
 export default function Reports() {
   const [dateRange, setDateRange] = useState('30');
