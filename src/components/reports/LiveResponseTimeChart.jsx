@@ -1,18 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Chart, registerables } from 'chart.js';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
-Chart.register(...registerables);
-
 export default function LiveResponseTimeChart({ calls, vendors }) {
-  const chartRef = useRef(null);
-  const chartInstance = useRef(null);
+  const data = useMemo(() => {
+    if (vendors.length === 0) return [];
 
-  useEffect(() => {
-    if (!chartRef.current || vendors.length === 0) return;
-
-    // Calculate average response time per vendor
     const vendorResponseTimes = vendors.map(vendor => {
       const vendorCalls = calls.filter(c => 
         c.assigned_vendor_id === vendor.id && 
@@ -30,146 +24,17 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
       };
     }).filter(Boolean).sort((a, b) => b.callCount - a.callCount).slice(0, 10);
 
-    if (vendorResponseTimes.length === 0) {
-      return;
-    }
-
-    const labels = vendorResponseTimes.map(v => v.name);
-    const data = vendorResponseTimes.map(v => v.avgTime);
-    const callCounts = vendorResponseTimes.map(v => v.callCount);
-
-    // Destroy previous chart
-    if (chartInstance.current) {
-      chartInstance.current.destroy();
-    }
-
-    // Create soft gradient colors based on response time
-    const colors = data.map(time => {
-      if (time <= 20) return '#22C55E'; // success-soft-500 - ירוק עדין
-      if (time <= 30) return '#0EA5E9'; // secondary-soft-500 - כחול עדין
-      if (time <= 40) return '#F59E0B'; // warning-soft-500 - כתום עדין
-      return '#FF6B6B'; // primary-soft-500 - אדום עדין
-    });
-
-    // Create new chart with live update animation
-    const ctx = chartRef.current.getContext('2d');
-    chartInstance.current = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'זמן תגובה ממוצע (דקות)',
-          data,
-          backgroundColor: colors,
-          borderColor: colors.map(c => c),
-          borderWidth: 2,
-          borderRadius: 8,
-          barThickness: 'flex',
-          maxBarThickness: 40
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            rtl: true,
-            titleFont: {
-              family: 'Heebo, sans-serif',
-              size: 14
-            },
-            bodyFont: {
-              family: 'Heebo, sans-serif',
-              size: 13
-            },
-            callbacks: {
-              label: function(context) {
-                const index = context.dataIndex;
-                const time = data[index];
-                const count = callCounts[index];
-                return [
-                  ` זמן תגובה: ${time} דקות`,
-                  ` קריאות: ${count}`
-                ];
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: {
-              font: {
-                family: 'Heebo, sans-serif',
-                size: 11
-              },
-              callback: function(value) {
-                return value + ' דק\'';
-              }
-            },
-            grid: {
-              color: 'rgba(0, 0, 0, 0.05)'
-            }
-          },
-          y: {
-            ticks: {
-              font: {
-                family: 'Heebo, sans-serif',
-                size: 12
-              },
-              crossAlign: 'far',
-              padding: 10
-            },
-            grid: {
-              display: false
-            }
-          }
-        },
-        animation: {
-          duration: 1500,
-          easing: 'easeInOutQuart',
-          delay: (context) => {
-            // Stagger animation for each bar
-            return context.dataIndex * 100;
-          },
-          onProgress: function(animation) {
-            // Create "live update" effect
-            const chart = animation.chart;
-            const ctx = chart.ctx;
-            ctx.save();
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = 'rgba(0, 120, 212, 0.3)';
-            ctx.restore();
-          }
-        },
-        transitions: {
-          active: {
-            animation: {
-              duration: 400
-            }
-          }
-        }
-      }
-    });
-
-    // Add periodic subtle animation (shimmer effect)
-    const shimmerInterval = setInterval(() => {
-      if (chartInstance.current) {
-        chartInstance.current.update('none');
-      }
-    }, 3000);
-
-    return () => {
-      clearInterval(shimmerInterval);
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-    };
+    return vendorResponseTimes;
   }, [calls, vendors]);
+
+  const getColor = (time) => {
+    if (time <= 20) return '#22C55E';
+    if (time <= 30) return '#0EA5E9';
+    if (time <= 40) return '#F59E0B';
+    return '#FF6B6B';
+  };
+
+  if (data.length === 0) return null;
 
   return (
     <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
@@ -184,7 +49,41 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
       </CardHeader>
       <CardContent dir="rtl">
         <div className="relative" style={{ height: '350px' }}>
-          <canvas ref={chartRef} />
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              layout="vertical"
+              data={data}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(0,0,0,0.05)" />
+              <XAxis type="number" tick={{ fontSize: 11, fontFamily: 'Heebo' }} unit=" דק'" />
+              <YAxis 
+                dataKey="name" 
+                type="category" 
+                width={100} 
+                tick={{ fontSize: 12, fontFamily: 'Heebo' }} 
+              />
+              <Tooltip
+                cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                contentStyle={{ 
+                  backgroundColor: '#FFFFFF', 
+                  border: '1px solid #E5E7EB', 
+                  borderRadius: '8px',
+                  fontFamily: 'Heebo, sans-serif',
+                  textAlign: 'right',
+                  direction: 'rtl'
+                }}
+                formatter={(value, name, props) => {
+                  return [`${value} דקות (${props.payload.callCount} קריאות)`, 'זמן תגובה'];
+                }}
+              />
+              <Bar dataKey="avgTime" radius={[0, 4, 4, 0]} barSize={20}>
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getColor(entry.avgTime)} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
         <div className="mt-4 flex flex-wrap gap-3 justify-end text-xs">
           <div className="flex items-center gap-2">
