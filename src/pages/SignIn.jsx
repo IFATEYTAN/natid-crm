@@ -7,6 +7,7 @@ import FormInput from '@/components/ui/FormInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogIn, ShieldCheck, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
 export default function SignIn() {
@@ -132,8 +133,8 @@ export default function SignIn() {
                 className="text-right h-10 text-sm"
               />
 
-              {/* Remember Me */}
-              <div className="flex items-center justify-end text-xs mt-2">
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between text-xs mt-2 flex-row-reverse">
                 <label className="flex items-center gap-2 cursor-pointer flex-row-reverse">
                   <span className="text-neutral-soft-600">זכור אותי</span>
                   <input
@@ -141,6 +142,13 @@ export default function SignIn() {
                     className="w-3.5 h-3.5 rounded border-neutral-soft-300 text-primary-soft-600 focus:ring-primary-soft-500"
                   />
                 </label>
+                <button 
+                  type="button"
+                  onClick={() => toast.info('לשחזור סיסמה יש לפנות למנהל המערכת')}
+                  className="text-primary-soft-600 hover:text-primary-soft-700 hover:underline bg-transparent border-0 p-0 text-xs"
+                >
+                  שכחתי סיסמה
+                </button>
               </div>
 
               {/* Login Button */}
