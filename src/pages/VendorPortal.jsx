@@ -208,6 +208,7 @@ export default function VendorPortal() {
           subtitle="ממתינות לטיפול"
           icon={FileText}
           variant="primary"
+          to={createPageUrl('MyCallsVendor') + '?status=active'}
         />
         <StatCard
           title="קריאות השבוע"
@@ -215,6 +216,7 @@ export default function VendorPortal() {
           subtitle={`${Math.round((thisWeekCalls.length / 7))} ממוצע יומי`}
           icon={Clock}
           variant="info"
+          to={createPageUrl('MyCallsVendor') + '?date=week'}
         />
         <StatCard
           title="דירוג"
@@ -222,6 +224,7 @@ export default function VendorPortal() {
           subtitle="מתוך 5.0 ⭐"
           icon={Star}
           variant="success"
+          to={createPageUrl('VendorProfile') + '?id=' + currentVendor.id}
         />
         <StatCard
           title="זמן תגובה"
@@ -229,6 +232,7 @@ export default function VendorPortal() {
           subtitle="זמן ממוצע להגעה"
           icon={Timer}
           variant="warning"
+          to={createPageUrl('VendorProfile') + '?id=' + currentVendor.id}
         />
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import StatCard from '@/components/ui/StatCard';
@@ -40,8 +40,6 @@ const monthNames = [
   'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
   'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
 ];
-
-import React, { useState, useRef } from 'react';
 
 export default function VendorPayments() {
   const currentDate = new Date();
@@ -216,6 +214,8 @@ export default function VendorPayments() {
           subtitle={monthNames[selectedMonth]}
           icon={Wallet}
           variant="primary"
+          onClick={() => tableRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="cursor-pointer hover:border-[#0078D4]"
         />
         <StatCard
           title="קריאות החודש"
@@ -223,6 +223,8 @@ export default function VendorPayments() {
           subtitle="קריאות שהושלמו"
           icon={FileText}
           variant="success"
+          onClick={() => tableRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="cursor-pointer hover:border-[#2E7D32]"
         />
         <StatCard
           title="ממוצע לקריאה"
@@ -230,6 +232,8 @@ export default function VendorPayments() {
           subtitle="ממוצע רווח"
           icon={TrendingUp}
           variant="info"
+          onClick={() => tableRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="cursor-pointer hover:border-[#0288D1]"
         />
         <StatCard
           title="ממתין לתשלום"
@@ -237,6 +241,8 @@ export default function VendorPayments() {
           subtitle="טרם שולם"
           icon={Clock}
           variant="warning"
+          onClick={() => tableRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="cursor-pointer hover:border-[#ED6C02]"
         />
       </div>
 
@@ -329,7 +335,7 @@ export default function VendorPayments() {
       </div>
 
       {/* Payments Table */}
-      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5" ref={tableRef}>
         <h3 className="text-[15px] font-semibold text-[#111827] mb-4">פירוט תשלומים</h3>
         <DataTable
           columns={columns}
