@@ -324,6 +324,18 @@ export default function ServiceProviders() {
     inactive: 'לא פעיל',
   };
 
+  const exportColumns = [
+    { header: 'שם ספק', accessor: 'vendor_name' },
+    { header: 'איש קשר', accessor: 'contact_person' },
+    { header: 'טלפון', accessor: 'phone' },
+    { header: 'אימייל', accessor: 'email' },
+    { header: 'סוגי שירות', accessor: 'service_types' },
+    { header: 'אזורי כיסוי', accessor: 'coverage_areas_str' },
+    { header: 'סטטוס', accessor: 'status' },
+    { header: 'דירוג', accessor: 'rating' },
+    { header: 'קריאות', accessor: 'total_calls_completed' },
+  ];
+
   // Prepare export data with formatted values
   const exportData = filteredProviders.map(provider => ({
     ...provider,
