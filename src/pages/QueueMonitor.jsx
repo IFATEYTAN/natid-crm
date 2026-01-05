@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
@@ -53,6 +53,9 @@ export default function QueueMonitor() {
   const [targetAgent, setTargetAgent] = useState('');
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  
+  const queueRef = useRef(null);
+  const agentsRef = useRef(null);
 
   // Fetch agents
   const { data: agents = [] } = useQuery({
@@ -172,23 +175,30 @@ export default function QueueMonitor() {
         <StatCard
           title="בתור כללי"
           value={waitingInQueue.length}
+          onClick={() => queueRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="cursor-pointer hover:border-[var(--color-primary)]"
         />
         <StatCard
           title="משובץ לנציגים"
           value={assignedToAgents.length}
+          onClick={() => agentsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="cursor-pointer hover:border-[var(--color-primary)]"
         />
         <StatCard
           title="בטיפול"
           value={inProgress.length}
+          onClick={() => agentsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="cursor-pointer hover:border-[var(--color-primary)]"
         />
         <StatCard
           title="זמן ממוצע"
           value={`${avgTime}'`}
+          to={createPageUrl('Reports')}
         />
       </div>
 
       {/* Agents Table */}
-      <div className="card-base">
+      <div className="card-base" ref={agentsRef}>
         <h3 className="mb-4">סטטוס נציגים</h3>
         <div className="overflow-x-auto">
           <Table>
@@ -236,7 +246,7 @@ export default function QueueMonitor() {
 
       {/* General Queue */}
       {waitingInQueue.length > 0 && (
-        <div className="card-base">
+        <div className="card-base" ref={queueRef}>
           <h3 className="mb-4">תור כללי - קריאות ללא שיבוץ ({waitingInQueue.length})</h3>
           <div className="overflow-x-auto">
             <Table>

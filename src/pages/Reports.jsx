@@ -19,6 +19,7 @@ import { he } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import StatCard from '@/components/ui/StatCard';
 import VendorPerformanceReport from '@/components/reports/VendorPerformanceReport';
 import SLAReport from '@/components/reports/SLAReport';
 import RevenueReport from '@/components/reports/RevenueReport';
@@ -344,52 +345,32 @@ export default function Reports() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link to={createPageUrl('Calls')}>
-          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
-            <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">סה"כ קריאות</div>
-              <div className="text-3xl font-bold text-black mt-1">{filteredCalls.length}</div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">
-                {calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות
-              </p>
-            </div>
-          </div>
-        </Link>
-        <Link to={createPageUrl('ServiceProviders')}>
-          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
-            <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">ספקים פעילים</div>
-              <div className="text-3xl font-bold text-black mt-1">
-                {[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
-              </div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">מתוך {vendors.length} ספקים</p>
-            </div>
-          </div>
-        </Link>
-        <Link to={createPageUrl('ServiceProviders')}>
-          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
-            <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">דירוג ממוצע</div>
-              <div className="text-3xl font-bold text-black mt-1">
-                {filteredRatings.length > 0 
-                  ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
-                  : '0.0'}
-              </div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">{filteredRatings.length} דירוגים</p>
-            </div>
-          </div>
-        </Link>
-        <Link to={createPageUrl('VendorPayments')}>
-          <div className="card-base hover:border-[var(--color-border)] transition-colors cursor-pointer p-6">
-            <div className="text-right">
-              <div className="text-sm text-[var(--color-text-secondary)]">סה"כ הכנסות</div>
-              <div className="text-3xl font-bold text-black mt-1">
-                ₪{filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
-              </div>
-              <p className="text-xs text-[var(--color-text-disabled)] mt-2">{filteredPayments.length} תשלומים</p>
-            </div>
-          </div>
-        </Link>
+        <StatCard
+          title='סה"כ קריאות'
+          value={filteredCalls.length}
+          subtitle={`${calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות`}
+          to={createPageUrl('Calls')}
+        />
+        <StatCard
+          title="ספקים פעילים"
+          value={[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
+          subtitle={`מתוך ${vendors.length} ספקים`}
+          to={createPageUrl('ServiceProviders')}
+        />
+        <StatCard
+          title="דירוג ממוצע"
+          value={filteredRatings.length > 0 
+            ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
+            : '0.0'}
+          subtitle={`${filteredRatings.length} דירוגים`}
+          to={createPageUrl('ServiceProviders')}
+        />
+        <StatCard
+          title='סה"כ הכנסות'
+          value={`₪${filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}`}
+          subtitle={`${filteredPayments.length} תשלומים`}
+          to={createPageUrl('VendorPayments')}
+        />
       </div>
 
       {/* Live Charts */}

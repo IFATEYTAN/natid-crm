@@ -318,18 +318,20 @@ export default function MyQueue() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[32px] font-bold text-[#0078D4]">תור העבודה שלי</h1>
-        <p className="text-[#616161] text-sm">ניהול קריאות בתור</p>
+        <h1>תור העבודה שלי</h1>
+        <p className="text-[var(--color-text-secondary)]">ניהול קריאות בתור</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="בתור שלי"
           value={myQueue.length}
           subtitle="ממתינות"
           icon={ListTodo}
           variant="warning"
+          onClick={() => setActiveTab('my-queue')}
+          className="cursor-pointer hover:border-[#ED6C02]"
         />
         <StatCard
           title="בטיפול"
@@ -337,6 +339,8 @@ export default function MyQueue() {
           subtitle="עכשיו"
           icon={Clock}
           variant="info"
+          onClick={() => setActiveTab('in-progress')}
+          className="cursor-pointer hover:border-[#0288D1]"
         />
         <StatCard
           title="הושלמו היום"
@@ -344,6 +348,8 @@ export default function MyQueue() {
           subtitle="קריאות"
           icon={CheckCircle2}
           variant="success"
+          onClick={() => setActiveTab('completed')}
+          className="cursor-pointer hover:border-[#2E7D32]"
         />
         <StatCard
           title="ממוצע זמן"
@@ -351,6 +357,7 @@ export default function MyQueue() {
           subtitle="טיפול ממוצע"
           icon={Timer}
           variant="default"
+          to={createPageUrl('Reports')}
         />
       </div>
 
