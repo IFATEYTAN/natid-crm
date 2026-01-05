@@ -8,6 +8,8 @@ export default function StatCard({
   subtitle,
   trend,
   trendValue,
+  icon: Icon,
+  variant,
   className,
   onClick,
   to
@@ -18,14 +20,35 @@ export default function StatCard({
     className
   );
 
+  const variantStyles = {
+    primary: "bg-blue-50 text-blue-600",
+    success: "bg-green-50 text-green-600",
+    warning: "bg-orange-50 text-orange-600",
+    info: "bg-indigo-50 text-indigo-600",
+    danger: "bg-red-50 text-red-600",
+    default: "bg-gray-50 text-gray-600"
+  };
+
+  const iconStyle = variantStyles[variant] || variantStyles.default;
+
   const cardContent = (
-    <div className="text-right">
-      <p className="text-[13px] font-medium text-[#6B7280] mb-2">
-        {title}
-      </p>
-      <p className="text-[28px] font-bold text-[#111827] leading-none">
-        {value}
-      </p>
+    <div className="text-right relative">
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-[13px] font-medium text-[#6B7280] mb-2">
+            {title}
+          </p>
+          <p className="text-[28px] font-bold text-[#111827] leading-none">
+            {value}
+          </p>
+        </div>
+        {Icon && (
+          <div className={cn("p-2 rounded-lg", iconStyle)}>
+            <Icon className="w-5 h-5" />
+          </div>
+        )}
+      </div>
+      
       {subtitle && (
         <p className="text-[12px] text-[#9CA3AF] mt-2">
           {subtitle}

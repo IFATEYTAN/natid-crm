@@ -206,17 +206,17 @@ export default function MyCallsVendor() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[32px] font-bold text-[#0078D4]">הקריאות שלי</h1>
-        <p className="text-[#616161] text-sm">{filteredCalls.length} קריאות</p>
+        <h1>הקריאות שלי</h1>
+        <p className="text-[var(--color-text-secondary)]">{filteredCalls.length} קריאות בסה״כ</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-sm">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-2">
-            <Label className="text-[#616161] text-sm mb-2 block">חיפוש</Label>
+            <Label className="text-[#6B7280] text-sm mb-1.5 block">חיפוש</Label>
             <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
               <Input
                 placeholder="מספר קריאה, לקוח, טלפון, רכב..."
                 value={searchTerm}
@@ -227,7 +227,7 @@ export default function MyCallsVendor() {
           </div>
 
           <div>
-            <Label className="text-[#616161] text-sm mb-2 block">סטטוס</Label>
+            <Label className="text-[#6B7280] text-sm mb-1.5 block">סטטוס</Label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue />
@@ -243,7 +243,7 @@ export default function MyCallsVendor() {
           </div>
 
           <div>
-            <Label className="text-[#616161] text-sm mb-2 block">מתאריך</Label>
+            <Label className="text-[#6B7280] text-sm mb-1.5 block">מתאריך</Label>
             <Input
               type="date"
               value={dateFrom}
@@ -254,12 +254,14 @@ export default function MyCallsVendor() {
       </div>
 
       {/* Table */}
-      <DataTable
-        columns={columns}
-        data={filteredCalls}
-        isLoading={isLoading}
-        emptyMessage="לא נמצאו קריאות"
-      />
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <DataTable
+          columns={columns}
+          data={filteredCalls}
+          isLoading={isLoading}
+          emptyMessage="לא נמצאו קריאות"
+        />
+      </div>
     </div>
   );
 }

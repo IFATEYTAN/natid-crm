@@ -15,7 +15,6 @@ import MyQueue from './pages/MyQueue';
 import NewCase from './pages/NewCase';
 import NotificationSettings from './pages/NotificationSettings';
 import OperatorDashboard from './pages/OperatorDashboard';
-import QueueMonitor from './pages/QueueMonitor';
 import QueueSettings from './pages/QueueSettings';
 import Register from './pages/Register';
 import Reports from './pages/Reports';
@@ -27,6 +26,7 @@ import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
+import QueueMonitor from './pages/QueueMonitor';
 import __Layout from './Layout.jsx';
 
 
@@ -48,7 +48,6 @@ export const PAGES = {
     "NewCase": NewCase,
     "NotificationSettings": NotificationSettings,
     "OperatorDashboard": OperatorDashboard,
-    "QueueMonitor": QueueMonitor,
     "QueueSettings": QueueSettings,
     "Register": Register,
     "Reports": Reports,
@@ -60,6 +59,7 @@ export const PAGES = {
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
+    "QueueMonitor": QueueMonitor,
 }
 
 export const pagesConfig = {

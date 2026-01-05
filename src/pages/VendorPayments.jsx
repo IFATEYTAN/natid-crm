@@ -201,12 +201,12 @@ export default function VendorPayments() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[32px] font-bold text-[#0078D4]">דוח תשלומים</h1>
-        <p className="text-[#616161] text-sm">מעקב אחר הכנסות ותשלומים</p>
+        <h1>דוח תשלומים</h1>
+        <p className="text-[var(--color-text-secondary)]">מעקב אחר הכנסות ותשלומים</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="סה״כ החודש"
           value={`₪${monthTotal.toLocaleString()}`}
@@ -238,10 +238,10 @@ export default function VendorPayments() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-sm">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <Label className="text-[#616161] text-sm mb-2 block">חודש</Label>
+            <Label className="text-[#6B7280] text-sm mb-1.5 block">חודש</Label>
             <Select 
               value={selectedMonth.toString()} 
               onValueChange={(v) => setSelectedMonth(parseInt(v))}
@@ -260,7 +260,7 @@ export default function VendorPayments() {
           </div>
 
           <div>
-            <Label className="text-[#616161] text-sm mb-2 block">שנה</Label>
+            <Label className="text-[#6B7280] text-sm mb-1.5 block">שנה</Label>
             <Select 
               value={selectedYear.toString()} 
               onValueChange={(v) => setSelectedYear(parseInt(v))}
@@ -290,25 +290,44 @@ export default function VendorPayments() {
       </div>
 
       {/* Chart */}
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-[#212121] mb-4">סיכום 6 חודשים אחרונים</h3>
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="text-[15px] font-semibold text-[#111827] mb-4">סיכום 6 חודשים אחרונים</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
+            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+            <XAxis 
+              dataKey="month" 
+              tick={{ fill: '#6B7280', fontSize: 12 }} 
+              stroke="#E5E7EB" 
+              tickLine={false} 
+              axisLine={false}
+            />
+            <YAxis 
+              tick={{ fill: '#6B7280', fontSize: 12 }} 
+              stroke="#E5E7EB" 
+              tickLine={false} 
+              axisLine={false}
+            />
             <Tooltip 
               formatter={(value) => [`₪${value.toLocaleString()}`, 'סה״כ']}
               labelStyle={{ direction: 'rtl' }}
+              contentStyle={{
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E7EB',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                fontSize: 14,
+                padding: '8px 12px'
+              }}
             />
-            <Bar dataKey="total" fill="#0078D4" />
+            <Bar dataKey="total" fill="#111827" radius={[4, 4, 0, 0]} barSize={40} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Payments Table */}
-      <div>
-        <h3 className="text-lg font-semibold text-[#212121] mb-4">פירוט תשלומים</h3>
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="text-[15px] font-semibold text-[#111827] mb-4">פירוט תשלומים</h3>
         <DataTable
           columns={columns}
           data={monthCalls}
@@ -317,10 +336,10 @@ export default function VendorPayments() {
         />
         
         {monthCalls.length > 0 && (
-          <div className="bg-[#E3F2FD] rounded-b-[8px] p-4 border-t-2 border-[#0078D4]">
+          <div className="bg-[#F9FAFB] rounded-b-lg p-4 border-t border-[#E5E7EB] mt-4">
             <div className="flex justify-between items-center">
-              <span className="font-bold text-lg text-[#212121]">סה״כ:</span>
-              <span className="font-bold text-2xl text-[#0078D4]">
+              <span className="font-bold text-lg text-[#111827]">סה״כ:</span>
+              <span className="font-bold text-2xl text-[#059669]">
                 ₪{monthTotal.toLocaleString()}
               </span>
             </div>

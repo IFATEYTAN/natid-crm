@@ -196,12 +196,12 @@ export default function VendorPortal() {
     <div className="space-y-6">
       {/* Welcome Header */}
       <div>
-        <h1 className="text-[32px] font-bold text-[#0078D4]">שלום, {currentVendor.vendor_name}</h1>
-        <p className="text-[#616161] text-sm">הקריאות שלך ממתינות</p>
+        <h1>שלום, {currentVendor.vendor_name}</h1>
+        <p className="text-[var(--color-text-secondary)]">ברוך הבא לפורטל הספקים</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="קריאות פעילות"
           value={activeCalls.length}
@@ -233,11 +233,11 @@ export default function VendorPortal() {
       </div>
 
       {/* Active Calls Table */}
-      <div>
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-[#212121]">הקריאות שלי</h2>
+          <h3 className="text-[15px] font-semibold text-[#111827]">הקריאות שלי</h3>
           <Link to={createPageUrl('MyCallsVendor')}>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="h-8">
               צפה בהכל
             </Button>
           </Link>
