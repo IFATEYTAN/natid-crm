@@ -35,12 +35,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Inbox,
   MoreVertical,
   Navigation,
-  UserCheck,
-  Ban,
-  FileText
+  Ban
 } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
