@@ -278,7 +278,7 @@ export default function QueueMonitor() {
                       </TableCell>
                       <TableCell>
                         <Link 
-                          to={createPageUrl(`CallDetails?id=${call.id}`)}
+                          to={createPageUrl(`CaseDetails?id=${call.id}`)}
                           className="text-[#FF0000] hover:underline font-medium"
                         >
                           {call.call_number}
@@ -344,7 +344,7 @@ export default function QueueMonitor() {
                       </TableCell>
                       <TableCell>
                         <Link 
-                          to={createPageUrl(`CallDetails?id=${call.id}`)}
+                          to={createPageUrl(`CaseDetails?id=${call.id}`)}
                           className="text-[#FF0000] hover:underline font-medium"
                         >
                           {call.call_number}
