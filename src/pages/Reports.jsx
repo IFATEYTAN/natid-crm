@@ -25,6 +25,7 @@ import SLAReport from '@/components/reports/SLAReport';
 import RevenueReport from '@/components/reports/RevenueReport';
 import CallStatusChart from '@/components/reports/CallStatusChart';
 import LiveResponseTimeChart from '@/components/reports/LiveResponseTimeChart';
+import ImportExport from '@/components/ImportExport';
 
 export default function Reports() {
   const [dateRange, setDateRange] = useState('30');
@@ -191,13 +192,32 @@ export default function Reports() {
               </span>
             )}
           </Button>
-          <Button
-            className="btn-primary gap-2"
-            onClick={exportAllCallsCSV}
-          >
-            <Download className="w-4 h-4" />
-            ייצא הכל
-          </Button>
+          <ImportExport
+            entityName="AllCalls"
+            data={filteredCalls.map(call => ({
+              call_number: call.call_number || call.id.slice(-6),
+              created_date: format(new Date(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he }),
+              customer_name: call.customer_name,
+              customer_phone: call.customer_phone,
+              issue_type: call.issue_type,
+              pickup_location_city: call.pickup_location_city,
+              call_status: call.call_status,
+              assigned_vendor_name: call.assigned_vendor_name || '-',
+              call_priority: call.call_priority
+            }))}
+            columns={[
+              { header: 'מספר קריאה', accessor: 'call_number' },
+              { header: 'תאריך', accessor: 'created_date' },
+              { header: 'לקוח', accessor: 'customer_name' },
+              { header: 'טלפון', accessor: 'customer_phone' },
+              { header: 'תקלה', accessor: 'issue_type' },
+              { header: 'עיר', accessor: 'pickup_location_city' },
+              { header: 'סטטוס', accessor: 'call_status' },
+              { header: 'ספק', accessor: 'assigned_vendor_name' },
+              { header: 'עדיפות', accessor: 'call_priority' }
+            ]}
+            title="דוח קריאות מרוכז"
+          />
         </div>
       </div>
 
@@ -389,22 +409,24 @@ export default function Reports() {
 
         <TabsContent value="vendors" className="space-y-4">
           <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                const data = vendors.map(v => ({
-                  'שם_ספק': v.vendor_name,
-                  'סה_כ_קריאות': filteredCalls.filter(c => c.assigned_vendor_id === v.id).length,
-                  'קריאות_הושלמו': filteredCalls.filter(c => c.assigned_vendor_id === v.id && c.call_status === 'completed').length,
-                  'דירוג_ממוצע': v.average_rating || 0,
-                  'זמן_תגובה_ממוצע': v.average_response_time || 0
-                }));
-                exportToCSV(data, 'דוח_ביצועי_ספקים');
-              }}
-            >
-              <Download className="w-4 h-4 ml-2" />
-              ייצוא CSV
-            </Button>
+            <ImportExport
+              entityName="VendorPerformance"
+              title="דוח ביצועי ספקים"
+              data={vendors.map(v => ({
+                vendor_name: v.vendor_name,
+                total_calls: filteredCalls.filter(c => c.assigned_vendor_id === v.id).length,
+                completed_calls: filteredCalls.filter(c => c.assigned_vendor_id === v.id && c.call_status === 'completed').length,
+                avg_rating: (v.average_rating || 0).toFixed(1),
+                avg_response: (v.average_response_time || 0).toFixed(0)
+              }))}
+              columns={[
+                { header: 'שם ספק', accessor: 'vendor_name' },
+                { header: 'סה״כ קריאות', accessor: 'total_calls' },
+                { header: 'הושלמו', accessor: 'completed_calls' },
+                { header: 'דירוג', accessor: 'avg_rating' },
+                { header: 'זמן תגובה (דק\')', accessor: 'avg_response' }
+              ]}
+            />
           </div>
           <VendorPerformanceReport 
             vendors={vendors}
@@ -415,45 +437,50 @@ export default function Reports() {
 
         <TabsContent value="sla" className="space-y-4">
           <div className="flex justify-end">
-            <Button 
-              variant="outline"
-              onClick={() => {
-                const data = filteredCalls.map(c => ({
-                  'מספר_קריאה': c.call_number,
-                  'אזור': c.pickup_location_area,
-                  'סוג_תקלה': c.issue_type,
-                  'זמן_תגובה': c.time_to_vendor_assignment,
-                  'יעד_SLA': c.sla_target,
-                  'עמד_ב_SLA': c.time_to_vendor_assignment && c.sla_target ? (c.time_to_vendor_assignment <= c.sla_target ? 'כן' : 'לא') : '-'
-                }));
-                exportToCSV(data, 'דוח_SLA');
-              }}
-            >
-              <Download className="w-4 h-4 ml-2" />
-              ייצוא CSV
-            </Button>
+            <ImportExport
+              entityName="SLAReport"
+              title="דוח עמידה ב-SLA"
+              data={filteredCalls.map(c => ({
+                call_number: c.call_number,
+                area: c.pickup_location_area,
+                issue_type: c.issue_type,
+                response_time: c.time_to_vendor_assignment,
+                sla_target: c.sla_target,
+                met_sla: c.time_to_vendor_assignment && c.sla_target ? (c.time_to_vendor_assignment <= c.sla_target ? 'כן' : 'לא') : '-'
+              }))}
+              columns={[
+                { header: 'מספר קריאה', accessor: 'call_number' },
+                { header: 'אזור', accessor: 'area' },
+                { header: 'סוג תקלה', accessor: 'issue_type' },
+                { header: 'זמן תגובה', accessor: 'response_time' },
+                { header: 'יעד SLA', accessor: 'sla_target' },
+                { header: 'עמד ב-SLA', accessor: 'met_sla' }
+              ]}
+            />
           </div>
           <SLAReport calls={filteredCalls} />
         </TabsContent>
 
         <TabsContent value="revenue" className="space-y-4">
           <div className="flex justify-end">
-            <Button 
-              variant="outline"
-              onClick={() => {
-                const data = filteredPayments.map(p => ({
-                  'ספק': p.vendor_name,
-                  'סוג_תשלום': p.payment_type,
-                  'סכום': p.amount,
-                  'סטטוס': p.status,
-                  'תאריך': format(new Date(p.created_date), 'dd/MM/yyyy', { locale: he })
-                }));
-                exportToCSV(data, 'דוח_הכנסות');
-              }}
-            >
-              <Download className="w-4 h-4 ml-2" />
-              ייצוא CSV
-            </Button>
+            <ImportExport
+              entityName="RevenueReport"
+              title="דוח הכנסות"
+              data={filteredPayments.map(p => ({
+                vendor_name: p.vendor_name,
+                payment_type: p.payment_type,
+                amount: p.amount,
+                status: p.status,
+                date: format(new Date(p.created_date), 'dd/MM/yyyy', { locale: he })
+              }))}
+              columns={[
+                { header: 'ספק', accessor: 'vendor_name' },
+                { header: 'סוג תשלום', accessor: 'payment_type' },
+                { header: 'סכום', accessor: 'amount' },
+                { header: 'סטטוס', accessor: 'status' },
+                { header: 'תאריך', accessor: 'date' }
+              ]}
+            />
           </div>
           <RevenueReport 
             payments={filteredPayments}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,16 +10,28 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertTriangle } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertTriangle, FileCode, FileType } from 'lucide-react';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { format } from 'date-fns';
 
-export default function ImportExport({ entityName, data, columns }) {
+export default function ImportExport({ entityName, data, columns, title }) {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const printRef = useRef(null);
 
-  const exportToExcel = () => {
+  const getFilename = (ext) => `${entityName || 'export'}_${format(new Date(), 'dd-MM-yyyy')}.${ext}`;
+
+  const exportToCSV = () => {
     if (!data || data.length === 0) {
       toast.error('אין נתונים לייצוא');
       return;
@@ -29,15 +41,165 @@ export default function ImportExport({ entityName, data, columns }) {
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${entityName}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = getFilename('csv');
     link.click();
     
-    toast.success('הקובץ יוצא בהצלחה');
+    toast.success('קובץ CSV יוצא בהצלחה');
+  };
+
+  const exportToHTML = () => {
+    if (!data || data.length === 0) {
+      toast.error('אין נתונים לייצוא');
+      return;
+    }
+
+    const htmlContent = generateHTML(data, columns, title || entityName);
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = getFilename('html');
+    link.click();
+
+    toast.success('קובץ HTML יוצא בהצלחה');
+  };
+
+  const exportToPDF = async () => {
+    if (!data || data.length === 0) {
+      toast.error('אין נתונים לייצוא');
+      return;
+    }
+
+    const toastId = toast.loading('מכין קובץ PDF...');
+
+    try {
+      // Create a temporary container for rendering
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '1000px'; // Fixed width for consistent PDF
+      container.style.backgroundColor = 'white';
+      container.innerHTML = generateHTMLTableOnly(data, columns, title || entityName);
+      document.body.appendChild(container);
+
+      const canvas = await html2canvas(container, {
+        scale: 2, // Higher resolution
+        useCORS: true,
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      pdf.save(getFilename('pdf'));
+      document.body.removeChild(container);
+      toast.dismiss(toastId);
+      toast.success('קובץ PDF יוצא בהצלחה');
+    } catch (error) {
+      console.error('PDF Export Error:', error);
+      toast.dismiss(toastId);
+      toast.error('שגיאה בייצוא PDF');
+    }
+  };
+
+  const generateHTML = (data, columns, pageTitle) => {
+    const tableContent = generateHTMLTableOnly(data, columns, pageTitle);
+    return `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="UTF-8">
+        <title>${pageTitle}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+        <style>
+          body { font-family: 'Heebo', sans-serif; margin: 0; padding: 20px; background-color: #f9fafb; direction: rtl; }
+          .report-container { max-width: 1000px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+          ${getReportStyles()}
+        </style>
+      </head>
+      <body>
+        <div class="report-container">
+          ${tableContent}
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  const getReportStyles = () => `
+    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #FF0000; padding-bottom: 20px; }
+    .brand-logo { color: #FF0000; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+    .report-title { font-size: 28px; color: #111827; margin: 0; font-weight: 700; }
+    .report-date { color: #6B7280; font-size: 14px; margin-top: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background-color: #F3F4F6; color: #374151; font-weight: 600; text-align: right; padding: 12px 16px; border-bottom: 2px solid #E5E7EB; font-size: 14px; }
+    td { padding: 12px 16px; border-bottom: 1px solid #E5E7EB; color: #111827; font-size: 14px; vertical-align: top; }
+    tr:nth-child(even) { background-color: #F9FAFB; }
+    .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #9CA3AF; border-top: 1px solid #E5E7EB; padding-top: 20px; }
+  `;
+
+  const generateHTMLTableOnly = (data, columns, pageTitle) => {
+    const today = format(new Date(), 'dd/MM/yyyy HH:mm');
+    
+    // Process headers and rows
+    const effectiveColumns = columns && columns.length > 0 
+      ? columns 
+      : Object.keys(data[0] || {}).map(key => ({ header: key, accessor: key }));
+
+    const headers = effectiveColumns.map(col => `<th>${col.header}</th>`).join('');
+    
+    const rows = data.map(row => {
+      const cells = effectiveColumns.map(col => {
+        // Handle custom cell renderers if they return strings/numbers, otherwise use accessor
+        let value = row[col.accessor];
+        if (value === undefined || value === null) value = '';
+        // Note: Complex React components in 'cell' prop won't render here. We rely on accessor or simple values.
+        // For formatted exports, columns should ideally map to string values or we fallback to accessor.
+        return `<td>${value}</td>`;
+      }).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+
+    return `
+      <div class="header">
+        <div class="brand-logo">נתי - שירותי דרך</div>
+        <h1 class="report-title">${pageTitle}</h1>
+        <div class="report-date">הופק בתאריך: ${today}</div>
+      </div>
+      <table>
+        <thead>
+          <tr>${headers}</tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+      <div class="footer">
+        מסמך זה הופק באופן אוטומטי ע"י מערכת נתי שירותי דרך
+      </div>
+    `;
   };
 
   const convertToCSV = (data, columns) => {
     if (!columns || columns.length === 0) {
-      const headers = Object.keys(data[0]).join(',');
+      const headers = Object.keys(data[0] || {}).join(',');
       const rows = data.map(row => Object.values(row).map(v => `"${v || ''}"`).join(','));
       return [headers, ...rows].join('\n');
     }
@@ -149,13 +311,32 @@ export default function ImportExport({ entityName, data, columns }) {
   return (
     <>
       <div className="flex gap-2">
-        <Button variant="outline" onClick={exportToExcel}>
-          <Download className="w-4 h-4 ml-2" />
-          ייצוא Excel
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Download className="w-4 h-4" />
+              ייצוא נתונים
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={exportToPDF} className="gap-2 cursor-pointer">
+              <FileType className="w-4 h-4" />
+              ייצוא ל-PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={exportToHTML} className="gap-2 cursor-pointer">
+              <FileCode className="w-4 h-4" />
+              ייצוא ל-HTML
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={exportToCSV} className="gap-2 cursor-pointer">
+              <FileSpreadsheet className="w-4 h-4" />
+              ייצוא ל-Excel/CSV
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
           <Upload className="w-4 h-4 ml-2" />
-          ייבוא Excel
+          ייבוא נתונים
         </Button>
       </div>
 
