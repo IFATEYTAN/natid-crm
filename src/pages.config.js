@@ -21,7 +21,6 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
-import SignIn from './pages/SignIn';
 import UserManagement from './pages/UserManagement';
 import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
@@ -57,7 +56,6 @@ export const PAGES = {
     "Reports": Reports,
     "ServiceProviders": ServiceProviders,
     "Settings": Settings,
-    "SignIn": SignIn,
     "UserManagement": UserManagement,
     "VendorMap": VendorMap,
     "VendorPayments": VendorPayments,
