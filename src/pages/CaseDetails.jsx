@@ -46,7 +46,7 @@ import VendorRecommendation from '@/components/ai/VendorRecommendation';
 import PredictionBadge from '@/components/ai/PredictionBadge';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { triggerNotification } from '@/components/utils/notifications';
+import { triggerNotification } from '@/components/NotificationsUtils';
 
 const serviceTypeLabels = {
   towing: 'גרירה',
