@@ -91,7 +91,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
     {
       header: 'ספק',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.vendor_id} className="text-primary-soft-600 hover:text-primary-soft-700 hover:underline font-medium">
+        <Link to={createPageUrl('VendorProfile') + '?id=' + row.vendor_id} className="text-[#FF6B6B] hover:text-[#E85555] hover:underline font-medium">
           {row.vendor_name}
         </Link>
       )
@@ -99,7 +99,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
     {
       header: 'סה"כ הכנסות',
       cell: (row) => (
-        <span className="font-bold text-[#2E7D32]">₪{row.total_revenue.toLocaleString()}</span>
+        <span className="font-bold text-[#22C55E]">₪{row.total_revenue.toLocaleString()}</span>
       )
     },
     {
@@ -109,7 +109,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
     {
       header: 'ממתין',
       cell: (row) => row.pending > 0 ? (
-        <span className="text-[#ED6C02] font-medium">₪{row.pending.toLocaleString()}</span>
+        <span className="text-[#F59E0B] font-medium">₪{row.pending.toLocaleString()}</span>
       ) : '₪0'
     },
     {
@@ -136,29 +136,29 @@ export default function RevenueReport({ payments, vendors, calls }) {
   const totalPending = vendorStats.reduce((sum, v) => sum + v.pending, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
-            <div className="text-2xl font-bold text-[#FF0000] mt-1">₪{totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[#22C55E] mt-1">₪{totalRevenue.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">שולם</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">₪{totalPaid.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">ממתין לתשלום</div>
-            <div className="text-2xl font-bold text-[#FF0000] mt-1">₪{totalPending.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[#F59E0B] mt-1">₪{totalPending.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">ממוצע לספק</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">
               ₪{vendorStats.length > 0 ? Math.round(totalRevenue / vendorStats.length).toLocaleString() : 0}

@@ -189,19 +189,19 @@ export default function LiveResponseTimeChart({ calls, vendors }) {
         <div className="mt-4 flex flex-wrap gap-3 justify-end text-xs">
           <div className="flex items-center gap-2">
             <span className="text-[#616161]">מצוין (≤20 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#2E7D32]" />
+            <div className="w-3 h-3 rounded-full bg-[#22C55E]" />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[#616161]">טוב (21-30 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#0288D1]" />
+            <div className="w-3 h-3 rounded-full bg-[#0EA5E9]" />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[#616161]">סביר (31-40 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#FF6B00]" />
+            <div className="w-3 h-3 rounded-full bg-[#F59E0B]" />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[#616161]">דורש שיפור (>40 דק')</span>
-            <div className="w-3 h-3 rounded-full bg-[#FF0000]" />
+            <div className="w-3 h-3 rounded-full bg-[#FF6B6B]" />
           </div>
         </div>
       </CardContent>

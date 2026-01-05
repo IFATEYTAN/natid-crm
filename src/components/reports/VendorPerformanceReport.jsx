@@ -62,7 +62,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
     {
       header: 'ספק',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="text-[#FF0000] hover:underline font-medium">
+        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="text-[#FF6B6B] hover:text-[#E85555] hover:underline font-medium">
           {row.vendor_name}
         </Link>
       )
@@ -82,8 +82,8 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-[#E0E0E0] rounded-full h-2">
-            <div 
-              className="bg-[#2E7D32] h-2 rounded-full"
+            <div
+              className="bg-[#22C55E] h-2 rounded-full"
               style={{ width: `${row.completion_rate}%` }}
             />
           </div>
@@ -95,7 +95,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
       header: 'זמן תגובה ממוצע',
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#FF0000]" />
+          <Clock className="w-4 h-4 text-[#FF6B6B]" />
           <span>{row.avg_response_time > 0 ? `${Math.round(row.avg_response_time)} דק'` : '-'}</span>
         </div>
       )
@@ -104,7 +104,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
       header: 'זמן השלמה ממוצע',
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-[#2E7D32]" />
+          <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />
           <span>{row.avg_completion_time > 0 ? `${Math.round(row.avg_completion_time)} דק'` : '-'}</span>
         </div>
       )
@@ -122,17 +122,19 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link to={createPageUrl('ServiceProviders')} className="block">
+          <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:shadow-md hover:border-[#D1D5DB] transition-all duration-200">
+            <CardContent className="pt-6 text-right" dir="rtl">
+              <div className="text-sm text-[#616161]">סה"כ ספקים</div>
+              <div className="text-2xl font-bold text-[#212121] mt-1">{vendors.length}</div>
+            </CardContent>
+          </Card>
+        </Link>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
-            <div className="text-sm text-[#616161]">סה"כ ספקים</div>
-            <div className="text-2xl font-bold text-[#212121] mt-1">{vendors.length}</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">ממוצע קריאות לספק</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">
               {vendors.length > 0 ? Math.round(calls.length / vendors.length) : 0}
@@ -140,24 +142,26 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
+          <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">דירוג ממוצע כללי</div>
             <div className="text-2xl font-bold text-[#212121] mt-1 flex items-center justify-end gap-2">
-              {ratings.length > 0 
+              {ratings.length > 0
                 ? (ratings.reduce((a, b) => a + b.overall_rating, 0) / ratings.length).toFixed(1)
                 : '0'}
               <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right">
-            <div className="text-sm text-[#616161]">ספק מוביל</div>
-            <div className="text-xl font-bold text-[#212121] mt-1">
-              {vendorStats.length > 0 ? vendorStats[0].vendor_name : '-'}
-            </div>
-          </CardContent>
-        </Card>
+        <Link to={vendorStats.length > 0 ? createPageUrl('VendorProfile') + '?id=' + vendorStats[0].id : '#'} className="block">
+          <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:shadow-md hover:border-[#D1D5DB] transition-all duration-200">
+            <CardContent className="pt-6 text-right" dir="rtl">
+              <div className="text-sm text-[#616161]">ספק מוביל</div>
+              <div className="text-xl font-bold text-[#212121] mt-1">
+                {vendorStats.length > 0 ? vendorStats[0].vendor_name : '-'}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Table */}
@@ -165,6 +169,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
         columns={columns}
         data={vendorStats}
         emptyMessage="אין נתוני ספקים"
+        onRowClick={(row) => window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id}
       />
     </div>
   );

@@ -14,15 +14,15 @@ const statusLabels = {
   cancelled: 'בוטל'
 };
 
-// Soft color palette for call statuses
+// Soft color palette for call statuses - צבעים עדינים לסטטוסים
 const statusColors = {
-  waiting_treatment: '#F59E0B',   // warning-soft-500 - כתום עדין
-  awaiting_assignment: '#FFA07A', // chart-soft-4 - כתום-ורוד עדין
-  assigning: '#FF6B6B',           // primary-soft-500 - אדום עדין
-  vendor_enroute: '#8B5CF6',      // info-soft-500 - סגול עדין
-  in_progress: '#0EA5E9',         // secondary-soft-500 - כחול עדין
-  completed: '#22C55E',           // success-soft-500 - ירוק עדין
-  cancelled: '#A3A3A3'            // neutral-soft-400 - אפור עדין
+  waiting_treatment: '#F59E0B',   // warning-soft-500 - כתום עדין - ממתין לטיפול
+  awaiting_assignment: '#FF6B6B', // primary-soft-500 - אדום עדין - ממתין לשיוך
+  assigning: '#8B5CF6',           // info-soft-500 - סגול עדין - בשיוך
+  vendor_enroute: '#FFA07A',      // chart-soft-4 - כתום-ורוד עדין - ספק בדרך
+  in_progress: '#0EA5E9',         // secondary-soft-500 - תכלת עדין - בטיפול
+  completed: '#4ECDC4',           // chart-soft-2 - טורקיז עדין - הושלם
+  cancelled: '#A3A3A3'            // neutral-soft-400 - אפור עדין - בוטל
 };
 
 export default function CallStatusChart({ calls }) {
