@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from "@/lib/utils";
+import anime from 'animejs';
 
 export default function StatCard({
   title,
@@ -14,6 +15,20 @@ export default function StatCard({
   onClick,
   to
 }) {
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    anime({
+      targets: cardRef.current,
+      opacity: [0, 1],
+      translateY: [20, 0],
+      scale: [0.95, 1],
+      duration: 800,
+      easing: 'easeOutExpo',
+      delay: anime.random(0, 150)
+    });
+  }, []);
+
   const cardClasses = cn(
     "bg-white border border-[#E5E7EB] rounded-lg p-5 transition-all duration-200",
     (onClick || to) && "cursor-pointer hover:shadow-md hover:border-[#D1D5DB]",
@@ -69,18 +84,18 @@ export default function StatCard({
   if (to) {
     return (
       <Link to={to} className="block">
-        <div className={cardClasses}>{cardContent}</div>
+        <div ref={cardRef} className={cardClasses}>{cardContent}</div>
       </Link>
     );
   }
 
   if (onClick) {
     return (
-      <div className={cardClasses} onClick={onClick}>{cardContent}</div>
+      <div ref={cardRef} className={cardClasses} onClick={onClick}>{cardContent}</div>
     );
   }
 
   return (
-    <div className={cardClasses}>{cardContent}</div>
+    <div ref={cardRef} className={cardClasses}>{cardContent}</div>
   );
 }

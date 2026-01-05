@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import {
@@ -13,10 +13,24 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
+import anime from 'animejs';
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const mainContentRef = useRef(null);
+
+  useEffect(() => {
+    if (mainContentRef.current) {
+      anime({
+        targets: mainContentRef.current,
+        opacity: [0, 1],
+        translateY: [10, 0],
+        duration: 600,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, [currentPageName]);
   // Initialize with the first group expanded ("תפעול יומי")
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
 
@@ -330,12 +344,12 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Page Content */}
-        <main className="p-4 md:p-6">
+        <main ref={mainContentRef} className="p-4 md:p-6">
           {children}
         </main>
-        
+
         <AccessibilityWidget />
-      </div>
+        </div>
     </div>
   );
 }
