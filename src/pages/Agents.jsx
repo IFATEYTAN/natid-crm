@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AgentCard from '@/components/AgentCard';
+import AvatarStack from '@/components/ui/AvatarStack';
 
 // Mock agents data - replace with actual API integration
 const MOCK_AGENTS = [
@@ -95,9 +96,12 @@ export default function Agents() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[26px] font-bold text-[#212121]">סוכנים</h1>
-          <p className="text-[14px] text-[#616161] mt-1">
-            ניהול והפעלת סוכנים אוטומטיים במערכת
-          </p>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-[14px] text-[#616161]">
+              ניהול והפעלת סוכנים אוטומטיים במערכת
+            </p>
+            <AvatarStack users={agents.filter(a => a.status === 'active')} size="sm" max={6} />
+          </div>
         </div>
         <div className="text-left">
           <div className="text-[24px] font-bold text-[#3B82F6]">{activeAgentsCount}</div>

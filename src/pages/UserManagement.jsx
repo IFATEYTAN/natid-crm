@@ -32,6 +32,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import AvatarStack from '@/components/ui/AvatarStack';
 
 export default function UserManagement() {
   const [search, setSearch] = useState('');
@@ -243,7 +244,11 @@ export default function UserManagement() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1>ניהול משתמשים</h1>
-          <p className="text-[var(--color-text-secondary)]">{filteredUsers.length} משתמשים במערכת</p>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-[var(--color-text-secondary)]">{filteredUsers.length} משתמשים במערכת</p>
+            <div className="h-4 w-px bg-gray-300 mx-2"></div>
+            <AvatarStack users={users} size="sm" max={8} />
+          </div>
         </div>
         
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
