@@ -203,10 +203,16 @@ export default function Customers() {
       header: 'פעולות',
       cell: (row) => (
         <div className="flex items-center gap-2">
+          <Link to={createPageUrl(`CustomerDetails?id=${row.id}`)}>
+            <Button variant="ghost" size="icon" title="צפה בפרטים ואינטראקציות">
+              <Building2 className="w-4 h-4 text-blue-600" />
+            </Button>
+          </Link>
           <Button 
             variant="ghost" 
             size="icon"
             onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
+            title="ערוך"
           >
             <Edit className="w-4 h-4 text-[#616161]" />
           </Button>
@@ -219,6 +225,7 @@ export default function Customers() {
                 deleteMutation.mutate(row.id);
               }
             }}
+            title="מחק"
           >
             <Trash2 className="w-4 h-4 text-[#D32F2F]" />
           </Button>

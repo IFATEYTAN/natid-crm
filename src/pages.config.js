@@ -29,6 +29,7 @@ import QueueMonitor from './pages/QueueMonitor';
 import Agents from './pages/Agents';
 import Reports from './pages/Reports';
 import MyVendorProfile from './pages/MyVendorProfile';
+import CustomerDetails from './pages/CustomerDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -64,6 +65,7 @@ export const PAGES = {
     "Agents": Agents,
     "Reports": Reports,
     "MyVendorProfile": MyVendorProfile,
+    "CustomerDetails": CustomerDetails,
 }
 
 export const pagesConfig = {
