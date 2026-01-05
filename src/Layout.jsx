@@ -24,6 +24,8 @@ import AccessibilityWidget from '@/components/AccessibilityWidget';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 import OfflineIndicator from '@/components/pwa/OfflineIndicator';
 import UpdatePrompt from '@/components/pwa/UpdatePrompt';
+import { NotificationPermissionBanner } from '@/components/notifications/PushNotifications';
+import { ConnectionStatusIndicator } from '@/hooks/useRealtimeUpdates';
 import anime from 'animejs';
 
 export default function Layout({ children, currentPageName }) {
@@ -432,6 +434,9 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </header>
 
+        {/* Notification Permission Banner */}
+        <NotificationPermissionBanner />
+
         {/* Page Content */}
         <main ref={mainContentRef} className="p-4 md:p-6">
           {children}
@@ -443,6 +448,11 @@ export default function Layout({ children, currentPageName }) {
         <InstallPrompt />
         <OfflineIndicator />
         <UpdatePrompt />
+
+        {/* Connection Status (bottom left) */}
+        <div className="fixed bottom-4 left-4 z-40">
+          <ConnectionStatusIndicator />
+        </div>
         </div>
     </div>
   );
