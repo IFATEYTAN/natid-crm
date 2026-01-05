@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
+import ExportMenu from '@/components/ui/ExportMenu';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Plus, 
+import {
+  Plus,
   Search,
   Phone,
   MapPin,
@@ -32,6 +34,7 @@ import {
 } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { AnimatedCard, AnimatedList, PageTransition } from '@/components/animations/AnimatedComponents';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
@@ -263,26 +266,70 @@ export default function Calls() {
     },
   ];
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[32px] font-bold text-[#0D47A1] leading-tight">רשימת קריאות</h1>
-          <p className="text-[#616161] text-sm body-2 mt-1">
-            {filteredCalls.length} קריאות
-          </p>
-        </div>
-        <Link to={createPageUrl('NewCall')}>
-          <Button className="bg-[#0D47A1] hover:bg-[#1565C0] text-white gap-2 rounded-[4px]">
-            <Plus className="w-5 h-5" strokeWidth={2} />
-            קריאה חדשה
-          </Button>
-        </Link>
-      </div>
+  // Columns for export (simplified without JSX)
+  const exportColumns = [
+    { header: 'מספר קריאה', accessor: 'call_number' },
+    { header: 'תאריך', accessor: 'created_date' },
+    { header: 'שם לקוח', accessor: 'customer_name' },
+    { header: 'טלפון', accessor: 'customer_phone' },
+    { header: 'מספר רכב', accessor: 'vehicle_plate' },
+    { header: 'סוג תקלה', accessor: 'issue_type' },
+    { header: 'עיר', accessor: 'pickup_location_city' },
+    { header: 'סטטוס', accessor: 'call_status' },
+    { header: 'ספק', accessor: 'assigned_vendor_name' },
+  ];
 
-      {/* Filters */}
-      <div className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+  // Prepare export data with formatted values
+  const exportData = filteredCalls.map(call => ({
+    ...call,
+    created_date: call.created_date
+      ? format(parseISO(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he })
+      : '',
+    issue_type: issueTypeLabels[call.issue_type] || call.issue_type || '',
+    call_status: statusOptions.find(s => s.value === call.call_status)?.label || call.call_status,
+    assigned_vendor_name: call.assigned_vendor_name || 'טרם שובץ',
+  }));
+
+  return (
+    <PageTransition>
+      <div className="space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex items-center justify-between"
+        >
+          <div>
+            <h1 className="text-[32px] font-bold text-[#0D47A1] leading-tight">רשימת קריאות</h1>
+            <p className="text-[#616161] text-sm body-2 mt-1">
+              {filteredCalls.length} קריאות
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <ExportMenu
+              data={exportData}
+              columns={exportColumns}
+              filename="calls"
+              title="רשימת קריאות"
+              subtitle={`סה"כ ${filteredCalls.length} קריאות`}
+            />
+            <Link to={createPageUrl('NewCall')}>
+              <Button className="bg-[#0D47A1] hover:bg-[#1565C0] text-white gap-2 rounded-[4px]">
+                <Plus className="w-5 h-5" strokeWidth={2} />
+                קריאה חדשה
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+        >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {/* Search */}
           <div className="lg:col-span-2">
@@ -382,70 +429,83 @@ export default function Calls() {
               </Label>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <DataTable
-        columns={columns}
-        data={paginatedCalls}
-        isLoading={isLoading}
-        emptyMessage="לא נמצאו קריאות"
-      />
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            הקודם
-          </Button>
-          
-          <div className="flex items-center gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(page => {
-                // Show first, last, current, and pages around current
-                return page === 1 || 
-                       page === totalPages || 
-                       Math.abs(page - currentPage) <= 1;
-              })
-              .map((page, idx, arr) => {
-                // Add ellipsis
-                const prevPage = arr[idx - 1];
-                const showEllipsis = prevPage && page - prevPage > 1;
-                
-                return (
-                  <React.Fragment key={page}>
-                    {showEllipsis && (
-                      <span className="px-2 text-[#9E9E9E]">...</span>
-                    )}
-                    <Button
-                      variant={currentPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className={currentPage === page ? "bg-[#0D47A1]" : ""}
-                    >
-                      {page}
-                    </Button>
-                  </React.Fragment>
-                );
-              })}
           </div>
+        </motion.div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
+        {/* Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <DataTable
+            columns={columns}
+            data={paginatedCalls}
+            isLoading={isLoading}
+            emptyMessage="לא נמצאו קריאות"
+            emptyPreset="calls"
+          />
+        </motion.div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            className="flex items-center justify-center gap-2"
           >
-            הבא
-          </Button>
-        </div>
-      )}
-    </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              הקודם
+            </Button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  // Show first, last, current, and pages around current
+                  return page === 1 ||
+                         page === totalPages ||
+                         Math.abs(page - currentPage) <= 1;
+                })
+                .map((page, idx, arr) => {
+                  // Add ellipsis
+                  const prevPage = arr[idx - 1];
+                  const showEllipsis = prevPage && page - prevPage > 1;
+
+                  return (
+                    <React.Fragment key={page}>
+                      {showEllipsis && (
+                        <span className="px-2 text-[#9E9E9E]">...</span>
+                      )}
+                      <Button
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={currentPage === page ? "bg-[#0D47A1]" : ""}
+                      >
+                        {page}
+                      </Button>
+                    </React.Fragment>
+                  );
+                })}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              הבא
+            </Button>
+          </motion.div>
+        )}
+      </div>
+    </PageTransition>
   );
 }
