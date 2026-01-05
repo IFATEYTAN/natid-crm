@@ -41,10 +41,13 @@ const monthNames = [
   'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
 ];
 
+import React, { useState, useRef } from 'react';
+
 export default function VendorPayments() {
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const tableRef = useRef(null);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
