@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -251,6 +251,15 @@ export default function AuthLogin() {
                     </>
                   )}
                 </Button>
+
+                {!isForgotPassword && (
+                  <div className="mt-6 text-center text-sm">
+                    <span className="text-neutral-soft-600">אין לך חשבון? </span>
+                    <Link to="/Register" className="text-primary-soft-600 hover:text-primary-soft-700 font-medium hover:underline">
+                      הרשם כאן
+                    </Link>
+                  </div>
+                )}
               </form>
             )}
 
