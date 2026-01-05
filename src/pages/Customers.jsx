@@ -29,6 +29,8 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import ImportExport from '@/components/ImportExport';
 
 const customerTypeLabels = {
