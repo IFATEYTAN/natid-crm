@@ -289,6 +289,28 @@ export default function Customers() {
             </Button>
           </div>
         </motion.div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-[#616161] text-sm">{filteredCustomers.length} לקוחות</p>
+        </div>
+        <div className="flex gap-2">
+          <ImportExport 
+            entityName="Customer" 
+            data={filteredCustomers}
+            columns={columns}
+            title="דוח לקוחות"
+          />
+          <Button 
+            className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus className="w-4 h-4" />
+            לקוח חדש
+          </Button>
+        </div>
+      </div>
 
         {/* Search */}
         <motion.div

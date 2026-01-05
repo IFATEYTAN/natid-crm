@@ -288,6 +288,30 @@ export default function ServiceProviders() {
     offline: 'לא זמין',
     inactive: 'לא פעיל',
   };
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1>נותני שירות</h1>
+          <p className="text-[var(--color-text-secondary)]">{filteredProviders.length} ספקים פעילים</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <ImportExport 
+            entityName="Vendor" 
+            data={filteredProviders}
+            columns={columns}
+            title="דוח נותני שירות"
+          />
+          <Button 
+            className="btn-primary flex items-center gap-2"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <Plus className="w-4 h-4" />
+            נותן שירות חדש
+          </Button>
+        </div>
+      </div>
 
   // Prepare export data with formatted values
   const exportData = filteredProviders.map(provider => ({

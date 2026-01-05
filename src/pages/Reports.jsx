@@ -26,6 +26,7 @@ import CallStatusChart from '@/components/reports/CallStatusChart';
 import LiveResponseTimeChart from '@/components/reports/LiveResponseTimeChart';
 import ExportMenu from '@/components/ui/ExportMenu';
 import { AnimatedCard, AnimatedCounter, AnimatedList } from '@/components/animations/AnimatedComponents';
+import ImportExport from '@/components/ImportExport';
 
 export default function Reports() {
   const [dateRange, setDateRange] = useState('30');
@@ -224,6 +225,33 @@ export default function Reports() {
             onEmailSend={handleEmailSend}
           />
         </motion.div>
+          <ImportExport
+            entityName="AllCalls"
+            data={filteredCalls.map(call => ({
+              call_number: call.call_number || call.id.slice(-6),
+              created_date: format(new Date(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he }),
+              customer_name: call.customer_name,
+              customer_phone: call.customer_phone,
+              issue_type: call.issue_type,
+              pickup_location_city: call.pickup_location_city,
+              call_status: call.call_status,
+              assigned_vendor_name: call.assigned_vendor_name || '-',
+              call_priority: call.call_priority
+            }))}
+            columns={[
+              { header: 'מספר קריאה', accessor: 'call_number' },
+              { header: 'תאריך', accessor: 'created_date' },
+              { header: 'לקוח', accessor: 'customer_name' },
+              { header: 'טלפון', accessor: 'customer_phone' },
+              { header: 'תקלה', accessor: 'issue_type' },
+              { header: 'עיר', accessor: 'pickup_location_city' },
+              { header: 'סטטוס', accessor: 'call_status' },
+              { header: 'ספק', accessor: 'assigned_vendor_name' },
+              { header: 'עדיפות', accessor: 'call_priority' }
+            ]}
+            title="דוח קריאות מרוכז"
+          />
+        </div>
       </div>
 
       {/* Filters Panel */}

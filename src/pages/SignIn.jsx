@@ -7,6 +7,7 @@ import FormInput from '@/components/ui/FormInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogIn, ShieldCheck, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
 export default function SignIn() {
@@ -82,19 +83,19 @@ export default function SignIn() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-[380px] mx-4" 
+        className="relative z-10 w-full max-w-[350px] mx-4" 
       >
-        <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-md ring-1 ring-black/5"> 
-          <CardHeader className="text-center pb-2 pt-6 px-4">
-            <CardTitle className="text-xl font-bold text-neutral-soft-800 mb-1">
+        <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-md ring-1 ring-black/5"> 
+          <CardHeader className="text-center pb-1 pt-4 px-4">
+            <CardTitle className="text-lg font-bold text-neutral-soft-800 mb-0.5">
               NATI GROUP SERVICE
             </CardTitle>
-            <CardDescription className="text-xs text-neutral-soft-600">
+            <CardDescription className="text-[11px] text-neutral-soft-600">
               מערכת ניהול CRM
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="pt-2 px-6 pb-6">
+          <CardContent className="pt-1 px-5 pb-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Error Alert */}
               {error && (
@@ -132,8 +133,8 @@ export default function SignIn() {
                 className="text-right h-10 text-sm"
               />
 
-              {/* Remember Me */}
-              <div className="flex items-center justify-end text-xs mt-2">
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between text-xs mt-2 flex-row-reverse">
                 <label className="flex items-center gap-2 cursor-pointer flex-row-reverse">
                   <span className="text-neutral-soft-600">זכור אותי</span>
                   <input
@@ -141,13 +142,20 @@ export default function SignIn() {
                     className="w-3.5 h-3.5 rounded border-neutral-soft-300 text-primary-soft-600 focus:ring-primary-soft-500"
                   />
                 </label>
+                <button 
+                  type="button"
+                  onClick={() => toast.info('לשחזור סיסמה יש לפנות למנהל המערכת')}
+                  className="text-primary-soft-600 hover:text-primary-soft-700 hover:underline bg-transparent border-0 p-0 text-xs"
+                >
+                  שכחתי סיסמה
+                </button>
               </div>
 
               {/* Login Button */}
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-5 text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-3 text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
               >
                 {isLoading ? (
                   <>

@@ -26,6 +26,7 @@ import OfflineIndicator from '@/components/pwa/OfflineIndicator';
 import UpdatePrompt from '@/components/pwa/UpdatePrompt';
 import { NotificationPermissionBanner } from '@/components/notifications/PushNotifications';
 import { ConnectionStatusIndicator } from '@/hooks/useRealtimeUpdates';
+import { Toaster } from 'sonner';
 import anime from 'animejs';
 
 export default function Layout({ children, currentPageName }) {
@@ -453,6 +454,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="fixed bottom-4 left-4 z-40">
           <ConnectionStatusIndicator />
         </div>
+        <Toaster position="top-center" richColors />
         </div>
     </div>
   );

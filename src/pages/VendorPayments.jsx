@@ -23,6 +23,7 @@ import {
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import ImportExport from '@/components/ImportExport';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
@@ -287,14 +288,28 @@ export default function VendorPayments() {
             </Select>
           </div>
 
-          <Button 
-            variant="outline" 
-            className="gap-2"
-            onClick={exportToExcel}
-          >
-            <Download className="w-4 h-4" />
-            ייצא לאקסל
-          </Button>
+          <ImportExport 
+            entityName="VendorPayment" 
+            data={monthCalls.map(c => ({
+              call_number: c.call_number,
+              closed_at: c.closed_at ? format(parseISO(c.closed_at), 'dd/MM/yy') : '',
+              customer_name: c.customer_name,
+              issue_type: issueTypeLabels[c.issue_type] || c.issue_type,
+              pickup_location_city: c.pickup_location_city || '',
+              cost_to_vendor: c.cost_to_vendor || 0,
+              payment_status: c.payment_status || 'pending'
+            }))}
+            columns={[
+              { header: 'מספר קריאה', accessor: 'call_number' },
+              { header: 'תאריך סגירה', accessor: 'closed_at' },
+              { header: 'לקוח', accessor: 'customer_name' },
+              { header: 'סוג שירות', accessor: 'issue_type' },
+              { header: 'עיר', accessor: 'pickup_location_city' },
+              { header: 'סכום', accessor: 'cost_to_vendor' },
+              { header: 'סטטוס תשלום', accessor: 'payment_status' }
+            ]}
+            title={`דוח תשלומים - ${monthNames[selectedMonth]} ${selectedYear}`}
+          />
         </div>
       </div>
 
