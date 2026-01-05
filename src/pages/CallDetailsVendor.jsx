@@ -152,10 +152,11 @@ export default function CallDetailsVendor() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Live Location Tracker */}
-      {currentVendor && (
+      {/* Live Location Tracker - Only when active */}
+      {currentVendor && (call.call_status === 'vendor_enroute' || call.call_status === 'in_progress') && (
         <LiveLocationTracker 
           vendorId={currentVendor.id}
+          autoStart={true}
           onLocationUpdate={() => {
             // Recalculate distance when location updates
             if (call?.id && currentVendor?.id) {

@@ -45,8 +45,8 @@ export default function VendorPortal() {
     queryFn: () => base44.entities.Vendor.list(),
   });
 
-  // Find current vendor by user email
-  const currentVendor = vendors.find(v => v.email === user?.email);
+  // Find current vendor by user email or explicit link
+  const currentVendor = vendors.find(v => v.id === user?.vendor_id || v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
     queryKey: ['vendorCalls', currentVendor?.id],
@@ -259,6 +259,22 @@ export default function VendorPortal() {
             </Button>
           </Link>
         </div>
+        
+        {/* Pending Calls Alert */}
+        {activeCalls.some(c => c.call_status === 'awaiting_assignment' || c.call_status === 'assigned') && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-full">
+                <Clock className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <p className="font-semibold text-amber-900">ישנן קריאות הממתינות לאישור שלך</p>
+                <p className="text-sm text-amber-700">נא לאשר את הקריאות כדי להתחיל בטיפול</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <DataTable
           columns={columns}
           data={activeCalls.slice(0, 10)}

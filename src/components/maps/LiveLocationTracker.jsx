@@ -5,11 +5,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Navigation, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function LiveLocationTracker({ vendorId, onLocationUpdate }) {
+export default function LiveLocationTracker({ vendorId, onLocationUpdate, autoStart = false }) {
   const [isTracking, setIsTracking] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [error, setError] = useState(null);
   const [watchId, setWatchId] = useState(null);
+
+  useEffect(() => {
+    if (autoStart && !isTracking && !watchId) {
+      startTracking();
+    }
+  }, [autoStart]);
 
   const startTracking = () => {
     if (!navigator.geolocation) {
