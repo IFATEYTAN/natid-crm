@@ -316,20 +316,6 @@ export default function ServiceProviders() {
     },
   ];
 
-  // Export columns (simplified without JSX)
-  const exportColumns = [
-    { header: 'שם ספק', accessor: 'vendor_name' },
-    { header: 'איש קשר', accessor: 'contact_person' },
-    { header: 'טלפון', accessor: 'phone' },
-    { header: 'טלפון משני', accessor: 'phone_2' },
-    { header: 'דוא"ל', accessor: 'email' },
-    { header: 'סוגי שירות', accessor: 'service_types' },
-    { header: 'אזורי כיסוי', accessor: 'coverage_areas_str' },
-    { header: 'סטטוס', accessor: 'status' },
-    { header: 'דירוג', accessor: 'rating' },
-    { header: 'קריאות שהושלמו', accessor: 'total_calls_completed' },
-  ];
-
   // Status labels for export
   const statusLabels = {
     available: 'זמין',

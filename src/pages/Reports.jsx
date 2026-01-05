@@ -224,7 +224,6 @@ export default function Reports() {
             subtitle={`${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`}
             onEmailSend={handleEmailSend}
           />
-        </motion.div>
           <ImportExport
             entityName="AllCalls"
             data={filteredCalls.map(call => ({
@@ -251,7 +250,8 @@ export default function Reports() {
             ]}
             title="דוח קריאות מרוכז"
           />
-        </div>
+        </motion.div>
+      </div>
 
       {/* Filters Panel */}
       <AnimatePresence>
@@ -263,143 +263,143 @@ export default function Reports() {
             transition={{ duration: 0.3 }}
           >
             <Card className="border-[#E0E0E0] bg-white">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Date Range */}
-              <div>
-                <Label>טווח תאריכים</Label>
-                <Select value={dateRange} onValueChange={setDateRange}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">7 ימים אחרונים</SelectItem>
-                    <SelectItem value="14">14 ימים אחרונים</SelectItem>
-                    <SelectItem value="30">30 ימים אחרונים</SelectItem>
-                    <SelectItem value="90">90 ימים אחרונים</SelectItem>
-                    <SelectItem value="180">6 חודשים</SelectItem>
-                    <SelectItem value="365">שנה</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Date Range */}
+                  <div>
+                    <Label>טווח תאריכים</Label>
+                    <Select value={dateRange} onValueChange={setDateRange}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7">7 ימים אחרונים</SelectItem>
+                        <SelectItem value="14">14 ימים אחרונים</SelectItem>
+                        <SelectItem value="30">30 ימים אחרונים</SelectItem>
+                        <SelectItem value="90">90 ימים אחרונים</SelectItem>
+                        <SelectItem value="180">6 חודשים</SelectItem>
+                        <SelectItem value="365">שנה</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Custom Start Date */}
-              <div>
-                <Label>מתאריך</Label>
-                <Input
-                  type="date"
-                  value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
+                  {/* Custom Start Date */}
+                  <div>
+                    <Label>מתאריך</Label>
+                    <Input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
 
-              {/* Custom End Date */}
-              <div>
-                <Label>עד תאריך</Label>
-                <Input
-                  type="date"
-                  value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
+                  {/* Custom End Date */}
+                  <div>
+                    <Label>עד תאריך</Label>
+                    <Input
+                      type="date"
+                      value={customEndDate}
+                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
 
-              {/* Vendor Filter */}
-              <div>
-                <Label>ספק</Label>
-                <Select value={selectedVendor} onValueChange={setSelectedVendor}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הספקים</SelectItem>
-                    {vendors.map(v => (
-                      <SelectItem key={v.id} value={v.id}>{v.vendor_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Vendor Filter */}
+                  <div>
+                    <Label>ספק</Label>
+                    <Select value={selectedVendor} onValueChange={setSelectedVendor}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">כל הספקים</SelectItem>
+                        {vendors.map(v => (
+                          <SelectItem key={v.id} value={v.id}>{v.vendor_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Customer Filter */}
-              <div>
-                <Label>לקוח</Label>
-                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הלקוחות</SelectItem>
-                    {[...new Set(calls.map(c => c.customer_name))].filter(Boolean).map(name => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Customer Filter */}
+                  <div>
+                    <Label>לקוח</Label>
+                    <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">כל הלקוחות</SelectItem>
+                        {[...new Set(calls.map(c => c.customer_name))].filter(Boolean).map(name => (
+                          <SelectItem key={name} value={name}>{name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Status Filter */}
-              <div>
-                <Label>סטטוס קריאה</Label>
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הסטטוסים</SelectItem>
-                    <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
-                    <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
-                    <SelectItem value="assigning">בשיוך</SelectItem>
-                    <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
-                    <SelectItem value="in_progress">בטיפול</SelectItem>
-                    <SelectItem value="completed">הושלם</SelectItem>
-                    <SelectItem value="cancelled">בוטל</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {/* Status Filter */}
+                  <div>
+                    <Label>סטטוס קריאה</Label>
+                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">כל הסטטוסים</SelectItem>
+                        <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
+                        <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
+                        <SelectItem value="assigning">בשיוך</SelectItem>
+                        <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
+                        <SelectItem value="in_progress">בטיפול</SelectItem>
+                        <SelectItem value="completed">הושלם</SelectItem>
+                        <SelectItem value="cancelled">בוטל</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              {/* Reset Button */}
-              <div className="flex items-end">
-                <Button
-                  variant="outline"
-                  onClick={resetFilters}
-                  className="w-full gap-2"
-                >
-                  <X className="w-4 h-4" />
-                  אפס פילטרים
-                </Button>
-              </div>
-            </div>
-
-            {/* Active Filters Display */}
-            {activeFiltersCount > 0 && (
-              <div className="mt-4 pt-4 border-t border-[#E0E0E0]">
-                <p className="text-sm text-[#616161] mb-2">פילטרים פעילים:</p>
-                <div className="flex flex-wrap gap-2">
-                  {customStartDate && customEndDate && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
-                      תאריך: {format(new Date(customStartDate), 'dd/MM/yy')} - {format(new Date(customEndDate), 'dd/MM/yy')}
-                    </span>
-                  )}
-                  {selectedVendor !== 'all' && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
-                      ספק: {vendors.find(v => v.id === selectedVendor)?.vendor_name}
-                    </span>
-                  )}
-                  {selectedCustomer !== 'all' && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
-                      לקוח: {selectedCustomer}
-                    </span>
-                  )}
-                  {selectedStatus !== 'all' && (
-                    <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
-                      סטטוס: {selectedStatus}
-                    </span>
-                  )}
+                  {/* Reset Button */}
+                  <div className="flex items-end">
+                    <Button
+                      variant="outline"
+                      onClick={resetFilters}
+                      className="w-full gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      אפס פילטרים
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+
+                {/* Active Filters Display */}
+                {activeFiltersCount > 0 && (
+                  <div className="mt-4 pt-4 border-t border-[#E0E0E0]">
+                    <p className="text-sm text-[#616161] mb-2">פילטרים פעילים:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {customStartDate && customEndDate && (
+                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                          תאריך: {format(new Date(customStartDate), 'dd/MM/yy')} - {format(new Date(customEndDate), 'dd/MM/yy')}
+                        </span>
+                      )}
+                      {selectedVendor !== 'all' && (
+                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                          ספק: {vendors.find(v => v.id === selectedVendor)?.vendor_name}
+                        </span>
+                      )}
+                      {selectedCustomer !== 'all' && (
+                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                          לקוח: {selectedCustomer}
+                        </span>
+                      )}
+                      {selectedStatus !== 'all' && (
+                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                          סטטוס: {selectedStatus}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </motion.div>
         )}
       </AnimatePresence>
