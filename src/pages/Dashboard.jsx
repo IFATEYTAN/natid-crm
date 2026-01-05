@@ -105,10 +105,8 @@ function WorkQueueOverview({ calls, isLoading }) {
         ) : (
           agentStats.map(agent => (
             <div key={agent.name} className="flex items-center gap-3">
-              <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
-              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden" dir="ltr">
               <span className="text-sm font-medium w-32 truncate text-right">{agent.name}</span>
-              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden">
+              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden" dir="ltr">
                 <div
                   className={`h-full ${agent.count >= 5 ? 'bg-warning-soft-500' : 'bg-success-soft-500'}`}
                   style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
