@@ -70,7 +70,7 @@ function WorkQueueOverview({ calls, isLoading }) {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[20px] font-medium text-neutral-soft-800">תור העבודה</h3>
         <Link to={createPageUrl('MyQueue')} className="text-primary-soft-600 hover:text-primary-soft-700 text-sm hover:underline">
-          ← הצג תור מלא
+          הצג תור מלא →
         </Link>
       </div>
 
@@ -106,6 +106,8 @@ function WorkQueueOverview({ calls, isLoading }) {
         ) : (
           agentStats.map(agent => (
             <div key={agent.name} className="flex items-center gap-3">
+              <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
+              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden" dir="ltr">
               <span className="text-sm font-medium w-32 truncate text-right">{agent.name}</span>
               <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden">
                 <div
@@ -113,7 +115,7 @@ function WorkQueueOverview({ calls, isLoading }) {
                   style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
                 />
               </div>
-              <span className="text-sm text-neutral-soft-600 w-20 text-right">
+              <span className="text-sm text-neutral-soft-600 w-20">
                 {agent.count} קריאות {agent.count >= 5 && '⚠️'}
               </span>
             </div>

@@ -71,11 +71,11 @@ export default function StatCard({
       )}
       {trend && (
         <div className={cn(
-          "mt-2 flex items-center gap-1 text-[12px] font-medium flex-row-reverse justify-end",
+          "mt-2 flex items-center gap-1 text-[12px] font-medium",
           trend === 'up' ? "text-[#059669]" : "text-[#DC2626]"
         )}>
-          <span>{trendValue}</span>
           <span>{trend === 'up' ? '↑' : '↓'}</span>
+          <span>{trendValue}</span>
         </div>
       )}
     </div>
