@@ -1,4 +1,3 @@
-import Agents from './pages/Agents';
 import AllVendorsMap from './pages/AllVendorsMap';
 import AutomationSettings from './pages/AutomationSettings';
 import BotIntegration from './pages/BotIntegration';
@@ -18,7 +17,6 @@ import NotificationSettings from './pages/NotificationSettings';
 import OperatorDashboard from './pages/OperatorDashboard';
 import QueueSettings from './pages/QueueSettings';
 import Register from './pages/Register';
-import Reports from './pages/Reports';
 import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
 import SignIn from './pages/SignIn';
@@ -28,11 +26,13 @@ import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
 import QueueMonitor from './pages/QueueMonitor';
+import Agents from './pages/Agents';
+import Reports from './pages/Reports';
+import MyVendorProfile from './pages/MyVendorProfile';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Agents": Agents,
     "AllVendorsMap": AllVendorsMap,
     "AutomationSettings": AutomationSettings,
     "BotIntegration": BotIntegration,
@@ -52,7 +52,6 @@ export const PAGES = {
     "OperatorDashboard": OperatorDashboard,
     "QueueSettings": QueueSettings,
     "Register": Register,
-    "Reports": Reports,
     "ServiceProviders": ServiceProviders,
     "Settings": Settings,
     "SignIn": SignIn,
@@ -62,6 +61,9 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
     "QueueMonitor": QueueMonitor,
+    "Agents": Agents,
+    "Reports": Reports,
+    "MyVendorProfile": MyVendorProfile,
 }
 
 export const pagesConfig = {
