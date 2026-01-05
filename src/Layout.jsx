@@ -146,7 +146,7 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   const handleLogout = async () => {
-    await base44.auth.logout('/Login');
+    await base44.auth.logout('/AuthLogin');
   };
 
   return (
