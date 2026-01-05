@@ -1,3 +1,4 @@
+import Agents from './pages/Agents';
 import AllVendorsMap from './pages/AllVendorsMap';
 import AutomationSettings from './pages/AutomationSettings';
 import BotIntegration from './pages/BotIntegration';
@@ -31,6 +32,7 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Agents": Agents,
     "AllVendorsMap": AllVendorsMap,
     "AutomationSettings": AutomationSettings,
     "BotIntegration": BotIntegration,
