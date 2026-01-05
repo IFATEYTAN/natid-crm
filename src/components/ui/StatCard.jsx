@@ -13,8 +13,8 @@ export default function StatCard({
   to
 }) {
   const cardClasses = cn(
-    "card-base p-5",
-    (onClick || to) && "cursor-pointer",
+    "bg-white border border-[#E5E7EB] rounded-lg p-5 transition-all duration-200",
+    (onClick || to) && "cursor-pointer hover:shadow-md hover:border-[#D1D5DB]",
     className
   );
 

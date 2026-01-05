@@ -13,13 +13,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
-import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  // Initialize with the first group expanded ("תפעול יומי")
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
 
+  // Don't wrap auth pages in the main layout
   if (currentPageName === 'SignIn' || currentPageName === 'Register') {
     return children;
   }
@@ -88,169 +89,245 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen relative flex">
-      {/* Background - Clean Gradient */}
-      <div className="fixed inset-0 z-0 bg-gradient-to-br from-gray-50 to-gray-100" />
+    <div dir="rtl" className="min-h-screen bg-[#FAFAFA]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
+        
+        * {
+          font-family: 'Heebo', sans-serif;
+        }
+        
+        /* Typography Scale */
+        h1 {
+          font-size: 32px;
+          font-weight: 700;
+          color: #212121;
+          line-height: 1.2;
+        }
+        
+        h2 {
+          font-size: 24px;
+          font-weight: 600;
+          color: #212121;
+          line-height: 1.3;
+        }
+        
+        h3 {
+          font-size: 20px;
+          font-weight: 500;
+          color: #212121;
+          line-height: 1.4;
+        }
+        
+        body, .body-1 {
+          font-size: 16px;
+          font-weight: 400;
+          color: #212121;
+          line-height: 1.5;
+        }
+        
+        .body-2 {
+          font-size: 14px;
+          font-weight: 400;
+          color: #616161;
+          line-height: 1.5;
+        }
+        
+        .caption {
+          font-size: 12px;
+          font-weight: 400;
+          color: #616161;
+          line-height: 1.4;
+        }
+        
+        button {
+          font-size: 16px;
+          font-weight: 500;
+          line-height: 1;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #a1a1a1;
+        }
+        
+        /* Card Hover Effect */
+        .card-hover {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          transform: translateY(-2px);
+        }
+      `}</style>
 
-      {/* Content Container - z-index to stay above background */}
-      <div className="relative z-10 w-full flex">
-        {/* Mobile Overlay */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out",
+        "lg:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+      )}>
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-[#E0E0E0]">
+          <div className="flex items-center gap-3">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
+              alt="נתי" 
+              className="h-12 w-auto object-contain"
+            />
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="lg:hidden"
             onClick={() => setSidebarOpen(false)}
-          />
-        )}
+          >
+            <X className="w-5 h-5 text-[#616161]" />
+          </Button>
+        </div>
 
-        {/* Sidebar - Glassmorphism */}
-        <aside className={cn(
-          "fixed top-0 right-0 h-full w-64 bg-white/80 backdrop-blur-md border-l border-white/40 shadow-xl z-50 transition-transform duration-300 ease-in-out",
-          "lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-        )}>
-          {/* Logo */}
-          <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100/50">
+        {/* Navigation */}
+        <nav className="p-4 space-y-2">
+          {navigationGroups.map((group, groupIdx) => (
+            <div key={groupIdx} className="mb-2">
+              <button
+                onClick={() => toggleGroup(group.title)}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-[#9E9E9E] uppercase tracking-wider hover:bg-gray-50 rounded transition-colors"
+              >
+                <span>{group.title}</span>
+                {expandedGroups[group.title] ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronLeft className="w-4 h-4" />
+                )}
+              </button>
+              
+              {expandedGroups[group.title] && (
+                <div className="space-y-1 mt-1">
+                  {group.items.map((item) => {
+                    const isActive = currentPageName === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        to={createPageUrl(item.href)}
+                        onClick={() => setSidebarOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200",
+                          isActive 
+                            ? "bg-[#F5F5F5] text-[#212121] shadow-sm border border-[#E0E0E0]" 
+                            : "text-[#424242] hover:bg-[#FAFAFA] hover:text-[#212121]"
+                        )}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+
+        {/* Quick Actions */}
+        <div className="absolute bottom-20 left-4 right-4">
+          <Link to={createPageUrl('NewCase')}>
+            <Button 
+              className="w-full bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold"
+            >
+              <Plus className="w-5 h-5" />
+              קריאה חדשה
+            </Button>
+          </Link>
+        </div>
+
+        {/* User Section */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#E0E0E0]">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-3 text-[#616161] hover:text-[#D32F2F] hover:bg-red-50"
+            onClick={handleLogout}
+          >
+            <LogOut className="w-5 h-5" />
+            התנתק
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="lg:mr-64">
+        {/* Top Bar */}
+        <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="lg:hidden w-10 h-10 hover:bg-[rgba(0,0,0,0.04)] active:bg-[rgba(0,0,0,0.08)] transition-colors rounded-full"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="w-6 h-6 text-[#616161]" strokeWidth={2} />
+            </Button>
             <div className="flex items-center gap-3">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
                 alt="נתי" 
-                className="h-14 w-auto object-contain drop-shadow-sm"
+                className="h-8 w-auto object-contain lg:hidden"
               />
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="w-5 h-5 text-gray-500" />
-            </Button>
           </div>
 
-          {/* Navigation */}
-          <nav className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-180px)]">
-            {navigationGroups.map((group, groupIdx) => (
-              <div key={groupIdx} className="mb-2">
-                <button
-                  onClick={() => toggleGroup(group.title)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
-                >
-                  <span>{group.title}</span>
-                  {expandedGroups[group.title] ? (
-                    <ChevronDown className="w-3 h-3" />
-                  ) : (
-                    <ChevronLeft className="w-3 h-3" />
-                  )}
-                </button>
-                
-                {expandedGroups[group.title] && (
-                  <div className="space-y-1 mt-1">
-                    {group.items.map((item) => {
-                      const isActive = currentPageName === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          to={createPageUrl(item.href)}
-                          onClick={() => setSidebarOpen(false)}
-                          className={cn(
-                            "flex items-center gap-3 px-4 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-200",
-                            isActive 
-                              ? "bg-gradient-to-l from-red-50 to-transparent text-[var(--color-primary)] border-r-2 border-[var(--color-primary)]" 
-                              : "text-gray-600 hover:bg-gray-50/80 hover:text-gray-900"
-                          )}
-                        >
-                          {item.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
+          <div className="flex items-center gap-4">
+            {/* User Profile - Clean Design */}
+            <div className="flex items-center gap-3 pl-2">
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-medium text-[#212121] leading-none">
+                  {currentUser?.full_name || 'משתמש'}
+                </p>
+                <p className="text-[11px] text-[#616161] mt-1 leading-none">
+                  {currentUser?.email}
+                </p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#F5F5F5] border border-[#E0E0E0] flex items-center justify-center overflow-hidden">
+                {currentUser?.profile_image ? (
+                  <img 
+                    src={currentUser.profile_image} 
+                    alt={currentUser.full_name} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[#616161] text-xs font-medium">
+                    {getInitials(currentUser?.full_name)}
+                  </span>
                 )}
               </div>
-            ))}
-          </nav>
-
-          {/* User Section */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100/50 bg-white/50 backdrop-blur-sm">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-3 text-gray-600 hover:text-red-600 hover:bg-red-50/50"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5" />
-              התנתק
-            </Button>
+            </div>
           </div>
-        </aside>
+        </header>
 
-        {/* Main Content Area */}
-        <div className="flex-1 lg:mr-64 min-h-screen flex flex-col">
-          {/* Top Bar - Glassmorphism */}
-          <header className="sticky top-0 h-20 bg-white/80 backdrop-blur-md border-b border-white/40 z-30 flex items-center justify-between px-8 shadow-sm">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="lg:hidden w-10 h-10 rounded-full bg-white/50 hover:bg-white/80"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Menu className="w-6 h-6 text-gray-600" strokeWidth={2} />
-              </Button>
-              <div className="lg:hidden">
-                <img 
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-                  alt="נתי" 
-                  className="h-10 w-auto object-contain"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6">
-              {/* Quick Action Button in Header */}
-              <Link to={createPageUrl('NewCase')} className="hidden sm:block">
-                <Button 
-                  className="btn-primary flex items-center gap-2 shadow-lg shadow-red-500/20"
-                >
-                  <Plus className="w-5 h-5" />
-                  קריאה חדשה
-                </Button>
-              </Link>
-
-              {/* User Profile */}
-              <div className="flex items-center gap-3 pl-2 border-r border-gray-200 pr-6 mr-2">
-                <div className="text-left hidden sm:block">
-                  <p className="text-sm font-semibold text-gray-800 leading-none">
-                    {currentUser?.full_name || 'משתמש'}
-                  </p>
-                  <p className="text-[11px] text-gray-500 mt-1 leading-none">
-                    {currentUser?.email}
-                  </p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center overflow-hidden ring-1 ring-gray-100">
-                  {currentUser?.profile_image ? (
-                    <img 
-                      src={currentUser.profile_image} 
-                      alt={currentUser.full_name} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-gray-500 text-sm font-bold">
-                      {getInitials(currentUser?.full_name)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </header>
-
-          {/* Page Content */}
-          <main className="p-6 md:p-8 flex-1 overflow-x-hidden">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
-          </main>
-          
-          <AccessibilityWidget />
-        </div>
+        {/* Page Content */}
+        <main className="p-4 md:p-6">
+          {children}
+        </main>
+        
+        <AccessibilityWidget />
       </div>
     </div>
   );

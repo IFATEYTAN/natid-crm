@@ -24,7 +24,7 @@ export default function DataTable({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50/50 border-b border-gray-200/60">
+              <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
                 {columns.map((col, idx) => (
                   <TableHead key={idx} className="text-right text-[var(--color-text-secondary)] font-medium text-sm h-12">
                     {col.header}
@@ -63,7 +63,7 @@ export default function DataTable({
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50/50 border-b border-gray-200/60">
+            <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
               {columns.map((col, idx) => (
                 <TableHead 
                   key={idx} 
@@ -83,7 +83,7 @@ export default function DataTable({
                 key={row.id || rowIdx}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
-                  "border-b border-gray-100/50 last:border-0 hover:bg-white/50 transition-colors",
+                  "border-b border-[var(--color-border)] last:border-0 hover:bg-[#F9FAFB] transition-colors",
                   onRowClick && "cursor-pointer"
                 )}
               >
