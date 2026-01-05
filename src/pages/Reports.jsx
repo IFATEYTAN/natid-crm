@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,11 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, Filter, X, TrendingUp } from 'lucide-react';
-import { format, subDays, startOfDay, endOfDay, parseISO } from 'date-fns';
+import { Filter, X, BarChart3, FileText, Users } from 'lucide-react';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatCard from '@/components/ui/StatCard';
 import VendorPerformanceReport from '@/components/reports/VendorPerformanceReport';
@@ -25,6 +24,8 @@ import SLAReport from '@/components/reports/SLAReport';
 import RevenueReport from '@/components/reports/RevenueReport';
 import CallStatusChart from '@/components/reports/CallStatusChart';
 import LiveResponseTimeChart from '@/components/reports/LiveResponseTimeChart';
+import ExportMenu from '@/components/ui/ExportMenu';
+import { AnimatedCard, AnimatedCounter, AnimatedList } from '@/components/animations/AnimatedComponents';
 
 export default function Reports() {
   const [dateRange, setDateRange] = useState('30');
@@ -108,48 +109,39 @@ export default function Reports() {
     return date >= startDate && date <= endDate;
   });
 
-  // Export to CSV
-  const exportToCSV = (data, filename, headers) => {
-    if (!data || data.length === 0) {
-      toast.error('אין נתונים לייצוא');
-      return;
-    }
+  // Columns for export
+  const exportColumns = [
+    { header: 'מספר קריאה', accessor: 'call_number' },
+    { header: 'תאריך', accessor: 'created_date_formatted' },
+    { header: 'לקוח', accessor: 'customer_name' },
+    { header: 'טלפון', accessor: 'customer_phone' },
+    { header: 'סוג תקלה', accessor: 'issue_type' },
+    { header: 'אזור', accessor: 'pickup_location_area' },
+    { header: 'סטטוס', accessor: 'call_status' },
+    { header: 'ספק משובץ', accessor: 'assigned_vendor_name' },
+    { header: 'זמן תגובה (דקות)', accessor: 'time_to_vendor_assignment' },
+    { header: 'עלות', accessor: 'cost_to_vendor' },
+  ];
 
-    const csvHeaders = headers || Object.keys(data[0]);
-    const csvRows = data.map(row => 
-      csvHeaders.map(header => {
-        const value = row[header] ?? '';
-        return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
-      }).join(',')
-    );
-    
-    const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${filename}_${format(new Date(), 'dd-MM-yyyy')}.csv`;
-    link.click();
-    toast.success('הדוח יוצא בהצלחה');
-  };
+  // Prepare data for export with formatted dates
+  const exportData = filteredCalls.map(call => ({
+    ...call,
+    call_number: call.call_number || call.id?.slice(-6),
+    created_date_formatted: call.created_date
+      ? format(new Date(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he })
+      : '-',
+    assigned_vendor_name: call.assigned_vendor_name || '-',
+    time_to_vendor_assignment: call.time_to_vendor_assignment || '-',
+    cost_to_vendor: call.cost_to_vendor ? `₪${call.cost_to_vendor}` : '-',
+  }));
 
-  // Export all calls
-  const exportAllCallsCSV = () => {
-    const data = filteredCalls.map(call => ({
-      'מספר_קריאה': call.call_number || call.id.slice(-6),
-      'תאריך': format(new Date(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he }),
-      'לקוח': call.customer_name,
-      'טלפון': call.customer_phone,
-      'סוג_תקלה': call.issue_type,
-      'אזור': call.pickup_location_area,
-      'כתובת': call.pickup_location_address,
-      'סטטוס': call.call_status,
-      'ספק_משובץ': call.assigned_vendor_name || '-',
-      'עדיפות': call.call_priority,
-      'זמן_תגובה_דקות': call.time_to_vendor_assignment || '-',
-      'זמן_השלמה_דקות': call.time_to_completion || '-',
-      'עלות': call.cost_to_vendor || '-'
-    }));
-    exportToCSV(data, 'כל_הקריאות');
+  // Handle email send
+  const handleEmailSend = async ({ email, subject, message }) => {
+    // This would integrate with your email service
+    console.log('Sending email to:', email, 'Subject:', subject);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return true;
   };
 
   const resetFilters = () => {
@@ -169,41 +161,81 @@ export default function Reports() {
   ].reduce((a, b) => a + b, 0);
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+      dir="rtl"
+    >
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div>
-          <h1>דוחות וניתוחים</h1>
-          <p className="text-[var(--color-text-secondary)]">
-            ניתוח מקיף של ביצועים, SLA והכנסות • {filteredCalls.length} קריאות
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <h1 className="flex items-center gap-3">
+            <motion.div
+              className="w-10 h-10 bg-gradient-to-br from-[#FF0000] to-[#CC0000] rounded-lg flex items-center justify-center"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: 'spring', stiffness: 400 }}
+            >
+              <BarChart3 className="w-5 h-5 text-white" />
+            </motion.div>
+            דוחות וניתוחים
+          </h1>
+          <p className="text-[var(--color-text-secondary)] mt-1">
+            ניתוח מקיף של ביצועים, SLA והכנסות •{' '}
+            <AnimatedCounter value={filteredCalls.length} duration={0.5} /> קריאות
           </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-wrap items-center gap-3"
+        >
           <Button
-            className="btn-secondary gap-2"
+            variant="outline"
+            className="gap-2"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="w-4 h-4" />
             פילטרים
             {activeFiltersCount > 0 && (
-              <span className="bg-[var(--color-primary)] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="bg-[#FF0000] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+              >
                 {activeFiltersCount}
-              </span>
+              </motion.span>
             )}
           </Button>
-          <Button
-            className="btn-primary gap-2"
-            onClick={exportAllCallsCSV}
-          >
-            <Download className="w-4 h-4" />
-            ייצא הכל
-          </Button>
-        </div>
+
+          <ExportMenu
+            data={exportData}
+            columns={exportColumns}
+            filename="דוח_קריאות"
+            title="דוח קריאות - נתי שירותי דרך"
+            subtitle={`${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`}
+            onEmailSend={handleEmailSend}
+          />
+        </motion.div>
       </div>
 
       {/* Filters Panel */}
-      {showFilters && (
-        <Card className="border-[#E0E0E0] bg-white">
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="border-[#E0E0E0] bg-white">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Date Range */}
@@ -341,127 +373,178 @@ export default function Reports() {
             )}
           </CardContent>
         </Card>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title='סה"כ קריאות'
-          value={filteredCalls.length}
-          subtitle={`${calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות`}
-          to={createPageUrl('Calls')}
-        />
-        <StatCard
-          title="ספקים פעילים"
-          value={[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
-          subtitle={`מתוך ${vendors.length} ספקים`}
-          to={createPageUrl('ServiceProviders')}
-        />
-        <StatCard
-          title="דירוג ממוצע"
-          value={filteredRatings.length > 0 
-            ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
-            : '0.0'}
-          subtitle={`${filteredRatings.length} דירוגים`}
-          to={createPageUrl('ServiceProviders')}
-        />
-        <StatCard
-          title='סה"כ הכנסות'
-          value={`₪${filteredPayments.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}`}
-          subtitle={`${filteredPayments.length} תשלומים`}
-          to={createPageUrl('VendorPayments')}
-        />
-      </div>
+      {/* Summary Cards with Stagger Animation */}
+      <AnimatedList animation="fadeInUp" staggerDelay={0.08} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <AnimatedCard hoverScale={1.03}>
+          <StatCard
+            title='סה"כ קריאות'
+            value={filteredCalls.length}
+            subtitle={`${calls.length > 0 ? Math.round((filteredCalls.length / calls.length) * 100) : 0}% מכלל הקריאות`}
+            to={createPageUrl('Calls')}
+          />
+        </AnimatedCard>
+        <AnimatedCard hoverScale={1.03}>
+          <StatCard
+            title="ספקים פעילים"
+            value={[...new Set(filteredCalls.map(c => c.assigned_vendor_id).filter(Boolean))].length}
+            subtitle={`מתוך ${vendors.length} ספקים`}
+            to={createPageUrl('ServiceProviders')}
+          />
+        </AnimatedCard>
+        <AnimatedCard hoverScale={1.03}>
+          <StatCard
+            title="דירוג ממוצע"
+            value={filteredRatings.length > 0
+              ? (filteredRatings.reduce((a, b) => a + b.overall_rating, 0) / filteredRatings.length).toFixed(1)
+              : '0.0'}
+            subtitle={`${filteredRatings.length} דירוגים`}
+            to={createPageUrl('ServiceProviders')}
+          />
+        </AnimatedCard>
+        <AnimatedCard hoverScale={1.03}>
+          <StatCard
+            title='סה"כ הכנסות'
+            value={`₪${filteredPayments.reduce((sum, p) => sum + (p.amount || 0), 0).toLocaleString()}`}
+            subtitle={`${filteredPayments.length} תשלומים`}
+            to={createPageUrl('VendorPayments')}
+          />
+        </AnimatedCard>
+      </AnimatedList>
 
-      {/* Live Charts */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <CallStatusChart calls={filteredCalls} />
-        <LiveResponseTimeChart calls={filteredCalls} vendors={vendors} />
-      </div>
+      {/* Live Charts with Animation */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        className="grid lg:grid-cols-2 gap-6"
+      >
+        <AnimatedCard>
+          <CallStatusChart calls={filteredCalls} />
+        </AnimatedCard>
+        <AnimatedCard>
+          <LiveResponseTimeChart calls={filteredCalls} vendors={vendors} />
+        </AnimatedCard>
+      </motion.div>
 
       {/* Report Tabs */}
-      <Tabs defaultValue="vendors" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="vendors">ביצועי ספקים</TabsTrigger>
-          <TabsTrigger value="sla">דוח SLA</TabsTrigger>
-          <TabsTrigger value="revenue">הכנסות ורווחים</TabsTrigger>
-        </TabsList>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
+      >
+        <Tabs defaultValue="vendors" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsTrigger value="vendors" className="gap-2">
+              <Users className="w-4 h-4" />
+              ביצועי ספקים
+            </TabsTrigger>
+            <TabsTrigger value="sla" className="gap-2">
+              <FileText className="w-4 h-4" />
+              דוח SLA
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              הכנסות ורווחים
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="vendors" className="space-y-4">
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                const data = vendors.map(v => ({
-                  'שם_ספק': v.vendor_name,
-                  'סה_כ_קריאות': filteredCalls.filter(c => c.assigned_vendor_id === v.id).length,
-                  'קריאות_הושלמו': filteredCalls.filter(c => c.assigned_vendor_id === v.id && c.call_status === 'completed').length,
-                  'דירוג_ממוצע': v.average_rating || 0,
-                  'זמן_תגובה_ממוצע': v.average_response_time || 0
-                }));
-                exportToCSV(data, 'דוח_ביצועי_ספקים');
-              }}
-            >
-              <Download className="w-4 h-4 ml-2" />
-              ייצוא CSV
-            </Button>
-          </div>
-          <VendorPerformanceReport 
-            vendors={vendors}
-            calls={filteredCalls}
-            ratings={filteredRatings}
-          />
-        </TabsContent>
+          <TabsContent value="vendors" className="space-y-4">
+            <div className="flex justify-end">
+              <ExportMenu
+                data={vendors.map(v => ({
+                  vendor_name: v.vendor_name,
+                  total_calls: filteredCalls.filter(c => c.assigned_vendor_id === v.id).length,
+                  completed_calls: filteredCalls.filter(c => c.assigned_vendor_id === v.id && c.call_status === 'completed').length,
+                  average_rating: v.average_rating || 0,
+                  average_response_time: v.average_response_time || 0
+                }))}
+                columns={[
+                  { header: 'שם ספק', accessor: 'vendor_name' },
+                  { header: 'סה"כ קריאות', accessor: 'total_calls' },
+                  { header: 'קריאות שהושלמו', accessor: 'completed_calls' },
+                  { header: 'דירוג ממוצע', accessor: 'average_rating' },
+                  { header: 'זמן תגובה ממוצע', accessor: 'average_response_time' },
+                ]}
+                filename="דוח_ביצועי_ספקים"
+                title="דוח ביצועי ספקים"
+                subtitle="נתי שירותי דרך"
+                onEmailSend={handleEmailSend}
+              />
+            </div>
+            <VendorPerformanceReport
+              vendors={vendors}
+              calls={filteredCalls}
+              ratings={filteredRatings}
+            />
+          </TabsContent>
 
-        <TabsContent value="sla" className="space-y-4">
-          <div className="flex justify-end">
-            <Button 
-              variant="outline"
-              onClick={() => {
-                const data = filteredCalls.map(c => ({
-                  'מספר_קריאה': c.call_number,
-                  'אזור': c.pickup_location_area,
-                  'סוג_תקלה': c.issue_type,
-                  'זמן_תגובה': c.time_to_vendor_assignment,
-                  'יעד_SLA': c.sla_target,
-                  'עמד_ב_SLA': c.time_to_vendor_assignment && c.sla_target ? (c.time_to_vendor_assignment <= c.sla_target ? 'כן' : 'לא') : '-'
-                }));
-                exportToCSV(data, 'דוח_SLA');
-              }}
-            >
-              <Download className="w-4 h-4 ml-2" />
-              ייצוא CSV
-            </Button>
-          </div>
-          <SLAReport calls={filteredCalls} />
-        </TabsContent>
+          <TabsContent value="sla" className="space-y-4">
+            <div className="flex justify-end">
+              <ExportMenu
+                data={filteredCalls.map(c => ({
+                  call_number: c.call_number,
+                  pickup_location_area: c.pickup_location_area,
+                  issue_type: c.issue_type,
+                  time_to_vendor_assignment: c.time_to_vendor_assignment,
+                  sla_target: c.sla_target,
+                  met_sla: c.time_to_vendor_assignment && c.sla_target
+                    ? (c.time_to_vendor_assignment <= c.sla_target ? 'כן' : 'לא')
+                    : '-'
+                }))}
+                columns={[
+                  { header: 'מספר קריאה', accessor: 'call_number' },
+                  { header: 'אזור', accessor: 'pickup_location_area' },
+                  { header: 'סוג תקלה', accessor: 'issue_type' },
+                  { header: 'זמן תגובה', accessor: 'time_to_vendor_assignment' },
+                  { header: 'יעד SLA', accessor: 'sla_target' },
+                  { header: 'עמד ב-SLA', accessor: 'met_sla' },
+                ]}
+                filename="דוח_SLA"
+                title="דוח עמידה ב-SLA"
+                subtitle="נתי שירותי דרך"
+                onEmailSend={handleEmailSend}
+              />
+            </div>
+            <SLAReport calls={filteredCalls} />
+          </TabsContent>
 
-        <TabsContent value="revenue" className="space-y-4">
-          <div className="flex justify-end">
-            <Button 
-              variant="outline"
-              onClick={() => {
-                const data = filteredPayments.map(p => ({
-                  'ספק': p.vendor_name,
-                  'סוג_תשלום': p.payment_type,
-                  'סכום': p.amount,
-                  'סטטוס': p.status,
-                  'תאריך': format(new Date(p.created_date), 'dd/MM/yyyy', { locale: he })
-                }));
-                exportToCSV(data, 'דוח_הכנסות');
-              }}
-            >
-              <Download className="w-4 h-4 ml-2" />
-              ייצוא CSV
-            </Button>
-          </div>
-          <RevenueReport 
-            payments={filteredPayments}
-            vendors={vendors}
-            calls={filteredCalls}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="revenue" className="space-y-4">
+            <div className="flex justify-end">
+              <ExportMenu
+                data={filteredPayments.map(p => ({
+                  vendor_name: p.vendor_name,
+                  payment_type: p.payment_type,
+                  amount: p.amount,
+                  status: p.status,
+                  created_date: p.created_date
+                    ? format(new Date(p.created_date), 'dd/MM/yyyy', { locale: he })
+                    : '-'
+                }))}
+                columns={[
+                  { header: 'ספק', accessor: 'vendor_name' },
+                  { header: 'סוג תשלום', accessor: 'payment_type' },
+                  { header: 'סכום', accessor: 'amount' },
+                  { header: 'סטטוס', accessor: 'status' },
+                  { header: 'תאריך', accessor: 'created_date' },
+                ]}
+                filename="דוח_הכנסות"
+                title="דוח הכנסות ותשלומים"
+                subtitle="נתי שירותי דרך"
+                onEmailSend={handleEmailSend}
+              />
+            </div>
+            <RevenueReport
+              payments={filteredPayments}
+              vendors={vendors}
+              calls={filteredCalls}
+            />
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+    </motion.div>
   );
 }

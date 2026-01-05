@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
+import ExportMenu from '@/components/ui/ExportMenu';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,18 +22,18 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Plus, 
-  Search, 
-  Phone, 
-  Mail, 
-  Building2, 
-  Edit, 
+import {
+  Plus,
+  Search,
+  Phone,
+  Mail,
+  Building2,
+  Edit,
   Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import ImportExport from '@/components/ImportExport';
+import { PageTransition } from '@/components/animations/AnimatedComponents';
 
 const customerTypeLabels = {
   insurance_company: 'חברת ביטוח',
@@ -236,49 +238,90 @@ export default function Customers() {
     },
   ];
 
+  // Export columns (simplified without JSX)
+  const exportColumns = [
+    { header: 'שם לקוח', accessor: 'name' },
+    { header: 'סוג', accessor: 'customer_type' },
+    { header: 'איש קשר', accessor: 'contact_person' },
+    { header: 'טלפון', accessor: 'phone' },
+    { header: 'דוא"ל', accessor: 'email' },
+    { header: 'עיר', accessor: 'city' },
+    { header: 'חוזה', accessor: 'contract_type' },
+    { header: 'סטטוס', accessor: 'status' },
+  ];
+
+  // Prepare export data with formatted values
+  const exportData = filteredCustomers.map(customer => ({
+    ...customer,
+    customer_type: customerTypeLabels[customer.customer_type] || customer.customer_type || '',
+    contract_type: contractTypeLabels[customer.contract_type] || '',
+    status: customer.status === 'active' ? 'פעיל' : customer.status === 'inactive' ? 'לא פעיל' : 'מושהה',
+  }));
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-[#616161] text-sm">{filteredCustomers.length} לקוחות</p>
-        </div>
-        <div className="flex gap-2">
-          <ImportExport 
-            entityName="Customer" 
-            data={filteredCustomers}
+    <PageTransition>
+      <div className="space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div>
+            <h1 className="text-2xl font-bold text-[#0D47A1]">לקוחות</h1>
+            <p className="text-[#616161] text-sm">{filteredCustomers.length} לקוחות</p>
+          </div>
+          <div className="flex gap-2">
+            <ExportMenu
+              data={exportData}
+              columns={exportColumns}
+              filename="customers"
+              title="רשימת לקוחות"
+              subtitle={`סה"כ ${filteredCustomers.length} לקוחות`}
+            />
+            <Button
+              className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4" />
+              לקוח חדש
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="bg-white rounded-xl border border-[#E0E0E0] p-4"
+        >
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+            <Input
+              placeholder="חיפוש לפי שם, טלפון..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pr-10"
+            />
+          </div>
+        </motion.div>
+
+        {/* Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <DataTable
             columns={columns}
+            data={filteredCustomers}
+            isLoading={isLoading}
+            emptyMessage="לא נמצאו לקוחות"
+            emptyPreset="customers"
           />
-          <Button 
-            className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <Plus className="w-4 h-4" />
-            לקוח חדש
-          </Button>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="bg-white rounded-xl border border-[#E0E0E0] p-4">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
-          <Input
-            placeholder="חיפוש לפי שם, טלפון..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pr-10"
-          />
-        </div>
-      </div>
-
-      {/* Table */}
-      <DataTable
-        columns={columns}
-        data={filteredCustomers}
-        isLoading={isLoading}
-        emptyMessage="לא נמצאו לקוחות"
-      />
+        </motion.div>
 
       {/* Customer Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -423,6 +466,7 @@ export default function Customers() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </PageTransition>
   );
 }
