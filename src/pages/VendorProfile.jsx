@@ -16,7 +16,8 @@ import {
   Mail,
   Star,
   FileText,
-  Activity
+  Activity,
+  Truck
 } from 'lucide-react';
 import VendorAIInsights from '@/components/ai/VendorAIInsights';
 import { format, parseISO } from 'date-fns';
@@ -192,6 +193,17 @@ export default function VendorProfile() {
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
+          {vendor.profile_image ? (
+            <img
+              src={vendor.profile_image}
+              alt={vendor.vendor_name}
+              className="w-16 h-16 rounded-full object-cover border-2 border-[#E0E0E0]"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-[#F5F5F5] flex items-center justify-center border-2 border-[#E0E0E0]">
+              <Truck className="w-8 h-8 text-[#616161]" />
+            </div>
+          )}
           <div>
             <h1 className="text-[32px] font-bold text-[#212121]">{vendor.vendor_name}</h1>
             <div className="flex items-center gap-3 mt-1">
