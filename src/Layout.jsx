@@ -89,14 +89,8 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div dir="rtl" className="min-h-screen relative flex">
-      {/* Background Image with Glassmorphism Overlay */}
-      <div className="fixed inset-0 z-0">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
-        />
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px]" />
-      </div>
+      {/* Background - Clean Gradient */}
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-gray-50 to-gray-100" />
 
       {/* Content Container - z-index to stay above background */}
       <div className="relative z-10 w-full flex">
