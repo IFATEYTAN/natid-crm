@@ -62,6 +62,26 @@ export default function VendorPortal() {
     !['completed', 'cancelled'].includes(c.call_status)
   );
 
+  // Auto-Assignment Requests
+  const { data: assignmentRequests = [], refetch: refetchRequests } = useQuery({
+    queryKey: ['assignmentRequests', currentVendor?.id],
+    queryFn: () => base44.entities.CallAssignmentAttempt.filter({ 
+      vendor_id: currentVendor.id,
+      status: 'pending'
+    }),
+    enabled: !!currentVendor,
+    refetchInterval: 5000
+  });
+
+  const handleAssignmentResponse = useMutation({
+    mutationFn: ({ attemptId, response }) => 
+      base44.functions.invoke('handleAssignmentResponse', { attemptId, response }),
+    onSuccess: () => {
+      refetchRequests();
+      queryClient.invalidateQueries({ queryKey: ['vendorCalls'] });
+    }
+  });
+
   // This week's calls
   const now = new Date();
   const weekStart = startOfWeek(now, { locale: he });
@@ -260,18 +280,66 @@ export default function VendorPortal() {
           </Link>
         </div>
         
-        {/* Pending Calls Alert */}
-        {activeCalls.some(c => c.call_status === 'awaiting_assignment' || c.call_status === 'assigned') && (
-          <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-full">
-                <Clock className="w-5 h-5 text-amber-700" />
-              </div>
-              <div>
-                <p className="font-semibold text-amber-900">ישנן קריאות הממתינות לאישור שלך</p>
-                <p className="text-sm text-amber-700">נא לאשר את הקריאות כדי להתחיל בטיפול</p>
-              </div>
-            </div>
+        {/* Assignment Requests (AI Auto-Assign) */}
+        {assignmentRequests.length > 0 && (
+          <div className="mb-6 space-y-4">
+            <h3 className="text-[15px] font-semibold text-[#111827]">בקשות קריאה חדשות ({assignmentRequests.length})</h3>
+            {assignmentRequests.map(request => {
+              const call = allCalls.find(c => c.id === request.call_id);
+              if (!call) return null;
+
+              return (
+                <div key={request.id} className="bg-white border-2 border-blue-500 rounded-lg p-5 shadow-sm animate-pulse-border">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full">
+                          שיבוץ אוטומטי
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          התוקף יפוג ב: {format(parseISO(request.expires_at), 'HH:mm')}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-bold text-gray-900 mb-1">
+                        קריאה #{call.call_number || call.id.slice(-6)} - {issueTypeLabels[call.issue_type] || call.issue_type}
+                      </h4>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          {call.pickup_location_address}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Navigation className="w-4 h-4" />
+                          {request.distance_km} ק"מ ממך
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          {call.customer_name}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 w-full md:w-auto">
+                      <Button 
+                        className="flex-1 md:flex-none bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                        variant="ghost"
+                        onClick={() => handleAssignmentResponse.mutate({ attemptId: request.id, response: 'decline' })}
+                        disabled={handleAssignmentResponse.isPending}
+                      >
+                        דחה
+                      </Button>
+                      <Button 
+                        className="flex-1 md:flex-none bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => handleAssignmentResponse.mutate({ attemptId: request.id, response: 'accept' })}
+                        disabled={handleAssignmentResponse.isPending}
+                      >
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        קבל קריאה
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
