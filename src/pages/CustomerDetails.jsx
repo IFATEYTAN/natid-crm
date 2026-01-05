@@ -41,7 +41,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { triggerNotification } from '@/utils/notifications';
+import { triggerNotification } from '@/components/utils/notifications';
 
 export default function CustomerDetails() {
   const [searchParams] = useSearchParams();

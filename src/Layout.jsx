@@ -7,9 +7,17 @@ import {
   Plus,
   LogOut,
   ChevronDown,
-  ChevronLeft
+  ChevronLeft,
+  Bell
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
@@ -19,6 +27,31 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const mainContentRef = useRef(null);
+  const queryClient = useQueryClient();
+
+  // Fetch Notifications
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', currentUser?.id],
+    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_at', 20),
+    enabled: !!currentUser?.id,
+    refetchInterval: 30000
+  });
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const markAsReadMutation = useMutation({
+    mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  const handleNotificationClick = (notification) => {
+    if (!notification.is_read) {
+      markAsReadMutation.mutate(notification.id);
+    }
+    // Link handling handled by Link component
+  };
 
   useEffect(() => {
     if (mainContentRef.current) {
@@ -316,6 +349,58 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Notifications */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="w-5 h-5 text-[#616161]" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" align="end">
+                <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                  <h4 className="font-semibold text-sm">התראות</h4>
+                  <span className="text-xs text-gray-500">{unreadCount} חדשות</span>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500 text-sm">
+                      אין התראות חדשות
+                    </div>
+                  ) : (
+                    notifications.map(notification => (
+                      <Link 
+                        key={notification.id} 
+                        to={notification.link ? createPageUrl(notification.link.replace(/^\//, '')) : '#'}
+                        onClick={() => handleNotificationClick(notification)}
+                        className={cn(
+                          "block p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors text-right",
+                          !notification.is_read && "bg-blue-50/50"
+                        )}
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-xs text-gray-400">
+                            {format(parseISO(notification.created_at), 'HH:mm')}
+                          </span>
+                          {!notification.is_read && (
+                            <span className="w-2 h-2 bg-blue-500 rounded-full mt-1" />
+                          )}
+                        </div>
+                        <h5 className={cn("text-sm font-medium mb-1", !notification.is_read ? "text-blue-700" : "text-gray-900")}>
+                          {notification.title}
+                        </h5>
+                        <p className="text-xs text-gray-500 line-clamp-2">
+                          {notification.message}
+                        </p>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+
             {/* User Profile - Clean Design */}
             <div className="flex items-center gap-3 pl-2">
               <div className="text-left hidden sm:block">
