@@ -83,7 +83,7 @@ export default function DataTable({
                 key={row.id || rowIdx}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
-                  "border-b border-[var(--color-border)] last:border-0 hover:bg-[#F9FAFB] transition-colors",
+                  "border-b border-gray-100/50 last:border-0 hover:bg-white/50 transition-colors",
                   onRowClick && "cursor-pointer"
                 )}
               >
