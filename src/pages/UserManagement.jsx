@@ -43,6 +43,7 @@ export default function UserManagement() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const [editRole, setEditRole] = useState('user');
+  const [editName, setEditName] = useState('');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploadUser, setUploadUser] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -80,16 +81,16 @@ export default function UserManagement() {
     },
   });
 
-  const updateRoleMutation = useMutation({
-    mutationFn: ({ userId, role }) => base44.entities.User.update(userId, { role }),
+  const updateUserMutation = useMutation({
+    mutationFn: ({ userId, data }) => base44.entities.User.update(userId, data),
     onSuccess: () => {
-      toast.success('התפקיד עודכן בהצלחה');
+      toast.success('המשתמש עודכן בהצלחה');
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsEditDialogOpen(false);
       setEditingUser(null);
     },
     onError: (error) => {
-      toast.error('שגיאה בעדכון תפקיד: ' + error.message);
+      toast.error('שגיאה בעדכון משתמש: ' + error.message);
     },
   });
 
@@ -126,16 +127,18 @@ export default function UserManagement() {
     inviteMutation.mutate({ email: cleanEmail, role: inviteRole });
   };
 
-  const handleEditRole = (user) => {
+  const handleEditUser = (user) => {
     setEditingUser(user);
     setEditRole(user.role);
+    setEditName(user.full_name || '');
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateRole = (e) => {
+  const handleUpdateUser = (e) => {
     e.preventDefault();
     if (editingUser) {
-      updateRoleMutation.mutate({ userId: editingUser.id, role: editRole });
+      const data = { role: editRole, full_name: editName };
+      updateUserMutation.mutate({ userId: editingUser.id, data });
     }
   };
 
@@ -198,9 +201,8 @@ export default function UserManagement() {
             <Button 
               variant="ghost" 
               size="icon"
-              onClick={(e) => { e.stopPropagation(); handleEditRole(row); }}
-              title="עריכת תפקיד"
-              disabled={row.id === currentUser?.id}
+              onClick={(e) => { e.stopPropagation(); handleEditUser(row); }}
+              title="עריכת משתמש"
             >
               <Edit className="w-4 h-4 text-[#616161]" />
             </Button>
@@ -450,26 +452,39 @@ export default function UserManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Role Dialog */}
+      {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>עריכת תפקיד משתמש</DialogTitle>
+            <DialogTitle>עריכת פרטי משתמש</DialogTitle>
             <DialogDescription>
-              שנה את תפקיד המשתמש במערכת.
+              עדכון פרטים אישיים והרשאות משתמש.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpdateRole} className="space-y-4">
+          <form onSubmit={handleUpdateUser} className="space-y-4">
             {editingUser && (
               <>
-                <div className="bg-[#FAFAFA] p-4 rounded-lg">
-                  <p className="text-sm text-[#616161]">משתמש</p>
-                  <p className="font-medium text-[#212121]">{editingUser.full_name}</p>
-                  <p className="text-sm text-[#616161]">{editingUser.email}</p>
+                <div className="bg-[#FAFAFA] p-4 rounded-lg mb-4">
+                  <p className="text-sm text-[#616161]">אימייל</p>
+                  <p className="font-medium text-[#212121]">{editingUser.email}</p>
                 </div>
+
                 <div>
-                  <Label>תפקיד חדש *</Label>
-                  <Select value={editRole} onValueChange={setEditRole}>
+                  <Label>שם מלא</Label>
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label>תפקיד במערכת</Label>
+                  <Select 
+                    value={editRole} 
+                    onValueChange={setEditRole}
+                    disabled={editingUser.id === currentUser?.id}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
@@ -478,7 +493,13 @@ export default function UserManagement() {
                       <SelectItem value="admin">מנהל</SelectItem>
                     </SelectContent>
                   </Select>
+                  {editingUser.id === currentUser?.id && (
+                    <p className="text-xs text-[#616161] mt-1">
+                      לא ניתן לשנות את התפקיד של עצמך
+                    </p>
+                  )}
                 </div>
+
                 <div className="flex justify-end gap-3 pt-4">
                   <Button 
                     type="button" 
@@ -493,9 +514,9 @@ export default function UserManagement() {
                   <Button 
                     type="submit" 
                     className="btn-primary"
-                    disabled={updateRoleMutation.isPending}
+                    disabled={updateUserMutation.isPending}
                   >
-                    עדכן תפקיד
+                    שמור שינויים
                   </Button>
                 </div>
               </>
