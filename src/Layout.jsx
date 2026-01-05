@@ -25,7 +25,7 @@ import InstallPrompt from '@/components/pwa/InstallPrompt';
 import OfflineIndicator from '@/components/pwa/OfflineIndicator';
 import UpdatePrompt from '@/components/pwa/UpdatePrompt';
 import { NotificationPermissionBanner } from '@/components/notifications/PushNotifications';
-import { ConnectionStatusIndicator } from '@/hooks/useRealtimeUpdates.jsx';
+import { ConnectionStatusIndicator } from '@/components/useRealtimeUpdates';
 import { Toaster } from 'sonner';
 import anime from 'animejs';
 
