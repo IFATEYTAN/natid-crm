@@ -204,14 +204,14 @@ export default function QueueMonitor() {
             <TableBody>
               {agentStats.map(({ agent, activeCount, completedToday, avgTime }) => (
                 <TableRow key={agent.id} className="border-b border-gray-100/50 hover:bg-white/50 transition-colors">
-                  <TableCell className="font-medium text-[#212121]">{agent.full_name}</TableCell>
+                  <TableCell className="font-medium text-gray-900">{agent.full_name}</TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${activeCount >= 5 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
                       {activeCount}
                     </span>
                   </TableCell>
-                  <TableCell className="text-[#212121]">{completedToday}</TableCell>
-                  <TableCell className="text-[#212121]">{avgTime > 0 ? `${avgTime}'` : '-'}</TableCell>
+                  <TableCell className="text-gray-900">{completedToday}</TableCell>
+                  <TableCell className="text-gray-900">{avgTime > 0 ? `${avgTime}'` : '-'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="flex-1 bg-[#E5E7EB] rounded-full h-2 w-24">
@@ -276,12 +276,12 @@ export default function QueueMonitor() {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium text-[#212121]">{call.customer_name}</p>
-                          <p className="text-xs text-[#616161]">{call.customer_phone}</p>
+                          <p className="font-medium text-gray-900">{call.customer_name}</p>
+                          <p className="text-xs text-gray-500">{call.customer_phone}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-[#212121]">{issueTypeLabels[call.issue_type]}</TableCell>
-                      <TableCell className="text-[#212121]">{call.pickup_location_city}</TableCell>
+                      <TableCell className="text-gray-900">{issueTypeLabels[call.issue_type]}</TableCell>
+                      <TableCell className="text-gray-900">{call.pickup_location_city}</TableCell>
                       <TableCell>
                         <Button
                           size="sm"
@@ -342,12 +342,12 @@ export default function QueueMonitor() {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium text-[#212121]">{call.customer_name}</p>
-                          <p className="text-xs text-[#616161]">{call.customer_phone}</p>
+                          <p className="font-medium text-gray-900">{call.customer_name}</p>
+                          <p className="text-xs text-gray-500">{call.customer_phone}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-[#212121]">{issueTypeLabels[call.issue_type]}</TableCell>
-                      <TableCell className="text-[#212121]">{call.pickup_location_city}</TableCell>
+                      <TableCell className="text-gray-900">{issueTypeLabels[call.issue_type]}</TableCell>
+                      <TableCell className="text-gray-900">{call.pickup_location_city}</TableCell>
                       <TableCell>
                         <Button
                           size="sm"
