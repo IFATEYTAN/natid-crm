@@ -7,9 +7,8 @@ import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import AvatarStack from '@/components/ui/AvatarStack';
-import { 
+import {
   Plus,
-  ChevronLeft,
   Phone,
   Truck,
   AlertCircle,
