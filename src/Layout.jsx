@@ -82,6 +82,7 @@ export default function Layout({ children, currentPageName }) {
       title: 'מערכת',
       items: [
         { name: 'ניהול משתמשים', href: 'UserManagement' },
+        { name: 'הרשאות ותפקידים', href: 'RolesPermissions' },
         { name: 'אוטומציה', href: 'AutomationSettings' },
         { name: 'אינטגרציות CRM', href: 'IntegrationSettings' },
         { name: 'הגדרות התראות', href: 'NotificationSettings' },

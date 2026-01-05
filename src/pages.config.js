@@ -20,6 +20,7 @@ import QueueMonitor from './pages/QueueMonitor';
 import QueueSettings from './pages/QueueSettings';
 import Register from './pages/Register';
 import Reports from './pages/Reports';
+import RolesPermissions from './pages/RolesPermissions';
 import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
 import SignIn from './pages/SignIn';
@@ -54,6 +55,7 @@ export const PAGES = {
     "QueueSettings": QueueSettings,
     "Register": Register,
     "Reports": Reports,
+    "RolesPermissions": RolesPermissions,
     "ServiceProviders": ServiceProviders,
     "Settings": Settings,
     "SignIn": SignIn,
