@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertTriangle, FileCode, FileType } from 'lucide-react';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// html2canvas and jsPDF are loaded dynamically to reduce bundle size
 import { format } from 'date-fns';
 
 export default function ImportExport({ entityName, data, columns, title }) {
@@ -72,6 +71,9 @@ export default function ImportExport({ entityName, data, columns, title }) {
     const toastId = toast.loading('מכין קובץ PDF...');
 
     try {
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+
       // Create a temporary container for rendering
       const container = document.createElement('div');
       container.style.position = 'absolute';
