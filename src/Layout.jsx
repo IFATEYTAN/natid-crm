@@ -404,7 +404,7 @@ export default function Layout({ children, currentPageName }) {
 
             {/* User Profile - Clean Design */}
             <div className="flex items-center gap-3 pl-2">
-              <div className="text-left hidden sm:block">
+              <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-[#212121] leading-none">
                   {currentUser?.full_name || 'משתמש'}
                 </p>

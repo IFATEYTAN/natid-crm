@@ -67,10 +67,10 @@ function WorkQueueOverview({ calls, isLoading }) {
 
   return (
     <div className="card-base">
-      <div className="flex items-center justify-between mb-4 flex-row-reverse">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-[20px] font-medium text-neutral-soft-800">תור העבודה</h3>
         <Link to={createPageUrl('MyQueue')} className="text-primary-soft-600 hover:text-primary-soft-700 text-sm hover:underline">
-          ← הצג תור מלא
+          הצג תור מלא →
         </Link>
       </div>
 
@@ -105,15 +105,15 @@ function WorkQueueOverview({ calls, isLoading }) {
           <p className="text-center text-neutral-soft-400 py-4">אין קריאות פעילות</p>
         ) : (
           agentStats.map(agent => (
-            <div key={agent.name} className="flex items-center gap-3 flex-row-reverse">
-              <span className="text-sm font-medium w-32 truncate text-right">{agent.name}</span>
-              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden">
+            <div key={agent.name} className="flex items-center gap-3">
+              <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
+              <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden" dir="ltr">
                 <div
                   className={`h-full ${agent.count >= 5 ? 'bg-warning-soft-500' : 'bg-success-soft-500'}`}
                   style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
                 />
               </div>
-              <span className="text-sm text-neutral-soft-600 w-20 text-right">
+              <span className="text-sm text-neutral-soft-600 w-20">
                 {agent.count} קריאות {agent.count >= 5 && '⚠️'}
               </span>
             </div>
