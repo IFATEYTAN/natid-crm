@@ -73,6 +73,12 @@ export default function Layout({ children, currentPageName }) {
       ]
     },
     {
+      title: 'כלים',
+      items: [
+        { name: 'סוכנים', href: 'Agents' },
+      ]
+    },
+    {
       title: 'מערכת',
       items: [
         { name: 'ניהול משתמשים', href: 'UserManagement' },
