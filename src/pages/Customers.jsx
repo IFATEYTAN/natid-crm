@@ -248,6 +248,7 @@ export default function Customers() {
             entityName="Customer" 
             data={filteredCustomers}
             columns={columns}
+            title="דוח לקוחות"
           />
           <Button 
             className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"

@@ -146,6 +146,7 @@ export default function Cases() {
             entityName="Case" 
             data={filteredCases}
             columns={columns}
+            title="דוח קריאות שירות"
           />
           <Link to={createPageUrl('NewCase')}>
             <Button className="btn-primary flex items-center gap-2">

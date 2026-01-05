@@ -278,6 +278,7 @@ export default function ServiceProviders() {
             entityName="Vendor" 
             data={filteredProviders}
             columns={columns}
+            title="דוח נותני שירות"
           />
           <Button 
             className="btn-primary flex items-center gap-2"

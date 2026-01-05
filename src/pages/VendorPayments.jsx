@@ -23,6 +23,7 @@ import {
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import ImportExport from '@/components/ImportExport';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
