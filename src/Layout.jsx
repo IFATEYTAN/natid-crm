@@ -70,8 +70,9 @@ export default function Layout({ children, currentPageName }) {
         { name: 'לקוחות', href: 'Customers' },
         { name: 'נותני שירות', href: 'ServiceProviders' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
-      ]
-    },
+        { name: 'הפרופיל שלי', href: 'MyVendorProfile' },
+        ]
+        },
     {
       title: 'כלים',
       items: [
