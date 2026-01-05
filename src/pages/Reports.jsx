@@ -252,7 +252,6 @@ export default function Reports() {
             title="דוח קריאות מרוכז"
           />
         </div>
-      </div>
 
       {/* Filters Panel */}
       <AnimatePresence>
