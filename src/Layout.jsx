@@ -87,7 +87,7 @@ export default function Layout({ children, currentPageName }) {
   }, [currentPageName]);
 
   // Don't wrap auth pages in the main layout
-  if (currentPageName === 'SignIn' || currentPageName === 'Register') {
+  if (currentPageName === 'SignIn' || currentPageName === 'Register' || currentPageName === 'AuthLogin' || currentPageName === 'Login') {
     return children;
   }
 
