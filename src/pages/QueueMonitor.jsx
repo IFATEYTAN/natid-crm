@@ -193,17 +193,17 @@ export default function QueueMonitor() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
-                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">נציג</TableHead>
-                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">קריאות פעילות</TableHead>
-                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">הושלמו היום</TableHead>
-                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">זמן ממוצע</TableHead>
-                <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">עומס</TableHead>
+              <TableRow className="bg-gray-50/50 border-b border-gray-200/60">
+                <TableHead className="text-right text-gray-500 font-medium text-sm">נציג</TableHead>
+                <TableHead className="text-right text-gray-500 font-medium text-sm">קריאות פעילות</TableHead>
+                <TableHead className="text-right text-gray-500 font-medium text-sm">הושלמו היום</TableHead>
+                <TableHead className="text-right text-gray-500 font-medium text-sm">זמן ממוצע</TableHead>
+                <TableHead className="text-right text-gray-500 font-medium text-sm">עומס</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {agentStats.map(({ agent, activeCount, completedToday, avgTime }) => (
-                <TableRow key={agent.id} className="border-b border-[var(--color-border)]">
+                <TableRow key={agent.id} className="border-b border-gray-100/50 hover:bg-white/50 transition-colors">
                   <TableCell className="font-medium text-[#212121]">{agent.full_name}</TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${activeCount >= 5 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -241,13 +241,13 @@ export default function QueueMonitor() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">זמן בתור</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">קריאה</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">לקוח</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">תקלה</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">מיקום</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">פעולות</TableHead>
+                <TableRow className="bg-gray-50/50 border-b border-gray-200/60">
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">זמן בתור</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">קריאה</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">לקוח</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">תקלה</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">מיקום</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">פעולות</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -260,7 +260,7 @@ export default function QueueMonitor() {
                   );
                   
                   return (
-                    <TableRow key={queueItem.id} className="border-b border-[var(--color-border)]">
+                    <TableRow key={queueItem.id} className="border-b border-gray-100/50 hover:bg-white/50 transition-colors">
                       <TableCell>
                         <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${waitTime > 10 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
                           {waitTime} דקות
@@ -312,13 +312,13 @@ export default function QueueMonitor() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">סטטוס</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">קריאה</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">לקוח</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">תקלה</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">מיקום</TableHead>
-                  <TableHead className="text-right text-[var(--color-text-secondary)] font-medium text-sm">פעולות</TableHead>
+                <TableRow className="bg-gray-50/50 border-b border-gray-200/60">
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">סטטוס</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">קריאה</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">לקוח</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">תקלה</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">מיקום</TableHead>
+                  <TableHead className="text-right text-gray-500 font-medium text-sm">פעולות</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -326,7 +326,7 @@ export default function QueueMonitor() {
                   if (!call) return null;
                   
                   return (
-                    <TableRow key={id} className="border-b border-[var(--color-border)]">
+                    <TableRow key={id} className="border-b border-gray-100/50 hover:bg-white/50 transition-colors">
                       <TableCell>
                         <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${queue_status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
                           {queue_status === 'in_progress' ? 'בטיפול' : 'משובץ'}
