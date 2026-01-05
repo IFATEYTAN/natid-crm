@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,14 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  Link2, 
   Save, 
   Copy, 
   Check, 
   ExternalLink,
   AlertCircle,
-  Zap,
-  Globe,
   Key
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -116,19 +112,14 @@ export default function IntegrationSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[32px] font-bold text-[#0078D4]">אינטגרציות CRM</h1>
-        <p className="text-[#616161] text-sm">חיבור למערכות CRM חיצוניות וסנכרון אוטומטי</p>
+        <h1>אינטגרציות CRM</h1>
+        <p className="text-[var(--color-text-secondary)]">חיבור למערכות CRM חיצוניות וסנכרון אוטומטי</p>
       </div>
 
       {/* Webhook Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Globe className="w-5 h-5 text-[#0078D4]" />
-            Webhook להזנת קריאות
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="mb-4">Webhook להזנת קריאות</h3>
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-base">אפשר Webhook</Label>
@@ -185,12 +176,12 @@ export default function IntegrationSettings() {
                 </p>
               </div>
 
-              <div className="p-4 bg-[#E3F2FD] rounded-lg border border-[#0078D4]">
+              <div className="p-4 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-[#0078D4] flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />
                   <div className="space-y-2 text-sm">
-                    <p className="font-medium text-[#0078D4]">הוראות הגדרה</p>
-                    <ol className="list-decimal list-inside space-y-1 text-[#616161]">
+                    <p className="font-medium text-[#111827]">הוראות הגדרה</p>
+                    <ol className="list-decimal list-inside space-y-1 text-[#6B7280]">
                       <li>העתק את ה-Webhook URL</li>
                       <li>הגדר Webhook בממשק ה-CRM שלך</li>
                       <li>הוסף את ה-Secret כ-header (X-Webhook-Secret)</li>
@@ -201,18 +192,13 @@ export default function IntegrationSettings() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* CRM Integration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="w-5 h-5 text-[#2E7D32]" />
-            חיבור CRM
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="mb-4">חיבור CRM</h3>
+        <div className="space-y-6">
           <div>
             <Label>סוג CRM</Label>
             <Select
@@ -278,54 +264,44 @@ export default function IntegrationSettings() {
               onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoAssignToQueue: checked }))}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Field Mapping */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Zap className="w-5 h-5 text-[#ED6C02]" />
-            מיפוי שדות
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm text-[#616161]">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="mb-4">מיפוי שדות</h3>
+        <div className="space-y-4">
+          <p className="text-sm text-[#6B7280]">
               התאם את שמות השדות מה-CRM החיצוני לשדות במערכת Base44
             </p>
             
-            {Object.entries(settings.fieldMapping).map(([key, value]) => (
-              <div key={key} className="grid grid-cols-2 gap-4 items-center">
-                <div>
-                  <Label className="text-sm text-[#9E9E9E]">{key.replace(/_/g, ' ')}</Label>
-                </div>
-                <Input
-                  value={value}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    fieldMapping: {
-                      ...prev.fieldMapping,
-                      [key]: e.target.value
-                    }
-                  }))}
-                  placeholder="שם השדה ב-CRM"
-                  className="text-sm"
-                />
+          {Object.entries(settings.fieldMapping).map(([key, value]) => (
+            <div key={key} className="grid grid-cols-2 gap-4 items-center">
+              <div>
+                <Label className="text-sm text-[#6B7280]">{key.replace(/_/g, ' ')}</Label>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <Input
+                value={value}
+                onChange={(e) => setSettings(prev => ({
+                  ...prev,
+                  fieldMapping: {
+                    ...prev.fieldMapping,
+                    [key]: e.target.value
+                  }
+                }))}
+                placeholder="שם השדה ב-CRM"
+                className="text-sm"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Sample Payload */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">דוגמת Payload</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <p className="text-sm text-[#616161]">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="mb-4">דוגמת Payload</h3>
+        <div className="space-y-3">
+          <p className="text-sm text-[#6B7280]">
               שלח POST request ל-webhook עם payload בפורמט הבא:
             </p>
             <div className="relative">
@@ -341,26 +317,22 @@ export default function IntegrationSettings() {
                 <Copy className="w-4 h-4 text-white" />
               </Button>
             </div>
-            <div className="flex items-center gap-2 text-sm text-[#616161]">
-              <ExternalLink className="w-4 h-4" />
-              <a 
-                href="https://docs.base44.com/integrations/webhook" 
-                target="_blank" 
-                className="text-[#0078D4] hover:underline"
-              >
-                תיעוד מלא
-              </a>
-            </div>
+          <div className="flex items-center gap-2 text-sm text-[#6B7280]">
+            <ExternalLink className="w-4 h-4" />
+            <a 
+              href="https://docs.base44.com/integrations/webhook" 
+              target="_blank" 
+              className="text-[#111827] hover:underline"
+            >
+              תיעוד מלא
+            </a>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          className="bg-[#0078D4] hover:bg-[#1976D2] gap-2"
-        >
+        <Button onClick={handleSave} className="btn-primary gap-2">
           <Save className="w-4 h-4" />
           שמור הגדרות
         </Button>

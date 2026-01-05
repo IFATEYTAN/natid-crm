@@ -242,12 +242,13 @@ export default function UserManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[#616161] text-sm">{filteredUsers.length} משתמשים במערכת</p>
+          <h1>ניהול משתמשים</h1>
+          <p className="text-[var(--color-text-secondary)]">{filteredUsers.length} משתמשים במערכת</p>
         </div>
         
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2">
+            <Button className="btn-primary gap-2">
               <UserPlus className="w-4 h-4" />
               הזמן משתמש חדש
             </Button>
@@ -307,7 +308,7 @@ export default function UserManagement() {
                 </Button>
                 <Button 
                   type="submit" 
-                  className="bg-[#0D47A1] hover:bg-[#1565C0]"
+                  className="btn-primary"
                   disabled={inviteMutation.isPending}
                 >
                   {inviteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'שלח הזמנה'}
@@ -319,11 +320,11 @@ export default function UserManagement() {
       </div>
 
       {/* Info Card */}
-      <div className="bg-[#E3F2FD] border border-[#0078D4]/20 rounded-xl p-4 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-[#0078D4] mt-0.5 flex-shrink-0" />
-        <div className="text-sm text-[#212121]">
+      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4 flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-[#6B7280] mt-0.5 flex-shrink-0" />
+        <div className="text-sm text-[#111827]">
           <p className="font-medium mb-1">על ניהול משתמשים:</p>
-          <ul className="list-disc list-inside space-y-1 text-[#616161]">
+          <ul className="list-disc list-inside space-y-1 text-[#6B7280]">
             <li>רק מנהלים יכולים להזמין משתמשים חדשים ולשנות תפקידים</li>
             <li>משתמשים רגילים (מוקדנים) יכולים לנהל קריאות ולעבוד במערכת</li>
             <li>מנהלים יכולים לצפות בכל הנתונים ולערוך הגדרות מערכת</li>
@@ -332,7 +333,7 @@ export default function UserManagement() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-[#E0E0E0] p-4">
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
@@ -358,42 +359,21 @@ export default function UserManagement() {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-[#E0E0E0] p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[#616161] mb-1">סה"כ משתמשים</p>
-              <p className="text-3xl font-bold text-[#0078D4]">{users.length}</p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-[#E3F2FD] flex items-center justify-center">
-              <User className="w-6 h-6 text-[#0078D4]" />
-            </div>
-          </div>
+        <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+          <p className="text-[13px] font-medium text-[#6B7280] mb-2">סה"כ משתמשים</p>
+          <p className="text-[28px] font-bold text-[#111827]">{users.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-[#E0E0E0] p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[#616161] mb-1">מנהלים</p>
-              <p className="text-3xl font-bold text-[#D32F2F]">
-                {users.filter(u => u.role === 'admin').length}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-[#FFEBEE] flex items-center justify-center">
-              <Shield className="w-6 h-6 text-[#D32F2F]" />
-            </div>
-          </div>
+        <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+          <p className="text-[13px] font-medium text-[#6B7280] mb-2">מנהלים</p>
+          <p className="text-[28px] font-bold text-[#111827]">
+            {users.filter(u => u.role === 'admin').length}
+          </p>
         </div>
-        <div className="bg-white rounded-xl border border-[#E0E0E0] p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[#616161] mb-1">מוקדנים</p>
-              <p className="text-3xl font-bold text-[#2E7D32]">
-                {users.filter(u => u.role === 'user').length}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-full bg-[#E8F5E9] flex items-center justify-center">
-              <User className="w-6 h-6 text-[#2E7D32]" />
-            </div>
-          </div>
+        <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+          <p className="text-[13px] font-medium text-[#6B7280] mb-2">מוקדנים</p>
+          <p className="text-[28px] font-bold text-[#111827]">
+            {users.filter(u => u.role === 'user').length}
+          </p>
         </div>
       </div>
 
@@ -507,7 +487,7 @@ export default function UserManagement() {
                   </Button>
                   <Button 
                     type="submit" 
-                    className="bg-[#0D47A1] hover:bg-[#1565C0]"
+                    className="btn-primary"
                     disabled={updateRoleMutation.isPending}
                   >
                     עדכן תפקיד

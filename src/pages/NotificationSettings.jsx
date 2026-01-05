@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -171,13 +170,13 @@ export default function NotificationSettings() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-[32px] font-bold text-[#0078D4]">הגדרות התראות</h1>
-          <p className="text-[#616161] text-sm">ניהול התראות חכמות על אירועים במערכת</p>
+          <h1>הגדרות התראות</h1>
+          <p className="text-[var(--color-text-secondary)]">ניהול התראות חכמות על אירועים במערכת</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button 
-              className="bg-[#0078D4] hover:bg-[#1976D2] gap-2"
+              className="btn-primary gap-2"
               onClick={() => handleAddNotification()}
             >
               <Plus className="w-4 h-4" />
@@ -230,14 +229,12 @@ export default function NotificationSettings() {
                 </div>
 
                 {/* Channels */}
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-sm">ערוצי התראה</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4">
+                  <p className="text-[13px] font-medium text-[#111827] mb-3">ערוצי התראה</p>
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Smartphone className="w-4 h-4 text-[#0078D4]" />
+                        <Smartphone className="w-4 h-4 text-[#6B7280]" />
                         <Label>SMS</Label>
                       </div>
                       <Switch
@@ -250,7 +247,7 @@ export default function NotificationSettings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-[#0078D4]" />
+                        <Mail className="w-4 h-4 text-[#6B7280]" />
                         <Label>אימייל</Label>
                       </div>
                       <Switch
@@ -263,7 +260,7 @@ export default function NotificationSettings() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Bell className="w-4 h-4 text-[#0078D4]" />
+                        <Bell className="w-4 h-4 text-[#6B7280]" />
                         <Label>התראה באפליקציה</Label>
                       </div>
                       <Switch
@@ -274,15 +271,13 @@ export default function NotificationSettings() {
                         })}
                       />
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Conditions */}
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-sm">תנאים</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4">
+                  <p className="text-[13px] font-medium text-[#111827] mb-3">תנאים</p>
+                  <div className="space-y-4">
                     <div>
                       <Label>עדיפות קריאה</Label>
                       <Select
@@ -405,15 +400,13 @@ export default function NotificationSettings() {
                         />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 {/* Message */}
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-sm">תוכן ההתראה</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4">
+                  <p className="text-[13px] font-medium text-[#111827] mb-3">תוכן ההתראה</p>
+                  <div className="space-y-4">
                     <div>
                       <Label>כותרת</Label>
                       <Input
@@ -436,18 +429,18 @@ export default function NotificationSettings() {
                         rows={3}
                         className="mt-1"
                       />
-                      <p className="text-xs text-[#616161] mt-1">
+                      <p className="text-xs text-[#6B7280] mt-1">
                         משתנים זמינים: {'{call_number}'}, {'{customer_name}'}, {'{time}'}
                       </p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
 
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                     ביטול
                   </Button>
-                  <Button onClick={handleSaveNotification} className="bg-[#0078D4]">
+                  <Button onClick={handleSaveNotification} className="btn-primary">
                     שמור
                   </Button>
                 </div>
@@ -458,127 +451,108 @@ export default function NotificationSettings() {
       </div>
 
       {/* Quick Templates */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-[#0078D4]" />
-            תבניות מהירות
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {eventTemplates.map(template => (
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="mb-4">תבניות מהירות</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {eventTemplates.map(template => (
+            <div
+              key={template.id}
+              className="p-4 border border-[#E5E7EB] rounded-lg hover:border-[#D1D5DB] hover:bg-[#F9FAFB] cursor-pointer transition-colors"
+              onClick={() => handleAddNotification(template)}
+            >
+              <h4 className="font-medium text-sm text-[#111827] mb-1">{template.name}</h4>
+              <p className="text-xs text-[#6B7280]">{template.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Active Notifications */}
+      <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+        <h3 className="mb-4">התראות פעילות ({notifications.filter(n => n.enabled).length})</h3>
+        {notifications.length === 0 ? (
+          <div className="text-center py-8 text-[#6B7280]">
+            <Bell className="w-12 h-12 mx-auto mb-3 text-[#9CA3AF]" />
+            <p>עדיין לא הוגדרו התראות</p>
+            <p className="text-sm">התחל על ידי בחירת תבנית או יצירת התראה חדשה</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {notifications.map(notification => (
               <div
-                key={template.id}
-                className="p-4 border border-[#E0E0E0] rounded-lg hover:border-[#0078D4] hover:bg-[#FAFAFA] cursor-pointer transition-colors"
-                onClick={() => handleAddNotification(template)}
+                key={notification.id}
+                className="flex items-center justify-between p-4 border border-[#E5E7EB] rounded-lg"
               >
-                <h4 className="font-medium text-sm mb-1">{template.name}</h4>
-                <p className="text-xs text-[#616161]">{template.description}</p>
+                <div className="flex items-center gap-3 flex-1">
+                  <Switch
+                    checked={notification.enabled}
+                    onCheckedChange={() => toggleNotification(notification.id)}
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-sm text-[#111827]">{notification.name}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      {notification.channels.sms && (
+                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">SMS</span>
+                      )}
+                      {notification.channels.email && (
+                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">Email</span>
+                      )}
+                      {notification.channels.inApp && (
+                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">App</span>
+                      )}
+                      {notification.conditions.priority !== 'all' && (
+                        <span className="text-xs bg-[#FEF3C7] text-[#92400E] px-2 py-0.5 rounded">
+                          {notification.conditions.priority}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEditNotification(notification)}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteNotification(notification.id)}
+                  >
+                    <Trash2 className="w-4 h-4 text-[#DC2626]" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Active Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Bell className="w-5 h-5 text-[#2E7D32]" />
-            התראות פעילות ({notifications.filter(n => n.enabled).length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {notifications.length === 0 ? (
-            <div className="text-center py-8 text-[#616161]">
-              <Bell className="w-12 h-12 mx-auto mb-3 text-[#9E9E9E]" />
-              <p>עדיין לא הוגדרו התראות</p>
-              <p className="text-sm">התחל על ידי בחירת תבנית או יצירת התראה חדשה</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {notifications.map(notification => (
-                <div
-                  key={notification.id}
-                  className="flex items-center justify-between p-4 border border-[#E0E0E0] rounded-lg"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <Switch
-                      checked={notification.enabled}
-                      onCheckedChange={() => toggleNotification(notification.id)}
-                    />
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm">{notification.name}</h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        {notification.channels.sms && (
-                          <span className="text-xs bg-[#E3F2FD] text-[#0078D4] px-2 py-0.5 rounded">SMS</span>
-                        )}
-                        {notification.channels.email && (
-                          <span className="text-xs bg-[#E3F2FD] text-[#0078D4] px-2 py-0.5 rounded">Email</span>
-                        )}
-                        {notification.channels.inApp && (
-                          <span className="text-xs bg-[#E3F2FD] text-[#0078D4] px-2 py-0.5 rounded">App</span>
-                        )}
-                        {notification.conditions.priority !== 'all' && (
-                          <span className="text-xs bg-[#FFF4E5] text-[#ED6C02] px-2 py-0.5 rounded">
-                            {notification.conditions.priority}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditNotification(notification)}
-                    >
-                      <MessageSquare className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteNotification(notification.id)}
-                    >
-                      <Trash2 className="w-4 h-4 text-[#D32F2F]" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          className="bg-[#0078D4] hover:bg-[#1976D2] gap-2"
-        >
+        <Button onClick={handleSave} className="btn-primary gap-2">
           <Save className="w-4 h-4" />
           שמור הגדרות
         </Button>
       </div>
 
       {/* Info */}
-      <Card className="bg-[#E3F2FD] border-[#0078D4]">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-[#0078D4] flex-shrink-0 mt-0.5" />
-            <div className="text-sm space-y-2">
-              <p className="font-medium text-[#0078D4]">איך זה עובד?</p>
-              <ul className="list-disc list-inside space-y-1 text-[#616161]">
-                <li>המערכת בודקת תנאים כל דקה</li>
-                <li>התראות נשלחות רק פעם אחת לכל אירוע</li>
-                <li>ניתן לשלב מספר תנאים לבקרה מדויקת</li>
-                <li>תבניות מוכנות מאפשרות הגדרה מהירה</li>
-              </ul>
-            </div>
+      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-[#6B7280] flex-shrink-0 mt-0.5" />
+          <div className="text-sm space-y-2">
+            <p className="font-medium text-[#111827]">איך זה עובד?</p>
+            <ul className="list-disc list-inside space-y-1 text-[#6B7280]">
+              <li>המערכת בודקת תנאים כל דקה</li>
+              <li>התראות נשלחות רק פעם אחת לכל אירוע</li>
+              <li>ניתן לשלב מספר תנאים לבקרה מדויקת</li>
+              <li>תבניות מוכנות מאפשרות הגדרה מהירה</li>
+            </ul>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
