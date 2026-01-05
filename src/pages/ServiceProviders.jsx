@@ -30,9 +30,14 @@ import {
   Star,
   Edit,
   Trash2,
-  Eye
+  Eye,
+  Camera,
+  Upload,
+  Loader2,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 import { PageTransition } from '@/components/animations/AnimatedComponents';
 
@@ -50,6 +55,7 @@ export default function ServiceProviders() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     vendor_name: '',
     contact_person: '',
@@ -64,7 +70,8 @@ export default function ServiceProviders() {
     notes: '',
     working_hours_start: '08:00',
     working_hours_end: '18:00',
-    works_24_7: false
+    works_24_7: false,
+    profile_image: ''
   });
 
   const queryClient = useQueryClient();
@@ -114,7 +121,8 @@ export default function ServiceProviders() {
       notes: '',
       working_hours_start: '08:00',
       working_hours_end: '18:00',
-      works_24_7: false
+      works_24_7: false,
+      profile_image: ''
     });
   };
 
@@ -134,9 +142,42 @@ export default function ServiceProviders() {
       notes: provider.notes || '',
       working_hours_start: provider.working_hours_start || '08:00',
       working_hours_end: provider.working_hours_end || '18:00',
-      works_24_7: provider.works_24_7 || false
+      works_24_7: provider.works_24_7 || false,
+      profile_image: provider.profile_image || ''
     });
     setIsDialogOpen(true);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('נא לבחור קובץ תמונה בלבד');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('גודל התמונה לא יכול לעלות על 5MB');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData({ ...formData, profile_image: file_url });
+      toast.success('התמונה הועלתה בהצלחה');
+    } catch (error) {
+      toast.error('שגיאה בהעלאת תמונה: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData({ ...formData, profile_image: '' });
   };
 
   const handleSubmit = (e) => {
@@ -167,9 +208,17 @@ export default function ServiceProviders() {
       accessor: 'vendor_name',
       cell: (row) => (
         <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="flex items-center gap-2 hover:underline">
-          <div className="w-8 h-8 rounded-full bg-[#F5F5F5] flex items-center justify-center">
-            <Truck className="w-4 h-4 text-[#212121]" />
-          </div>
+          {row.profile_image ? (
+            <img
+              src={row.profile_image}
+              alt={row.vendor_name}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-[#F5F5F5] flex items-center justify-center">
+              <Truck className="w-4 h-4 text-[#212121]" />
+            </div>
+          )}
           <div>
             <div className="font-medium text-[#212121]">{row.vendor_name}</div>
             {!row.is_active && (
@@ -410,6 +459,89 @@ export default function ServiceProviders() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Image Upload Section */}
+            <div className="flex flex-col items-center gap-3 pb-4 border-b">
+              <Label>תמונת ספק</Label>
+              <div className="relative">
+                {formData.profile_image ? (
+                  <div className="relative">
+                    <img
+                      src={formData.profile_image}
+                      alt="תמונת ספק"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-[#E0E0E0]"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-[#F5F5F5] flex items-center justify-center border-2 border-dashed border-[#BDBDBD]">
+                    <Truck className="w-8 h-8 text-[#9E9E9E]" />
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={isUploading}
+                    asChild
+                  >
+                    <span>
+                      {isUploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      העלאת תמונה
+                    </span>
+                  </Button>
+                </label>
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={isUploading}
+                    asChild
+                  >
+                    <span>
+                      {isUploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4" />
+                      )}
+                      צילום
+                    </span>
+                  </Button>
+                </label>
+              </div>
+              <p className="text-xs text-[#616161]">תמונה עד 5MB (JPG, PNG)</p>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>שם ספק *</Label>
