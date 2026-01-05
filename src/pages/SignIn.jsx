@@ -83,19 +83,19 @@ export default function SignIn() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-[380px] mx-4" 
+        className="relative z-10 w-full max-w-[350px] mx-4" 
       >
-        <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-md ring-1 ring-black/5"> 
-          <CardHeader className="text-center pb-2 pt-6 px-4">
-            <CardTitle className="text-xl font-bold text-neutral-soft-800 mb-1">
+        <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-md ring-1 ring-black/5"> 
+          <CardHeader className="text-center pb-1 pt-4 px-4">
+            <CardTitle className="text-lg font-bold text-neutral-soft-800 mb-0.5">
               NATI GROUP SERVICE
             </CardTitle>
-            <CardDescription className="text-xs text-neutral-soft-600">
+            <CardDescription className="text-[11px] text-neutral-soft-600">
               מערכת ניהול CRM
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="pt-2 px-6 pb-6">
+          <CardContent className="pt-1 px-5 pb-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Error Alert */}
               {error && (
@@ -155,7 +155,7 @@ export default function SignIn() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-5 text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-3 text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
               >
                 {isLoading ? (
                   <>

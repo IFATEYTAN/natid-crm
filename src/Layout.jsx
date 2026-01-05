@@ -21,6 +21,7 @@ import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
+import { Toaster } from 'sonner';
 import anime from 'animejs';
 
 export default function Layout({ children, currentPageName }) {
@@ -434,6 +435,7 @@ export default function Layout({ children, currentPageName }) {
         </main>
 
         <AccessibilityWidget />
+        <Toaster position="top-center" richColors />
         </div>
     </div>
   );
