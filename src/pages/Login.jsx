@@ -27,7 +27,7 @@ export default function Login() {
 
     try {
       // Use Base44 SDK login
-      await base44.auth.loginViaEmailPassword(email, password);
+      await base44.auth.login({ email, password });
 
       // Refresh auth state after successful login
       await checkAppState();
