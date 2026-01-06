@@ -11,7 +11,6 @@ import CustomerDetails from './pages/CustomerDetails';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
 import IntegrationSettings from './pages/IntegrationSettings';
-import Login from './pages/Login';
 import MyCallsVendor from './pages/MyCallsVendor';
 import MyQueue from './pages/MyQueue';
 import MyVendorProfile from './pages/MyVendorProfile';
@@ -47,7 +46,6 @@ export const PAGES = {
     "Customers": Customers,
     "Dashboard": Dashboard,
     "IntegrationSettings": IntegrationSettings,
-    "Login": Login,
     "MyCallsVendor": MyCallsVendor,
     "MyQueue": MyQueue,
     "MyVendorProfile": MyVendorProfile,

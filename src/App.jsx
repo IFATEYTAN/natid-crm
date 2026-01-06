@@ -14,8 +14,8 @@ const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
 const LayoutWrapper = ({ children, currentPageName }) => {
-  // Login page should not have Layout (no sidebar)
-  if (currentPageName === 'Login') {
+  // AuthLogin page should not have Layout (no sidebar)
+  if (currentPageName === 'AuthLogin') {
     return <>{children}</>;
   }
 
@@ -41,9 +41,9 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Show our custom Login page instead of redirecting to external login
-      const LoginPage = Pages['Login'];
-      return <LoginPage />;
+      // Show our custom AuthLogin page instead of redirecting to external login
+      const AuthLoginPage = Pages['AuthLogin'];
+      return <AuthLoginPage />;
     } else {
       // Handle app_private, unknown, and other error types
       return <AppAccessDeniedError />;
