@@ -7,9 +7,10 @@ import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import AvatarStack from '@/components/ui/AvatarStack';
-import { 
+import {
   Plus,
   ChevronLeft,
+  ChevronRight,
   Phone,
   Truck,
   AlertCircle,
@@ -48,7 +49,7 @@ function WorkQueueOverview({ calls, isLoading }) {
   const waitingInQueue = queueItems.filter(q => q.queue_status === 'waiting_in_queue').length;
   const assignedToAgents = queueItems.filter(q => q.queue_status === 'assigned_to_agent').length;
   const inProgress = queueItems.filter(q => q.queue_status === 'in_progress').length;
-  
+
   const completed = queueItems.filter(q => q.queue_status === 'completed' && q.time_to_complete);
   const avgTime = completed.length > 0
     ? Math.round(completed.reduce((sum, q) => sum + q.time_to_complete, 0) / completed.length)
@@ -56,7 +57,7 @@ function WorkQueueOverview({ calls, isLoading }) {
 
   // Agent breakdown
   const agentStats = agents.map(agent => {
-    const count = queueItems.filter(q => 
+    const count = queueItems.filter(q =>
       q.assigned_to_agent === agent.email &&
       ['assigned_to_agent', 'in_progress'].includes(q.queue_status)
     ).length;
@@ -66,54 +67,55 @@ function WorkQueueOverview({ calls, isLoading }) {
   if (isLoading) return <Skeleton className="h-64" />;
 
   return (
-    <div className="card-base">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[20px] font-medium text-neutral-soft-800">תור העבודה</h3>
-        <Link to={createPageUrl('MyQueue')} className="text-primary-soft-600 hover:text-primary-soft-700 text-sm hover:underline">
-          הצג תור מלא →
+    <div className="card-base card-body">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="heading-3">תור העבודה</h3>
+        <Link to={createPageUrl('MyQueue')} className="text-primary-soft-600 hover:text-primary-soft-700 text-sm font-medium hover:underline flex items-center gap-1">
+          הצג תור מלא
+          <ChevronLeft className="w-4 h-4" />
         </Link>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Link to={createPageUrl('MyQueue')} className="block">
-          <div className="card-base p-4 text-center hover:border-gray-300 transition-colors">
-            <p className="text-2xl font-bold text-[var(--color-text-primary)]">{waitingInQueue}</p>
-            <p className="text-sm text-[var(--color-text-secondary)] mt-1">בתור</p>
+          <div className="card-interactive p-5 text-center">
+            <p className="text-3xl font-bold text-primary-soft-600">{waitingInQueue}</p>
+            <p className="text-secondary mt-2">בתור</p>
           </div>
         </Link>
         <Link to={createPageUrl('MyQueue')} className="block">
-          <div className="card-base p-4 text-center hover:border-gray-300 transition-colors">
-            <p className="text-2xl font-bold text-[var(--color-text-primary)]">{assignedToAgents}</p>
-            <p className="text-sm text-[var(--color-text-secondary)] mt-1">משובץ</p>
+          <div className="card-interactive p-5 text-center">
+            <p className="text-3xl font-bold text-secondary-soft-600">{assignedToAgents}</p>
+            <p className="text-secondary mt-2">משובץ</p>
           </div>
         </Link>
         <Link to={createPageUrl('Calls') + '?status=in_progress'} className="block">
-          <div className="card-base p-4 text-center hover:border-gray-300 transition-colors">
-            <p className="text-2xl font-bold text-[var(--color-text-primary)]">{inProgress}</p>
-            <p className="text-sm text-[var(--color-text-secondary)] mt-1">בטיפול</p>
+          <div className="card-interactive p-5 text-center">
+            <p className="text-3xl font-bold text-warning-soft-600">{inProgress}</p>
+            <p className="text-secondary mt-2">בטיפול</p>
           </div>
         </Link>
-        <div className="card-base p-4 text-center">
-          <p className="text-2xl font-bold text-[var(--color-text-primary)]">{avgTime}'</p>
-          <p className="text-sm text-[var(--color-text-secondary)] mt-1">זמן טיפול ממוצע</p>
+        <div className="card-base p-5 text-center bg-neutral-soft-50">
+          <p className="text-3xl font-bold text-neutral-soft-700">{avgTime}'</p>
+          <p className="text-secondary mt-2">זמן טיפול ממוצע</p>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <p className="text-sm text-neutral-soft-600 mb-2">פילוח לפי נציגים:</p>
+      <div className="space-y-3">
+        <p className="text-secondary mb-3">פילוח לפי נציגים:</p>
         {agentStats.length === 0 ? (
-          <p className="text-center text-neutral-soft-400 py-4">אין קריאות פעילות</p>
+          <p className="text-center text-muted py-4">אין קריאות פעילות</p>
         ) : (
           agentStats.map(agent => (
             <div key={agent.name} className="flex items-center gap-3">
-              <span className="text-sm font-medium w-32 truncate">{agent.name}</span>
+              <span className="text-sm font-medium text-neutral-soft-800 w-32 truncate">{agent.name}</span>
               <div className="flex-1 bg-neutral-soft-200 rounded-full h-2 overflow-hidden" dir="ltr">
                 <div
                   className={`h-full ${agent.count >= 5 ? 'bg-warning-soft-500' : 'bg-success-soft-500'}`}
                   style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
                 />
               </div>
-              <span className="text-sm text-neutral-soft-600 w-20">
+              <span className="text-secondary w-24 text-left">
                 {agent.count} קריאות {agent.count >= 5 && '⚠️'}
               </span>
             </div>
@@ -155,7 +157,7 @@ export default function Dashboard() {
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
-  
+
   const today = new Date();
 
   const { data: workQueue = [] } = useQuery({
@@ -189,40 +191,40 @@ export default function Dashboard() {
   const openStatuses = ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress'];
   const openCalls = calls.filter(c => openStatuses.includes(c.call_status));
   const waitingCalls = calls.filter(c => c.call_status === 'waiting_treatment');
-  
+
   // Operator stats
   const myWorkItems = workQueue.filter(wq => wq.assigned_to_agent === currentUser?.email);
   const myCallIds = myWorkItems.map(wq => wq.call_id);
-  
+
   // Filter calls assigned to this operator
   const myOpenCalls = openCalls.filter(c => myCallIds.includes(c.id));
   const myCompletedToday = calls.filter(call => {
     const callDate = new Date(call.created_date);
-    return call.call_status === 'completed' && 
+    return call.call_status === 'completed' &&
            myCallIds.includes(call.id) &&
-           callDate >= startOfDay(today) && 
+           callDate >= startOfDay(today) &&
            callDate <= endOfDay(today);
   });
   const myUrgentCalls = myOpenCalls.filter(c => c.call_priority === 'urgent' || c.call_priority === 'critical');
 
   const unassignedCalls = openCalls.filter(c => !c.assigned_vendor_id);
   const urgentCalls = openCalls.filter(c => c.call_priority === 'urgent' || c.call_priority === 'critical');
-  
+
   // Average time to completion (last 7 days)
   const sevenDaysAgo = subDays(new Date(), 7);
-  const recentCompletedCalls = calls.filter(c => 
-    c.call_status === 'completed' && 
-    c.time_to_completion && 
+  const recentCompletedCalls = calls.filter(c =>
+    c.call_status === 'completed' &&
+    c.time_to_completion &&
     c.created_date &&
     parseISO(c.created_date) >= sevenDaysAgo
   );
   const avgCompletion = recentCompletedCalls.length > 0
     ? Math.round(recentCompletedCalls.reduce((sum, c) => sum + c.time_to_completion, 0) / recentCompletedCalls.length)
     : 0;
-  
+
   // Average satisfaction (last 7 days)
-  const recentRatedCalls = calls.filter(c => 
-    c.customer_rating && 
+  const recentRatedCalls = calls.filter(c =>
+    c.customer_rating &&
     c.created_date &&
     parseISO(c.created_date) >= sevenDaysAgo
   );
@@ -232,7 +234,7 @@ export default function Dashboard() {
 
   // Filtered calls for cases tab
   const filteredCalls = calls.filter(call => {
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       call.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       call.call_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       call.customer_phone?.includes(searchQuery);
@@ -250,7 +252,7 @@ export default function Dashboard() {
   const trendData = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(new Date(), 6 - i);
     const dateStr = format(date, 'yyyy-MM-dd');
-    const count = calls.filter(c => 
+    const count = calls.filter(c =>
       c.created_date && format(parseISO(c.created_date), 'yyyy-MM-dd') === dateStr
     ).length;
     return {
@@ -265,9 +267,9 @@ export default function Dashboard() {
       header: 'מספר קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link 
+        <Link
           to={createPageUrl(`CaseDetails?id=${row.id}`)}
-          className="font-semibold text-[#111827] hover:text-[#DC2626]"
+          className="font-semibold text-neutral-soft-800 hover:text-primary-soft-600"
         >
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
@@ -291,7 +293,7 @@ export default function Dashboard() {
       header: 'תאריך',
       accessor: 'created_date',
       cell: (row) => row.created_date ? (
-        <span className="text-[#6B7280] text-[13px]">
+        <span className="text-secondary">
           {format(parseISO(row.created_date), 'dd/MM HH:mm', { locale: he })}
         </span>
       ) : '-'
@@ -299,7 +301,7 @@ export default function Dashboard() {
     {
       header: 'ספק',
       accessor: 'assigned_vendor_name',
-      cell: (row) => row.assigned_vendor_name || <span className="text-[#DC2626]">טרם שובץ</span>
+      cell: (row) => row.assigned_vendor_name || <span className="text-error-soft-600 font-medium">טרם שובץ</span>
     },
   ];
 
@@ -309,7 +311,7 @@ export default function Dashboard() {
       header: 'קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link to={createPageUrl('CaseDetails') + '?id=' + row.id} className="font-semibold text-[#111827] hover:text-[#DC2626]">
+        <Link to={createPageUrl('CaseDetails') + '?id=' + row.id} className="font-semibold text-neutral-soft-800 hover:text-primary-soft-600">
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
       )
@@ -319,8 +321,8 @@ export default function Dashboard() {
       accessor: 'customer_name',
       cell: (row) => (
         <div>
-          <div className="font-medium text-[#111827]">{row.customer_name}</div>
-          <a href={`tel:${row.customer_phone}`} className="text-xs text-[#6B7280] flex items-center gap-1">
+          <div className="font-medium text-neutral-soft-800">{row.customer_name}</div>
+          <a href={`tel:${row.customer_phone}`} className="text-secondary flex items-center gap-1 hover:text-primary-soft-600">
             <Phone className="w-3 h-3" />
             {row.customer_phone}
           </a>
@@ -331,14 +333,14 @@ export default function Dashboard() {
       header: 'סוג תקלה',
       accessor: 'issue_type',
       cell: (row) => (
-        <span className="text-[#6B7280]">{issueTypeLabels[row.issue_type] || row.issue_type}</span>
+        <span className="text-secondary">{issueTypeLabels[row.issue_type] || row.issue_type}</span>
       )
     },
     {
       header: 'מיקום',
       accessor: 'pickup_location_city',
       cell: (row) => (
-        <span className="text-[#6B7280]">{row.pickup_location_city || row.pickup_location_address?.substring(0, 30)}</span>
+        <span className="text-secondary">{row.pickup_location_city || row.pickup_location_address?.substring(0, 30)}</span>
       )
     },
     {
@@ -350,9 +352,9 @@ export default function Dashboard() {
       header: 'ספק',
       accessor: 'assigned_vendor_name',
       cell: (row) => row.assigned_vendor_name ? (
-        <span className="text-sm text-[#059669] font-medium">{row.assigned_vendor_name}</span>
+        <span className="text-sm text-success-soft-600 font-medium">{row.assigned_vendor_name}</span>
       ) : (
-        <span className="text-xs text-[#DC2626] font-medium">לא שובץ</span>
+        <span className="text-xs text-error-soft-600 font-medium">לא שובץ</span>
       )
     },
     {
@@ -373,7 +375,7 @@ export default function Dashboard() {
       header: 'ספק',
       accessor: 'vendor_name',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="font-medium text-[#111827] hover:text-[#DC2626] flex items-center gap-2">
+        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="font-medium text-neutral-soft-800 hover:text-primary-soft-600 flex items-center gap-2">
           <Truck className="w-4 h-4" />
           {row.vendor_name}
         </Link>
@@ -383,7 +385,7 @@ export default function Dashboard() {
       header: 'טלפון',
       accessor: 'phone',
       cell: (row) => (
-        <a href={`tel:${row.phone}`} className="text-[#6B7280] flex items-center gap-1">
+        <a href={`tel:${row.phone}`} className="text-secondary flex items-center gap-1 hover:text-primary-soft-600">
           <Phone className="w-3 h-3" />
           {row.phone}
         </a>
@@ -395,7 +397,7 @@ export default function Dashboard() {
       cell: (row) => (
         <div className="flex flex-wrap gap-1">
           {(row.coverage_areas || []).slice(0, 2).map((area, idx) => (
-            <span key={idx} className="text-xs bg-[#F3F4F6] text-[#6B7280] px-2 py-1 rounded border border-[#E5E7EB]">
+            <span key={idx} className="badge-base bg-neutral-soft-100 text-neutral-soft-700">
               {area}
             </span>
           ))}
@@ -407,8 +409,8 @@ export default function Dashboard() {
       accessor: 'total_calls_completed',
       cell: (row) => (
         <div className="text-center">
-          <div className="font-medium text-[#111827]">{row.total_calls_completed || 0}</div>
-          <div className="text-xs text-[#6B7280]">
+          <div className="font-medium text-neutral-soft-800">{row.total_calls_completed || 0}</div>
+          <div className="text-xs text-neutral-soft-600">
             {row.average_rating ? `⭐ ${row.average_rating.toFixed(1)}` : '-'}
           </div>
         </div>
@@ -422,7 +424,7 @@ export default function Dashboard() {
       header: 'מספר קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link to={createPageUrl('CaseDetails') + '?id=' + row.id} className="font-semibold text-[#111827] hover:text-[#DC2626]">
+        <Link to={createPageUrl('CaseDetails') + '?id=' + row.id} className="font-semibold text-neutral-soft-800 hover:text-primary-soft-600">
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
       )
@@ -431,7 +433,7 @@ export default function Dashboard() {
       header: 'תאריך',
       accessor: 'created_date',
       cell: (row) => row.created_date ? (
-        <span className="text-[#6B7280] text-[13px]">
+        <span className="text-secondary">
           {format(parseISO(row.created_date), 'dd/MM/yy HH:mm', { locale: he })}
         </span>
       ) : '-'
@@ -441,8 +443,8 @@ export default function Dashboard() {
       accessor: 'customer_name',
       cell: (row) => (
         <div>
-          <div className="font-medium text-[#111827]">{row.customer_name}</div>
-          <div className="text-xs text-[#6B7280]">{row.customer_phone}</div>
+          <div className="font-medium text-neutral-soft-800">{row.customer_name}</div>
+          <div className="text-secondary">{row.customer_phone}</div>
         </div>
       )
     },
@@ -464,7 +466,7 @@ export default function Dashboard() {
     {
       header: 'ספק',
       accessor: 'assigned_vendor_name',
-      cell: (row) => row.assigned_vendor_name || <span className="text-[#DC2626]">טרם שובץ</span>
+      cell: (row) => row.assigned_vendor_name || <span className="text-error-soft-600 font-medium">טרם שובץ</span>
     },
     {
       header: '',
@@ -483,11 +485,11 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1>לוח בקרה</h1>
-          <p className="text-[var(--color-text-secondary)]">סקירת מצב מערכת וניהול קריאות</p>
+          <h1 className="heading-1">לוח בקרה</h1>
+          <p className="text-secondary mt-2">סקירת מצב מערכת וניהול קריאות</p>
         </div>
         <Link to={createPageUrl('NewCase')}>
-          <Button className="btn-primary flex items-center gap-2">
+          <Button className="bg-primary-soft-600 hover:bg-primary-soft-700 text-white shadow-sm hover:shadow-md transition-all flex items-center gap-2">
             <Plus className="w-5 h-5" />
             קריאה חדשה
           </Button>
@@ -496,16 +498,16 @@ export default function Dashboard() {
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-white border border-[#E5E7EB] p-1 rounded-lg">
-          <TabsTrigger value="dashboard" className="gap-2 data-[state=active]:bg-[#F3F4F6]">
+        <TabsList className="card-base p-1">
+          <TabsTrigger value="dashboard" className="gap-2">
             <LayoutDashboard className="w-4 h-4" />
             סקירה כללית
           </TabsTrigger>
-          <TabsTrigger value="operator" className="gap-2 data-[state=active]:bg-[#F3F4F6]">
+          <TabsTrigger value="operator" className="gap-2">
             <Headphones className="w-4 h-4" />
             תפריט מוקדן
           </TabsTrigger>
-          <TabsTrigger value="cases" className="gap-2 data-[state=active]:bg-[#F3F4F6]">
+          <TabsTrigger value="cases" className="gap-2">
             <List className="w-4 h-4" />
             קריאות שירות
           </TabsTrigger>
@@ -537,8 +539,8 @@ export default function Dashboard() {
 
           {/* Charts Section */}
           <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-              <h3 className="mb-4">קריאות לפי סטטוס</h3>
+            <div className="card-base card-body">
+              <h3 className="heading-4 mb-4">קריאות לפי סטטוס</h3>
               {isLoading ? (
                 <Skeleton className="h-64" />
               ) : (
@@ -546,18 +548,18 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={statusData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fill: '#6B7280', fontSize: 12 }} stroke="#E5E7EB" tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fill: '#6B7280', fontSize: 12 }} stroke="#E5E7EB" tickLine={false} axisLine={false} />
-                      <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: 14, padding: '8px 12px' }} />
-                      <Bar dataKey="value" fill="#111827" radius={[4, 4, 0, 0]} barSize={40} />
+                      <XAxis dataKey="name" tick={{ fill: '#737373', fontSize: 12 }} stroke="#E5E5E5" tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fill: '#737373', fontSize: 12 }} stroke="#E5E5E5" tickLine={false} axisLine={false} />
+                      <Tooltip cursor={{ fill: '#FAFAFA' }} contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', fontSize: 14, padding: '8px 12px' }} />
+                      <Bar dataKey="value" fill="#FF6B6B" radius={[4, 4, 0, 0]} barSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               )}
             </div>
 
-            <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-              <h3 className="mb-4">מגמת קריאות - 7 ימים אחרונים</h3>
+            <div className="card-base card-body">
+              <h3 className="heading-4 mb-4">מגמת קריאות - 7 ימים אחרונים</h3>
               {isLoading ? (
                 <Skeleton className="h-64" />
               ) : (
@@ -565,10 +567,10 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fill: '#6B7280', fontSize: 12 }} stroke="#E5E7EB" tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fill: '#6B7280', fontSize: 12 }} stroke="#E5E7EB" tickLine={false} axisLine={false} />
-                      <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: 14, padding: '8px 12px' }} />
-                      <Line type="monotone" dataKey="value" stroke="#111827" strokeWidth={3} dot={{ fill: '#111827', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
+                      <XAxis dataKey="name" tick={{ fill: '#737373', fontSize: 12 }} stroke="#E5E5E5" tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fill: '#737373', fontSize: 12 }} stroke="#E5E5E5" tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', fontSize: 14, padding: '8px 12px' }} />
+                      <Line type="monotone" dataKey="value" stroke="#FF6B6B" strokeWidth={3} dot={{ fill: '#FF6B6B', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -577,8 +579,8 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Calls Table */}
-          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-            <h3 className="mb-4">10 קריאות אחרונות</h3>
+          <div className="card-base card-body">
+            <h3 className="heading-4 mb-4">10 קריאות אחרונות</h3>
             {isLoading ? (
               <Skeleton className="h-96" />
             ) : (
@@ -596,60 +598,60 @@ export default function Dashboard() {
         <TabsContent value="operator" className="space-y-6 mt-6">
           {/* Operator Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <StatCard 
-              title="הקריאות שלי" 
-              value={myOpenCalls.length} 
+            <StatCard
+              title="הקריאות שלי"
+              value={myOpenCalls.length}
               to={createPageUrl('MyQueue')}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              className="cursor-pointer"
             />
-            <StatCard 
-              title="הושלמו היום" 
-              value={myCompletedToday.length} 
-              className="cursor-pointer hover:shadow-md transition-shadow"
+            <StatCard
+              title="הושלמו היום"
+              value={myCompletedToday.length}
+              className="cursor-pointer"
             />
-            <StatCard 
-              title="ממתינות לשיוך" 
-              value={unassignedCalls.length} 
+            <StatCard
+              title="ממתינות לשיוך"
+              value={unassignedCalls.length}
               to={createPageUrl('Calls') + '?status=waiting_treatment'}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              className="cursor-pointer"
             />
-            <StatCard 
-              title="דחופות שלי" 
-              value={myUrgentCalls.length} 
-              className="cursor-pointer hover:shadow-md transition-shadow"
+            <StatCard
+              title="דחופות שלי"
+              value={myUrgentCalls.length}
+              className="cursor-pointer"
             />
-            <StatCard 
-              title="ספקים זמינים" 
-              value={availableVendors.length} 
+            <StatCard
+              title="ספקים זמינים"
+              value={availableVendors.length}
               to={createPageUrl('AllVendorsMap')}
-              className="cursor-pointer hover:shadow-md transition-shadow"
+              className="cursor-pointer"
             />
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-            <h3 className="mb-4">קיצורי דרך</h3>
+          <div className="card-base card-body">
+            <h3 className="heading-4 mb-4">קיצורי דרך</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Link to={createPageUrl('NewCase')}>
-                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
-                  <Plus className="w-6 h-6 text-[#374151]" />
-                  <span className="text-[13px] font-medium text-[#374151]">קריאה חדשה</span>
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-neutral-soft-50">
+                  <Plus className="w-6 h-6 text-neutral-soft-700" />
+                  <span className="text-sm font-medium text-neutral-soft-700">קריאה חדשה</span>
                 </Button>
               </Link>
-              <Button variant="outline" onClick={() => setActiveTab('cases')} className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
-                <AlertCircle className="w-6 h-6 text-[#374151]" />
-                <span className="text-[13px] font-medium text-[#374151]">קריאות פתוחות</span>
+              <Button variant="outline" onClick={() => setActiveTab('cases')} className="w-full h-20 flex flex-col gap-2 hover:bg-neutral-soft-50">
+                <AlertCircle className="w-6 h-6 text-neutral-soft-700" />
+                <span className="text-sm font-medium text-neutral-soft-700">קריאות פתוחות</span>
               </Button>
               <Link to={createPageUrl('ServiceProviders')}>
-                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
-                  <Truck className="w-6 h-6 text-[#374151]" />
-                  <span className="text-[13px] font-medium text-[#374151]">ספקים</span>
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-neutral-soft-50">
+                  <Truck className="w-6 h-6 text-neutral-soft-700" />
+                  <span className="text-sm font-medium text-neutral-soft-700">ספקים</span>
                 </Button>
               </Link>
               <Link to={createPageUrl('AllVendorsMap')}>
-                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]">
-                  <MapPin className="w-6 h-6 text-[#374151]" />
-                  <span className="text-[13px] font-medium text-[#374151]">מפת ספקים</span>
+                <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-neutral-soft-50">
+                  <MapPin className="w-6 h-6 text-neutral-soft-700" />
+                  <span className="text-sm font-medium text-neutral-soft-700">מפת ספקים</span>
                 </Button>
               </Link>
             </div>
@@ -657,16 +659,16 @@ export default function Dashboard() {
 
           {/* Urgent Calls Alert */}
           {urgentCalls.length > 0 && (
-            <div className="bg-white border border-[#E5E7EB] rounded-lg p-5 border-r-4 border-r-[#DC2626]">
-              <h3 className="mb-4">קריאות דחופות ({urgentCalls.length})</h3>
+            <div className="card-base card-body border-r-4 border-r-error-soft-600">
+              <h3 className="heading-4 mb-4">קריאות דחופות ({urgentCalls.length})</h3>
               <div className="space-y-3">
                 {urgentCalls.slice(0, 5).map((call) => (
-                  <div key={call.id} className="flex items-center justify-between p-3 bg-[#F9FAFB] rounded-lg border border-[#E5E7EB]">
+                  <div key={call.id} className="flex items-center justify-between p-3 bg-neutral-soft-50 rounded-lg border border-neutral-soft-200">
                     <div className="flex-1">
-                      <Link to={createPageUrl('CaseDetails') + '?id=' + call.id} className="font-medium text-[#111827] hover:text-[#DC2626]">
+                      <Link to={createPageUrl('CaseDetails') + '?id=' + call.id} className="font-medium text-neutral-soft-800 hover:text-primary-soft-600">
                         {call.call_number || `#${call.id?.slice(-6)}`}
                       </Link>
-                      <p className="text-[13px] text-[#6B7280]">{call.customer_name} - {call.pickup_location_city}</p>
+                      <p className="text-secondary">{call.customer_name} - {call.pickup_location_city}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={call.call_status} size="sm" />
@@ -681,8 +683,8 @@ export default function Dashboard() {
           )}
 
           {/* Open Calls Table */}
-          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-            <h3 className="mb-4">הקריאות שלי בטיפול ({myOpenCalls.length})</h3>
+          <div className="card-base card-body">
+            <h3 className="heading-4 mb-4">הקריאות שלי בטיפול ({myOpenCalls.length})</h3>
             <DataTable
               columns={operatorCallColumns}
               data={myOpenCalls}
@@ -693,9 +695,9 @@ export default function Dashboard() {
           </div>
 
           {/* Available Vendors */}
-          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+          <div className="card-base card-body">
             <div className="flex items-center justify-between mb-4">
-              <h3>ספקים זמינים ({availableVendors.length})</h3>
+              <h3 className="heading-4">ספקים זמינים ({availableVendors.length})</h3>
               <AvatarStack users={availableVendors} max={8} size="md" />
             </div>
             <DataTable
@@ -711,7 +713,7 @@ export default function Dashboard() {
         {/* Cases Tab */}
         <TabsContent value="cases" className="space-y-6 mt-6">
           {/* Filters */}
-          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
+          <div className="card-base card-body">
             <div className="flex flex-col sm:flex-row gap-4">
               <Input
                 placeholder="חיפוש לפי שם, מספר קריאה או טלפון..."
@@ -746,8 +748,8 @@ export default function Dashboard() {
           </div>
 
           {/* Cases Table */}
-          <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-            <h3 className="mb-4">קריאות שירות ({filteredCalls.length})</h3>
+          <div className="card-base card-body">
+            <h3 className="heading-4 mb-4">קריאות שירות ({filteredCalls.length})</h3>
             <DataTable
               columns={casesColumns}
               data={filteredCalls}

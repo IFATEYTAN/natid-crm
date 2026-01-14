@@ -186,7 +186,7 @@ export default function ServiceProviders() {
       ...formData,
       payment_rate_per_call: formData.payment_rate_per_call ? Number(formData.payment_rate_per_call) : null
     };
-    
+
     if (editingProvider) {
       updateMutation.mutate({ id: editingProvider.id, data });
     } else {
@@ -195,7 +195,7 @@ export default function ServiceProviders() {
   };
 
   const filteredProviders = providers.filter(p => {
-    const matchesSearch = !search || 
+    const matchesSearch = !search ||
       p.vendor_name?.toLowerCase().includes(search.toLowerCase()) ||
       p.phone?.includes(search);
     const matchesStatus = statusFilter === 'all' || p.availability_status === statusFilter;
@@ -215,14 +215,14 @@ export default function ServiceProviders() {
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-[#F5F5F5] flex items-center justify-center">
-              <Truck className="w-4 h-4 text-[#212121]" />
+            <div className="w-8 h-8 rounded-full bg-neutral-soft-100 flex items-center justify-center">
+              <Truck className="w-4 h-4 text-neutral-soft-900" />
             </div>
           )}
           <div>
-            <div className="font-medium text-[#212121]">{row.vendor_name}</div>
+            <div className="font-medium text-neutral-soft-900">{row.vendor_name}</div>
             {!row.is_active && (
-              <span className="text-xs text-[#D32F2F]">לא פעיל</span>
+              <span className="text-xs text-error-soft-600">לא פעיל</span>
             )}
           </div>
         </Link>
@@ -234,12 +234,12 @@ export default function ServiceProviders() {
       cell: (row) => (
         <div className="flex flex-wrap gap-1">
           {(row.service_type || []).slice(0, 2).map((type, idx) => (
-            <span key={idx} className="text-xs bg-[#E3F2FD] text-[#0078D4] px-2 py-1 rounded">
+            <span key={idx} className="badge-primary">
               {type}
             </span>
           ))}
           {(row.service_type || []).length > 2 && (
-            <span className="text-xs text-[#616161]">+{row.service_type.length - 2}</span>
+            <span className="text-xs text-neutral-soft-600">+{row.service_type.length - 2}</span>
           )}
         </div>
       )
@@ -248,7 +248,7 @@ export default function ServiceProviders() {
       header: 'טלפון',
       accessor: 'phone',
       cell: (row) => (
-        <a href={`tel:${row.phone}`} className="flex items-center gap-1 text-[#0078D4] hover:underline">
+        <a href={`tel:${row.phone}`} className="flex items-center gap-1 text-primary-soft-600 hover:underline">
           <Phone className="w-3 h-3" />
           {row.phone}
         </a>
@@ -263,7 +263,7 @@ export default function ServiceProviders() {
       header: 'דירוג',
       accessor: 'average_rating',
       cell: (row) => row.average_rating ? (
-        <span className="flex items-center gap-1 text-[#ED6C02]">
+        <span className="flex items-center gap-1 text-warning-soft-600">
           <Star className="w-3 h-3 fill-current" />
           {row.average_rating.toFixed(1)}
         </span>
@@ -275,7 +275,7 @@ export default function ServiceProviders() {
       cell: (row) => (
         <div className="text-sm">
           <div className="font-medium">{row.total_calls_completed || 0}</div>
-          <div className="text-xs text-[#616161]">
+          <div className="text-xs text-neutral-soft-600">
             {row.completion_rate ? `${Math.round(row.completion_rate)}%` : '-'}
           </div>
         </div>
@@ -287,29 +287,29 @@ export default function ServiceProviders() {
         <div className="flex items-center gap-2">
           <Link to={createPageUrl('VendorProfile') + '?id=' + row.id}>
             <Button variant="ghost" size="icon" title="היסטוריה">
-              <Eye className="w-4 h-4 text-[#0078D4]" />
+              <Eye className="w-4 h-4 text-primary-soft-600" />
             </Button>
           </Link>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
             title="עריכה"
           >
-            <Edit className="w-4 h-4 text-[#616161]" />
+            <Edit className="w-4 h-4 text-neutral-soft-600" />
           </Button>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
-            onClick={(e) => { 
-              e.stopPropagation(); 
+            onClick={(e) => {
+              e.stopPropagation();
               if (confirm('האם למחוק את הספק?')) {
                 deleteMutation.mutate(row.id);
               }
             }}
             title="מחיקה"
           >
-            <Trash2 className="w-4 h-4 text-[#D32F2F]" />
+            <Trash2 className="w-4 h-4 text-error-soft-600" />
           </Button>
         </div>
       )
@@ -356,8 +356,8 @@ export default function ServiceProviders() {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl font-bold text-[#0D47A1]">נותני שירות</h1>
-            <p className="text-[var(--color-text-secondary)]">{filteredProviders.length} ספקים פעילים</p>
+            <h1 className="heading-2 text-primary-soft-600">נותני שירות</h1>
+            <p className="text-secondary">{filteredProviders.length} ספקים פעילים</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <ExportMenu
@@ -368,7 +368,7 @@ export default function ServiceProviders() {
               subtitle={`סה"כ ${filteredProviders.length} ספקים`}
             />
             <Button
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary"
               onClick={() => setIsDialogOpen(true)}
             >
               <Plus className="w-4 h-4" />
@@ -382,20 +382,20 @@ export default function ServiceProviders() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="card-base"
+          className="card-base card-body"
         >
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-disabled)]" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-soft-500" />
               <Input
                 placeholder="חיפוש לפי שם, טלפון..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="input-base pr-10"
+                className="pr-10"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-40 input-base">
+              <SelectTrigger className="w-full md:w-40">
                 <SelectValue placeholder="סטטוס" />
               </SelectTrigger>
               <SelectContent>
@@ -435,26 +435,26 @@ export default function ServiceProviders() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Image Upload Section */}
             <div className="flex flex-col items-center gap-3 pb-4 border-b">
-              <Label>תמונת ספק</Label>
+              <Label className="form-label">תמונת ספק</Label>
               <div className="relative">
                 {formData.profile_image ? (
                   <div className="relative">
                     <img
                       src={formData.profile_image}
                       alt="תמונת ספק"
-                      className="w-24 h-24 rounded-full object-cover border-2 border-[#E0E0E0]"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-neutral-soft-200"
                     />
                     <button
                       type="button"
                       onClick={removeImage}
-                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      className="absolute -top-1 -right-1 bg-error-soft-600 text-white rounded-full p-1 hover:bg-error-soft-700"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-[#F5F5F5] flex items-center justify-center border-2 border-dashed border-[#BDBDBD]">
-                    <Truck className="w-8 h-8 text-[#9E9E9E]" />
+                  <div className="w-24 h-24 rounded-full bg-neutral-soft-100 flex items-center justify-center border-2 border-dashed border-neutral-soft-300">
+                    <Truck className="w-8 h-8 text-neutral-soft-500" />
                   </div>
                 )}
               </div>
@@ -513,58 +513,63 @@ export default function ServiceProviders() {
                   </Button>
                 </label>
               </div>
-              <p className="text-xs text-[#616161]">תמונה עד 5MB (JPG, PNG)</p>
+              <p className="text-xs text-neutral-soft-600">תמונה עד 5MB (JPG, PNG)</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>שם ספק *</Label>
+              <div className="form-group">
+                <Label className="form-label">שם ספק *</Label>
                 <Input
+                  className="form-input"
                   value={formData.vendor_name}
                   onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
                   required
                 />
               </div>
-              <div>
-                <Label>איש קשר</Label>
+              <div className="form-group">
+                <Label className="form-label">איש קשר</Label>
                 <Input
+                  className="form-input"
                   value={formData.contact_person}
                   onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                 />
               </div>
-              <div>
-                <Label>טלפון ראשי *</Label>
+              <div className="form-group">
+                <Label className="form-label">טלפון ראשי *</Label>
                 <Input
+                  className="form-input"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   required
                 />
               </div>
-              <div>
-                <Label>טלפון משני</Label>
+              <div className="form-group">
+                <Label className="form-label">טלפון משני</Label>
                 <Input
+                  className="form-input"
                   value={formData.phone_2}
                   onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                 />
               </div>
-              <div>
-                <Label>דוא"ל</Label>
+              <div className="form-group">
+                <Label className="form-label">דוא"ל</Label>
                 <Input
+                  className="form-input"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
-                <p className="text-[11px] text-[#616161] mt-1">
+                <p className="form-helper-text">
                   * יש להזמין את המשתמש בנפרד דרך מסך "ניהול משתמשים" עם כתובת אימייל זו כדי לאפשר לו גישה לפורטל
                 </p>
               </div>
-              <div>
-                <Label>סטטוס זמינות</Label>
+              <div className="form-group">
+                <Label className="form-label">סטטוס זמינות</Label>
                 <Select
                   value={formData.availability_status}
                   onValueChange={(value) => setFormData({ ...formData, availability_status: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="form-input">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -585,17 +590,19 @@ export default function ServiceProviders() {
                 />
                 <Label htmlFor="is_active" className="cursor-pointer">ספק פעיל במערכת</Label>
               </div>
-              <div>
-                <Label>שעת התחלה</Label>
+              <div className="form-group">
+                <Label className="form-label">שעת התחלה</Label>
                 <Input
+                  className="form-input"
                   type="time"
                   value={formData.working_hours_start}
                   onChange={(e) => setFormData({ ...formData, working_hours_start: e.target.value })}
                 />
               </div>
-              <div>
-                <Label>שעת סיום</Label>
+              <div className="form-group">
+                <Label className="form-label">שעת סיום</Label>
                 <Input
+                  className="form-input"
                   type="time"
                   value={formData.working_hours_end}
                   onChange={(e) => setFormData({ ...formData, working_hours_end: e.target.value })}
@@ -611,39 +618,43 @@ export default function ServiceProviders() {
                 />
                 <Label htmlFor="works_24_7" className="cursor-pointer">עובד 24/7</Label>
               </div>
-              <div>
-                <Label>תעריף לקריאה (₪)</Label>
+              <div className="form-group">
+                <Label className="form-label">תעריף לקריאה (₪)</Label>
                 <Input
+                  className="form-input"
                   type="number"
                   value={formData.payment_rate_per_call}
                   onChange={(e) => setFormData({ ...formData, payment_rate_per_call: e.target.value })}
                 />
               </div>
-              <div>
-                <Label>סוגי שירות</Label>
+              <div className="form-group">
+                <Label className="form-label">סוגי שירות</Label>
                 <Input
+                  className="form-input"
                   placeholder="גרירה, פנצ'ר, רדיו דיסק (מופרד בפסיקים)"
                   value={(formData.service_type || []).join(', ')}
-                  onChange={(e) => setFormData({ 
-                    ...formData, 
+                  onChange={(e) => setFormData({
+                    ...formData,
                     service_type: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   })}
                 />
               </div>
-              <div className="col-span-2">
-                <Label>אזורי כיסוי</Label>
+              <div className="col-span-2 form-group">
+                <Label className="form-label">אזורי כיסוי</Label>
                 <Input
+                  className="form-input"
                   placeholder="מרכז, צפון, דרום (מופרד בפסיקים)"
                   value={(formData.coverage_areas || []).join(', ')}
-                  onChange={(e) => setFormData({ 
-                    ...formData, 
+                  onChange={(e) => setFormData({
+                    ...formData,
                     coverage_areas: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   })}
                 />
               </div>
-              <div className="col-span-2">
-                <Label>הערות</Label>
+              <div className="col-span-2 form-group">
+                <Label className="form-label">הערות</Label>
                 <Textarea
+                  className="form-input"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={3}
@@ -654,9 +665,9 @@ export default function ServiceProviders() {
               <Button type="button" variant="outline" onClick={resetForm}>
                 ביטול
               </Button>
-              <Button 
-                type="submit" 
-                className="bg-[#0D47A1] hover:bg-[#1565C0]"
+              <Button
+                type="submit"
+                className="btn-primary"
                 disabled={createMutation.isPending || updateMutation.isPending}
               >
                 {editingProvider ? 'עדכון' : 'הוספה'}
