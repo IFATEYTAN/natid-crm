@@ -8,32 +8,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { LogIn, Truck, ShieldCheck, AlertCircle, ArrowRight, Mail, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { checkAppState } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccessMessage('');
     setIsLoading(true);
 
     try {
-      // Use Base44 SDK login
       await base44.auth.login({ email, password });
-
-      // Refresh auth state after successful login
       await checkAppState();
-
-      // Navigate to dashboard
       navigate('/');
     } catch (err) {
       console.error('Login error:', err);
@@ -41,35 +34,6 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccessMessage('');
-
-    if (!email || !email.includes('@')) {
-      setError('נא להזין כתובת אימייל תקינה');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      await base44.auth.resetPasswordRequest(email);
-      setSuccessMessage('קישור לאיפוס סיסמה נשלח לכתובת האימייל שלך');
-    } catch (err) {
-      console.error('Reset password error:', err);
-      setError('שגיאה בשליחת בקשה לאיפוס סיסמה. נא לנסות שוב.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const toggleForgotPassword = () => {
-    setIsForgotPassword(!isForgotPassword);
-    setError('');
-    setSuccessMessage('');
   };
 
   return (
@@ -84,7 +48,6 @@ export default function Login() {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        {/* Gradient Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-soft-900/70 via-primary-soft-800/60 to-neutral-soft-900/75" />
       </div>
 
