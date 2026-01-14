@@ -75,8 +75,6 @@
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -84,5 +82,256 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ===================================
+   NATID CRM - Design System
+   מערכת עיצוב אחידה לכל הממשק
+   =================================== */
+
+@layer components {
+  /* ========= RTL UTILITIES ========= */
+  /* כיוון מימין לשמאל - הפיכת אלמנטים */
+  .rtl-flip {
+    @apply [direction:rtl];
+  }
+
+  .icon-flip-rtl {
+    transform: scaleX(-1);
+  }
+
+  /* ========= CARDS SYSTEM ========= */
+  /* כרטיסיות בסיסיות - עיצוב אחיד */
+  .card-base {
+    @apply bg-white border border-neutral-soft-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+  }
+
+  .card-interactive {
+    @apply card-base hover:border-primary-soft-300 cursor-pointer;
+  }
+
+  .card-header {
+    @apply p-6 border-b border-neutral-soft-200;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  .card-footer {
+    @apply p-6 border-t border-neutral-soft-200 bg-neutral-soft-50;
+  }
+
+  /* Card Variants */
+  .card-primary {
+    @apply card-base border-primary-soft-300 bg-primary-soft-50;
+  }
+
+  .card-success {
+    @apply card-base border-success-soft-300 bg-success-soft-50;
+  }
+
+  .card-warning {
+    @apply card-base border-warning-soft-300 bg-warning-soft-50;
+  }
+
+  .card-error {
+    @apply card-base border-error-soft-300 bg-error-soft-50;
+  }
+
+  /* ========= SPACING SYSTEM ========= */
+  /* ריווחים אחידים */
+  .section-spacing {
+    @apply py-6 px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-spacing {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-container {
+    @apply min-h-screen bg-neutral-soft-50 section-spacing;
+  }
+
+  /* ========= TYPOGRAPHY ========= */
+  /* כותרות */
+  .heading-1 {
+    @apply text-3xl sm:text-4xl font-bold text-neutral-soft-900 text-right;
+  }
+
+  .heading-2 {
+    @apply text-2xl sm:text-3xl font-semibold text-neutral-soft-800 text-right;
+  }
+
+  .heading-3 {
+    @apply text-xl sm:text-2xl font-semibold text-neutral-soft-800 text-right;
+  }
+
+  .heading-4 {
+    @apply text-lg sm:text-xl font-medium text-neutral-soft-800 text-right;
+  }
+
+  /* טקסט */
+  .text-body {
+    @apply text-base text-neutral-soft-700 text-right;
+  }
+
+  .text-secondary {
+    @apply text-sm text-neutral-soft-600 text-right;
+  }
+
+  .text-muted {
+    @apply text-sm text-neutral-soft-500 text-right;
+  }
+
+  /* ========= BUTTONS SYSTEM ========= */
+  /* כפתורים אחידים */
+  .btn-base {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn-base bg-primary-soft-600 text-white hover:bg-primary-soft-700 shadow-sm hover:shadow-md;
+  }
+
+  .btn-secondary {
+    @apply btn-base bg-neutral-soft-100 text-neutral-soft-700 hover:bg-neutral-soft-200 border border-neutral-soft-300;
+  }
+
+  .btn-success {
+    @apply btn-base bg-success-soft-600 text-white hover:bg-success-soft-700 shadow-sm hover:shadow-md;
+  }
+
+  .btn-danger {
+    @apply btn-base bg-error-soft-600 text-white hover:bg-error-soft-700 shadow-sm hover:shadow-md;
+  }
+
+  /* ========= FORMS SYSTEM ========= */
+  /* טפסים אחידים */
+  .form-group {
+    @apply space-y-2 text-right;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-neutral-soft-700 text-right mb-1;
+  }
+
+  .form-input {
+    @apply w-full px-3 py-2 border border-neutral-soft-300 rounded-lg text-right focus:ring-2 focus:ring-primary-soft-500 focus:border-primary-soft-500 transition-colors;
+  }
+
+  .form-input-error {
+    @apply form-input border-error-soft-500 focus:ring-error-soft-500;
+  }
+
+  .form-error-text {
+    @apply text-sm text-error-soft-600 text-right mt-1;
+  }
+
+  .form-helper-text {
+    @apply text-sm text-neutral-soft-500 text-right mt-1;
+  }
+
+  /* ========= TABLES SYSTEM ========= */
+  /* טבלאות RTL */
+  .table-container {
+    @apply w-full overflow-x-auto bg-white rounded-lg border border-neutral-soft-200 shadow-sm;
+  }
+
+  .table-base {
+    @apply w-full text-right;
+  }
+
+  .table-header {
+    @apply bg-neutral-soft-50 border-b border-neutral-soft-200;
+  }
+
+  .table-header-cell {
+    @apply px-6 py-3 text-right text-xs font-medium text-neutral-soft-700 uppercase tracking-wider;
+  }
+
+  .table-row {
+    @apply border-b border-neutral-soft-200 hover:bg-neutral-soft-50 transition-colors;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 text-sm text-neutral-soft-900 text-right;
+  }
+
+  /* ========= BADGES SYSTEM ========= */
+  /* תגיות סטטוס */
+  .badge-base {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply badge-base bg-primary-soft-100 text-primary-soft-800;
+  }
+
+  .badge-success {
+    @apply badge-base bg-success-soft-100 text-success-soft-800;
+  }
+
+  .badge-warning {
+    @apply badge-base bg-warning-soft-100 text-warning-soft-800;
+  }
+
+  .badge-error {
+    @apply badge-base bg-error-soft-100 text-error-soft-800;
+  }
+
+  .badge-info {
+    @apply badge-base bg-info-soft-100 text-info-soft-800;
+  }
+
+  /* ========= NAVIGATION ========= */
+  /* ניווט ימני RTL */
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-2 text-neutral-soft-700 hover:bg-neutral-soft-100 hover:text-primary-soft-600 rounded-lg transition-colors text-right;
+  }
+
+  .nav-link-active {
+    @apply nav-link bg-primary-soft-50 text-primary-soft-700 font-medium;
+  }
+
+  /* ========= ANIMATIONS ========= */
+  /* אנימציות */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* ========= UTILITIES ========= */
+  /* כלים נוספים */
+  .divider {
+    @apply border-t border-neutral-soft-200 my-6;
+  }
+
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-neutral-soft-200 border-t-primary-soft-600;
+  }
+
+  .skeleton {
+    @apply animate-pulse bg-neutral-soft-200 rounded;
   }
 }

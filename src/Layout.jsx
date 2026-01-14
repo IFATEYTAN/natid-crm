@@ -8,6 +8,7 @@ import {
   LogOut,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Bell
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -278,7 +279,7 @@ export default function Layout({ children, currentPageName }) {
                 {expandedGroups[group.title] ? (
                   <ChevronDown className="w-4 h-4" />
                 ) : (
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" />
                 )}
               </button>
               
@@ -366,7 +367,7 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0" align="end">
+              <PopoverContent className="w-80 p-0" align="start">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center">
                   <h4 className="font-semibold text-sm">התראות</h4>
                   <span className="text-xs text-gray-500">{unreadCount} חדשות</span>
