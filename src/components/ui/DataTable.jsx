@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Inbox, ChevronLeft } from 'lucide-react';
+import { Inbox, ChevronRight } from 'lucide-react';
 import EmptyState from './EmptyState';
 
 export default function DataTable({
@@ -36,9 +36,9 @@ export default function DataTable({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
+              <TableRow className="table-header">
                 {columns.map((col, idx) => (
-                  <TableHead key={idx} className="text-right text-[var(--color-text-secondary)] font-medium text-sm h-12">
+                  <TableHead key={idx} className="table-header-cell">
                     {col.header}
                   </TableHead>
                 ))}
@@ -46,10 +46,10 @@ export default function DataTable({
             </TableHeader>
             <TableBody>
               {[...Array(5)].map((_, idx) => (
-                <TableRow key={idx} className="border-b border-[var(--color-border)]">
+                <TableRow key={idx} className="table-row">
                   {columns.map((col, colIdx) => (
                     <TableCell key={colIdx} className="h-14">
-                      <Skeleton className="h-4 w-full bg-gray-100" />
+                      <Skeleton className="h-4 w-full bg-neutral-soft-200" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -61,15 +61,15 @@ export default function DataTable({
       {/* Mobile skeleton */}
       <div className="md:hidden space-y-3">
         {[...Array(5)].map((_, idx) => (
-          <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4">
+          <div key={idx} className="card-base card-body">
             <div className="flex justify-between items-start mb-3">
-              <Skeleton className="h-5 w-32 bg-gray-100" />
-              <Skeleton className="h-6 w-20 bg-gray-100 rounded-full" />
+              <Skeleton className="h-5 w-32 bg-neutral-soft-200" />
+              <Skeleton className="h-6 w-20 bg-neutral-soft-200 rounded-full" />
             </div>
-            <Skeleton className="h-4 w-48 bg-gray-100 mb-3" />
+            <Skeleton className="h-4 w-48 bg-neutral-soft-200 mb-3" />
             <div className="space-y-2">
-              <Skeleton className="h-3 w-full bg-gray-100" />
-              <Skeleton className="h-3 w-2/3 bg-gray-100" />
+              <Skeleton className="h-3 w-full bg-neutral-soft-200" />
+              <Skeleton className="h-3 w-2/3 bg-neutral-soft-200" />
             </div>
           </div>
         ))}
@@ -93,8 +93,8 @@ export default function DataTable({
     }
     return (
       <div className="card-base flex flex-col items-center justify-center p-16 text-center">
-        <Inbox className="w-12 h-12 text-[var(--color-text-disabled)] mb-4" strokeWidth={1} />
-        <p className="text-[var(--color-text-secondary)] font-medium text-base mb-1">{emptyMessage}</p>
+        <Inbox className="w-12 h-12 text-neutral-soft-400 mb-4" strokeWidth={1} />
+        <p className="text-secondary font-medium text-base mb-1">{emptyMessage}</p>
       </div>
     );
   }
@@ -118,24 +118,24 @@ export default function DataTable({
             key={row.id || rowIdx}
             onClick={() => onRowClick?.(row)}
             className={cn(
-              "bg-white border border-gray-200 rounded-lg p-4 transition-all",
-              onRowClick && "cursor-pointer hover:border-gray-300 hover:shadow-sm active:bg-gray-50"
+              "card-base card-body transition-all",
+              onRowClick && "cursor-pointer hover:border-neutral-soft-300 hover:shadow-md active:bg-neutral-soft-50"
             )}
           >
             {/* Card Header - Title & Badge */}
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1 min-w-0">
                 {titleColumn ? (
-                  <div className="font-semibold text-gray-900 truncate">
+                  <div className="font-semibold text-neutral-soft-900 truncate">
                     {titleColumn.cell ? titleColumn.cell(row) : row[titleColumn.accessor]}
                   </div>
                 ) : (
-                  <div className="font-semibold text-gray-900 truncate">
+                  <div className="font-semibold text-neutral-soft-900 truncate">
                     {columns[0]?.cell ? columns[0].cell(row) : row[columns[0]?.accessor]}
                   </div>
                 )}
                 {subtitleColumn && (
-                  <div className="text-sm text-gray-500 truncate mt-0.5">
+                  <div className="text-sm text-neutral-soft-500 truncate mt-0.5">
                     {subtitleColumn.cell ? subtitleColumn.cell(row) : row[subtitleColumn.accessor]}
                   </div>
                 )}
@@ -148,7 +148,7 @@ export default function DataTable({
             </div>
 
             {/* Card Body - Additional Fields */}
-            <div className="space-y-1.5 mt-3 pt-3 border-t border-gray-100">
+            <div className="space-y-1.5 mt-3 pt-3 border-t border-neutral-soft-100">
               {mobileColumns
                 .filter(col =>
                   col.accessor !== mobileCardConfig.titleAccessor &&
@@ -157,18 +157,18 @@ export default function DataTable({
                 )
                 .map((col, colIdx) => (
                   <div key={colIdx} className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500">{col.header}</span>
-                    <span className="text-gray-900 font-medium">
+                    <span className="text-neutral-soft-500">{col.header}</span>
+                    <span className="text-neutral-soft-900 font-medium">
                       {col.cell ? col.cell(row) : row[col.accessor]}
                     </span>
                   </div>
                 ))}
             </div>
 
-            {/* Arrow indicator for clickable cards */}
+            {/* Arrow indicator for clickable cards - RTL ChevronRight */}
             {onRowClick && (
-              <div className="flex justify-end mt-3 pt-2 border-t border-gray-100">
-                <ChevronLeft className="w-5 h-5 text-gray-400" />
+              <div className="flex justify-end mt-3 pt-2 border-t border-neutral-soft-100">
+                <ChevronRight className="w-5 h-5 text-neutral-soft-400 icon-flip-rtl" />
               </div>
             )}
           </div>
@@ -176,50 +176,48 @@ export default function DataTable({
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block card-base p-0 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-[#F9FAFB] border-b border-[var(--color-border)]">
-                {columns.map((col, idx) => (
-                  <TableHead
-                    key={idx}
-                    className={cn(
-                      "text-right text-[var(--color-text-secondary)] font-medium text-sm h-12 px-4 whitespace-nowrap",
-                      col.className
-                    )}
-                  >
-                    {col.header}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((row, rowIdx) => (
-                <TableRow
-                  key={row.id || rowIdx}
-                  onClick={() => onRowClick?.(row)}
+      <div className="hidden md:block table-container">
+        <Table className="table-base">
+          <TableHeader className="table-header">
+            <TableRow>
+              {columns.map((col, idx) => (
+                <TableHead
+                  key={idx}
                   className={cn(
-                    "border-b border-[var(--color-border)] last:border-0 hover:bg-[#F9FAFB] transition-colors",
-                    onRowClick && "cursor-pointer"
+                    "table-header-cell",
+                    col.className
                   )}
                 >
-                  {columns.map((col, colIdx) => (
-                    <TableCell
-                      key={colIdx}
-                      className={cn(
-                        "h-14 px-4 text-sm text-[var(--color-text-primary)] whitespace-nowrap",
-                        col.cellClassName
-                      )}
-                    >
-                      {col.cell ? col.cell(row) : row[col.accessor]}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                  {col.header}
+                </TableHead>
               ))}
-            </TableBody>
-          </Table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((row, rowIdx) => (
+              <TableRow
+                key={row.id || rowIdx}
+                onClick={() => onRowClick?.(row)}
+                className={cn(
+                  "table-row",
+                  onRowClick && "cursor-pointer"
+                )}
+              >
+                {columns.map((col, colIdx) => (
+                  <TableCell
+                    key={colIdx}
+                    className={cn(
+                      "table-cell",
+                      col.cellClassName
+                    )}
+                  >
+                    {col.cell ? col.cell(row) : row[col.accessor]}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </>
   );
