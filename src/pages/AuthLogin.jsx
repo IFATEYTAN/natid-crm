@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import FormInput from '@/components/ui/FormInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { LogIn, Truck, ShieldCheck, AlertCircle, ArrowRight, Mail, CheckCircle } from 'lucide-react';
+import { LogIn, ShieldCheck, AlertCircle, ArrowRight, Mail, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
-export default function Login() {
+export default function AuthLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { checkAppState } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setIsLoading(true);
 
     try {
@@ -34,6 +36,35 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    if (!email || !email.includes('@')) {
+      setError('נא להזין כתובת אימייל תקינה');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await base44.auth.resetPasswordRequest(email);
+      setSuccessMessage('קישור לאיפוס סיסמה נשלח לכתובת האימייל שלך');
+    } catch (err) {
+      console.error('Reset password error:', err);
+      setError('שגיאה בשליחת בקשה לאיפוס סיסמה. נא לנסות שוב.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleForgotPassword = () => {
+    setIsForgotPassword(!isForgotPassword);
+    setError('');
+    setSuccessMessage('');
   };
 
   return (
@@ -55,27 +86,13 @@ export default function Login() {
       <div className="absolute inset-0 z-0">
         <motion.div
           className="absolute top-20 right-20 w-64 h-64 bg-primary-soft-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-20 left-20 w-96 h-96 bg-secondary-soft-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.5, 0.3, 0.5]
-          }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
+          animate={{ scale: [1.2, 1, 1.2], opacity: [0.5, 0.3, 0.5] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
       </div>
 
@@ -91,16 +108,15 @@ export default function Login() {
             <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-neutral-soft-800 mb-1 sm:mb-2">
               NATI GROUP SERVICE
             </CardTitle>
-            <CardDescription className="text-sm sm:text-base text-neutral-soft-600">
+            <CardDescription className="text-base text-neutral-soft-600">
               {isForgotPassword ? 'איפוס סיסמה' : 'מערכת ניהול CRM'}
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="pt-3 sm:pt-6 px-4 sm:px-6">
+          <CardContent className="pt-6">
             {isForgotPassword ? (
               /* Forgot Password Form */
               <form onSubmit={handleForgotPassword} className="space-y-5">
-                {/* Back Button */}
                 <button
                   type="button"
                   onClick={toggleForgotPassword}
@@ -110,7 +126,6 @@ export default function Login() {
                   <span>חזרה להתחברות</span>
                 </button>
 
-                {/* Error Alert */}
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -122,7 +137,6 @@ export default function Login() {
                   </motion.div>
                 )}
 
-                {/* Success Alert */}
                 {successMessage && (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -138,7 +152,6 @@ export default function Login() {
                   הזן את כתובת האימייל שלך ונשלח לך קישור לאיפוס הסיסמה
                 </p>
 
-                {/* Email Input */}
                 <FormInput
                   label="כתובת אימייל"
                   type="email"
@@ -150,7 +163,6 @@ export default function Login() {
                   className="text-right"
                 />
 
-                {/* Send Reset Link Button */}
                 <Button
                   type="submit"
                   disabled={isLoading}
@@ -171,8 +183,7 @@ export default function Login() {
               </form>
             ) : (
               /* Login Form */
-              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-5">
-                {/* Error Alert */}
+              <form onSubmit={handleSubmit} className="space-y-5">
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -184,7 +195,6 @@ export default function Login() {
                   </motion.div>
                 )}
 
-                {/* Email Input */}
                 <FormInput
                   label="שם משתמש / אימייל"
                   type="email"
@@ -196,7 +206,6 @@ export default function Login() {
                   className="text-right"
                 />
 
-                {/* Password Input */}
                 <FormInput
                   label="סיסמה"
                   type="password"
@@ -208,7 +217,6 @@ export default function Login() {
                   className="text-right"
                 />
 
-                {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between text-sm flex-row-reverse">
                   <label className="flex items-center gap-2 cursor-pointer flex-row-reverse">
                     <span className="text-neutral-soft-600">זכור אותי</span>
@@ -226,11 +234,10 @@ export default function Login() {
                   </button>
                 </div>
 
-                {/* Login Button */}
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-4 sm:py-6 text-base sm:text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3"
+                  className="w-full bg-gradient-to-r from-primary-soft-600 to-primary-soft-500 hover:from-primary-soft-700 hover:to-primary-soft-600 text-white font-semibold py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                 >
                   {isLoading ? (
                     <>
@@ -244,10 +251,18 @@ export default function Login() {
                     </>
                   )}
                 </Button>
+
+                {!isForgotPassword && (
+                  <div className="mt-6 text-center text-sm">
+                    <span className="text-neutral-soft-600">אין לך חשבון? </span>
+                    <Link to="/Register" className="text-primary-soft-600 hover:text-primary-soft-700 font-medium hover:underline">
+                      הרשם כאן
+                    </Link>
+                  </div>
+                )}
               </form>
             )}
 
-            {/* Security Badge */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -260,7 +275,6 @@ export default function Login() {
           </CardContent>
         </Card>
 
-        {/* Footer Info */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -272,7 +286,6 @@ export default function Login() {
         </motion.div>
       </motion.div>
 
-      {/* Decorative Bottom Wave */}
       <div className="absolute bottom-0 left-0 right-0 z-0">
         <svg
           className="w-full h-32 opacity-10"

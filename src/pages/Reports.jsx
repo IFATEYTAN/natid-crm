@@ -89,7 +89,7 @@ export default function Reports() {
     // Vendor filter
     if (selectedVendor !== 'all' && call.assigned_vendor_id !== selectedVendor) return false;
 
-    // Customer filter  
+    // Customer filter
     if (selectedCustomer !== 'all' && call.customer_name !== selectedCustomer) return false;
 
     // Status filter
@@ -176,9 +176,9 @@ export default function Reports() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h1 className="flex items-center gap-3">
+          <h1 className="flex items-center gap-3 heading-2 text-primary-soft-600">
             <motion.div
-              className="w-10 h-10 bg-gradient-to-br from-[#FF0000] to-[#CC0000] rounded-lg flex items-center justify-center"
+              className="w-10 h-10 bg-gradient-to-br from-primary-soft-600 to-primary-soft-700 rounded-lg flex items-center justify-center"
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: 'spring', stiffness: 400 }}
             >
@@ -186,7 +186,7 @@ export default function Reports() {
             </motion.div>
             דוחות וניתוחים
           </h1>
-          <p className="text-[var(--color-text-secondary)] mt-1">
+          <p className="text-secondary mt-1">
             ניתוח מקיף של ביצועים, SLA והכנסות •{' '}
             <AnimatedCounter value={filteredCalls.length} duration={0.5} /> קריאות
           </p>
@@ -209,7 +209,7 @@ export default function Reports() {
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="bg-[#FF0000] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                className="bg-primary-soft-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
               >
                 {activeFiltersCount}
               </motion.span>
@@ -262,14 +262,14 @@ export default function Reports() {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="border-[#E0E0E0] bg-white">
-              <CardContent className="pt-6">
+            <Card className="card-base">
+              <CardContent className="pt-6 card-body">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Date Range */}
-                  <div>
-                    <Label>טווח תאריכים</Label>
+                  <div className="form-group">
+                    <Label className="form-label">טווח תאריכים</Label>
                     <Select value={dateRange} onValueChange={setDateRange}>
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger className="form-input">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -284,32 +284,32 @@ export default function Reports() {
                   </div>
 
                   {/* Custom Start Date */}
-                  <div>
-                    <Label>מתאריך</Label>
+                  <div className="form-group">
+                    <Label className="form-label">מתאריך</Label>
                     <Input
                       type="date"
                       value={customStartDate}
                       onChange={(e) => setCustomStartDate(e.target.value)}
-                      className="mt-1"
+                      className="form-input"
                     />
                   </div>
 
                   {/* Custom End Date */}
-                  <div>
-                    <Label>עד תאריך</Label>
+                  <div className="form-group">
+                    <Label className="form-label">עד תאריך</Label>
                     <Input
                       type="date"
                       value={customEndDate}
                       onChange={(e) => setCustomEndDate(e.target.value)}
-                      className="mt-1"
+                      className="form-input"
                     />
                   </div>
 
                   {/* Vendor Filter */}
-                  <div>
-                    <Label>ספק</Label>
+                  <div className="form-group">
+                    <Label className="form-label">ספק</Label>
                     <Select value={selectedVendor} onValueChange={setSelectedVendor}>
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger className="form-input">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -322,10 +322,10 @@ export default function Reports() {
                   </div>
 
                   {/* Customer Filter */}
-                  <div>
-                    <Label>לקוח</Label>
+                  <div className="form-group">
+                    <Label className="form-label">לקוח</Label>
                     <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger className="form-input">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -338,10 +338,10 @@ export default function Reports() {
                   </div>
 
                   {/* Status Filter */}
-                  <div>
-                    <Label>סטטוס קריאה</Label>
+                  <div className="form-group">
+                    <Label className="form-label">סטטוס קריאה</Label>
                     <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger className="form-input">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -372,26 +372,26 @@ export default function Reports() {
 
                 {/* Active Filters Display */}
                 {activeFiltersCount > 0 && (
-                  <div className="mt-4 pt-4 border-t border-[#E0E0E0]">
-                    <p className="text-sm text-[#616161] mb-2">פילטרים פעילים:</p>
+                  <div className="mt-4 pt-4 border-t border-neutral-soft-200">
+                    <p className="text-secondary mb-2">פילטרים פעילים:</p>
                     <div className="flex flex-wrap gap-2">
                       {customStartDate && customEndDate && (
-                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                        <span className="badge-base bg-neutral-soft-100 text-neutral-soft-900 border border-neutral-soft-200">
                           תאריך: {format(new Date(customStartDate), 'dd/MM/yy')} - {format(new Date(customEndDate), 'dd/MM/yy')}
                         </span>
                       )}
                       {selectedVendor !== 'all' && (
-                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                        <span className="badge-base bg-neutral-soft-100 text-neutral-soft-900 border border-neutral-soft-200">
                           ספק: {vendors.find(v => v.id === selectedVendor)?.vendor_name}
                         </span>
                       )}
                       {selectedCustomer !== 'all' && (
-                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                        <span className="badge-base bg-neutral-soft-100 text-neutral-soft-900 border border-neutral-soft-200">
                           לקוח: {selectedCustomer}
                         </span>
                       )}
                       {selectedStatus !== 'all' && (
-                        <span className="px-3 py-1 bg-[#F5F5F5] text-[#212121] rounded-full text-sm border border-[#E0E0E0]">
+                        <span className="badge-base bg-neutral-soft-100 text-neutral-soft-900 border border-neutral-soft-200">
                           סטטוס: {selectedStatus}
                         </span>
                       )}

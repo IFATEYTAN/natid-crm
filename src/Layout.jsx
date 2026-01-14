@@ -8,6 +8,7 @@ import {
   LogOut,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Bell
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,7 @@ export default function Layout({ children, currentPageName }) {
   }, [currentPageName]);
 
   // Don't wrap auth pages in the main layout
-  if (currentPageName === 'SignIn' || currentPageName === 'Register') {
+  if (currentPageName === 'SignIn' || currentPageName === 'Register' || currentPageName === 'AuthLogin' || currentPageName === 'Login') {
     return children;
   }
 
@@ -146,7 +147,7 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   const handleLogout = async () => {
-    await base44.auth.logout('/SignIn');
+    await base44.auth.logout('/AuthLogin');
   };
 
   return (
@@ -278,7 +279,7 @@ export default function Layout({ children, currentPageName }) {
                 {expandedGroups[group.title] ? (
                   <ChevronDown className="w-4 h-4" />
                 ) : (
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4" />
                 )}
               </button>
               
@@ -366,7 +367,7 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0" align="end">
+              <PopoverContent className="w-80 p-0" align="start">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center">
                   <h4 className="font-semibold text-sm">התראות</h4>
                   <span className="text-xs text-gray-500">{unreadCount} חדשות</span>

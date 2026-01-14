@@ -24,12 +24,12 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
-import SignIn from './pages/SignIn';
 import UserManagement from './pages/UserManagement';
 import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
+import AuthLogin from './pages/AuthLogin';
 import __Layout from './Layout.jsx';
 
 
@@ -60,12 +60,12 @@ export const PAGES = {
     "Reports": Reports,
     "ServiceProviders": ServiceProviders,
     "Settings": Settings,
-    "SignIn": SignIn,
     "UserManagement": UserManagement,
     "VendorMap": VendorMap,
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
+    "AuthLogin": AuthLogin,
 }
 
 export const pagesConfig = {
