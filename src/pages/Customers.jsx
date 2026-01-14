@@ -145,7 +145,7 @@ export default function Customers() {
       ...formData,
       monthly_budget: formData.monthly_budget ? Number(formData.monthly_budget) : null
     };
-    
+
     if (editingCustomer) {
       updateMutation.mutate({ id: editingCustomer.id, data });
     } else {
@@ -153,8 +153,8 @@ export default function Customers() {
     }
   };
 
-  const filteredCustomers = customers.filter(c => 
-    !search || 
+  const filteredCustomers = customers.filter(c =>
+    !search ||
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
     c.phone?.includes(search) ||
     c.contact_person?.toLowerCase().includes(search.toLowerCase())
@@ -166,10 +166,10 @@ export default function Customers() {
       accessor: 'name',
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#0D47A1]/10 flex items-center justify-center">
-            <Building2 className="w-4 h-4 text-[#0D47A1]" />
+          <div className="w-8 h-8 rounded-full bg-primary-soft-100 flex items-center justify-center">
+            <Building2 className="w-4 h-4 text-primary-soft-600" />
           </div>
-          <span className="font-medium text-[#212121]">{row.name}</span>
+          <span className="font-medium text-neutral-soft-900">{row.name}</span>
         </div>
       )
     },
@@ -186,7 +186,7 @@ export default function Customers() {
       header: 'טלפון',
       accessor: 'phone',
       cell: (row) => (
-        <span className="flex items-center gap-1 text-[#616161]">
+        <span className="flex items-center gap-1 text-neutral-soft-600">
           <Phone className="w-3 h-3" />
           {row.phone}
         </span>
@@ -208,29 +208,29 @@ export default function Customers() {
         <div className="flex items-center gap-2">
           <Link to={createPageUrl(`CustomerDetails?id=${row.id}`)}>
             <Button variant="ghost" size="icon" title="צפה בפרטים ואינטראקציות">
-              <Building2 className="w-4 h-4 text-blue-600" />
+              <Building2 className="w-4 h-4 text-primary-soft-600" />
             </Button>
           </Link>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
             title="ערוך"
           >
-            <Edit className="w-4 h-4 text-[#616161]" />
+            <Edit className="w-4 h-4 text-neutral-soft-600" />
           </Button>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
-            onClick={(e) => { 
-              e.stopPropagation(); 
+            onClick={(e) => {
+              e.stopPropagation();
               if (confirm('האם למחוק את הלקוח?')) {
                 deleteMutation.mutate(row.id);
               }
             }}
             title="מחק"
           >
-            <Trash2 className="w-4 h-4 text-[#D32F2F]" />
+            <Trash2 className="w-4 h-4 text-error-soft-600" />
           </Button>
         </div>
       )
@@ -268,8 +268,8 @@ export default function Customers() {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl font-bold text-[#0D47A1]">לקוחות</h1>
-            <p className="text-[#616161] text-sm">{filteredCustomers.length} לקוחות</p>
+            <h1 className="heading-2 text-primary-soft-600">לקוחות</h1>
+            <p className="text-secondary">{filteredCustomers.length} לקוחות</p>
           </div>
           <div className="flex gap-2">
             <ExportMenu
@@ -280,7 +280,7 @@ export default function Customers() {
               subtitle={`סה"כ ${filteredCustomers.length} לקוחות`}
             />
             <Button
-              className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+              className="btn-primary"
               onClick={() => setIsDialogOpen(true)}
             >
               <Plus className="w-4 h-4" />
@@ -294,10 +294,10 @@ export default function Customers() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="bg-white rounded-xl border border-[#E0E0E0] p-4"
+          className="card-base card-body"
         >
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-soft-500" />
             <Input
               placeholder="חיפוש לפי שם, טלפון..."
               value={search}
@@ -332,21 +332,22 @@ export default function Customers() {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>שם לקוח *</Label>
+                <div className="form-group">
+                  <Label className="form-label">שם לקוח *</Label>
                   <Input
+                    className="form-input"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                   />
                 </div>
-                <div>
-                  <Label>סוג לקוח</Label>
+                <div className="form-group">
+                  <Label className="form-label">סוג לקוח</Label>
                   <Select
                     value={formData.customer_type}
                     onValueChange={(value) => setFormData({ ...formData, customer_type: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="form-input">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -356,50 +357,55 @@ export default function Customers() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>איש קשר</Label>
+                <div className="form-group">
+                  <Label className="form-label">איש קשר</Label>
                   <Input
+                    className="form-input"
                     value={formData.contact_person}
                     onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                   />
                 </div>
-                <div>
-                  <Label>טלפון *</Label>
+                <div className="form-group">
+                  <Label className="form-label">טלפון *</Label>
                   <Input
+                    className="form-input"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     required
                   />
                 </div>
-                <div>
-                  <Label>דוא"ל</Label>
+                <div className="form-group">
+                  <Label className="form-label">דוא"ל</Label>
                   <Input
+                    className="form-input"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
-                <div>
-                  <Label>עיר</Label>
+                <div className="form-group">
+                  <Label className="form-label">עיר</Label>
                   <Input
+                    className="form-input"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   />
                 </div>
-                <div className="col-span-2">
-                  <Label>כתובת</Label>
+                <div className="col-span-2 form-group">
+                  <Label className="form-label">כתובת</Label>
                   <Input
+                    className="form-input"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   />
                 </div>
-                <div>
-                  <Label>סוג חוזה</Label>
+                <div className="form-group">
+                  <Label className="form-label">סוג חוזה</Label>
                   <Select
                     value={formData.contract_type}
                     onValueChange={(value) => setFormData({ ...formData, contract_type: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="form-input">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -409,13 +415,13 @@ export default function Customers() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>סטטוס</Label>
+                <div className="form-group">
+                  <Label className="form-label">סטטוס</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value) => setFormData({ ...formData, status: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="form-input">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -425,25 +431,28 @@ export default function Customers() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>SLA תגובה (דקות)</Label>
+                <div className="form-group">
+                  <Label className="form-label">SLA תגובה (דקות)</Label>
                   <Input
+                    className="form-input"
                     type="number"
                     value={formData.sla_response_minutes}
                     onChange={(e) => setFormData({ ...formData, sla_response_minutes: Number(e.target.value) })}
                   />
                 </div>
-                <div>
-                  <Label>SLA הגעה (דקות)</Label>
+                <div className="form-group">
+                  <Label className="form-label">SLA הגעה (דקות)</Label>
                   <Input
+                    className="form-input"
                     type="number"
                     value={formData.sla_arrival_minutes}
                     onChange={(e) => setFormData({ ...formData, sla_arrival_minutes: Number(e.target.value) })}
                   />
                 </div>
-                <div className="col-span-2">
-                  <Label>הערות</Label>
+                <div className="col-span-2 form-group">
+                  <Label className="form-label">הערות</Label>
                   <Textarea
+                    className="form-input"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={3}
@@ -454,9 +463,9 @@ export default function Customers() {
                 <Button type="button" variant="outline" onClick={resetForm}>
                   ביטול
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-[#0D47A1] hover:bg-[#1565C0]"
+                <Button
+                  type="submit"
+                  className="btn-primary"
                   disabled={createMutation.isPending || updateMutation.isPending}
                 >
                   {editingCustomer ? 'עדכון' : 'הוספה'}
