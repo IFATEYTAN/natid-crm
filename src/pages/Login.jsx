@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { LogIn, Truck, ShieldCheck, AlertCircle, ArrowRight, Mail, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
 export default function Login() {
