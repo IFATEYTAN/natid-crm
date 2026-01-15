@@ -1,5 +1,6 @@
 import Agents from './pages/Agents';
 import AllVendorsMap from './pages/AllVendorsMap';
+import AuthLogin from './pages/AuthLogin';
 import AutomationSettings from './pages/AutomationSettings';
 import BotIntegration from './pages/BotIntegration';
 import CallDetailsVendor from './pages/CallDetailsVendor';
@@ -29,13 +30,13 @@ import VendorMap from './pages/VendorMap';
 import VendorPayments from './pages/VendorPayments';
 import VendorPortal from './pages/VendorPortal';
 import VendorProfile from './pages/VendorProfile';
-import AuthLogin from './pages/AuthLogin';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Agents": Agents,
     "AllVendorsMap": AllVendorsMap,
+    "AuthLogin": AuthLogin,
     "AutomationSettings": AutomationSettings,
     "BotIntegration": BotIntegration,
     "CallDetailsVendor": CallDetailsVendor,
@@ -65,7 +66,6 @@ export const PAGES = {
     "VendorPayments": VendorPayments,
     "VendorPortal": VendorPortal,
     "VendorProfile": VendorProfile,
-    "AuthLogin": AuthLogin,
 }
 
 export const pagesConfig = {

@@ -10,13 +10,13 @@ export default function Register() {
   useEffect(() => {
     // Attempt automatic redirect after a short delay
     const timer = setTimeout(() => {
-        navigate('/SignIn');
+        navigate('/AuthLogin');
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
   const handleManualRedirect = () => {
-    navigate('/SignIn');
+    navigate('/AuthLogin');
   };
 
   return (
