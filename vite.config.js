@@ -26,14 +26,14 @@ export default defineConfig({
         // Runtime caching for API calls
         runtimeCaching: [
           {
-            // Cache API responses
-            urlPattern: /^https:\/\/api\./i,
+            // Cache API responses (Base44 API)
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxAgeSeconds: 60 * 5 // 5 minutes for fresh data
               },
               networkTimeoutSeconds: 10,
               cacheableResponse: {
@@ -80,7 +80,7 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true
+        enabled: false // Disable SW in development to avoid caching issues
       }
     })
   ]
