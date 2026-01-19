@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import AgentCard from '@/components/AgentCard';
 import AvatarStack from '@/components/ui/AvatarStack';
+import StatCard from '@/components/ui/StatCard';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Zap, Activity, Clock, CheckCircle2 } from 'lucide-react';
 
 // Mock agents data - replace with actual API integration
 const MOCK_AGENTS = [
@@ -89,30 +93,44 @@ export default function Agents() {
   };
 
   const activeAgentsCount = agents.filter(a => a.status === 'active').length;
+  const totalTasks = agents.reduce((acc, curr) => acc + (curr.stats?.completedTasks || 0), 0);
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[26px] font-bold text-[#212121]">סוכנים</h1>
-          <div className="flex items-center gap-4 mt-1">
-            <p className="text-[14px] text-[#616161]">
+          <h1 className="text-[26px] font-bold text-gray-900">סוכנים</h1>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-gray-500">
               ניהול והפעלת סוכנים אוטומטיים במערכת
             </p>
-            <AvatarStack users={agents.filter(a => a.status === 'active')} size="sm" max={6} />
+            <span className="text-gray-300">|</span>
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">פעילים:</span>
+                <AvatarStack users={agents.filter(a => a.status === 'active')} size="sm" max={4} />
+            </div>
           </div>
         </div>
-        <div className="text-left">
-          <div className="text-[24px] font-bold text-[#3B82F6]">{activeAgentsCount}</div>
-          <div className="text-[13px] text-[#6B7280]">סוכנים פעילים</div>
+        <div className="flex gap-3">
+             <div className="bg-white px-4 py-2 rounded-lg border shadow-sm text-center min-w-[100px]">
+                <div className="text-2xl font-bold text-primary">{activeAgentsCount}</div>
+                <div className="text-xs text-gray-500 font-medium">סוכנים פעילים</div>
+             </div>
+             <div className="bg-white px-4 py-2 rounded-lg border shadow-sm text-center min-w-[100px]">
+                <div className="text-2xl font-bold text-gray-900">{totalTasks.toLocaleString()}</div>
+                <div className="text-xs text-gray-500 font-medium">פעולות שבוצעו</div>
+             </div>
         </div>
       </div>
 
       {/* Agents Grid */}
       <div>
-        <h2 className="text-[18px] font-semibold text-[#212121] mb-4">כל הסוכנים</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex items-center gap-2 mb-4">
+            <Zap className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-gray-900">כל הסוכנים</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {agents.map(agent => (
             <AgentCard
               key={agent.id}
@@ -125,36 +143,44 @@ export default function Agents() {
       </div>
 
       {/* Activity Log */}
-      <div className="bg-white border border-[#E5E7EB] rounded-lg">
-        <div className="px-5 py-4 border-b border-[#E5E7EB]">
-          <h2 className="text-[18px] font-semibold text-[#212121]">יומן פעילות</h2>
-        </div>
-        <div className="divide-y divide-[#F3F4F6] max-h-[320px] overflow-y-auto">
-          {logs.length === 0 ? (
-            <div className="px-5 py-8 text-center text-[#9CA3AF] text-[14px]">
-              אין פעילות להצגה
+      <Card>
+        <CardHeader className="border-b bg-gray-50/50 py-4">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Activity className="w-5 h-5 text-gray-500" />
+            יומן פעילות
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+            <div className="divide-y max-h-[400px] overflow-y-auto">
+            {logs.length === 0 ? (
+                <div className="p-8 text-center text-gray-500 text-sm">
+                אין פעילות להצגה
+                </div>
+            ) : (
+                logs.map(log => (
+                <div key={log.id} className="p-4 flex items-start gap-4 hover:bg-gray-50 transition-colors group">
+                    <div className="flex flex-col items-center gap-1 mt-0.5">
+                        <span className="text-xs font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                            {log.timestamp}
+                        </span>
+                    </div>
+                    
+                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" 
+                        style={{ backgroundColor: log.type === 'warning' ? '#F59E0B' : log.type === 'success' ? '#10B981' : '#3B82F6' }} 
+                    />
+
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-gray-900">{log.agent}</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-0.5">{log.action}</p>
+                    </div>
+                </div>
+                ))
+            )}
             </div>
-          ) : (
-            logs.map(log => (
-              <div key={log.id} className="px-5 py-3 flex items-start gap-4 hover:bg-[#FAFAFA] transition-colors">
-                <div className="text-[13px] text-[#9CA3AF] font-mono whitespace-nowrap">
-                  {log.timestamp}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[13px] font-medium text-[#3B82F6]">{log.agent}</span>
-                  <span className="text-[13px] text-[#6B7280] mx-2">—</span>
-                  <span className="text-[13px] text-[#374151]">{log.action}</span>
-                </div>
-                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                  log.type === 'warning' ? 'bg-[#F59E0B]' :
-                  log.type === 'success' ? 'bg-[#3B82F6]' :
-                  'bg-[#9CA3AF]'
-                }`} />
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

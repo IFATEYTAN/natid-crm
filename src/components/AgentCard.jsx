@@ -1,6 +1,9 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Play, Pause, Activity, Clock, CheckCircle2 } from 'lucide-react';
 
 export default function AgentCard({
   agent,
@@ -10,63 +13,88 @@ export default function AgentCard({
   const isActive = agent.status === 'active';
 
   return (
-    <div className={cn(
-      "bg-white border rounded-lg p-5 transition-all duration-200",
+    <Card className={cn(
+      "card-hover transition-all duration-200 border-t-4",
       isActive
-        ? "border-[#3B82F6] shadow-sm"
-        : "border-[#E5E7EB] hover:border-[#D1D5DB] hover:shadow-md hover:translate-y-[-2px]"
+        ? "border-t-primary border-x-border border-b-border shadow-sm"
+        : "border-t-transparent hover:border-t-gray-300"
     )}>
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <h3 className="text-[16px] font-semibold text-[#212121] mb-1">
-            {agent.name}
-          </h3>
-          <p className="text-[13px] text-[#616161] leading-relaxed">
-            {agent.description}
-          </p>
-        </div>
-
-        {/* Status Indicator */}
-        <div className={cn(
-          "px-3 py-1 rounded-full text-[12px] font-medium mr-3",
-          isActive
-            ? "bg-[#DBEAFE] text-[#1D4ED8]"
-            : "bg-[#F3F4F6] text-[#6B7280]"
-        )}>
-          {isActive ? 'פעיל' : 'לא פעיל'}
-        </div>
-      </div>
-
-      {/* Stats Row */}
-      {agent.stats && (
-        <div className="flex items-center gap-4 mb-4 pt-3 border-t border-[#F3F4F6]">
-          <div className="text-[13px]">
-            <span className="text-[#9CA3AF]">משימות שהושלמו: </span>
-            <span className="font-medium text-[#374151]">{agent.stats.completedTasks || 0}</span>
+      <CardHeader className="pb-3 space-y-2">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              {agent.name}
+              {isActive && <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+              </span>}
+            </CardTitle>
+            <CardDescription className="text-sm text-gray-500 line-clamp-2 h-10">
+              {agent.description}
+            </CardDescription>
           </div>
-          {agent.stats.lastRun && (
-            <div className="text-[13px]">
-              <span className="text-[#9CA3AF]">הפעלה אחרונה: </span>
-              <span className="font-medium text-[#374151]">{agent.stats.lastRun}</span>
-            </div>
-          )}
+          <Badge variant={isActive ? "default" : "secondary"} className={cn(
+            "mr-2 whitespace-nowrap",
+            isActive ? "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20" : ""
+          )}>
+            {isActive ? 'פעיל' : 'לא פעיל'}
+          </Badge>
         </div>
-      )}
-
-      {/* Action Button */}
-      <Button
-        onClick={() => onToggle(agent.id)}
-        disabled={isLoading}
-        className={cn(
-          "w-full transition-all duration-200 rounded-[6px] font-medium",
-          isActive
-            ? "bg-[#F3F4F6] hover:bg-[#E5E7EB] text-[#374151]"
-            : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+      </CardHeader>
+      
+      <CardContent className="pb-3">
+        {agent.stats && (
+          <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-lg text-xs">
+            <div className="space-y-1">
+              <span className="text-gray-500 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                בוצעו
+              </span>
+              <span className="font-semibold text-gray-900 text-sm block">
+                {agent.stats.completedTasks?.toLocaleString() || 0}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <span className="text-gray-500 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5" />
+                אחרון
+              </span>
+              <span className="font-semibold text-gray-900 text-sm block">
+                {agent.stats.lastRun || '-'}
+              </span>
+            </div>
+          </div>
         )}
-      >
-        {isLoading ? 'מעבד...' : isActive ? 'עצור' : 'הפעל'}
-      </Button>
-    </div>
+      </CardContent>
+
+      <CardFooter className="pt-0">
+        <Button
+          onClick={() => onToggle(agent.id)}
+          disabled={isLoading}
+          variant={isActive ? "outline" : "default"}
+          className={cn(
+            "w-full gap-2",
+            !isActive && "bg-primary hover:bg-primary-hover text-white"
+          )}
+        >
+          {isLoading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <span>מעבד...</span>
+            </>
+          ) : isActive ? (
+            <>
+              <Pause className="w-4 h-4" />
+              <span>עצור פעילות</span>
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4" />
+              <span>הפעל סוכן</span>
+            </>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
