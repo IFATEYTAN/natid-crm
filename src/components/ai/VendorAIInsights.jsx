@@ -19,7 +19,7 @@ export default function VendorAIInsights({ vendorId }) {
 
     if (!isEnabled) {
         return (
-            <Card className="bg-gradient-to-r from-violet-50 to-indigo-50 border-indigo-100">
+            <Card className="bg-gradient-to-l from-violet-50 to-indigo-50 border-indigo-100" dir="rtl">
                 <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="bg-white p-2 rounded-full shadow-sm">
@@ -44,8 +44,8 @@ export default function VendorAIInsights({ vendorId }) {
     }
 
     return (
-        <Card className="border-indigo-100 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-50 py-3 px-4 flex flex-row items-center justify-between">
+        <Card className="border-indigo-100 overflow-hidden" dir="rtl">
+            <CardHeader className="bg-gradient-to-l from-indigo-50 to-white border-b border-indigo-50 py-3 px-4 flex flex-row items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Brain className="w-4 h-4 text-indigo-600" />
                     <CardTitle className="text-base text-indigo-900">פרופיל ביצועים (AI)</CardTitle>
@@ -127,7 +127,7 @@ export default function VendorAIInsights({ vendorId }) {
                         </div>
 
                         {/* Actionable Advice */}
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-3 rounded-lg border border-orange-100 flex items-start gap-3">
+                        <div className="bg-gradient-to-l from-amber-50 to-orange-50 p-3 rounded-lg border border-orange-100 flex items-start gap-3">
                             <div className="bg-white p-1.5 rounded-full shadow-sm mt-0.5">
                                 <Lightbulb className="w-4 h-4 text-amber-500" />
                             </div>

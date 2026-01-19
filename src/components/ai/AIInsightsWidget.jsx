@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AIInsightsWidget() {
     return (
-        <Card className="card-base h-full">
+        <Card className="card-base h-full" dir="rtl">
             <CardHeader className="pb-4">
                 <CardTitle className="text-lg text-[#212121]">תובנות המערכת (AI)</CardTitle>
             </CardHeader>

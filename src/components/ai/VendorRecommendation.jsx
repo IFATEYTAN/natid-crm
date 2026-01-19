@@ -31,9 +31,9 @@ export default function VendorRecommendation({ callDetails, onSelectVendor }) {
     if (!data?.recommendations?.length) return null;
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3" dir="rtl">
             <div className="flex items-center gap-2 mb-2">
-                <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-1 rounded-md">
+                <div className="bg-gradient-to-l from-indigo-500 to-purple-500 text-white p-1 rounded-md">
                     <Sparkles className="w-3 h-3" />
                 </div>
                 <h4 className="text-sm font-semibold text-gray-900">המלצות AI להקצאה</h4>
