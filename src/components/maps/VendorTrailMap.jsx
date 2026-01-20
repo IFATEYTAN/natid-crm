@@ -15,7 +15,7 @@ import {
   Target
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { base44 } from '@/lib/api';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
