@@ -64,6 +64,9 @@ export default function Layout({ children, currentPageName }) {
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
 
   useEffect(() => {
+    // Force RTL direction
+    document.documentElement.dir = 'rtl';
+    
     const fetchUser = async () => {
       try {
         const user = await base44.auth.me();

@@ -51,10 +51,10 @@ export default function AvatarStack({ users, max = 5, size = 'md', onShowAll, cl
                 <TooltipTrigger asChild>
                   <motion.div
                     layout
-                    initial={{ opacity: 0, x: -20, scale: 0.8 }}
+                    initial={{ opacity: 0, x: 20, scale: 0.8 }}
                     animate={{ 
                       opacity: 1, 
-                      x: index * -15, // Negative margin logic handled by translation for smoother animation
+                      x: index * 15, // Positive x for RTL overlap (moves items to the right)
                       scale: 1 
                     }}
                     exit={{ opacity: 0, scale: 0 }}
@@ -110,7 +110,7 @@ export default function AvatarStack({ users, max = 5, size = 'md', onShowAll, cl
             animate={{ 
               opacity: 1, 
               scale: 1,
-              x: displayUsers.length * -15
+              x: displayUsers.length * 15
             }}
             whileHover={{ scale: 1.1 }}
             onClick={onShowAll}
