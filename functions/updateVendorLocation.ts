@@ -1,72 +1,71 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+/**
+ * Update vendor's GPS location
+ * Called by vendor's mobile device periodically
+ */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    
+    const { 
+      vendor_id,
+      latitude,
+      longitude,
+      accuracy,
+      speed,
+      heading,
+      battery_level
+    } = await req.json();
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { vendorId, latitude, longitude, accuracy, speed, heading, isAvailable } = await req.json();
-
-    if (!vendorId || !latitude || !longitude) {
+    if (!vendor_id || latitude === undefined || longitude === undefined) {
       return Response.json({ 
-        error: 'Missing required fields: vendorId, latitude, longitude' 
+        error: 'Missing required fields: vendor_id, latitude, longitude' 
       }, { status: 400 });
     }
 
-    // Get vendor details
-    const vendors = await base44.entities.Vendor.filter({ id: vendorId });
-    const vendor = vendors[0];
-
-    if (!vendor) {
-      return Response.json({ error: 'Vendor not found' }, { status: 404 });
+    // Reverse geocode to get address (using free API)
+    let address = '';
+    try {
+      const geocodeResponse = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=he`
+      );
+      if (geocodeResponse.ok) {
+        const geocodeData = await geocodeResponse.json();
+        address = geocodeData.display_name || '';
+      }
+    } catch (e) {
+      console.log('Geocode error:', e);
     }
 
     // Create location record
-    await base44.entities.VendorLocation.create({
-      vendor_id: vendorId,
-      vendor_name: vendor.vendor_name,
+    const locationRecord = await base44.asServiceRole.entities.VendorLocation.create({
+      vendor_id,
       latitude,
       longitude,
-      accuracy: accuracy || null,
-      speed: speed || null,
-      heading: heading || null,
-      is_available: isAvailable !== undefined ? isAvailable : true
+      accuracy,
+      speed,
+      heading,
+      address,
+      battery_level,
+      is_available: true
     });
 
-    // Update vendor's current location and availability
-    const updateData = {
+    // Update vendor's current location
+    await base44.asServiceRole.entities.Vendor.update(vendor_id, {
       current_latitude: latitude,
       current_longitude: longitude,
       last_location_update: new Date().toISOString()
-    };
-
-    if (isAvailable !== undefined) {
-      updateData.is_available_now = isAvailable;
-      updateData.availability_status = isAvailable ? 'available' : 'busy';
-    }
-
-    await base44.entities.Vendor.update(vendorId, updateData);
+    });
 
     return Response.json({
       success: true,
-      message: 'Location updated successfully',
-      vendor: {
-        id: vendorId,
-        latitude,
-        longitude,
-        is_available: isAvailable
-      }
+      location_id: locationRecord.id,
+      address
     });
 
   } catch (error) {
-    console.error('Update location error:', error);
-    return Response.json({
-      success: false,
-      error: error.message
-    }, { status: 500 });
+    console.error('Location update error:', error);
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
