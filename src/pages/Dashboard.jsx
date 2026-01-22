@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
+import { useCalls } from '@/components/hooks/useCalls';
+import { useVendors } from '@/components/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
