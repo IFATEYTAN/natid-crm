@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataTable from '@/components/ui/DataTable';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import StatusBadge from '@/components/ui/StatusBadge';
 import {
   Truck,
   Phone,
