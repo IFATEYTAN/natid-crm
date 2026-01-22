@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
+import { useWorkQueue } from '@/components/hooks/useWorkQueue';
+import { useCalls } from '@/components/hooks/useCalls';
+import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { 
   ArrowRight, 
   Search, 
@@ -42,16 +43,12 @@ export default function QueueMonitor() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: queueItems = [], isLoading } = useQuery({
-    queryKey: ['workQueue'],
-    queryFn: () => base44.entities.WorkQueue.list('-added_to_queue_at', 100),
-    refetchInterval: 10000
-  });
-
-  const { data: calls = [] } = useQuery({
-    queryKey: ['calls'],
-    queryFn: () => base44.entities.Call.list(),
-  });
+  const workQueueQuery = useWorkQueue();
+  const callsQuery = useCalls();
+  
+  const queueItems = workQueueQuery.data || [];
+  const calls = callsQuery.data || [];
+  const isLoading = workQueueQuery.isLoading;
 
   // Enrich queue items with call details
   const enrichedItems = queueItems.map(item => {

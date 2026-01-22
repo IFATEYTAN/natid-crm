@@ -3,6 +3,9 @@ import Dashboard from './pages/Dashboard';
 import NewCase from './pages/NewCase';
 import QueueMonitor from './pages/QueueMonitor';
 import Calendar from './pages/Calendar';
+import Customers from './pages/Customers';
+import ServiceProviders from './pages/ServiceProviders';
+import CallDetails from './pages/CallDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -12,6 +15,9 @@ export const PAGES = {
     "NewCase": NewCase,
     "QueueMonitor": QueueMonitor,
     "Calendar": Calendar,
+    "Customers": Customers,
+    "ServiceProviders": ServiceProviders,
+    "CallDetails": CallDetails,
 }
 
 export const pagesConfig = {
