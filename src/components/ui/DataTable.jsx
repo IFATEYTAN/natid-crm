@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { cn } from "@/components/utils";
 import { Inbox, ChevronRight } from 'lucide-react';
 import EmptyState from './EmptyState';
 
