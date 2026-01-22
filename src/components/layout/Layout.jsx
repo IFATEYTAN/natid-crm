@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/popover";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { cn } from "@/lib/utils";
-import { base44 } from '@/lib/api';
+import { cn } from "@/components/utils";
+import { base44 } from '@/components/lib/api';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 import OfflineIndicator from '@/components/pwa/OfflineIndicator';

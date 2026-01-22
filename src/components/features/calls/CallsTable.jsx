@@ -4,7 +4,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { Button } from "@/components/ui/button";
 import { Eye, Phone, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl, formatDateTime } from '@/components/utils';
+import { createPageUrl, formatDateTime, cn } from '@/components/utils';
 
 export default function CallsTable({ calls, isLoading }) {
   const columns = [
