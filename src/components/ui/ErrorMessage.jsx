@@ -1,41 +1,17 @@
-import React from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { AlertCircle } from "lucide-react";
 
-export function ErrorMessage({ 
-  error, 
-  title = 'אירעה שגיאה',
-  onRetry,
-  className 
-}) {
-  const errorMessage = error?.message || 'שגיאה לא ידועה';
-
+export function ErrorMessage({ error, title = "שגיאה בטעינת הנתונים" }) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center p-6 text-center',
-      className
-    )}>
-      <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
-        <AlertCircle className="w-6 h-6 text-red-600" />
+    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+      <div className="flex">
+        <div className="py-1">
+          <AlertCircle className="h-6 w-6 text-red-500 mr-4" />
+        </div>
+        <div>
+          <p className="font-bold">{title}</p>
+          <p className="text-sm">{error?.message || "אירעה שגיאה לא צפויה. נסה שוב מאוחר יותר."}</p>
+        </div>
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-      <p className="text-sm text-gray-500 mb-4 max-w-md">{errorMessage}</p>
-      {onRetry && (
-        <Button variant="outline" onClick={onRetry} className="gap-2">
-          <RefreshCw className="w-4 h-4" />
-          נסה שוב
-        </Button>
-      )}
-    </div>
-  );
-}
-
-export function InlineError({ message }) {
-  return (
-    <div className="flex items-center gap-2 text-red-600 text-sm">
-      <AlertCircle className="w-4 h-4" />
-      <span>{message}</span>
     </div>
   );
 }
