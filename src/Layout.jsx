@@ -24,7 +24,8 @@ import {
   MapPin,
   ListChecks,
   Bot,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Navigation
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -110,6 +111,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'ניטור תורים', href: 'QueueMonitor', icon: ListChecks },
         { name: 'יומן', href: 'Calendar', icon: CalendarIcon },
         { name: 'מפת ספקים', href: 'AllVendorsMap', icon: Map },
+        { name: 'מעקב GPS', href: 'VendorTracking', icon: Navigation },
         { name: 'אזורי כיסוי', href: 'CoverageAreas', icon: MapPin },
       ]
     },
