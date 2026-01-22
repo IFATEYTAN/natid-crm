@@ -23,7 +23,8 @@ import {
   BellRing,
   MapPin,
   ListChecks,
-  Bot
+  Bot,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
