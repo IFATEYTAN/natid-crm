@@ -168,7 +168,7 @@ export default function DataTable({
             {/* Arrow indicator for clickable cards - RTL ChevronRight */}
             {onRowClick && (
               <div className="flex justify-end mt-3 pt-2 border-t border-neutral-soft-100">
-                <ChevronRight className="w-5 h-5 text-neutral-soft-400 icon-flip-rtl" />
+                <ChevronRight className="w-5 h-5 text-neutral-soft-400 transform rotate-180" />
               </div>
             )}
           </div>
