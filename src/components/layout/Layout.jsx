@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import {
   Menu,
@@ -35,6 +35,7 @@ export default function Layout({ children, currentPageName }) {
   const [currentUser, setCurrentUser] = useState(null);
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
@@ -359,6 +360,17 @@ export default function Layout({ children, currentPageName }) {
                 className="h-8 w-auto object-contain lg:hidden"
               />
             </div>
+            {currentPageName !== 'Dashboard' && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate(-1)}
+                className="hidden md:flex items-center gap-2 text-gray-500 hover:text-gray-900"
+              >
+                <ChevronRight className="w-4 h-4" />
+                חזרה
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
