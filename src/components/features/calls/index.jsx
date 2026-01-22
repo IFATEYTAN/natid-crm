@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { useCalls } from "./hooks/useCalls";
-import CallsTable from "./components/CallsTable";
-import CallsFilters from "./components/CallsFilters";
+import { useCalls } from "./hooks/useCalls.js";
+import CallsTable from "./components/CallsTable.jsx";
+import CallsFilters from "./components/CallsFilters.jsx";
 import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
