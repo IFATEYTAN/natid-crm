@@ -1,14 +1,14 @@
+import AdvancedExport from './pages/AdvancedExport';
+import Dashboard from './pages/Dashboard';
 import NewCase from './pages/NewCase';
 import QueueMonitor from './pages/QueueMonitor';
-import Dashboard from './pages/Dashboard';
-import AdvancedExport from './pages/AdvancedExport';
 
 
 export const PAGES = {
+    "AdvancedExport": AdvancedExport,
+    "Dashboard": Dashboard,
     "NewCase": NewCase,
     "QueueMonitor": QueueMonitor,
-    "Dashboard": Dashboard,
-    "AdvancedExport": AdvancedExport,
 }
 
 export const pagesConfig = {
