@@ -27,7 +27,8 @@ import {
   Calendar as CalendarIcon,
   Navigation,
   Shield,
-  BookOpen
+  BookOpen,
+  Zap
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -140,6 +141,7 @@ export default function Layout({ children, currentPageName }) {
       icon: Settings,
       items: [
         { name: 'ניהול משתמשים', href: 'UserManagement', icon: UserCog },
+        { name: 'אוטומציה', href: 'AutomationSettings', icon: Zap },
         { name: 'אוטומציה', href: 'AutomationSettings', icon: Zap },
         { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Link2 },
         { name: 'הגדרות התראות', href: 'NotificationSettings', icon: BellRing },
