@@ -46,7 +46,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { WorkQueueOverview } from './components/WorkQueueOverview';
+import { WorkQueueOverview } from './WorkQueueOverview';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 
 // Colors for charts
