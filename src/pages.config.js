@@ -13,6 +13,7 @@ import AutomationSettings from './pages/AutomationSettings';
 import VendorPortal from './pages/VendorPortal';
 import MyVendorProfile from './pages/MyVendorProfile';
 import NewVendor from './pages/NewVendor';
+import Reports from './pages/Reports';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +33,7 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "MyVendorProfile": MyVendorProfile,
     "NewVendor": NewVendor,
+    "Reports": Reports,
 }
 
 export const pagesConfig = {
