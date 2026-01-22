@@ -11,34 +11,69 @@ css
 
 @layer base {
   :root {
-    /* Brand Colors */
+    /* Design System Colors - HSL format for Tailwind */
+    --background: 220 13% 96%; /* #F4F5F7 */
+    --foreground: 222 47% 11%; /* #172B4D */
+
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 0 100% 50%; /* #FF0000 - Brand Red */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 13% 91%; /* #E9EBEE */
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 13% 91%;
+    --muted-foreground: 224 10% 45%; /* #6B778C */
+
+    --accent: 220 13% 91%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 14 100% 60%; /* #FF5630 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 87%; /* #DFE1E6 */
+    --input: 220 13% 87%;
+    --ring: 0 100% 50%;
+
+    --radius: 0.5rem;
+
+    /* Legacy Brand Colors - for backwards compatibility */
     --color-primary: #FF0000;
     --color-primary-hover: #CC0000;
     
     /* Text Colors */
-    --color-text-primary: #212121;
-    --color-text-secondary: #6B7280; /* Gray-500 */
-    --color-text-disabled: #9CA3AF; /* Gray-400 */
+    --color-text-primary: #172B4D;
+    --color-text-secondary: #6B778C;
+    --color-text-disabled: #9CA3AF;
     
     /* Backgrounds */
-    --color-background: #F3F4F6; /* Gray-100/50 mix */
+    --color-background: #F4F5F7;
     --color-surface: #FFFFFF;
     
     /* Borders */
-    --color-border: #E5E7EB; /* Gray-200 */
+    --color-border: #DFE1E6;
     
     /* Status Colors */
-    --color-status-urgent: #FF0000;
-    --color-status-normal: #1976D2;
-    --color-status-low: #757575;
+    --color-status-urgent: #FF5630;
+    --color-status-success: #36B37E;
+    --color-status-warning: #FFAB00;
+    --color-status-info: #0052CC;
     
     /* Layout */
     --header-height: 64px;
     --sidebar-width: 256px;
     
     /* Spacing */
-    --card-padding: 1.5rem; /* 24px */
-    --radius: 0.5rem; /* 8px */
+    --card-padding: 1.5rem;
+  }
+
+  * {
+    @apply border-border;
   }
 
   body {
