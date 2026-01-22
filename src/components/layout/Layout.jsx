@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import {
   Menu,
@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/popover";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { cn } from "@/components/utils";
-import { base44 } from '@/components/lib/api';
+import { cn } from "@/lib/utils";
+import { base44 } from '@/lib/api';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
 import OfflineIndicator from '@/components/pwa/OfflineIndicator';
@@ -35,7 +35,6 @@ export default function Layout({ children, currentPageName }) {
   const [currentUser, setCurrentUser] = useState(null);
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
@@ -65,9 +64,6 @@ export default function Layout({ children, currentPageName }) {
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
 
   useEffect(() => {
-    // Force RTL direction
-    document.documentElement.dir = 'rtl';
-    
     const fetchUser = async () => {
       try {
         const user = await base44.auth.me();
@@ -248,11 +244,9 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-[100] transition-transform duration-300 ease-in-out shadow-lg",
-        // Mobile: controlled by sidebarOpen
-        // Desktop: always visible (translate-x-0)
-        sidebarOpen ? "translate-x-0" : "translate-x-full",
-        "lg:translate-x-0"
+        "fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out",
+        "lg:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
       )}>
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#E0E0E0]">
@@ -360,17 +354,6 @@ export default function Layout({ children, currentPageName }) {
                 className="h-8 w-auto object-contain lg:hidden"
               />
             </div>
-            {currentPageName !== 'Dashboard' && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate(-1)}
-                className="hidden md:flex items-center gap-2 text-gray-500 hover:text-gray-900"
-              >
-                <ChevronRight className="w-4 h-4" />
-                חזרה
-              </Button>
-            )}
           </div>
 
           <div className="flex items-center gap-4">

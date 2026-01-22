@@ -1,3 +1,8 @@
+css
+/* ====================================
+   GLOBAL RTL & HEBREW STYLES - Natid Road Services CRM
+   ==================================== */
+
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap');
 
 @tailwind base;
@@ -36,11 +41,6 @@
     --radius: 0.5rem; /* 8px */
   }
 
-  html {
-    direction: rtl;
-    text-align: right;
-  }
-
   body {
     @apply bg-[var(--color-background)] text-[var(--color-text-primary)] font-['Heebo'] antialiased;
     font-size: 16px;
@@ -66,7 +66,7 @@
   }
   
   label, .label-text {
-    @apply text-sm text-[var(--color-text-secondary)] font-medium mb-1.5 block text-right;
+    @apply text-sm text-[var(--color-text-secondary)] font-medium mb-1.5 block;
   }
 
   /* Component Defaults */
@@ -83,7 +83,7 @@
   }
 
   .input-base {
-    @apply h-[44px] border-[var(--color-border)] rounded-[6px] focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] text-right;
+    @apply h-[44px] border-[var(--color-border)] rounded-[6px] focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)];
   }
 }
 
@@ -101,9 +101,4 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #9CA3AF;
-}
-
-/* RTL Utilities */
-.icon-flip-rtl {
-  transform: scaleX(-1);
 }
