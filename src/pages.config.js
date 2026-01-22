@@ -7,6 +7,8 @@ import Customers from './pages/Customers';
 import ServiceProviders from './pages/ServiceProviders';
 import CallDetails from './pages/CallDetails';
 import VendorTracking from './pages/VendorTracking';
+import AuditLog from './pages/AuditLog';
+import UserGuide from './pages/UserGuide';
 import __Layout from './Layout.jsx';
 
 
@@ -20,6 +22,8 @@ export const PAGES = {
     "ServiceProviders": ServiceProviders,
     "CallDetails": CallDetails,
     "VendorTracking": VendorTracking,
+    "AuditLog": AuditLog,
+    "UserGuide": UserGuide,
 }
 
 export const pagesConfig = {
