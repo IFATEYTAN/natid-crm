@@ -10,6 +10,9 @@ import ServiceProviders from './pages/ServiceProviders';
 import UserGuide from './pages/UserGuide';
 import VendorTracking from './pages/VendorTracking';
 import AutomationSettings from './pages/AutomationSettings';
+import VendorPortal from './pages/VendorPortal';
+import MyVendorProfile from './pages/MyVendorProfile';
+import NewVendor from './pages/NewVendor';
 import __Layout from './Layout.jsx';
 
 
@@ -26,6 +29,9 @@ export const PAGES = {
     "UserGuide": UserGuide,
     "VendorTracking": VendorTracking,
     "AutomationSettings": AutomationSettings,
+    "VendorPortal": VendorPortal,
+    "MyVendorProfile": MyVendorProfile,
+    "NewVendor": NewVendor,
 }
 
 export const pagesConfig = {
