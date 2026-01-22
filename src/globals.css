@@ -77,10 +77,10 @@ css
   }
 
   body {
-    @apply bg-[var(--color-background)] text-[var(--color-text-primary)] font-['Heebo'] antialiased;
+    @apply bg-background text-foreground font-['Heebo'] antialiased;
     font-size: 16px;
-    direction: rtl; /* Preserve RTL direction for the entire document */
-    text-align: right; /* Preserve RTL text alignment for the entire document */
+    direction: rtl;
+    text-align: right;
   }
 
   /* Typography System */
