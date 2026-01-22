@@ -25,7 +25,9 @@ import {
   ListChecks,
   Bot,
   Calendar as CalendarIcon,
-  Navigation
+  Navigation,
+  Shield,
+  BookOpen
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -142,6 +144,8 @@ export default function Layout({ children, currentPageName }) {
         { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Link2 },
         { name: 'הגדרות התראות', href: 'NotificationSettings', icon: BellRing },
         { name: 'הגדרות מערכת', href: 'Settings', icon: Settings },
+        { name: 'יומן פעולות', href: 'AuditLog', icon: Shield },
+        { name: 'מדריך למשתמש', href: 'UserGuide', icon: BookOpen },
       ]
     }
   ];
