@@ -247,8 +247,11 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-[100] transition-transform duration-300 ease-in-out",
-        sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+        "fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-[100] transition-transform duration-300 ease-in-out shadow-lg",
+        // Mobile: controlled by sidebarOpen
+        // Desktop: always visible (translate-x-0)
+        sidebarOpen ? "translate-x-0" : "translate-x-full",
+        "lg:translate-x-0"
       )}>
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#E0E0E0]">
