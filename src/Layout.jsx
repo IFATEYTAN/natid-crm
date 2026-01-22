@@ -107,6 +107,7 @@ export default function Layout({ children, currentPageName }) {
       items: [
         { name: 'לוח בקרה', href: 'Dashboard', icon: LayoutDashboard },
         { name: 'ניטור תורים', href: 'QueueMonitor', icon: ListChecks },
+        { name: 'יומן', href: 'Calendar', icon: CalendarIcon },
         { name: 'מפת ספקים', href: 'AllVendorsMap', icon: Map },
         { name: 'אזורי כיסוי', href: 'CoverageAreas', icon: MapPin },
       ]
