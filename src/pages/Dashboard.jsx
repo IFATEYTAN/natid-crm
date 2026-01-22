@@ -209,15 +209,8 @@ export default function Dashboard() {
     queryFn: () => base44.entities.WorkQueue.list(),
   });
 
-  const { data: calls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ['calls'],
-    queryFn: () => base44.entities.Call.list('-created_date', 500),
-  });
-
-  const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list(),
-  });
+  const { data: calls = [], isLoading: callsLoading } = useCalls();
+  const { data: vendors = [], isLoading: vendorsLoading } = useVendors();
 
   // Fetch available vendors for operator view
   const { data: availableVendors = [] } = useQuery({
