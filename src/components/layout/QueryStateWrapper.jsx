@@ -1,26 +1,55 @@
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { PageLoader, CardSkeleton, TableSkeleton } from "@/components/ui/LoadingSpinner";
+import { ErrorMessage, EmptyState } from "@/components/ui/ErrorMessage";
 
-export function QueryStateWrapper({ query, children }) {
+export function QueryStateWrapper({ 
+  query, 
+  children, 
+  loadingType = "spinner", // "spinner" | "card" | "table"
+  loadingText,
+  emptyTitle,
+  emptyDescription,
+  emptyIcon,
+  emptyAction,
+  onRetry,
+  skeletonCount = 3,
+  tableRows = 5,
+  tableCols = 4
+}) {
   if (query.isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <LoadingSpinner className="w-8 h-8" />
-      </div>
-    );
+    switch (loadingType) {
+      case "card":
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: skeletonCount }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
+        );
+      case "table":
+        return <TableSkeleton rows={tableRows} cols={tableCols} />;
+      default:
+        return <PageLoader text={loadingText} />;
+    }
   }
 
   if (query.isError) {
-    return <ErrorMessage error={query.error} />;
+    return (
+      <ErrorMessage 
+        error={query.error} 
+        onRetry={onRetry || query.refetch}
+      />
+    );
   }
 
-  // Also handle empty data state
+  // Handle empty data state
   if (!query.data || (Array.isArray(query.data) && query.data.length === 0)) {
     return (
-      <div className="text-center py-16">
-        <h3 className="text-lg font-medium">לא נמצאו נתונים</h3>
-        <p className="text-sm text-muted-foreground">נסה לשנות את תנאי החיפוש או לחזור מאוחר יותר.</p>
-      </div>
+      <EmptyState
+        icon={emptyIcon}
+        title={emptyTitle}
+        description={emptyDescription}
+        action={emptyAction}
+      />
     );
   }
 
