@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from 'sonner';
 import {
   ArrowRight,
   Save,
@@ -27,8 +26,11 @@ import {
   Mail,
   MapPin,
   Send,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
+import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
+import { SlideUp, AnimatedCard } from '@/components/animations/AnimatedComponents';
 
 const serviceTypes = [
   { key: 'tow_truck', label: 'גרר' },
@@ -87,21 +89,21 @@ export default function NewVendorPage() {
       if (sendInvite && data.email) {
         try {
           await base44.users.inviteUser(data.email, 'user');
-          toast.success('הזמנה נשלחה לספק');
+          showToast.success('הזמנה נשלחה לספק');
         } catch (e) {
           console.error('Failed to send invite:', e);
-          toast.error('הספק נוצר אך ההזמנה לא נשלחה');
+          showToast.warning('הספק נוצר אך ההזמנה לא נשלחה');
         }
       }
       
       return vendor;
     },
     onSuccess: () => {
-      toast.success('הספק נוצר בהצלחה');
+      showToast.success(feedbackMessages.create.success);
       navigate(createPageUrl('ServiceProviders'));
     },
     onError: (error) => {
-      toast.error('שגיאה ביצירת הספק: ' + error.message);
+      showToast.error(feedbackMessages.create.error + ': ' + error.message);
     }
   });
 
@@ -136,12 +138,12 @@ export default function NewVendorPage() {
     e.preventDefault();
     
     if (!formData.vendor_name || !formData.phone) {
-      toast.error('נא למלא שם ספק וטלפון');
+      showToast.error('נא למלא שם ספק וטלפון');
       return;
     }
     
     if (sendInvite && !formData.email) {
-      toast.error('נדרש אימייל לשליחת הזמנה');
+      showToast.error('נדרש אימייל לשליחת הזמנה');
       return;
     }
 
@@ -149,6 +151,7 @@ export default function NewVendorPage() {
   };
 
   return (
+    <SlideUp>
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
@@ -160,8 +163,8 @@ export default function NewVendorPage() {
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-[#172B4D]">הוספת ספק חדש</h1>
-          <p className="text-[#6B778C] text-sm">יצירת ספק שירות חדש והזמנתו למערכת</p>
+          <h1 className="text-2xl font-bold text-[#111827]">הוספת ספק חדש</h1>
+          <p className="text-[#6b7280] text-sm">יצירת ספק שירות חדש והזמנתו למערכת</p>
         </div>
       </div>
 
@@ -417,11 +420,14 @@ export default function NewVendorPage() {
           </Button>
           <Button 
             type="submit" 
-            className="flex-1 bg-red-600 hover:bg-red-700 gap-2"
+            className="flex-1 bg-[#3b82f6] hover:bg-[#2563eb] gap-2"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? (
-              <>טוען...</>
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                יוצר...
+              </>
             ) : (
               <>
                 <CheckCircle className="w-4 h-4" />
@@ -432,5 +438,6 @@ export default function NewVendorPage() {
         </div>
       </form>
     </div>
+    </SlideUp>
   );
 }
