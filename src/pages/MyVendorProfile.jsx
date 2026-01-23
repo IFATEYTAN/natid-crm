@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { toast } from 'sonner';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   User,
   Phone,
@@ -15,8 +16,32 @@ import {
   Save,
   Truck,
   Star,
-  Shield
+  Shield,
+  Clock,
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
+import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
+import { PageLoader } from '@/components/ui/LoadingSpinner';
+import { SlideUp, AnimatedCard, StaggeredList, StaggeredItem } from '@/components/animations/AnimatedComponents';
+
+const serviceTypes = [
+  { key: 'tow_truck', label: 'גרר' },
+  { key: 'mechanic', label: 'מכונאי' },
+  { key: 'tire_service', label: 'צמיגים' },
+  { key: 'locksmith', label: 'מנעולן' },
+  { key: 'fuel_delivery', label: 'דלק' },
+  { key: 'multi_service', label: 'שירות משולב' }
+];
+
+const coverageAreas = [
+  { key: 'center', label: 'מרכז' },
+  { key: 'sharon', label: 'שרון' },
+  { key: 'north', label: 'צפון' },
+  { key: 'south', label: 'דרום' },
+  { key: 'jerusalem', label: 'ירושלים' },
+  { key: 'lowlands', label: 'שפלה' }
+];
 
 export default function MyVendorProfilePage() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -27,6 +52,11 @@ export default function MyVendorProfilePage() {
     phone_2: '',
     email: '',
     coverage_cities: '',
+    coverage_areas: [],
+    service_type: [],
+    works_24_7: false,
+    working_hours_start: '08:00',
+    working_hours_end: '18:00',
     notes: ''
   });
   const queryClient = useQueryClient();
@@ -56,6 +86,11 @@ export default function MyVendorProfilePage() {
           phone_2: vendor.phone_2 || '',
           email: vendor.email || '',
           coverage_cities: vendor.coverage_cities || '',
+          coverage_areas: vendor.coverage_areas || [],
+          service_type: vendor.service_type || [],
+          works_24_7: vendor.works_24_7 || false,
+          working_hours_start: vendor.working_hours_start || '08:00',
+          working_hours_end: vendor.working_hours_end || '18:00',
           notes: vendor.notes || ''
         });
         return vendor;
@@ -68,11 +103,11 @@ export default function MyVendorProfilePage() {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Vendor.update(vendorQuery.data.id, data),
     onSuccess: () => {
-      toast.success('הפרופיל עודכן בהצלחה');
+      showToast.success(feedbackMessages.save.success);
       queryClient.invalidateQueries({ queryKey: ['myVendorProfile'] });
     },
     onError: () => {
-      toast.error('שגיאה בעדכון הפרופיל');
+      showToast.error(feedbackMessages.save.error);
     }
   });
 
@@ -81,55 +116,88 @@ export default function MyVendorProfilePage() {
     updateMutation.mutate(formData);
   };
 
+  const handleServiceTypeChange = (type, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      service_type: checked 
+        ? [...prev.service_type, type]
+        : prev.service_type.filter(t => t !== type)
+    }));
+  };
+
+  const handleCoverageAreaChange = (area, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      coverage_areas: checked 
+        ? [...prev.coverage_areas, area]
+        : prev.coverage_areas.filter(a => a !== area)
+    }));
+  };
+
   const vendor = vendorQuery.data;
+
+  if (vendorQuery.isLoading) {
+    return <PageLoader text="טוען פרופיל..." />;
+  }
 
   if (!vendor) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <Truck className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-          <h2 className="text-xl font-bold text-[#172B4D] mb-2">פרופיל ספק לא נמצא</h2>
-          <p className="text-[#6B778C]">אנא פנה למנהל המערכת</p>
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+            <Truck className="w-10 h-10 text-[#6b7280]" />
+          </div>
+          <h2 className="text-xl font-bold text-[#111827] mb-2">פרופיל ספק לא נמצא</h2>
+          <p className="text-[#6b7280]">אנא פנה למנהל המערכת</p>
         </div>
       </div>
     );
   }
 
   return (
+    <SlideUp>
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#172B4D]">הפרופיל שלי</h1>
-        <p className="text-[#6B778C] text-sm">עדכון פרטים אישיים</p>
+        <h1 className="text-2xl font-bold text-[#111827]">הפרופיל שלי</h1>
+        <p className="text-[#6b7280] text-sm">עדכון פרטים אישיים</p>
       </div>
 
       {/* Stats Card */}
-      <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-100">
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-[#172B4D]">
-                {vendor.total_calls_completed || 0}
-              </div>
-              <div className="text-xs text-[#6B778C]">קריאות הושלמו</div>
+      <StaggeredList className="grid grid-cols-3 gap-4">
+        <StaggeredItem>
+          <AnimatedCard className="p-4 text-center">
+            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-[#111827]" />
             </div>
-            <div>
-              <div className="flex items-center justify-center gap-1">
-                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                <span className="text-2xl font-bold text-[#172B4D]">
-                  {vendor.average_rating?.toFixed(1) || '-'}
-                </span>
-              </div>
-              <div className="text-xs text-[#6B778C]">דירוג ממוצע</div>
+            <div className="text-2xl font-bold text-[#111827]">
+              {vendor.total_calls_completed || 0}
             </div>
-            <div>
-              <div className="text-2xl font-bold text-[#172B4D]">
-                {vendor.completion_rate || 0}%
-              </div>
-              <div className="text-xs text-[#6B778C]">אחוז השלמה</div>
+            <div className="text-xs text-[#6b7280]">קריאות הושלמו</div>
+          </AnimatedCard>
+        </StaggeredItem>
+        <StaggeredItem>
+          <AnimatedCard className="p-4 text-center">
+            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="text-2xl font-bold text-[#111827]">
+              {vendor.average_rating?.toFixed(1) || '-'}
+            </div>
+            <div className="text-xs text-[#6b7280]">דירוג ממוצע</div>
+          </AnimatedCard>
+        </StaggeredItem>
+        <StaggeredItem>
+          <AnimatedCard className="p-4 text-center">
+            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+              <Clock className="w-5 h-5 text-[#3b82f6]" />
+            </div>
+            <div className="text-2xl font-bold text-[#111827]">
+              {vendor.completion_rate || 0}%
+            </div>
+            <div className="text-xs text-[#6b7280]">אחוז השלמה</div>
+          </AnimatedCard>
+        </StaggeredItem>
+      </StaggeredList>
 
       {/* Profile Form */}
       <Card className="bg-white">
@@ -206,56 +274,148 @@ export default function MyVendorProfilePage() {
             </div>
 
             <div>
-              <Label>אזורי כיסוי</Label>
-              <div className="relative">
-                <MapPin className="absolute right-3 top-3 w-4 h-4 text-[#6B778C]" />
-                <Textarea
-                  value={formData.coverage_cities}
-                  onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
-                  className="pr-10 min-h-[80px]"
-                  placeholder="רשום את הערים והאזורים בהם אתה מספק שירות"
-                />
+              <Label className="mb-3 block">סוגי שירות</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {serviceTypes.map(type => (
+                  <div key={type.key} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`service-${type.key}`}
+                      checked={formData.service_type.includes(type.key)}
+                      onCheckedChange={(checked) => handleServiceTypeChange(type.key, checked)}
+                    />
+                    <label htmlFor={`service-${type.key}`} className="text-sm cursor-pointer">
+                      {type.label}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 
             <div>
-              <Label>הערות</Label>
-              <Textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="מידע נוסף שחשוב שנדע..."
-              />
+              <Label className="mb-3 block">אזורי כיסוי</Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {coverageAreas.map(area => (
+                  <div key={area.key} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`area-${area.key}`}
+                      checked={formData.coverage_areas.includes(area.key)}
+                      onCheckedChange={(checked) => handleCoverageAreaChange(area.key, checked)}
+                    />
+                    <label htmlFor={`area-${area.key}`} className="text-sm cursor-pointer">
+                      {area.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-red-600 hover:bg-red-700 gap-2"
-              disabled={updateMutation.isPending}
-            >
-              <Save className="w-4 h-4" />
-              {updateMutation.isPending ? 'שומר...' : 'שמור שינויים'}
-            </Button>
+            <div>
+              <Label>ערים ספציפיות</Label>
+              <div className="relative">
+                <MapPin className="absolute right-3 top-3 w-4 h-4 text-[#6b7280]" />
+                <Textarea
+                  value={formData.coverage_cities}
+                  onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
+                  className="pr-10 min-h-[80px]"
+                  placeholder="רשום את הערים בהם אתה מספק שירות"
+                />
+              </div>
+            </div>
           </form>
         </CardContent>
       </Card>
 
-      {/* Security */}
-      <Card className="bg-white">
+      {/* Working Hours */}
+      <Card className="bg-white border border-[#e5e7eb]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#6B778C]" />
+            <Clock className="w-5 h-5 text-[#6b7280]" />
+            שעות פעילות
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Switch
+              checked={formData.works_24_7}
+              onCheckedChange={(checked) => setFormData({ ...formData, works_24_7: checked })}
+            />
+            <Label>עובד 24/7</Label>
+          </div>
+
+          {!formData.works_24_7 && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>שעת התחלה</Label>
+                <Input
+                  type="time"
+                  value={formData.working_hours_start}
+                  onChange={(e) => setFormData({ ...formData, working_hours_start: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>שעת סיום</Label>
+                <Input
+                  type="time"
+                  value={formData.working_hours_end}
+                  onChange={(e) => setFormData({ ...formData, working_hours_end: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Notes */}
+      <Card className="bg-white border border-[#e5e7eb]">
+        <CardHeader>
+          <CardTitle className="text-lg">הערות</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            placeholder="מידע נוסף שחשוב שנדע..."
+          />
+        </CardContent>
+      </Card>
+
+      {/* Save Button */}
+      <Button 
+        onClick={handleSubmit}
+        className="w-full bg-[#3b82f6] hover:bg-[#2563eb] gap-2 h-12"
+        disabled={updateMutation.isPending}
+      >
+        {updateMutation.isPending ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            שומר...
+          </>
+        ) : (
+          <>
+            <Save className="w-4 h-4" />
+            שמור שינויים
+          </>
+        )}
+      </Button>
+
+      {/* Security */}
+      <Card className="bg-white border border-[#e5e7eb]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-[#6b7280]" />
             אבטחה
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-[#6B778C] mb-4">
+          <p className="text-sm text-[#6b7280] mb-4">
             לשינוי סיסמה או בעיות התחברות, אנא פנה למנהל המערכת.
           </p>
-          <div className="text-xs text-[#6B778C]">
+          <div className="text-xs text-[#6b7280]">
             מחובר כ: <span className="font-medium">{currentUser?.email}</span>
           </div>
         </CardContent>
       </Card>
     </div>
+    </SlideUp>
   );
 }
