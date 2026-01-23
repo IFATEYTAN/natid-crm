@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useVendors, useDeleteVendor, useUpdateVendorAvailability } from '@/components/hooks/useVendors';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,9 +36,14 @@ import {
   Pencil,
   Trash2,
   CheckCircle,
-  XCircle
+  XCircle,
+  PhoneCall,
+  Clock
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { SlideUp, AnimatedCard, StaggeredList, StaggeredItem } from '@/components/animations/AnimatedComponents';
+import { showToast } from '@/components/ui/FeedbackToast';
+import { InlineLoader } from '@/components/ui/LoadingSpinner';
 
 const serviceTypeLabels = {
   tow_truck: 'גרר',
@@ -72,6 +79,31 @@ export default function ServiceProvidersPage() {
 
   const vendors = vendorsQuery.data || [];
 
+  // Fetch calls to calculate open/closed per vendor
+  const { data: calls = [] } = useQuery({
+    queryKey: ['calls-for-vendors'],
+    queryFn: () => base44.entities.Call.list('-created_date', 1000),
+  });
+
+  // Calculate call stats per vendor
+  const vendorCallStats = useMemo(() => {
+    const stats = {};
+    calls.forEach(call => {
+      const vendorId = call.assigned_vendor_id;
+      if (vendorId) {
+        if (!stats[vendorId]) {
+          stats[vendorId] = { open: 0, closed: 0 };
+        }
+        if (call.call_status === 'completed' || call.call_status === 'cancelled') {
+          stats[vendorId].closed++;
+        } else {
+          stats[vendorId].open++;
+        }
+      }
+    });
+    return stats;
+  }, [calls]);
+
   const filteredVendors = useMemo(() => {
     return vendors.filter(vendor => {
       const matchesSearch = !searchQuery || 
@@ -99,7 +131,24 @@ export default function ServiceProvidersPage() {
       id: vendor.id, 
       is_available_now: !vendor.is_available_now,
       availability_status: newStatus
+    }, {
+      onSuccess: () => {
+        showToast.success(`${vendor.vendor_name} ${!vendor.is_available_now ? 'זמין כעת' : 'לא זמין'}`);
+      }
     });
+  };
+
+  const handleDelete = (vendor) => {
+    if (confirm(`האם אתה בטוח שברצונך למחוק את ${vendor.vendor_name}?`)) {
+      deleteVendor.mutate(vendor.id, {
+        onSuccess: () => {
+          showToast.success(`${vendor.vendor_name} נמחק בהצלחה`);
+        },
+        onError: () => {
+          showToast.error('שגיאה במחיקת הספק');
+        }
+      });
+    }
   };
 
   const columns = [
@@ -157,11 +206,30 @@ export default function ServiceProvidersPage() {
       )
     },
     {
-      header: 'קריאות',
-      accessor: 'total_calls_completed',
-      cell: (vendor) => (
-        <span className="font-medium">{vendor.total_calls_completed || 0}</span>
-      )
+      header: 'קריאות פתוחות',
+      accessor: 'open_calls',
+      cell: (vendor) => {
+        const stats = vendorCallStats[vendor.id] || { open: 0, closed: 0 };
+        return (
+          <div className="flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-[#3b82f6]" />
+            <span className="font-medium text-[#3b82f6]">{stats.open}</span>
+          </div>
+        );
+      }
+    },
+    {
+      header: 'קריאות סגורות',
+      accessor: 'closed_calls',
+      cell: (vendor) => {
+        const stats = vendorCallStats[vendor.id] || { open: 0, closed: 0 };
+        return (
+          <div className="flex items-center gap-1">
+            <CheckCircle className="w-3.5 h-3.5 text-[#111827]" />
+            <span className="font-medium text-[#111827]">{stats.closed}</span>
+          </div>
+        );
+      }
     },
     {
       header: 'זמינות',
@@ -203,11 +271,7 @@ export default function ServiceProvidersPage() {
             </DropdownMenuItem>
             <DropdownMenuItem 
               className="text-red-600"
-              onClick={() => {
-                if (confirm('האם אתה בטוח שברצונך למחוק ספק זה?')) {
-                  deleteVendor.mutate(vendor.id);
-                }
-              }}
+              onClick={() => handleDelete(vendor)}
             >
               <Trash2 className="w-4 h-4 ml-2" />
               מחיקה
@@ -219,15 +283,16 @@ export default function ServiceProvidersPage() {
   ];
 
   return (
+    <SlideUp>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#172B4D]">נותני שירות</h1>
-          <p className="text-[#6B778C] text-sm">ניהול גררים וספקי שירות</p>
+          <h1 className="text-2xl font-bold text-[#111827]">נותני שירות</h1>
+          <p className="text-[#6b7280] text-sm">ניהול גררים וספקי שירות</p>
         </div>
         <Link to={createPageUrl('NewVendor')}>
-          <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2">
+          <Button className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2">
             <Plus className="w-4 h-4" />
             ספק חדש
           </Button>
@@ -235,35 +300,60 @@ export default function ServiceProvidersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-[#172B4D]">{stats.total}</div>
-            <div className="text-sm text-[#6B778C]">סה"כ ספקים</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.available}</div>
-            <div className="text-sm text-[#6B778C]">זמינים כעת</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-600">{stats.busy}</div>
-            <div className="text-sm text-[#6B778C]">עסוקים</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-1">
-              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-              <span className="text-2xl font-bold text-[#172B4D]">{stats.avgRating}</span>
+      <StaggeredList className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StaggeredItem>
+          <AnimatedCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
+                <Truck className="w-5 h-5 text-[#3b82f6]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[#111827]">{stats.total}</div>
+                <div className="text-sm text-[#6b7280]">סה"כ ספקים</div>
+              </div>
             </div>
-            <div className="text-sm text-[#6B778C]">דירוג ממוצע</div>
-          </CardContent>
-        </Card>
-      </div>
+          </AnimatedCard>
+        </StaggeredItem>
+        <StaggeredItem>
+          <AnimatedCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-[#111827]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[#111827]">{stats.available}</div>
+                <div className="text-sm text-[#6b7280]">זמינים כעת</div>
+              </div>
+            </div>
+          </AnimatedCard>
+        </StaggeredItem>
+        <StaggeredItem>
+          <AnimatedCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
+                <PhoneCall className="w-5 h-5 text-[#3b82f6]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[#3b82f6]">{stats.busy}</div>
+                <div className="text-sm text-[#6b7280]">עסוקים</div>
+              </div>
+            </div>
+          </AnimatedCard>
+        </StaggeredItem>
+        <StaggeredItem>
+          <AnimatedCard className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
+                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-[#111827]">{stats.avgRating}</div>
+                <div className="text-sm text-[#6b7280]">דירוג ממוצע</div>
+              </div>
+            </div>
+          </AnimatedCard>
+        </StaggeredItem>
+      </StaggeredList>
 
       {/* Filters & Table */}
       <Card className="bg-white">
@@ -313,5 +403,6 @@ export default function ServiceProvidersPage() {
         </CardContent>
       </Card>
     </div>
+    </SlideUp>
   );
 }
