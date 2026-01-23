@@ -27,9 +27,13 @@ import {
   Loader2,
   AlertCircle,
   Phone,
-  Users
+  Users,
+  CheckCircle
 } from 'lucide-react';
 import moment from 'moment';
+import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
+import { PageLoader, InlineLoader } from '@/components/ui/LoadingSpinner';
+import { SlideUp, AnimatedCard } from '@/components/animations/AnimatedComponents';
 
 // Field definitions for Calls
 const callFields = {
@@ -190,7 +194,7 @@ export default function AdvancedExport() {
   );
 
   // Fetch data for preview counts
-  const { data: calls = [] } = useQuery({
+  const { data: calls = [], isLoading: callsLoading } = useQuery({
     queryKey: ['calls-export-preview', callsDateRange, callsStatus],
     queryFn: async () => {
       const allCalls = await base44.entities.Call.list('-created_date', 1000);
@@ -203,7 +207,7 @@ export default function AdvancedExport() {
     }
   });
 
-  const { data: customers = [] } = useQuery({
+  const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ['customers-export-preview', customersDateRange, customersStatus],
     queryFn: async () => {
       const allCustomers = await base44.entities.Customer.list('-created_date', 1000);
@@ -383,9 +387,11 @@ export default function AdvancedExport() {
           break;
         }
       }
+      showToast.success(`${feedbackMessages.export.success} - ${data.length} רשומות`);
     } catch (error) {
       console.error('Export error:', error);
       setExportError('אירעה שגיאה בייצוא הנתונים');
+      showToast.error(feedbackMessages.export.error);
     } finally {
       setIsExporting(false);
     }
@@ -457,10 +463,11 @@ export default function AdvancedExport() {
   );
 
   return (
+    <SlideUp>
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">ייצוא מתקדם</h1>
-        <p className="text-gray-600">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
+        <h1 className="text-2xl font-bold text-[#111827]">ייצוא מתקדם</h1>
+        <p className="text-[#6b7280]">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -524,10 +531,18 @@ export default function AdvancedExport() {
                     ))}
                   </SelectContent>
                 </Select>
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>{calls.length}</strong> קריאות נמצאו בטווח שנבחר
-                  </p>
+                <div className="mt-4 p-3 bg-[#eff6ff] rounded-[8px] border border-[#bfdbfe]">
+                  {callsLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-[#3b82f6]">
+                      <InlineLoader className="text-[#3b82f6]" />
+                      <span>טוען נתונים...</span>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#1e40af] flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <strong>{calls.length}</strong> קריאות נמצאו בטווח שנבחר
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -599,10 +614,18 @@ export default function AdvancedExport() {
                     ))}
                   </SelectContent>
                 </Select>
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>{customers.length}</strong> לקוחות נמצאו בטווח שנבחר
-                  </p>
+                <div className="mt-4 p-3 bg-[#eff6ff] rounded-[8px] border border-[#bfdbfe]">
+                  {customersLoading ? (
+                    <div className="flex items-center gap-2 text-sm text-[#3b82f6]">
+                      <InlineLoader className="text-[#3b82f6]" />
+                      <span>טוען נתונים...</span>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#1e40af] flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      <strong>{customers.length}</strong> לקוחות נמצאו בטווח שנבחר
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -677,5 +700,6 @@ export default function AdvancedExport() {
         </CardContent>
       </Card>
     </div>
+    </SlideUp>
   );
 }
