@@ -14,6 +14,7 @@ import VendorPortal from './pages/VendorPortal';
 import MyVendorProfile from './pages/MyVendorProfile';
 import NewVendor from './pages/NewVendor';
 import Reports from './pages/Reports';
+import IntegrationSettings from './pages/IntegrationSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -34,6 +35,7 @@ export const PAGES = {
     "MyVendorProfile": MyVendorProfile,
     "NewVendor": NewVendor,
     "Reports": Reports,
+    "IntegrationSettings": IntegrationSettings,
 }
 
 export const pagesConfig = {
