@@ -20,6 +20,7 @@ import UserManagement from './pages/UserManagement';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
 import NotificationSettings from './pages/NotificationSettings';
+import Settings from './pages/Settings';
 import __Layout from './Layout.jsx';
 
 
@@ -46,6 +47,7 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
     "NotificationSettings": NotificationSettings,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {
