@@ -31,6 +31,8 @@ import {
 } from "@/components/ui/dialog";
 import FileUploader from '@/components/files/FileUploader';
 import SignaturePad from '@/components/signature/SignaturePad';
+import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
+import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
 import {
   ArrowRight,
   User,
@@ -49,7 +51,8 @@ import {
   Pencil,
   Save,
   Loader2,
-  PenTool
+  PenTool,
+  Headset
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { toast } from 'sonner';
@@ -95,6 +98,19 @@ export default function CallDetailsPage() {
   const [showSignature, setShowSignature] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  // Fetch current user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await base44.auth.me();
+        setCurrentUser(user);
+      } catch (e) {}
+    };
+    fetchUser();
+  }, []);
 
   const callQuery = useCall(callId);
   const vendorsQuery = useVendors();
@@ -118,7 +134,7 @@ export default function CallDetailsPage() {
     enabled: !!callId
   });
 
-  const handleStatusChange = (newStatus) => {
+  const handleStatusChange = async (newStatus) => {
     const updates = { call_status: newStatus };
     
     if (newStatus === 'completed') {
@@ -134,8 +150,24 @@ export default function CallDetailsPage() {
       change_type: 'status',
       old_value: call?.call_status,
       new_value: newStatus,
-      changed_by: 'operator'
+      changed_by: currentUser?.full_name || 'operator'
     });
+
+    // Send automatic status update to chat
+    const statusMessages = {
+      vendor_enroute: 'הספק יצא לדרך ובקרוב יגיע אליך',
+      in_progress: 'הספק הגיע ומתחיל בטיפול',
+      completed: 'הטיפול הושלם בהצלחה!'
+    };
+    
+    if (statusMessages[newStatus]) {
+      await sendStatusMessage(callId, statusMessages[newStatus]);
+    }
+
+    // Show feedback form when completed
+    if (newStatus === 'completed') {
+      setShowFeedback(true);
+    }
   };
 
   const handleAssignVendor = () => {
@@ -285,8 +317,12 @@ export default function CallDetailsPage() {
         <Tabs defaultValue="details" className="space-y-4" dir="rtl">
           <TabsList>
             <TabsTrigger value="details">פרטים</TabsTrigger>
+            <TabsTrigger value="chat">צ'אט</TabsTrigger>
             <TabsTrigger value="files">קבצים ({photos.length})</TabsTrigger>
             <TabsTrigger value="history">היסטוריה</TabsTrigger>
+            {call?.call_status === 'completed' && (
+              <TabsTrigger value="feedback">משוב</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="details" className="space-y-4">
@@ -446,6 +482,92 @@ export default function CallDetailsPage() {
             )}
           </TabsContent>
 
+          <TabsContent value="chat">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <EnhancedCallChat
+                  callId={callId}
+                  currentUserRole="operator"
+                  currentUserName={currentUser?.full_name || 'מוקדן'}
+                  height="500px"
+                />
+              </div>
+              <div className="space-y-4">
+                <Card className="bg-white">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">שלח עדכון ללקוח</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start gap-2"
+                      onClick={() => sendStatusMessage(callId, 'הקריאה התקבלה ואנחנו מטפלים בה')}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      קריאה התקבלה
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start gap-2"
+                      onClick={() => sendStatusMessage(callId, 'הספק בדרך אליך!')}
+                    >
+                      <Truck className="w-4 h-4" />
+                      ספק בדרך
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start gap-2"
+                      onClick={() => sendStatusMessage(callId, 'הספק הגיע למיקום')}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      ספק הגיע
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start gap-2"
+                      onClick={() => sendStatusMessage(callId, 'הטיפול הושלם בהצלחה!')}
+                    >
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      טיפול הושלם
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">משתתפים בשיחה</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                        <Headset className="w-3 h-3 text-white" />
+                      </div>
+                      <span>מוקדן</span>
+                    </div>
+                    {call?.assigned_vendor_name && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                          <Truck className="w-3 h-3 text-white" />
+                        </div>
+                        <span>{call.assigned_vendor_name}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                        <User className="w-3 h-3 text-white" />
+                      </div>
+                      <span>{call?.customer_name}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
           <TabsContent value="files">
             <Card className="bg-white">
               <CardHeader className="pb-3">
@@ -540,6 +662,25 @@ export default function CallDetailsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {call?.call_status === 'completed' && (
+            <TabsContent value="feedback">
+              <div className="max-w-2xl mx-auto">
+                <CallFeedbackForm
+                  callId={callId}
+                  callNumber={call?.call_number}
+                  customerName={call?.customer_name}
+                  customerPhone={call?.customer_phone}
+                  vendorId={call?.assigned_vendor_id}
+                  vendorName={call?.assigned_vendor_name}
+                  feedbackSource="operator"
+                  onSubmitSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+                  }}
+                />
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </QueryStateWrapper>
