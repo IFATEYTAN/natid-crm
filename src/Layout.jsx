@@ -125,6 +125,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'לקוחות', href: 'Customers', icon: Users },
         { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
         { name: 'פורטל ספקים', href: 'VendorPortal', icon: Truck },
+        { name: 'ניהול קריאה', href: 'VendorCallManagement', icon: Phone },
         { name: 'הפרופיל שלי', href: 'MyVendorProfile', icon: UserCog },
       ]
     },
