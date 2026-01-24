@@ -17,6 +17,7 @@ import ServiceProviders from './pages/ServiceProviders';
 import VendorPortal from './pages/VendorPortal';
 import AllVendorsMap from './pages/AllVendorsMap';
 import CoverageAreas from './pages/CoverageAreas';
+import Agents from './pages/Agents';
 import __Layout from './Layout.jsx';
 
 
@@ -40,6 +41,7 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "AllVendorsMap": AllVendorsMap,
     "CoverageAreas": CoverageAreas,
+    "Agents": Agents,
 }
 
 export const pagesConfig = {
