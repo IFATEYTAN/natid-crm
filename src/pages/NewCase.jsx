@@ -359,9 +359,9 @@ export default function NewCase() {
           >
             ביטול
           </Button>
-          <Button 
-            type="submit" 
-            className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
+          <Button
+            type="submit"
+            className="bg-[#f97316] hover:bg-[#ea580c] gap-2"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? (

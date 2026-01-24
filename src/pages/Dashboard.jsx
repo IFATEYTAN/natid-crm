@@ -311,7 +311,7 @@ export default function Dashboard() {
       accessor: 'call_number',
       cell: (row) => (
         <Link
-          to={createPageUrl(`CaseDetails?id=${row.id}`)}
+          to={createPageUrl(`CallDetails?id=${row.id}`)}
           className="font-bold text-blue-600 hover:text-blue-800 transition-colors"
         >
           {row.call_number || `#${row.id?.slice(-6)}`}
@@ -365,7 +365,7 @@ export default function Dashboard() {
       header: 'קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link to={createPageUrl('CaseDetails') + '?id=' + row.id} className="font-bold text-blue-600 hover:text-blue-800">
+        <Link to={createPageUrl('CallDetails') + '?id=' + row.id} className="font-bold text-blue-600 hover:text-blue-800">
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
       )
@@ -417,7 +417,7 @@ export default function Dashboard() {
     {
       header: '',
       cell: (row) => (
-        <Link to={createPageUrl('CaseDetails') + '?id=' + row.id}>
+        <Link to={createPageUrl('CallDetails') + '?id=' + row.id}>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
             <Eye className="w-4 h-4" />
           </Button>
@@ -698,7 +698,7 @@ export default function Dashboard() {
                 columns={columns}
                 data={calls.slice(0, 10)}
                 isLoading={isLoading}
-                onRowClick={(row) => window.location.href = createPageUrl(`CaseDetails?id=${row.id}`)}
+                onRowClick={(row) => window.location.href = createPageUrl(`CallDetails?id=${row.id}`)}
                 emptyMessage="אין קריאות להצגה"
               />
             </CardContent>
@@ -812,7 +812,7 @@ export default function Dashboard() {
                     <div key={call.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <Link to={createPageUrl('CaseDetails') + '?id=' + call.id} className="font-bold text-gray-900 hover:text-blue-600 hover:underline">
+                          <Link to={createPageUrl('CallDetails') + '?id=' + call.id} className="font-bold text-gray-900 hover:text-blue-600 hover:underline">
                             {call.call_number || `#${call.id?.slice(-6)}`}
                           </Link>
                           <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">דחוף</span>
@@ -825,7 +825,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex items-center gap-3">
                         <StatusBadge status={call.call_status} size="sm" />
-                        <Link to={createPageUrl('CaseDetails') + '?id=' + call.id}>
+                        <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
                           <Button size="sm" variant="outline" className="border-gray-200 hover:bg-gray-50">
                             <Eye className="w-4 h-4 ml-1" />
                             צפה
@@ -851,7 +851,7 @@ export default function Dashboard() {
                   columns={operatorCallColumns}
                   data={myOpenCalls}
                   isLoading={callsLoading}
-                  onRowClick={(row) => window.location.href = createPageUrl('CaseDetails') + '?id=' + row.id}
+                  onRowClick={(row) => window.location.href = createPageUrl('CallDetails') + '?id=' + row.id}
                   emptyMessage="אין קריאות משויכות אליך כרגע"
                 />
               </CardContent>
@@ -934,7 +934,7 @@ export default function Dashboard() {
                 columns={columns}
                 data={filteredCalls}
                 isLoading={callsLoading}
-                onRowClick={(row) => window.location.href = createPageUrl('CaseDetails') + '?id=' + row.id}
+                onRowClick={(row) => window.location.href = createPageUrl('CallDetails') + '?id=' + row.id}
                 emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
               />
             </CardContent>
