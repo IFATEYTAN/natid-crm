@@ -26,16 +26,8 @@ import {
   Search,
   Mail,
   Shield,
-  ShieldCheck,
-  MoreHorizontal,
-  Trash2
+  ShieldCheck
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
