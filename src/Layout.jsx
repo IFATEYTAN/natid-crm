@@ -44,15 +44,22 @@ import { Toaster } from 'sonner';
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isVendor, setIsVendor] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
   const queryClient = useQueryClient();
 
-  // Fetch current user
+  // Fetch current user and check if vendor
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const user = await base44.auth.me();
         setCurrentUser(user);
+        
+        // Check if user is a vendor (has vendor profile linked to their email)
+        if (user?.email) {
+          const vendors = await base44.entities.Vendor.filter({ email: user.email });
+          setIsVendor(vendors.length > 0 && user.role !== 'admin');
+        }
       } catch (e) {
         // User not logged in
       }
@@ -88,6 +95,10 @@ export default function Layout({ children, currentPageName }) {
     return children;
   }
 
+  // Vendor-only pages - if vendor tries to access non-vendor pages, redirect
+  const vendorAllowedPages = ['VendorPortal', 'VendorCallManagement', 'MyVendorProfile'];
+  const isVendorPage = vendorAllowedPages.includes(currentPageName);
+
   const getInitials = (name) => {
     if (!name) return '?';
     const parts = name.split(' ');
@@ -104,7 +115,20 @@ export default function Layout({ children, currentPageName }) {
     }));
   };
 
-  const navigationGroups = [
+  // Navigation for vendors only
+  const vendorNavigationGroups = [
+    {
+      title: 'פורטל ספקים',
+      icon: Truck,
+      items: [
+        { name: 'הקריאות שלי', href: 'VendorPortal', icon: LayoutDashboard },
+        { name: 'הפרופיל שלי', href: 'MyVendorProfile', icon: UserCog },
+      ]
+    }
+  ];
+
+  // Full navigation for admins/operators
+  const adminNavigationGroups = [
     {
       title: 'תפעול יומי',
       icon: LayoutDashboard,
@@ -124,9 +148,6 @@ export default function Layout({ children, currentPageName }) {
         { name: 'דוחות', href: 'Reports', icon: BarChart3 },
         { name: 'לקוחות', href: 'Customers', icon: Users },
         { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
-        { name: 'פורטל ספקים', href: 'VendorPortal', icon: Truck },
-        { name: 'ניהול קריאה', href: 'VendorCallManagement', icon: Phone },
-        { name: 'הפרופיל שלי', href: 'MyVendorProfile', icon: UserCog },
       ]
     },
     {
@@ -150,6 +171,8 @@ export default function Layout({ children, currentPageName }) {
       ]
     }
   ];
+
+  const navigationGroups = isVendor ? vendorNavigationGroups : adminNavigationGroups;
 
   const handleLogout = async () => {
     await base44.auth.logout('/AuthLogin');
@@ -234,15 +257,17 @@ export default function Layout({ children, currentPageName }) {
           ))}
         </nav>
 
-        {/* Quick Action */}
-        <div className="p-3 border-t border-[#DFE1E6]">
-          <Link to={createPageUrl('NewCase')}>
-            <Button className="w-full bg-[#FF0000] hover:bg-[#CC0000] text-white gap-2 rounded-md font-semibold">
-              <Plus className="w-5 h-5" />
-              קריאה חדשה
-            </Button>
-          </Link>
-        </div>
+        {/* Quick Action - Only for non-vendors */}
+        {!isVendor && (
+          <div className="p-3 border-t border-[#DFE1E6]">
+            <Link to={createPageUrl('NewCase')}>
+              <Button className="w-full bg-[#FF0000] hover:bg-[#CC0000] text-white gap-2 rounded-md font-semibold">
+                <Plus className="w-5 h-5" />
+                קריאה חדשה
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {/* User Section */}
         <div className="p-3 border-t border-[#DFE1E6] shrink-0">
@@ -347,7 +372,21 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Page Content */}
         <main className="flex-1 p-4 md:p-6 overflow-auto">
-          {children}
+          {/* If vendor tries to access non-vendor page, show redirect message */}
+          {isVendor && !isVendorPage ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <Truck className="w-16 h-16 mx-auto mb-4 text-[#6B778C]" />
+                <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין גישה לדף זה</h2>
+                <p className="text-[#6B778C] mb-4">דף זה מיועד למפעילי המערכת בלבד</p>
+                <Link to={createPageUrl('VendorPortal')}>
+                  <Button className="bg-[#3b82f6]">חזרה לפורטל הספקים</Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
       </div>
 
