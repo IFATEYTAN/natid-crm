@@ -12,15 +12,16 @@ import IntegrationSettings from './pages/IntegrationSettings';
 import MyVendorProfile from './pages/MyVendorProfile';
 import NewCase from './pages/NewCase';
 import NewVendor from './pages/NewVendor';
+import NotificationSettings from './pages/NotificationSettings';
 import QueueMonitor from './pages/QueueMonitor';
 import Reports from './pages/Reports';
 import ServiceProviders from './pages/ServiceProviders';
+import Settings from './pages/Settings';
 import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import NotificationSettings from './pages/NotificationSettings';
-import Settings from './pages/Settings';
+import VendorCallManagement from './pages/VendorCallManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -39,15 +40,16 @@ export const PAGES = {
     "MyVendorProfile": MyVendorProfile,
     "NewCase": NewCase,
     "NewVendor": NewVendor,
+    "NotificationSettings": NotificationSettings,
     "QueueMonitor": QueueMonitor,
     "Reports": Reports,
     "ServiceProviders": ServiceProviders,
+    "Settings": Settings,
     "UserGuide": UserGuide,
     "UserManagement": UserManagement,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "NotificationSettings": NotificationSettings,
-    "Settings": Settings,
+    "VendorCallManagement": VendorCallManagement,
 }
 
 export const pagesConfig = {
