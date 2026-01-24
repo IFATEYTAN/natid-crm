@@ -12,6 +12,8 @@ import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import VendorNewCallAlert from '@/components/vendor/VendorNewCallAlert';
 import VendorStats from '@/components/vendor/VendorStats';
+import VendorAvailabilityToggle from '@/components/vendor/VendorAvailabilityToggle';
+import VendorGPSTracker from '@/components/vendor/VendorGPSTracker';
 import {
   Truck,
   Phone,
@@ -54,10 +56,30 @@ const callStatusLabels = {
 export default function VendorPortalPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [vendorProfile, setVendorProfile] = useState(null);
-  const [isAvailable, setIsAvailable] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [pendingCall, setPendingCall] = useState(null);
   const [showNewCallAlert, setShowNewCallAlert] = useState(false);
+  const [lastLocationUpdate, setLastLocationUpdate] = useState(null);
+  const [locationError, setLocationError] = useState(null);
   const queryClient = useQueryClient();
+
+  // GPS Tracker
+  const gpsTracker = VendorGPSTracker({
+    vendorId: vendorProfile?.id,
+    vendorName: vendorProfile?.vendor_name,
+    isAvailable,
+    onLocationUpdate: (location) => {
+      setLastLocationUpdate(new Date());
+      setLocationError(null);
+    }
+  });
+
+  // Update location error from tracker
+  useEffect(() => {
+    if (gpsTracker.locationError) {
+      setLocationError(gpsTracker.locationError);
+    }
+  }, [gpsTracker.locationError]);
 
   // Get current user
   useEffect(() => {
@@ -324,7 +346,7 @@ export default function VendorPortalPage() {
         timeoutSeconds={120}
       />
 
-      {/* Header with availability toggle */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#172B4D]">שלום, {vendorProfile.vendor_name}</h1>
@@ -345,21 +367,17 @@ export default function VendorPortalPage() {
           >
             <RefreshCw className={cn("w-4 h-4", callsQuery.isFetching && "animate-spin")} />
           </Button>
-          <div className="flex items-center gap-4 bg-white rounded-lg p-4 border">
-            <div className="text-right">
-              <div className="text-sm font-medium">סטטוס זמינות</div>
-              <div className={cn("text-xs", isAvailable ? "text-green-600" : "text-gray-500")}>
-                {isAvailable ? 'זמין לקריאות' : 'לא זמין'}
-              </div>
-            </div>
-            <Switch
-              checked={isAvailable}
-              onCheckedChange={toggleAvailability}
-              className="data-[state=checked]:bg-green-500"
-            />
-          </div>
         </div>
       </div>
+
+      {/* Availability Toggle - Prominent */}
+      <VendorAvailabilityToggle
+        vendor={vendorProfile}
+        isAvailable={isAvailable}
+        onToggle={toggleAvailability}
+        lastLocationUpdate={lastLocationUpdate}
+        locationError={locationError}
+      />
 
       {/* Stats */}
       <VendorStats vendor={vendorProfile} calls={calls} />
