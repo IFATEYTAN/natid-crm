@@ -19,9 +19,9 @@ import ServiceProviders from './pages/ServiceProviders';
 import Settings from './pages/Settings';
 import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
+import VendorCallManagement from './pages/VendorCallManagement';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import VendorCallManagement from './pages/VendorCallManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -47,9 +47,9 @@ export const PAGES = {
     "Settings": Settings,
     "UserGuide": UserGuide,
     "UserManagement": UserManagement,
+    "VendorCallManagement": VendorCallManagement,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "VendorCallManagement": VendorCallManagement,
 }
 
 export const pagesConfig = {

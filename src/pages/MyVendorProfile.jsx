@@ -19,19 +19,24 @@ import {
   Shield,
   Clock,
   CheckCircle,
-  Loader2
+  Loader2,
+  DollarSign,
+  Wrench
 } from 'lucide-react';
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp, AnimatedCard, StaggeredList, StaggeredItem } from '@/components/animations/AnimatedComponents';
 
 const serviceTypes = [
-  { key: 'tow_truck', label: 'גרר' },
-  { key: 'mechanic', label: 'מכונאי' },
-  { key: 'tire_service', label: 'צמיגים' },
-  { key: 'locksmith', label: 'מנעולן' },
-  { key: 'fuel_delivery', label: 'דלק' },
-  { key: 'multi_service', label: 'שירות משולב' }
+  { key: 'towing', label: 'גרירה', icon: '🚛' },
+  { key: 'flat_tire', label: 'החלפת גלגל', icon: '🔧' },
+  { key: 'tire_repair', label: 'תיקון פנצ\'ר', icon: '🛞' },
+  { key: 'battery_jump', label: 'הנעה ממצבר', icon: '🔋' },
+  { key: 'battery_replace', label: 'החלפת מצבר', icon: '🔋' },
+  { key: 'fuel_delivery', label: 'הבאת דלק', icon: '⛽' },
+  { key: 'locksmith', label: 'מנעולן', icon: '🔑' },
+  { key: 'mechanic', label: 'מכונאי ניידת', icon: '🔧' },
+  { key: 'windshield', label: 'שמשות', icon: '🪟' }
 ];
 
 const coverageAreas = [
@@ -54,6 +59,9 @@ export default function MyVendorProfilePage() {
     coverage_cities: '',
     coverage_areas: [],
     service_type: [],
+    service_rates: {},
+    base_rate: 0,
+    rate_per_km: 0,
     works_24_7: false,
     working_hours_start: '08:00',
     working_hours_end: '18:00',
@@ -88,6 +96,9 @@ export default function MyVendorProfilePage() {
           coverage_cities: vendor.coverage_cities || '',
           coverage_areas: vendor.coverage_areas || [],
           service_type: vendor.service_type || [],
+          service_rates: vendor.service_rates || {},
+          base_rate: vendor.base_rate || 0,
+          rate_per_km: vendor.rate_per_km || 0,
           works_24_7: vendor.works_24_7 || false,
           working_hours_start: vendor.working_hours_start || '08:00',
           working_hours_end: vendor.working_hours_end || '18:00',
@@ -274,18 +285,40 @@ export default function MyVendorProfilePage() {
             </div>
 
             <div>
-              <Label className="mb-3 block">סוגי שירות</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <Label className="mb-3 block flex items-center gap-2">
+                <Wrench className="w-4 h-4" />
+                סוגי שירות ותעריפים
+              </Label>
+              <div className="space-y-3">
                 {serviceTypes.map(type => (
-                  <div key={type.key} className="flex items-center gap-2">
+                  <div key={type.key} className="flex items-center gap-3 p-3 bg-[#f9fafb] rounded-lg">
                     <Checkbox
                       id={`service-${type.key}`}
                       checked={formData.service_type.includes(type.key)}
                       onCheckedChange={(checked) => handleServiceTypeChange(type.key, checked)}
                     />
-                    <label htmlFor={`service-${type.key}`} className="text-sm cursor-pointer">
+                    <label htmlFor={`service-${type.key}`} className="flex-1 text-sm cursor-pointer flex items-center gap-2">
+                      <span>{type.icon}</span>
                       {type.label}
                     </label>
+                    {formData.service_type.includes(type.key) && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          placeholder="תעריף ₪"
+                          className="w-24 h-8 text-sm"
+                          value={formData.service_rates[type.key] || ''}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            service_rates: {
+                              ...formData.service_rates,
+                              [type.key]: Number(e.target.value)
+                            }
+                          })}
+                        />
+                        <span className="text-xs text-[#6b7280]">₪</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -322,6 +355,41 @@ export default function MyVendorProfilePage() {
               </div>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Base Rates */}
+      <Card className="bg-white border border-[#e5e7eb]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-[#6b7280]" />
+            תעריפים כלליים
+          </CardTitle>
+          <CardDescription>תעריפי בסיס לקריאות</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>תעריף בסיס (₪)</Label>
+              <Input
+                type="number"
+                value={formData.base_rate || ''}
+                onChange={(e) => setFormData({ ...formData, base_rate: Number(e.target.value) })}
+                placeholder="0"
+              />
+              <p className="text-xs text-[#6b7280] mt-1">תעריף מינימום לכל קריאה</p>
+            </div>
+            <div>
+              <Label>תעריף לק"מ (₪)</Label>
+              <Input
+                type="number"
+                value={formData.rate_per_km || ''}
+                onChange={(e) => setFormData({ ...formData, rate_per_km: Number(e.target.value) })}
+                placeholder="0"
+              />
+              <p className="text-xs text-[#6b7280] mt-1">תוספת לפי מרחק נסיעה</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
