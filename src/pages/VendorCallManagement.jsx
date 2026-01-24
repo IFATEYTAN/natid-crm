@@ -42,6 +42,8 @@ import { he } from 'date-fns/locale';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import SignaturePad from '@/components/signature/SignaturePad';
+import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
+import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
@@ -192,6 +194,13 @@ export default function VendorCallManagementPage() {
       changed_by: vendorProfile?.vendor_name || 'ספק'
     };
 
+    // Status messages for chat
+    const statusMessages = {
+      vendor_enroute: `הספק ${vendorProfile?.vendor_name || ''} יצא לדרך`,
+      in_progress: 'הספק הגיע למקום ומתחיל בטיפול',
+      completed: 'הטיפול הושלם בהצלחה!'
+    };
+
     if (newStatus === 'vendor_enroute') {
       // Starting route
     } else if (newStatus === 'in_progress') {
@@ -205,6 +214,11 @@ export default function VendorCallManagementPage() {
 
     updateCallMutation.mutate(updateData);
     addHistoryMutation.mutate(historyData);
+
+    // Send automatic status update to chat
+    if (statusMessages[newStatus]) {
+      await sendStatusMessage(selectedCallId, statusMessages[newStatus]);
+    }
   };
 
   const handleSaveNotes = () => {
@@ -472,7 +486,7 @@ export default function VendorCallManagementPage() {
 
       {/* Tabs for Photos, Notes, Messages */}
       <Tabs defaultValue="photos" className="w-full">
-        <TabsList className="w-full grid grid-cols-3">
+        <TabsList className={`w-full grid ${isCompleted ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="photos" className="gap-1">
             <Image className="w-4 h-4" />
             תמונות ({photos.length})
@@ -483,8 +497,13 @@ export default function VendorCallManagementPage() {
           </TabsTrigger>
           <TabsTrigger value="messages" className="gap-1">
             <MessageSquare className="w-4 h-4" />
-            הודעות
+            צ'אט
           </TabsTrigger>
+          {isCompleted && (
+            <TabsTrigger value="feedback" className="gap-1">
+              ⭐ משוב
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="photos" className="mt-4">
@@ -553,50 +572,27 @@ export default function VendorCallManagementPage() {
         </TabsContent>
 
         <TabsContent value="messages" className="mt-4">
-          <Card className="bg-white">
-            <CardContent className="p-4">
-              <div className="space-y-3 max-h-60 overflow-y-auto mb-4">
-                {messages.length === 0 ? (
-                  <div className="text-center py-4 text-[#6B778C]">
-                    <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>אין הודעות</p>
-                  </div>
-                ) : (
-                  messages.map(msg => (
-                    <div 
-                      key={msg.id} 
-                      className={`p-3 rounded-lg ${
-                        msg.sender_role === 'vendor' 
-                          ? 'bg-blue-50 mr-8' 
-                          : 'bg-gray-100 ml-8'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-medium">{msg.sender_name}</span>
-                        <span className="text-xs text-[#6B778C]">
-                          {format(new Date(msg.created_date), 'HH:mm', { locale: he })}
-                        </span>
-                      </div>
-                      <p className="text-sm">{msg.message_text}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-              <MessageInput 
-                onSend={(text) => {
-                  sendMessageMutation.mutate({
-                    call_id: selectedCallId,
-                    sender_name: vendorProfile?.vendor_name || 'ספק',
-                    sender_role: 'vendor',
-                    message_text: text,
-                    is_read: false
-                  });
-                }}
-                disabled={isCompleted}
-              />
-            </CardContent>
-          </Card>
+          <EnhancedCallChat
+            callId={selectedCallId}
+            currentUserRole="vendor"
+            currentUserName={vendorProfile?.vendor_name || 'ספק'}
+            height="400px"
+          />
         </TabsContent>
+
+        {isCompleted && (
+          <TabsContent value="feedback" className="mt-4">
+            <CallFeedbackForm
+              callId={selectedCallId}
+              callNumber={call?.call_number}
+              customerName={call?.customer_name}
+              customerPhone={call?.customer_phone}
+              vendorId={vendorProfile?.id}
+              vendorName={vendorProfile?.vendor_name}
+              feedbackSource="vendor"
+            />
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Fixed Action Buttons */}
