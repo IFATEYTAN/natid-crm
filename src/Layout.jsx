@@ -148,6 +148,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'דוחות', href: 'Reports', icon: BarChart3 },
         { name: 'לקוחות', href: 'Customers', icon: Users },
         { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
+        { name: 'פורטל ספקים (תצוגה)', href: 'VendorPortal', icon: Truck },
       ]
     },
     {
