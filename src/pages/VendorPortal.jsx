@@ -198,9 +198,9 @@ export default function VendorPortalPage() {
             </Button>
           )}
           {call.call_status === 'in_progress' && (
-            <Button 
-              size="sm" 
-              className="bg-green-600 hover:bg-green-700"
+            <Button
+              size="sm"
+              className="bg-[#f97316] hover:bg-[#ea580c]"
               onClick={() => updateCallStatus(call.id, 'completed')}
             >
               סיימתי
@@ -354,7 +354,7 @@ export default function VendorPortalPage() {
                     )}
                     {call.call_status === 'in_progress' && (
                       <Link to={createPageUrl(`CallDetails?id=${call.id}`)}>
-                        <Button className="bg-green-600 hover:bg-green-700">
+                        <Button className="bg-[#f97316] hover:bg-[#ea580c]">
                           סיים וחתם
                         </Button>
                       </Link>

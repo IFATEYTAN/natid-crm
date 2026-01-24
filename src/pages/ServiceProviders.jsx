@@ -292,7 +292,7 @@ export default function ServiceProvidersPage() {
           <p className="text-[#6b7280] text-sm">ניהול גררים וספקי שירות</p>
         </div>
         <Link to={createPageUrl('NewVendor')}>
-          <Button className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2">
+          <Button className="bg-[#f97316] hover:bg-[#ea580c] gap-2">
             <Plus className="w-4 h-4" />
             ספק חדש
           </Button>

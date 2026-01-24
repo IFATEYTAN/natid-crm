@@ -380,9 +380,9 @@ export default function MyVendorProfilePage() {
       </Card>
 
       {/* Save Button */}
-      <Button 
+      <Button
         onClick={handleSubmit}
-        className="w-full bg-[#3b82f6] hover:bg-[#2563eb] gap-2 h-12"
+        className="w-full bg-[#f97316] hover:bg-[#ea580c] gap-2 h-12"
         disabled={updateMutation.isPending}
       >
         {updateMutation.isPending ? (

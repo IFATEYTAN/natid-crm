@@ -418,9 +418,9 @@ export default function NewVendorPage() {
           >
             ביטול
           </Button>
-          <Button 
-            type="submit" 
-            className="flex-1 bg-[#3b82f6] hover:bg-[#2563eb] gap-2"
+          <Button
+            type="submit"
+            className="flex-1 bg-[#f97316] hover:bg-[#ea580c] gap-2"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? (
