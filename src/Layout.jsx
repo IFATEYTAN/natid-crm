@@ -41,6 +41,7 @@ import { format, parseISO } from 'date-fns';
 import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import { Toaster } from 'sonner';
+import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -161,18 +162,19 @@ export default function Layout({ children, currentPageName }) {
       ]
     },
     {
-      title: 'מערכת',
-      icon: Settings,
-      items: [
-        { name: 'ניהול משתמשים', href: 'UserManagement', icon: UserCog },
-        { name: 'אוטומציה', href: 'AutomationSettings', icon: Zap },
-        { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Link2 },
-        { name: 'הגדרות התראות', href: 'NotificationSettings', icon: BellRing },
-        { name: 'הגדרות מערכת', href: 'Settings', icon: Settings },
-        { name: 'יומן פעולות', href: 'AuditLog', icon: Shield },
-        { name: 'מדריך למשתמש', href: 'UserGuide', icon: BookOpen },
-      ]
-    }
+        title: 'מערכת',
+        icon: Settings,
+        items: [
+          { name: 'ניהול משתמשים', href: 'UserManagement', icon: UserCog },
+          { name: 'אוטומציה', href: 'AutomationSettings', icon: Zap },
+          { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Link2 },
+          { name: 'הגדרות התראות (מערכת)', href: 'NotificationSettings', icon: BellRing },
+          { name: 'העדפות התראות שלי', href: 'MyNotificationSettings', icon: Bell },
+          { name: 'הגדרות מערכת', href: 'Settings', icon: Settings },
+          { name: 'יומן פעולות', href: 'AuditLog', icon: Shield },
+          { name: 'מדריך למשתמש', href: 'UserGuide', icon: BookOpen },
+        ]
+      }
   ];
 
   const navigationGroups = isVendor ? vendorNavigationGroups : adminNavigationGroups;
@@ -394,6 +396,12 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       <Toaster position="top-center" richColors />
+      {currentUser?.id && (
+        <RealtimeNotifications 
+          userId={currentUser.id} 
+          soundEnabled={currentUser?.sound_enabled !== false}
+        />
+      )}
     </div>
   );
 }
