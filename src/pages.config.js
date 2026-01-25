@@ -23,6 +23,7 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
+import Calls from './pages/Calls';
 import __Layout from './Layout.jsx';
 
 
@@ -52,6 +53,7 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
+    "Calls": Calls,
 }
 
 export const pagesConfig = {
