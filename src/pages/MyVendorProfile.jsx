@@ -21,7 +21,8 @@ import {
   CheckCircle,
   Loader2,
   DollarSign,
-  Wrench
+  Wrench,
+  Navigation
 } from 'lucide-react';
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
@@ -65,7 +66,8 @@ export default function MyVendorProfilePage() {
     works_24_7: false,
     working_hours_start: '08:00',
     working_hours_end: '18:00',
-    notes: ''
+    notes: '',
+    is_location_sharing_enabled: true
   });
   const queryClient = useQueryClient();
 
@@ -102,7 +104,8 @@ export default function MyVendorProfilePage() {
           works_24_7: vendor.works_24_7 || false,
           working_hours_start: vendor.working_hours_start || '08:00',
           working_hours_end: vendor.working_hours_end || '18:00',
-          notes: vendor.notes || ''
+          notes: vendor.notes || '',
+          is_location_sharing_enabled: vendor.is_location_sharing_enabled !== false
         });
         return vendor;
       }
@@ -390,6 +393,40 @@ export default function MyVendorProfilePage() {
               <p className="text-xs text-[#6b7280] mt-1">תוספת לפי מרחק נסיעה</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Location Sharing */}
+      <Card className="bg-white border border-[#e5e7eb]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Navigation className="w-5 h-5 text-[#6b7280]" />
+            שיתוף מיקום
+          </CardTitle>
+          <CardDescription>אפשר למערכת לעקוב אחרי המיקום שלך בזמן אמת</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-[#f9fafb] rounded-lg">
+            <div>
+              <p className="font-medium text-[#111827]">שיתוף מיקום בזמן אמת</p>
+              <p className="text-sm text-[#6b7280]">
+                {formData.is_location_sharing_enabled 
+                  ? 'המיקום שלך משותף עם המוקד והלקוחות' 
+                  : 'שיתוף מיקום מושבת'}
+              </p>
+            </div>
+            <Switch
+              checked={formData.is_location_sharing_enabled}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_location_sharing_enabled: checked })}
+            />
+          </div>
+          {formData.is_location_sharing_enabled && (
+            <div className="text-xs text-[#6b7280] bg-blue-50 p-3 rounded-lg">
+              <p>✓ המיקום שלך יוצג על המפה בזמן אמת</p>
+              <p>✓ הלקוח יוכל לראות את התקדמותך אליו</p>
+              <p>✓ המערכת תשמור את היסטוריית הנסיעה</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
