@@ -30,6 +30,7 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "AdvancedExport": AdvancedExport,
     "Agents": Agents,
+    "Calls": Calls,
     "AllVendorsMap": AllVendorsMap,
     "AuditLog": AuditLog,
     "AutomationSettings": AutomationSettings,
