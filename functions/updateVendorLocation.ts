@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 /**
  * Update vendor's GPS location
  * Called by vendor's mobile device periodically
+ * Now supports active call tracking
  */
 Deno.serve(async (req) => {
   try {
@@ -15,13 +16,29 @@ Deno.serve(async (req) => {
       accuracy,
       speed,
       heading,
-      battery_level
+      battery_level,
+      call_id // Optional: active call being tracked
     } = await req.json();
 
     if (!vendor_id || latitude === undefined || longitude === undefined) {
       return Response.json({ 
         error: 'Missing required fields: vendor_id, latitude, longitude' 
       }, { status: 400 });
+    }
+
+    // Check if vendor has location sharing enabled
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
+    const vendor = vendors[0];
+    
+    if (!vendor) {
+      return Response.json({ error: 'Vendor not found' }, { status: 404 });
+    }
+
+    if (vendor.is_location_sharing_enabled === false) {
+      return Response.json({ 
+        success: false, 
+        message: 'Location sharing is disabled for this vendor' 
+      });
     }
 
     // Reverse geocode to get address (using free API)
@@ -38,9 +55,10 @@ Deno.serve(async (req) => {
       console.log('Geocode error:', e);
     }
 
-    // Create location record
+    // Create location record with optional call_id for history tracking
     const locationRecord = await base44.asServiceRole.entities.VendorLocation.create({
       vendor_id,
+      vendor_name: vendor.vendor_name,
       latitude,
       longitude,
       accuracy,
@@ -48,7 +66,8 @@ Deno.serve(async (req) => {
       heading,
       address,
       battery_level,
-      is_available: true
+      is_available: vendor.is_available_now,
+      call_id: call_id || null
     });
 
     // Update vendor's current location
