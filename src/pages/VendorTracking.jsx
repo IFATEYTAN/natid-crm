@@ -202,25 +202,49 @@ export default function VendorTrackingPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-white">
+        <Card 
+          className={cn(
+            "bg-white cursor-pointer transition-all hover:shadow-md",
+            statusFilter === 'all' && "ring-2 ring-blue-500"
+          )}
+          onClick={() => setStatusFilter('all')}
+        >
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-[#172B4D]">{stats.total}</div>
             <div className="text-sm text-[#6B778C]">סה"כ ספקים</div>
           </CardContent>
         </Card>
-        <Card className="bg-white">
+        <Card 
+          className={cn(
+            "bg-white cursor-pointer transition-all hover:shadow-md",
+            statusFilter === 'online' && "ring-2 ring-blue-500"
+          )}
+          onClick={() => setStatusFilter('online')}
+        >
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{stats.online}</div>
             <div className="text-sm text-[#6B778C]">עם מיקום פעיל</div>
           </CardContent>
         </Card>
-        <Card className="bg-white">
+        <Card 
+          className={cn(
+            "bg-white cursor-pointer transition-all hover:shadow-md",
+            statusFilter === 'available' && "ring-2 ring-green-500"
+          )}
+          onClick={() => setStatusFilter('available')}
+        >
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{stats.available}</div>
             <div className="text-sm text-[#6B778C]">זמינים</div>
           </CardContent>
         </Card>
-        <Card className="bg-white">
+        <Card 
+          className={cn(
+            "bg-white cursor-pointer transition-all hover:shadow-md",
+            statusFilter === 'busy' && "ring-2 ring-orange-500"
+          )}
+          onClick={() => setStatusFilter('busy')}
+        >
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-orange-600">{stats.busy}</div>
             <div className="text-sm text-[#6B778C]">עסוקים</div>

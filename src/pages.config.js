@@ -20,9 +20,9 @@ import Settings from './pages/Settings';
 import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
 import VendorCallManagement from './pages/VendorCallManagement';
+import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import VendorContracts from './pages/VendorContracts';
 import __Layout from './Layout.jsx';
 
 
@@ -49,9 +49,9 @@ export const PAGES = {
     "UserGuide": UserGuide,
     "UserManagement": UserManagement,
     "VendorCallManagement": VendorCallManagement,
+    "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "VendorContracts": VendorContracts,
 }
 
 export const pagesConfig = {
