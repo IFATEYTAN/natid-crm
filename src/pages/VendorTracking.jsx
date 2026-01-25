@@ -133,8 +133,14 @@ export default function VendorTrackingPage() {
     return vendors.filter(vendor => {
       const matchesSearch = !searchQuery || 
         vendor.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || vendor.availability_status === statusFilter;
       const hasLocation = vendor.current_latitude && vendor.current_longitude;
+      
+      // Handle special 'online' filter (vendors with active location)
+      if (statusFilter === 'online') {
+        return matchesSearch && hasLocation;
+      }
+      
+      const matchesStatus = statusFilter === 'all' || vendor.availability_status === statusFilter;
       return matchesSearch && matchesStatus && hasLocation;
     });
   }, [vendors, searchQuery, statusFilter]);
