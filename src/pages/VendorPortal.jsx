@@ -175,8 +175,17 @@ export default function VendorPortalPage() {
 
   const calls = callsQuery.data || [];
   
-  const activeCalls = calls.filter(c => ['vendor_enroute', 'in_progress', 'assigned', 'assigning'].includes(c.call_status));
+  const activeCalls = useMemo(() => 
+    calls.filter(c => ['vendor_enroute', 'in_progress', 'assigned', 'assigning'].includes(c.call_status)),
+    [calls]
+  );
   const completedCalls = calls.filter(c => c.call_status === 'completed');
+
+  // Get active call ID for GPS tracking
+  const activeCallId = useMemo(() => {
+    const active = activeCalls[0];
+    return active?.id || null;
+  }, [activeCalls]);
   const thisMonthCalls = completedCalls.filter(c => {
     const created = new Date(c.created_date);
     const now = new Date();
