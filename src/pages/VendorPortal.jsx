@@ -63,32 +63,6 @@ export default function VendorPortalPage() {
   const [locationError, setLocationError] = useState(null);
   const queryClient = useQueryClient();
 
-  // Get active call ID for GPS tracking
-  const activeCallId = useMemo(() => {
-    const active = activeCalls[0];
-    return active?.id || null;
-  }, [calls]);
-
-  // GPS Tracker with location sharing check and active call tracking
-  const gpsTracker = VendorGPSTracker({
-    vendorId: vendorProfile?.id,
-    vendorName: vendorProfile?.vendor_name,
-    isAvailable,
-    isLocationSharingEnabled: vendorProfile?.is_location_sharing_enabled !== false,
-    activeCallId,
-    onLocationUpdate: (location) => {
-      setLastLocationUpdate(new Date());
-      setLocationError(null);
-    }
-  });
-
-  // Update location error from tracker
-  useEffect(() => {
-    if (gpsTracker.locationError) {
-      setLocationError(gpsTracker.locationError);
-    }
-  }, [gpsTracker.locationError]);
-
   // Get current user
   useEffect(() => {
     const fetchUser = async () => {
