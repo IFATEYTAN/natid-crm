@@ -1,0 +1,83 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { 
+      user_ids, // Array of user IDs to notify, or 'all_admins' for all admins
+      event_type, // The type of event (new_call, call_status_change, etc.)
+      title,
+      message,
+      type = 'info', // info, success, warning, error
+      link,
+      related_entity_id,
+      related_entity_type
+    } = await req.json();
+
+    // Get users to notify
+    let targetUsers = [];
+    
+    if (user_ids === 'all_admins') {
+      // Get all admin users
+      const allUsers = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      targetUsers = allUsers;
+    } else if (Array.isArray(user_ids)) {
+      // Get specific users
+      for (const userId of user_ids) {
+        try {
+          const targetUser = await base44.asServiceRole.entities.User.get(userId);
+          if (targetUser) {
+            targetUsers.push(targetUser);
+          }
+        } catch (e) {
+          // User not found, skip
+        }
+      }
+    }
+
+    const notifications = [];
+    
+    for (const targetUser of targetUsers) {
+      // Check user preferences
+      const prefs = targetUser.notification_preferences || {};
+      
+      // If push is disabled, skip
+      if (targetUser.push_enabled === false) {
+        continue;
+      }
+      
+      // Check if user wants this event type
+      if (event_type && prefs[event_type] === false) {
+        continue;
+      }
+
+      // Create the notification
+      const notification = await base44.asServiceRole.entities.Notification.create({
+        user_id: targetUser.id,
+        title,
+        message,
+        type,
+        link,
+        related_entity_id,
+        related_entity_type,
+        is_read: false
+      });
+      
+      notifications.push(notification);
+    }
+
+    return Response.json({ 
+      success: true, 
+      notifications_created: notifications.length 
+    });
+
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

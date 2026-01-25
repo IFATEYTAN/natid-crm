@@ -1,11 +1,11 @@
 import AdvancedExport from './pages/AdvancedExport';
 import Agents from './pages/Agents';
-import Calls from './pages/Calls';
 import AllVendorsMap from './pages/AllVendorsMap';
 import AuditLog from './pages/AuditLog';
 import AutomationSettings from './pages/AutomationSettings';
 import Calendar from './pages/Calendar';
 import CallDetails from './pages/CallDetails';
+import Calls from './pages/Calls';
 import CoverageAreas from './pages/CoverageAreas';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
@@ -24,18 +24,19 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
+import MyNotificationSettings from './pages/MyNotificationSettings';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AdvancedExport": AdvancedExport,
     "Agents": Agents,
-    "Calls": Calls,
     "AllVendorsMap": AllVendorsMap,
     "AuditLog": AuditLog,
     "AutomationSettings": AutomationSettings,
     "Calendar": Calendar,
     "CallDetails": CallDetails,
+    "Calls": Calls,
     "CoverageAreas": CoverageAreas,
     "Customers": Customers,
     "Dashboard": Dashboard,
@@ -54,6 +55,7 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
+    "MyNotificationSettings": MyNotificationSettings,
 }
 
 export const pagesConfig = {
