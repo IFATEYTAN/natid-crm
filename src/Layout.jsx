@@ -27,7 +27,8 @@ import {
   Calendar as CalendarIcon,
   Navigation,
   Shield,
-  BookOpen
+  BookOpen,
+  FileText
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -148,6 +149,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'דוחות', href: 'Reports', icon: BarChart3 },
         { name: 'לקוחות', href: 'Customers', icon: Users },
         { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
+        { name: 'ניהול חוזים', href: 'VendorContracts', icon: FileText },
         { name: 'פורטל ספקים (תצוגה)', href: 'VendorPortal', icon: Truck },
       ]
     },
