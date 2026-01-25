@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
 import { useCall, useUpdateCall } from '@/components/hooks/useCalls';
@@ -33,6 +33,8 @@ import FileUploader from '@/components/files/FileUploader';
 import SignaturePad from '@/components/signature/SignaturePad';
 import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
+import VendorLiveMap from '@/components/maps/VendorLiveMap';
+import CallSummaryEditor from '@/components/call/CallSummaryEditor';
 import {
   ArrowRight,
   User,
@@ -53,11 +55,8 @@ import {
   Loader2,
   PenTool,
   Headset,
-  Navigation,
-  Sparkles
+  Navigation
 } from 'lucide-react';
-import VendorLiveMap from '@/components/maps/VendorLiveMap';
-import CallSummaryEditor from '@/components/calls/CallSummaryEditor';
 import { cn } from "@/lib/utils";
 import { toast } from 'sonner';
 
@@ -147,12 +146,12 @@ export default function CallDetailsPage() {
     
     updateCall.mutate({ id: callId, data: updates });
 
-    // Generate automatic summary when call is completed
+    // Generate summary when call is completed
     if (newStatus === 'completed') {
       try {
         await base44.functions.invoke('generateCallSummary', { call_id: callId });
       } catch (e) {
-        console.error('Failed to generate summary:', e);
+        console.log('Auto summary generation failed:', e);
       }
     }
     
@@ -330,7 +329,7 @@ export default function CallDetailsPage() {
         <Tabs defaultValue="details" className="space-y-4" dir="rtl">
           <TabsList>
             <TabsTrigger value="details">פרטים</TabsTrigger>
-            <TabsTrigger value="tracking">מעקב GPS</TabsTrigger>
+            <TabsTrigger value="map">מפה</TabsTrigger>
             <TabsTrigger value="chat">צ'אט</TabsTrigger>
             <TabsTrigger value="files">קבצים ({photos.length})</TabsTrigger>
             <TabsTrigger value="history">היסטוריה</TabsTrigger>
@@ -499,33 +498,23 @@ export default function CallDetailsPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="tracking">
+          <TabsContent value="map">
             <div className="space-y-4">
               {call?.assigned_vendor_id ? (
                 <VendorLiveMap
-                  callId={callId}
                   vendorId={call.assigned_vendor_id}
-                  pickupLocation={{
-                    lat: call?.pickup_location_lat,
-                    lng: call?.pickup_location_lon,
-                    address: call?.pickup_location_address
-                  }}
-                  dropoffLocation={call?.dropoff_location_address ? {
-                    lat: null,
-                    lng: null,
-                    address: call?.dropoff_location_address
-                  } : null}
-                  showHistory={true}
+                  callId={callId}
+                  pickupLat={call.pickup_location_lat}
+                  pickupLon={call.pickup_location_lon}
+                  showHistory={call.call_status === 'completed'}
                   height="500px"
                 />
               ) : (
                 <Card className="bg-white">
-                  <CardContent className="py-12 text-center">
-                    <Navigation className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-medium text-gray-700">אין ספק משובץ</h3>
-                    <p className="text-gray-500 mt-2">
-                      מעקב מיקום יהיה זמין לאחר שיבוץ ספק לקריאה
-                    </p>
+                  <CardContent className="py-12 text-center text-[#6B778C]">
+                    <Navigation className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>לא שובץ ספק לקריאה זו</p>
+                    <p className="text-sm">מפת מעקב תופיע לאחר שיבוץ ספק</p>
                   </CardContent>
                 </Card>
               )}
@@ -715,10 +704,13 @@ export default function CallDetailsPage() {
 
           {call?.call_status === 'completed' && (
             <TabsContent value="summary">
-              <div className="max-w-3xl mx-auto">
-                <CallSummaryEditor 
-                  call={call} 
-                  onSummaryUpdated={() => {
+              <div className="max-w-2xl mx-auto">
+                <CallSummaryEditor
+                  callId={callId}
+                  callNumber={call?.call_number}
+                  summaryDraft={call?.summary_draft}
+                  summaryFinal={call?.summary_final}
+                  onSummaryGenerated={() => {
                     queryClient.invalidateQueries({ queryKey: ['call', callId] });
                   }}
                 />
