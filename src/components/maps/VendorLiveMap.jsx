@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Truck, MapPin, Navigation, Clock } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { RefreshCw, MapPin, Navigation, Clock, Truck } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
-// Fix for default markers
+// Fix for default markers in react-leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -17,9 +17,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom icons
+// Custom vendor icon
 const vendorIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -27,6 +27,7 @@ const vendorIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+// Pickup location icon
 const pickupIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -36,8 +37,9 @@ const pickupIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+// Dropoff location icon
 const dropoffIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -45,108 +47,136 @@ const dropoffIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-// Component to auto-fit bounds
-function FitBounds({ positions }) {
+// Component to fit map bounds
+function FitBounds({ bounds }) {
   const map = useMap();
-  
   useEffect(() => {
-    if (positions.length > 0) {
-      const bounds = L.latLngBounds(positions);
+    if (bounds && bounds.length > 0) {
       map.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [positions, map]);
-  
+  }, [map, bounds]);
   return null;
 }
 
 export default function VendorLiveMap({ 
-  vendorId, 
-  callId,
-  pickupLat, 
-  pickupLon, 
-  dropoffLat, 
-  dropoffLon,
+  callId, 
+  vendorId,
+  pickupLocation,
+  dropoffLocation,
   showHistory = false,
   height = "400px"
 }) {
-  const [vendorPosition, setVendorPosition] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Fetch vendor's current location
-  const { data: vendor } = useQuery({
-    queryKey: ['vendorLocation', vendorId],
+  const { data: vendor, refetch: refetchVendor } = useQuery({
+    queryKey: ['vendor-location', vendorId],
     queryFn: async () => {
+      if (!vendorId) return null;
       const vendors = await base44.entities.Vendor.filter({ id: vendorId });
-      return vendors[0];
+      return vendors[0] || null;
     },
     enabled: !!vendorId,
-    refetchInterval: 10000 // Refresh every 10 seconds
+    refetchInterval: autoRefresh ? 10000 : false // Refresh every 10 seconds
   });
 
   // Fetch location history for this call
   const { data: locationHistory = [] } = useQuery({
-    queryKey: ['vendorLocationHistory', callId],
+    queryKey: ['vendor-location-history', callId],
     queryFn: async () => {
       if (!callId) return [];
       return await base44.entities.VendorLocation.filter(
         { call_id: callId },
         'created_date',
-        100
+        500
       );
     },
     enabled: !!callId && showHistory,
-    refetchInterval: 30000
+    refetchInterval: autoRefresh ? 15000 : false
   });
 
-  useEffect(() => {
+  // Calculate map center and bounds
+  const getMapBounds = () => {
+    const points = [];
+    
     if (vendor?.current_latitude && vendor?.current_longitude) {
-      setVendorPosition([vendor.current_latitude, vendor.current_longitude]);
+      points.push([vendor.current_latitude, vendor.current_longitude]);
     }
-  }, [vendor]);
+    
+    if (pickupLocation?.lat && pickupLocation?.lng) {
+      points.push([pickupLocation.lat, pickupLocation.lng]);
+    }
+    
+    if (dropoffLocation?.lat && dropoffLocation?.lng) {
+      points.push([dropoffLocation.lat, dropoffLocation.lng]);
+    }
 
-  // Check if vendor has location sharing enabled
-  if (vendor && vendor.is_location_sharing_enabled === false) {
-    return (
-      <Card className="bg-white">
-        <CardContent className="py-8 text-center text-[#6B778C]">
-          <Navigation className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>הספק לא אישר שיתוף מיקום</p>
-        </CardContent>
-      </Card>
-    );
-  }
+    if (showHistory && locationHistory.length > 0) {
+      locationHistory.forEach(loc => {
+        if (loc.latitude && loc.longitude) {
+          points.push([loc.latitude, loc.longitude]);
+        }
+      });
+    }
 
-  // Default center (Israel)
-  const defaultCenter = [31.7683, 35.2137];
-  
-  // Calculate center based on available positions
-  let center = defaultCenter;
-  if (vendorPosition) {
-    center = vendorPosition;
-  } else if (pickupLat && pickupLon) {
-    center = [pickupLat, pickupLon];
-  }
+    return points;
+  };
 
-  // Build positions for bounds fitting
-  const allPositions = [];
-  if (vendorPosition) allPositions.push(vendorPosition);
-  if (pickupLat && pickupLon) allPositions.push([pickupLat, pickupLon]);
-  if (dropoffLat && dropoffLon) allPositions.push([dropoffLat, dropoffLon]);
+  const bounds = getMapBounds();
+  const defaultCenter = bounds.length > 0 ? bounds[0] : [32.0853, 34.7818]; // Tel Aviv default
 
-  // Build path from history
-  const historyPath = locationHistory.map(loc => [loc.latitude, loc.longitude]);
+  // Create polyline from location history
+  const historyPath = locationHistory
+    .filter(loc => loc.latitude && loc.longitude)
+    .map(loc => [loc.latitude, loc.longitude]);
+
+  const hasVendorLocation = vendor?.current_latitude && vendor?.current_longitude;
+  const isLocationSharingEnabled = vendor?.is_location_sharing_enabled;
 
   return (
-    <Card className="bg-white overflow-hidden">
+    <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Navigation className="w-4 h-4 text-[#6B778C]" />
-          מיקום ספק בזמן אמת
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Navigation className="w-5 h-5 text-blue-600" />
+            מעקב מיקום ספק
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Badge 
+              variant="outline" 
+              className={autoRefresh ? "text-green-600 border-green-200 bg-green-50" : ""}
+            >
+              {autoRefresh ? 'עדכון אוטומטי' : 'מושהה'}
+            </Badge>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                refetchVendor();
+                setAutoRefresh(!autoRefresh);
+              }}
+            >
+              <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="p-0">
-        <div style={{ height, width: '100%' }}>
+      <CardContent>
+        {!isLocationSharingEnabled && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-3 text-sm text-yellow-800">
+            ⚠️ הספק לא הפעיל שיתוף מיקום
+          </div>
+        )}
+
+        {isLocationSharingEnabled && !hasVendorLocation && (
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-3 text-sm text-gray-600">
+            ממתין לעדכון מיקום מהספק...
+          </div>
+        )}
+
+        <div style={{ height }} className="rounded-lg overflow-hidden border border-gray-200">
           <MapContainer
-            center={center}
+            center={defaultCenter}
             zoom={13}
             style={{ height: '100%', width: '100%' }}
           >
@@ -154,19 +184,25 @@ export default function VendorLiveMap({
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            
-            {allPositions.length > 0 && <FitBounds positions={allPositions} />}
 
-            {/* Vendor marker */}
-            {vendorPosition && (
-              <Marker position={vendorPosition} icon={vendorIcon}>
+            {bounds.length > 1 && <FitBounds bounds={bounds} />}
+
+            {/* Vendor current location */}
+            {hasVendorLocation && (
+              <Marker 
+                position={[vendor.current_latitude, vendor.current_longitude]}
+                icon={vendorIcon}
+              >
                 <Popup>
-                  <div className="text-center" dir="rtl">
-                    <Truck className="w-6 h-6 mx-auto mb-1 text-green-600" />
-                    <strong>{vendor?.vendor_name}</strong>
-                    {vendor?.last_location_update && (
+                  <div className="text-right" dir="rtl">
+                    <strong className="flex items-center gap-1">
+                      <Truck className="w-4 h-4" />
+                      {vendor.vendor_name}
+                    </strong>
+                    {vendor.last_location_update && (
                       <p className="text-xs text-gray-500 mt-1">
-                        עודכן: {format(new Date(vendor.last_location_update), 'HH:mm:ss')}
+                        <Clock className="w-3 h-3 inline ml-1" />
+                        עדכון: {format(new Date(vendor.last_location_update), 'HH:mm:ss')}
                       </p>
                     )}
                   </div>
@@ -174,33 +210,45 @@ export default function VendorLiveMap({
               </Marker>
             )}
 
-            {/* Pickup marker */}
-            {pickupLat && pickupLon && (
-              <Marker position={[pickupLat, pickupLon]} icon={pickupIcon}>
+            {/* Pickup location */}
+            {pickupLocation?.lat && pickupLocation?.lng && (
+              <Marker 
+                position={[pickupLocation.lat, pickupLocation.lng]}
+                icon={pickupIcon}
+              >
                 <Popup>
-                  <div className="text-center" dir="rtl">
-                    <MapPin className="w-6 h-6 mx-auto mb-1 text-red-600" />
-                    <strong>נקודת איסוף</strong>
+                  <div className="text-right" dir="rtl">
+                    <strong className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4 text-red-500" />
+                      מיקום איסוף
+                    </strong>
+                    <p className="text-sm mt-1">{pickupLocation.address}</p>
                   </div>
                 </Popup>
               </Marker>
             )}
 
-            {/* Dropoff marker */}
-            {dropoffLat && dropoffLon && (
-              <Marker position={[dropoffLat, dropoffLon]} icon={dropoffIcon}>
+            {/* Dropoff location */}
+            {dropoffLocation?.lat && dropoffLocation?.lng && (
+              <Marker 
+                position={[dropoffLocation.lat, dropoffLocation.lng]}
+                icon={dropoffIcon}
+              >
                 <Popup>
-                  <div className="text-center" dir="rtl">
-                    <MapPin className="w-6 h-6 mx-auto mb-1 text-blue-600" />
-                    <strong>נקודת יעד</strong>
+                  <div className="text-right" dir="rtl">
+                    <strong className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4 text-green-500" />
+                      יעד
+                    </strong>
+                    <p className="text-sm mt-1">{dropoffLocation.address}</p>
                   </div>
                 </Popup>
               </Marker>
             )}
 
-            {/* History path */}
+            {/* Location history path */}
             {showHistory && historyPath.length > 1 && (
-              <Polyline
+              <Polyline 
                 positions={historyPath}
                 color="#3b82f6"
                 weight={3}
@@ -211,24 +259,18 @@ export default function VendorLiveMap({
           </MapContainer>
         </div>
 
-        {/* Legend */}
-        <div className="p-3 border-t border-[#DFE1E6] flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span>ספק</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span>איסוף</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span>יעד</span>
-          </div>
-          {vendor?.last_location_update && (
-            <div className="flex items-center gap-1 mr-auto text-[#6B778C]">
-              <Clock className="w-3 h-3" />
-              <span>עדכון אחרון: {format(new Date(vendor.last_location_update), 'HH:mm:ss')}</span>
+        {/* Location info */}
+        <div className="mt-3 flex flex-wrap gap-4 text-sm">
+          {hasVendorLocation && vendor.last_location_update && (
+            <div className="flex items-center gap-1 text-gray-600">
+              <Clock className="w-4 h-4" />
+              עדכון אחרון: {format(new Date(vendor.last_location_update), 'HH:mm:ss dd/MM')}
+            </div>
+          )}
+          {showHistory && locationHistory.length > 0 && (
+            <div className="flex items-center gap-1 text-gray-600">
+              <Navigation className="w-4 h-4" />
+              {locationHistory.length} נקודות מיקום נשמרו
             </div>
           )}
         </div>

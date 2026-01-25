@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
  * Generate automatic call summary using AI
+ * Called when a call is marked as completed
  */
 Deno.serve(async (req) => {
   try {
@@ -15,35 +16,26 @@ Deno.serve(async (req) => {
     const { call_id } = await req.json();
 
     if (!call_id) {
-      return Response.json({ error: 'Missing call_id' }, { status: 400 });
+      return Response.json({ error: 'call_id is required' }, { status: 400 });
     }
 
     // Fetch call details
-    const calls = await base44.asServiceRole.entities.Call.filter({ id: call_id });
-    const call = calls[0];
-
-    if (!call) {
+    const calls = await base44.entities.Call.filter({ id: call_id });
+    if (calls.length === 0) {
       return Response.json({ error: 'Call not found' }, { status: 404 });
     }
+    const call = calls[0];
 
-    // Fetch call history
-    const history = await base44.asServiceRole.entities.CallHistory.filter(
-      { call_id },
-      '-created_date',
-      20
-    );
+    // Fetch call history/notes
+    const history = await base44.entities.CallHistory.filter({ call_id }, '-created_date', 50);
+    
+    // Fetch photos
+    const photos = await base44.entities.CallPhoto.filter({ call_id });
 
-    // Fetch vendor details if assigned
-    let vendor = null;
-    if (call.assigned_vendor_id) {
-      const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: call.assigned_vendor_id });
-      vendor = vendors[0];
-    }
-
-    // Build structured data for summary
+    // Build context for AI
     const issueTypeLabels = {
       mechanical: 'תקלה מכנית',
-      stopped_driving: 'הפסקת נסיעה',
+      stopped_driving: 'רכב לא נוסע',
       flat_tire: 'פנצ\'ר',
       stuck_wheel: 'גלגל תקוע',
       accident: 'תאונה',
@@ -53,58 +45,76 @@ Deno.serve(async (req) => {
       other: 'אחר'
     };
 
-    const callData = {
-      callNumber: call.call_number || call.id?.slice(-6),
-      customerName: call.customer_name,
-      customerPhone: call.customer_phone,
-      vehiclePlate: call.vehicle_plate,
-      vehicleModel: call.vehicle_model,
-      issueType: issueTypeLabels[call.issue_type] || call.issue_type,
-      issueDescription: call.issue_description,
-      pickupAddress: call.pickup_location_address,
-      pickupCity: call.pickup_location_city,
-      dropoffAddress: call.dropoff_location_address,
-      dropoffCity: call.dropoff_location_city,
-      vendorName: call.assigned_vendor_name,
-      vendorPhone: vendor?.phone,
-      createdAt: call.created_date,
-      assignedAt: call.assigned_at,
-      closedAt: call.closed_at,
-      vendorNotes: call.vendor_notes,
-      historyNotes: history.filter(h => h.notes).map(h => h.notes).join(', ')
+    const vehicleTypeLabels = {
+      private: 'פרטי',
+      commercial_light: 'מסחרי קל',
+      truck: 'משאית',
+      motorcycle: 'אופנוע'
     };
 
     // Calculate duration
-    let duration = '';
+    let durationMinutes = null;
     if (call.created_date && call.closed_at) {
       const start = new Date(call.created_date);
       const end = new Date(call.closed_at);
-      const diffMinutes = Math.round((end - start) / (1000 * 60));
-      const hours = Math.floor(diffMinutes / 60);
-      const minutes = diffMinutes % 60;
-      duration = hours > 0 ? `${hours} שעות ו-${minutes} דקות` : `${minutes} דקות`;
+      durationMinutes = Math.round((end - start) / (1000 * 60));
     }
 
-    // Generate summary using LLM
-    const prompt = `אתה מייצר סיכום קריאה מקצועי למערכת ניהול שירותי דרך.
-צור סיכום קצר ומקצועי בעברית עבור הקריאה הבאה:
+    // Build structured data for the prompt
+    const callData = {
+      callNumber: call.call_number || 'לא ידוע',
+      customerName: call.customer_name || 'לא ידוע',
+      customerPhone: call.customer_phone || 'לא ידוע',
+      vehiclePlate: call.vehicle_plate || 'לא ידוע',
+      vehicleModel: call.vehicle_model || 'לא ידוע',
+      vehicleType: vehicleTypeLabels[call.vehicle_type] || call.vehicle_type || 'לא ידוע',
+      issueType: issueTypeLabels[call.issue_type] || call.issue_type || 'לא ידוע',
+      issueDescription: call.issue_description || '',
+      pickupAddress: call.pickup_location_address || 'לא ידוע',
+      pickupCity: call.pickup_location_city || '',
+      dropoffAddress: call.dropoff_location_address || '',
+      dropoffCity: call.dropoff_location_city || '',
+      vendorName: call.assigned_vendor_name || 'לא שובץ',
+      createdAt: call.created_date ? new Date(call.created_date).toLocaleString('he-IL') : 'לא ידוע',
+      closedAt: call.closed_at ? new Date(call.closed_at).toLocaleString('he-IL') : 'לא ידוע',
+      durationMinutes: durationMinutes,
+      vendorNotes: call.vendor_notes || '',
+      customerRating: call.customer_rating,
+      customerFeedback: call.customer_feedback || '',
+      historyNotes: history.filter(h => h.notes).map(h => h.notes).join('\n'),
+      photosCount: photos.length
+    };
 
-פרטי קריאה:
+    // Generate summary using AI
+    const prompt = `אתה מערכת ליצירת סיכומי קריאות שירות דרך. צור סיכום מקצועי וקצר בעברית עבור הקריאה הבאה.
+
+פרטי הקריאה:
 - מספר קריאה: ${callData.callNumber}
 - לקוח: ${callData.customerName} (${callData.customerPhone})
-- רכב: ${callData.vehicleModel || 'לא צוין'} (${callData.vehiclePlate || 'לא צוין'})
-- סוג תקלה: ${callData.issueType || 'לא צוין'}
-- תיאור: ${callData.issueDescription || 'לא צוין'}
-- מיקום איסוף: ${callData.pickupAddress}, ${callData.pickupCity || ''}
-- מיקום יעד: ${callData.dropoffAddress || 'לא צוין'} ${callData.dropoffCity || ''}
-- ספק מטפל: ${callData.vendorName || 'לא שובץ'}
-- משך טיפול: ${duration || 'לא ידוע'}
-- הערות ספק: ${callData.vendorNotes || 'אין'}
-- הערות נוספות: ${callData.historyNotes || 'אין'}
+- רכב: ${callData.vehicleModel}, ${callData.vehicleType}, מספר רישוי: ${callData.vehiclePlate}
+- סוג תקלה: ${callData.issueType}
+- תיאור התקלה: ${callData.issueDescription || 'לא צוין'}
+- מיקום איסוף: ${callData.pickupAddress}${callData.pickupCity ? ', ' + callData.pickupCity : ''}
+- יעד: ${callData.dropoffAddress || 'לא צוין'}${callData.dropoffCity ? ', ' + callData.dropoffCity : ''}
+- ספק מטפל: ${callData.vendorName}
+- זמן פתיחה: ${callData.createdAt}
+- זמן סגירה: ${callData.closedAt}
+- משך טיפול: ${callData.durationMinutes ? callData.durationMinutes + ' דקות' : 'לא ידוע'}
+- הערות הספק: ${callData.vendorNotes || 'אין'}
+- תמונות: ${callData.photosCount} תמונות צורפו
+${callData.customerRating ? `- דירוג לקוח: ${callData.customerRating}/5` : ''}
+${callData.customerFeedback ? `- משוב לקוח: ${callData.customerFeedback}` : ''}
+${callData.historyNotes ? `\nהיסטוריית פעולות:\n${callData.historyNotes}` : ''}
 
-כתוב סיכום מקצועי של 3-5 משפטים המתאר את הקריאה, הטיפול והתוצאה.`;
+צור סיכום מקצועי שיכלול:
+1. תיאור קצר של האירוע
+2. פעולות שבוצעו
+3. תוצאה סופית
+4. הערות מיוחדות (אם יש)
 
-    const llmResponse = await base44.integrations.Core.InvokeLLM({
+הסיכום צריך להיות ברור, תמציתי ומקצועי.`;
+
+    const aiResponse = await base44.integrations.Core.InvokeLLM({
       prompt,
       response_json_schema: {
         type: "object",
@@ -118,16 +128,27 @@ Deno.serve(async (req) => {
       }
     });
 
-    const summaryText = llmResponse.summary || llmResponse;
+    const summary = aiResponse.summary || aiResponse;
 
-    // Update call with draft summary
-    await base44.asServiceRole.entities.Call.update(call_id, {
-      summary_draft: summaryText
+    // Update call with summary draft
+    await base44.entities.Call.update(call_id, {
+      summary_draft: summary,
+      summary_generated_at: new Date().toISOString()
+    });
+
+    // Log this action
+    await base44.asServiceRole.entities.CallHistory.create({
+      call_id,
+      call_number: call.call_number,
+      change_type: 'note',
+      notes: 'סיכום קריאה נוצר אוטומטית',
+      changed_by: user.email
     });
 
     return Response.json({
       success: true,
-      summary: summaryText
+      summary,
+      call_id
     });
 
   } catch (error) {
