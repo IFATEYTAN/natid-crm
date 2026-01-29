@@ -273,45 +273,11 @@ ${report.conclusion}`;
     
     setIsGeneratingPDF(true);
     try {
-      const element = pdfContentRef.current;
-      
-      // Dynamic imports to reduce bundle size
-      const html2canvasModule = await import('html2canvas');
-      const jspdfModule = await import('jspdf');
-      const html2canvas = html2canvasModule.default;
-      const jsPDF = jspdfModule.jsPDF;
-      
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const contentWidth = pageWidth - (margin * 2);
-      
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      let heightLeft = imgHeight;
-      let position = margin;
-      
-      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-      heightLeft -= (pageHeight - margin * 2);
-      
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight + margin;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-        heightLeft -= (pageHeight - margin * 2);
-      }
-      
-      pdf.save(`דוח_תובנות_נתי_${new Date().toISOString().split('T')[0]}.pdf`);
+      const { exportToPDF } = await import('./pdfExporter');
+      await exportToPDF(
+        pdfContentRef.current, 
+        `דוח_תובנות_נתי_${new Date().toISOString().split('T')[0]}.pdf`
+      );
       toast.success('הדוח הורד בהצלחה כ-PDF');
     } catch (error) {
       console.error('Error generating PDF:', error);
