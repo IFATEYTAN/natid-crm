@@ -1,5 +1,4 @@
 // PDF Export utility - loaded dynamically to reduce bundle size
-import { generateReportHTML } from './reportStyles';
 
 export async function exportToPDF(report, filename) {
   const html2canvas = (await import('html2canvas')).default;
