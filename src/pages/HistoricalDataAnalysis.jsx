@@ -89,12 +89,22 @@ export default function HistoricalDataAnalysisPage() {
     };
   }, [filteredData]);
 
+  // Map abbreviations to full names
+  const serveTypeLabels = {
+    'ג': 'גרירה',
+    'נ': 'ניידת',
+    'א': 'אבחון',
+    'א+ג': 'אבחון + גרירה',
+    'ג+נ': 'גרירה + ניידת',
+  };
+
   // Serve type distribution
   const serveTypeDistribution = useMemo(() => {
     const counts = {};
     filteredData.forEach(d => {
       const type = d.serve_type || 'לא ידוע';
-      counts[type] = (counts[type] || 0) + 1;
+      const label = serveTypeLabels[type] || type;
+      counts[label] = (counts[label] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [filteredData]);
