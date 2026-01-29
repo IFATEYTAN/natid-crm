@@ -75,6 +75,8 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
+import ImportHistoricalData from './pages/ImportHistoricalData';
+import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +109,8 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
+    "ImportHistoricalData": ImportHistoricalData,
+    "HistoricalDataAnalysis": HistoricalDataAnalysis,
 }
 
 export const pagesConfig = {
