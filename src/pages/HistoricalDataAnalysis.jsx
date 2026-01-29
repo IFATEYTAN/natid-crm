@@ -346,7 +346,7 @@ export default function HistoricalDataAnalysisPage() {
         </Card>
 
         {/* Bot Accuracy by Serve Type */}
-        <Card className="lg:col-span-2">
+        <Card id="bot-accuracy-chart" className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg">דיוק הבוט לפי סוג שירות</CardTitle>
           </CardHeader>
