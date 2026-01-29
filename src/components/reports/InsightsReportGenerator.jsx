@@ -13,6 +13,27 @@ export default function InsightsReportGenerator({ data, stats }) {
   const [emailAddress, setEmailAddress] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
+  // Mapping of abbreviations to full Hebrew names
+  const serveTypeMapping = {
+    'ג': 'גרירה',
+    'נ': 'ניידת',
+    'א': 'איתור',
+    'א+ג': 'איתור + גרירה',
+    'ש': 'שמשות',
+    'מ': 'מכונאי',
+    'צ': 'צמיגים',
+    'ד': 'דלק',
+    'פ': 'פריצה',
+    'ר': 'רדיו דיסק',
+    'ח': 'חילוץ',
+    'ק': 'קטנוע'
+  };
+
+  const getFullServeTypeName = (abbr) => {
+    if (!abbr) return 'לא ידוע';
+    return serveTypeMapping[abbr] || abbr;
+  };
+
   const generateInsights = async () => {
     setIsGenerating(true);
     
@@ -24,7 +45,8 @@ export default function InsightsReportGenerator({ data, stats }) {
       const nayedetFixedByType = {};
       
       data.forEach(d => {
-        const serveType = d.serve_type || 'לא ידוע';
+        const serveTypeAbbr = d.serve_type || 'לא ידוע';
+        const serveType = getFullServeTypeName(serveTypeAbbr);
         const carType = d.car_type || 'לא ידוע';
         
         serveTypeCounts[serveType] = (serveTypeCounts[serveType] || 0) + 1;
