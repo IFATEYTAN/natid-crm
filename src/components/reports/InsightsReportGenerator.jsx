@@ -5,8 +5,6 @@ import { FileText, Download, Loader2, TrendingUp, AlertTriangle, CheckCircle, Ta
 import { Input } from "@/components/ui/input";
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 
 export default function InsightsReportGenerator({ data, stats }) {
   const [isGenerating, setIsGenerating] = useState(false);
