@@ -58,6 +58,8 @@ import Calls from './pages/Calls';
 import CoverageAreas from './pages/CoverageAreas';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
+import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
+import ImportHistoricalData from './pages/ImportHistoricalData';
 import IntegrationSettings from './pages/IntegrationSettings';
 import MyNotificationSettings from './pages/MyNotificationSettings';
 import MyQueue from './pages/MyQueue';
@@ -75,8 +77,6 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import ImportHistoricalData from './pages/ImportHistoricalData';
-import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
 import __Layout from './Layout.jsx';
 
 
@@ -92,6 +92,8 @@ export const PAGES = {
     "CoverageAreas": CoverageAreas,
     "Customers": Customers,
     "Dashboard": Dashboard,
+    "HistoricalDataAnalysis": HistoricalDataAnalysis,
+    "ImportHistoricalData": ImportHistoricalData,
     "IntegrationSettings": IntegrationSettings,
     "MyNotificationSettings": MyNotificationSettings,
     "MyQueue": MyQueue,
@@ -109,8 +111,6 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "ImportHistoricalData": ImportHistoricalData,
-    "HistoricalDataAnalysis": HistoricalDataAnalysis,
 }
 
 export const pagesConfig = {

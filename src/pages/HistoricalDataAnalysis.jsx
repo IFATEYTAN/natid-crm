@@ -32,7 +32,22 @@ export default function HistoricalDataAnalysisPage() {
 
   const { data: historicalData = [], isLoading } = useQuery({
     queryKey: ['historicalCallData'],
-    queryFn: () => base44.entities.HistoricalCallData.list('-created_date', 1000)
+    queryFn: async () => {
+      // Fetch all records in batches
+      const allRecords = [];
+      let skip = 0;
+      const batchSize = 1000;
+      
+      while (true) {
+        const batch = await base44.entities.HistoricalCallData.filter({}, '-created_date', batchSize, skip);
+        allRecords.push(...batch);
+        
+        if (batch.length < batchSize) break;
+        skip += batchSize;
+      }
+      
+      return allRecords;
+    }
   });
 
   // Get unique values for filters
