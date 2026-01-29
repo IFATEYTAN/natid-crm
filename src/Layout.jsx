@@ -155,12 +155,14 @@ export default function Layout({ children, currentPageName }) {
       ]
     },
     {
-      title: 'כלים',
-      icon: Bot,
-      items: [
-        { name: 'סוכנים', href: 'Agents', icon: Bot },
-      ]
-    },
+        title: 'כלים',
+        icon: Bot,
+        items: [
+          { name: 'סוכנים', href: 'Agents', icon: Bot },
+          { name: 'ייבוא נתונים', href: 'ImportHistoricalData', icon: FileText },
+          { name: 'ניתוח היסטורי', href: 'HistoricalDataAnalysis', icon: BarChart3 },
+        ]
+      },
     {
         title: 'מערכת',
         icon: Settings,
