@@ -281,7 +281,7 @@ export default function HistoricalDataAnalysisPage() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Serve Type Distribution */}
-        <Card>
+        <Card id="serve-type-chart">
           <CardHeader>
             <CardTitle className="text-lg">התפלגות סוגי שירות</CardTitle>
           </CardHeader>
