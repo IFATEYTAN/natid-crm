@@ -14,6 +14,8 @@ export default function InsightsReportGenerator({ data, stats }) {
   const [report, setReport] = useState(null);
   const [emailAddress, setEmailAddress] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const pdfContentRef = React.useRef(null);
 
   // Mapping of abbreviations to full Hebrew names
   const serveTypeMapping = {
