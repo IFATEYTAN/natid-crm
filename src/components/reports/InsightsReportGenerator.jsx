@@ -364,8 +364,8 @@ ${report.conclusion}`;
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Preview */}
-              <div className="bg-gray-50 rounded-lg p-4 border">
+              {/* Preview - PDF Content */}
+              <div ref={pdfContentRef} className="bg-gray-50 rounded-lg p-4 border">
                 <h4 className="font-medium mb-3 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500" />
                   הדוח נוצר בהצלחה!
@@ -382,7 +382,7 @@ ${report.conclusion}`;
                     <ul className="text-sm space-y-1">
                       {report.key_findings?.slice(0, 3).map((finding, i) => (
                         <li key={i} className="flex items-start gap-2 bg-white p-2 rounded border">
-                          <span className="w-5 h-5 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs flex-shrink-0">{i + 1}</span>
+                          <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs flex-shrink-0">{i + 1}</span>
                           {finding}
                         </li>
                       ))}
