@@ -261,25 +261,41 @@ export default function HistoricalDataAnalysisPage() {
             <CardTitle className="text-lg">התפלגות סוגי שירות</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={serveTypeDistribution.slice(0, 6)}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                  >
-                    {serveTypeDistribution.slice(0, 6).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="h-[350px] flex flex-col md:flex-row items-center gap-4">
+              <div className="w-full md:w-1/2 h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={serveTypeDistribution.slice(0, 6)}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={false}
+                    >
+                      {serveTypeDistribution.slice(0, 6).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [`${value} קריאות`, name]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full md:w-1/2 space-y-2">
+                {serveTypeDistribution.slice(0, 6).map((item, index) => (
+                  <div key={item.name} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span className="truncate max-w-[150px]">{item.name}</span>
+                    </div>
+                    <span className="font-medium">{item.value.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -290,13 +306,13 @@ export default function HistoricalDataAnalysisPage() {
             <CardTitle className="text-lg">התפלגות סוגי רכב (Top 10)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={carTypeDistribution} layout="vertical">
+                <BarChart data={carTypeDistribution} layout="vertical" margin={{ right: 30 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
-                  <Tooltip />
+                  <XAxis type="number" tickFormatter={(v) => v.toLocaleString()} />
+                  <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(value) => [value.toLocaleString(), 'קריאות']} />
                   <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
