@@ -44,20 +44,25 @@ export default function ImportHistoricalDataPage() {
       const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
         json_schema: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "string" },
-              serve_type: { type: "string" },
-              car_type: { type: "string" },
-              car_name: { type: "string" },
-              car_year: { type: "number" },
-              description: { type: "string" },
-              bot_recommendation: { type: "string" },
-              bot_match: { type: "boolean" },
-              nayedet_fixed: { type: "boolean" },
-              diagnose: { type: "string" }
+          type: "object",
+          properties: {
+            records: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  serve_type: { type: "string" },
+                  car_type: { type: "string" },
+                  car_name: { type: "string" },
+                  car_year: { type: "number" },
+                  description: { type: "string" },
+                  bot_recommendation: { type: "string" },
+                  bot_match: { type: "string" },
+                  nayedet_fixed: { type: "string" },
+                  diagnose: { type: "string" }
+                }
+              }
             }
           }
         }
@@ -67,7 +72,7 @@ export default function ImportHistoricalDataPage() {
         throw new Error(extractResult.details || 'שגיאה בחילוץ הנתונים מהקובץ');
       }
 
-      const data = extractResult.output;
+      const data = extractResult.output?.records || extractResult.output;
       
       if (!data || data.length === 0) {
         throw new Error('לא נמצאו נתונים בקובץ');
@@ -82,8 +87,8 @@ export default function ImportHistoricalDataPage() {
         car_year: row.car_year ? Number(row.car_year) : null,
         description: row.description || '',
         bot_recommendation: row.bot_recommendation || '',
-        bot_match: row.bot_match === true || row.bot_match === 'true' || row.bot_match === 'כן' || row.bot_match === 1,
-        nayedet_fixed: row.nayedet_fixed === true || row.nayedet_fixed === 'true' || row.nayedet_fixed === 'כן' || row.nayedet_fixed === 1,
+        bot_match: row.bot_match === true || row.bot_match === 'true' || row.bot_match === 'כן' || row.bot_match === 'yes' || row.bot_match === '1' || row.bot_match === 1,
+        nayedet_fixed: row.nayedet_fixed === true || row.nayedet_fixed === 'true' || row.nayedet_fixed === 'כן' || row.nayedet_fixed === 'yes' || row.nayedet_fixed === '1' || row.nayedet_fixed === 1,
         diagnose: row.diagnose || ''
       }));
 
