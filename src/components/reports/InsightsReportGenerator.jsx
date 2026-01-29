@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FileText, Download, Loader2, TrendingUp, AlertTriangle, CheckCircle, Target, Mail, MessageCircle } from 'lucide-react';
+import { FileText, Download, Loader2, TrendingUp, AlertTriangle, CheckCircle, Target, Mail, MessageCircle, FileDown } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 export default function InsightsReportGenerator({ data, stats }) {
   const [isGenerating, setIsGenerating] = useState(false);
