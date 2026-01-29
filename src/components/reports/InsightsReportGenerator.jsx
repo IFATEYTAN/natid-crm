@@ -83,6 +83,8 @@ export default function InsightsReportGenerator({ data, stats }) {
       const prompt = `
 אתה מומחה לניתוח נתונים בתחום שירותי דרך וגרירה. נתח את הנתונים הבאים וצור דוח תובנות מקצועי בעברית.
 
+חשוב מאוד: השתמש תמיד בשמות המלאים של סוגי השירות (גרירה, ניידת, איתור, שמשות וכו') ולא בקיצורים או אותיות בודדות!
+
 סיכום נתונים:
 - סה"כ קריאות: ${stats.total.toLocaleString()}
 - דיוק הבוט: ${stats.botMatchRate}% (${stats.botMatches.toLocaleString()} התאמות)
@@ -97,7 +99,7 @@ ${topCarTypes.join('\n')}
 דיוק הבוט לפי סוג שירות:
 ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} קריאות)`).join('\n')}
 
-צור דוח עם המבנה הבא (בפורמט JSON):
+צור דוח עם המבנה הבא (בפורמט JSON). חובה להשתמש בשמות מלאים של סוגי שירות ולא באותיות/קיצורים:
 {
   "executive_summary": "סיכום מנהלים של 2-3 משפטים",
   "key_findings": ["ממצא 1", "ממצא 2", "ממצא 3", "ממצא 4"],
