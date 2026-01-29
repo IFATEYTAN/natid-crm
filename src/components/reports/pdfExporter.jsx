@@ -3,6 +3,7 @@
 export async function exportToPDF(report, filename) {
   const html2canvas = (await import('html2canvas')).default;
   const { jsPDF } = await import('jspdf');
+  const { generateReportHTML } = await import('./reportStyles');
   
   // Create a temporary iframe with the full styled HTML report
   const iframe = document.createElement('iframe');
