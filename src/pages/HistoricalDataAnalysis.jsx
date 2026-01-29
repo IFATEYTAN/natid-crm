@@ -209,7 +209,7 @@ export default function HistoricalDataAnalysisPage() {
           <Link to={createPageUrl('ImportHistoricalData')}>
             <Button variant="outline" className="gap-2">
               <FileSpreadsheet className="w-4 h-4" />
-              ייבא נתונים
+              ייבא נתונים נוספים
             </Button>
           </Link>
         </div>
