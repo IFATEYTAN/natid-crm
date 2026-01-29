@@ -168,6 +168,16 @@ export default function VendorTrackingPage() {
     return () => clearInterval(interval);
   }, [autoRefresh]);
 
+  // Cleanup map on unmount
+  useEffect(() => {
+    return () => {
+      if (window._vendorTrackingMap) {
+        window._vendorTrackingMap.remove();
+        window._vendorTrackingMap = null;
+      }
+    };
+  }, []);
+
   const getVendorActiveCall = (vendorId) => {
     return activeCalls.find(c => c.assigned_vendor_id === vendorId);
   };
@@ -264,9 +274,13 @@ export default function VendorTrackingPage() {
           <CardContent className="p-0">
             <div className="h-[500px]">
               <MapContainer
+                key="vendor-tracking-map"
                 center={defaultCenter}
                 zoom={8}
                 style={{ height: '100%', width: '100%' }}
+                whenCreated={(map) => {
+                  window._vendorTrackingMap = map;
+                }}
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

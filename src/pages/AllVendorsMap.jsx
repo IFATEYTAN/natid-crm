@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -81,6 +81,16 @@ const serviceTypeLabels = {
 export default function AllVendorsMapPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
+
+  // Cleanup map on unmount
+  useEffect(() => {
+    return () => {
+      if (window._allVendorsMap) {
+        window._allVendorsMap.remove();
+        window._allVendorsMap = null;
+      }
+    };
+  }, []);
 
   const { data: vendors = [], isLoading, refetch } = useQuery({
     queryKey: ['vendors-map'],
@@ -209,9 +219,14 @@ export default function AllVendorsMapPage() {
               </div>
             ) : (
               <MapContainer
+                key="all-vendors-map"
                 center={mapCenter}
                 zoom={8}
                 style={{ height: '100%', width: '100%' }}
+                whenCreated={(map) => {
+                  // Store map instance for cleanup
+                  window._allVendorsMap = map;
+                }}
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
