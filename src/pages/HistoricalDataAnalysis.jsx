@@ -161,45 +161,70 @@ export default function HistoricalDataAnalysisPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setServeTypeFilter('all')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">סה"כ קריאות</p>
-                <p className="text-2xl font-bold text-[#172B4D]">{stats.total}</p>
+                <p className="text-2xl font-bold text-[#172B4D]">{stats.total.toLocaleString()}</p>
               </div>
               <BarChart3 className="w-8 h-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => {
+            setServeTypeFilter('all');
+            setSearchQuery('');
+            // Scroll to bot accuracy chart
+            document.getElementById('bot-accuracy-chart')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">דיוק הבוט</p>
                 <p className="text-2xl font-bold text-green-600">{stats.botMatchRate}%</p>
-                <p className="text-xs text-gray-400">{stats.botMatches} מתוך {stats.total}</p>
+                <p className="text-xs text-gray-400">{stats.botMatches.toLocaleString()} מתוך {stats.total.toLocaleString()}</p>
               </div>
               <Bot className="w-8 h-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => {
+            setServeTypeFilter('all');
+            setSearchQuery('');
+            // Scroll to data table showing nayedet fixed
+            document.getElementById('data-table')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">תיקוני תפעול</p>
                 <p className="text-2xl font-bold text-orange-600">{stats.nayedetFixedRate}%</p>
-                <p className="text-xs text-gray-400">{stats.nayedetFixed} מקרים</p>
+                <p className="text-xs text-gray-400">{stats.nayedetFixed.toLocaleString()} מקרים</p>
               </div>
               <Users className="w-8 h-8 text-orange-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => {
+            // Scroll to serve type chart
+            document.getElementById('serve-type-chart')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
