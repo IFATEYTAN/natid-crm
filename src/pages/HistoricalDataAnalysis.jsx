@@ -124,11 +124,12 @@ export default function HistoricalDataAnalysisPage() {
     const byType = {};
     filteredData.forEach(d => {
       const type = d.serve_type || 'לא ידוע';
-      if (!byType[type]) {
-        byType[type] = { total: 0, matches: 0 };
+      const label = serveTypeLabels[type] || type;
+      if (!byType[label]) {
+        byType[label] = { total: 0, matches: 0 };
       }
-      byType[type].total++;
-      if (d.bot_match) byType[type].matches++;
+      byType[label].total++;
+      if (d.bot_match) byType[label].matches++;
     });
     
     return Object.entries(byType)
