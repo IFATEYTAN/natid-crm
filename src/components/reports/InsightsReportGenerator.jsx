@@ -454,7 +454,7 @@ ${report.conclusion}`;
               </div>
               
               <p className="text-xs text-gray-500 text-center">
-                💡 פתח את קובץ ה-HTML בדפדפן ולחץ Ctrl+P להדפסה או שמירה כ-PDF
+                💡 הורד את הדוח כ-PDF בעברית מלאה או כ-HTML לעיצוב מתקדם
               </p>
             </div>
           )}
