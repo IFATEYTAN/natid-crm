@@ -270,6 +270,59 @@ ${report.conclusion}`;
     window.open(whatsappUrl, '_blank');
   };
 
+  const downloadPDF = async () => {
+    if (!pdfContentRef.current || !report) return;
+    
+    setIsGeneratingPDF(true);
+    try {
+      const element = pdfContentRef.current;
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        x: -20,
+        y: -20,
+        width: element.offsetWidth + 100,
+        height: element.offsetHeight + 100
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const contentWidth = pageWidth - (margin * 2);
+      
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      let heightLeft = imgHeight;
+      let position = margin;
+      
+      // First page
+      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - margin * 2);
+      
+      // Handle multi-page
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + margin;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - margin * 2);
+      }
+      
+      pdf.save(`דוח_תובנות_נתי_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('הדוח הורד בהצלחה כ-PDF');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('שגיאה ביצירת ה-PDF');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
