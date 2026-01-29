@@ -326,13 +326,21 @@ export default function HistoricalDataAnalysisPage() {
             <CardTitle className="text-lg">דיוק הבוט לפי סוג שירות</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={botAccuracyByServeType}>
+                <BarChart data={botAccuracyByServeType} margin={{ bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip formatter={(value) => `${value}%`} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 11, angle: -45, textAnchor: 'end' }}
+                    height={70}
+                    interval={0}
+                  />
+                  <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+                  <Tooltip 
+                    formatter={(value, name, props) => [`${value}%`, 'דיוק']}
+                    labelFormatter={(label) => `${label}`}
+                  />
                   <Bar dataKey="accuracy" fill="#10b981" radius={[4, 4, 0, 0]} name="דיוק (%)" />
                 </BarChart>
               </ResponsiveContainer>
