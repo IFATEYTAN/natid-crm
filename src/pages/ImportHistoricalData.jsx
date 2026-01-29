@@ -13,16 +13,14 @@ export default function ImportHistoricalDataPage() {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      const validTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel',
-        'text/csv'
-      ];
-      if (validTypes.includes(selectedFile.type) || selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls') || selectedFile.name.endsWith('.csv')) {
+      const fileName = selectedFile.name.toLowerCase();
+      const isValidExtension = fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv');
+      
+      if (isValidExtension) {
         setFile(selectedFile);
         setImportResult(null);
       } else {
-        toast.error('נא להעלות קובץ אקסל או CSV בלבד');
+        toast.error('נא להעלות קובץ אקסל (.xlsx, .xls) או CSV בלבד');
       }
     }
   };
@@ -138,7 +136,7 @@ export default function ImportHistoricalDataPage() {
           >
             <input
               type="file"
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
