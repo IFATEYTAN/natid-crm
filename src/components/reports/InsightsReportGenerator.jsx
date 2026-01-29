@@ -275,14 +275,16 @@ ${report.conclusion}`;
     try {
       const element = pdfContentRef.current;
       
+      // Dynamic imports to reduce bundle size
+      const html2canvasModule = await import('html2canvas');
+      const jspdfModule = await import('jspdf');
+      const html2canvas = html2canvasModule.default;
+      const jsPDF = jspdfModule.jsPDF;
+      
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff',
-        x: -20,
-        y: -20,
-        width: element.offsetWidth + 100,
-        height: element.offsetHeight + 100
+        backgroundColor: '#ffffff'
       });
       
       const imgData = canvas.toDataURL('image/png');
@@ -299,11 +301,9 @@ ${report.conclusion}`;
       let heightLeft = imgHeight;
       let position = margin;
       
-      // First page
       pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
       heightLeft -= (pageHeight - margin * 2);
       
-      // Handle multi-page
       while (heightLeft > 0) {
         position = heightLeft - imgHeight + margin;
         pdf.addPage();
