@@ -16,12 +16,15 @@ import {
   Car,
   Wrench,
   Bot,
-  Users
+  Users,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { toast } from 'sonner';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -96,14 +99,45 @@ export default function HistoricalDataAnalysisPage() {
     'א': 'אבחון',
     'א+ג': 'אבחון + גרירה',
     'ג+נ': 'גרירה + ניידת',
+    'לא ידוע': 'לא ידוע'
   };
 
-  // Serve type distribution
+  // Get full label for serve type
+  const getServeTypeLabel = (type) => {
+    return serveTypeLabels[type] || type || 'לא ידוע';
+  };
+
+  // Export data to CSV
+  const exportToCSV = () => {
+    const headers = ['סוג שירות', 'סוג רכב', 'שם רכב', 'שנת ייצור', 'תיאור', 'המלצת בוט', 'התאמת בוט', 'תיקון תפעול', 'אבחון'];
+    const rows = filteredData.map(item => [
+      getServeTypeLabel(item.serve_type),
+      item.car_type || '',
+      item.car_name || '',
+      item.car_year || '',
+      item.description || '',
+      item.bot_recommendation || '',
+      item.bot_match ? 'כן' : 'לא',
+      item.nayedet_fixed ? 'כן' : 'לא',
+      item.diagnose || ''
+    ]);
+    
+    const csvContent = '\uFEFF' + [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `historical_data_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success(`יוצאו ${filteredData.length.toLocaleString()} רשומות`);
+  };
+
+  // Serve type distribution with full names
   const serveTypeDistribution = useMemo(() => {
     const counts = {};
     filteredData.forEach(d => {
-      const type = d.serve_type || 'לא ידוע';
-      const label = serveTypeLabels[type] || type;
+      const label = getServeTypeLabel(d.serve_type);
       counts[label] = (counts[label] || 0) + 1;
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
@@ -119,12 +153,11 @@ export default function HistoricalDataAnalysisPage() {
     return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
   }, [filteredData]);
 
-  // Bot accuracy by serve type
+  // Bot accuracy by serve type with full names
   const botAccuracyByServeType = useMemo(() => {
     const byType = {};
     filteredData.forEach(d => {
-      const type = d.serve_type || 'לא ידוע';
-      const label = serveTypeLabels[type] || type;
+      const label = getServeTypeLabel(d.serve_type);
       if (!byType[label]) {
         byType[label] = { total: 0, matches: 0 };
       }
@@ -165,16 +198,30 @@ export default function HistoricalDataAnalysisPage() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-2xl font-bold text-[#172B4D]">ניתוח נתונים היסטוריים</h1>
-        <Link to={createPageUrl('ImportHistoricalData')}>
-          <Button variant="outline">ייבא נתונים נוספים</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportToCSV} className="gap-2">
+            <Download className="w-4 h-4" />
+            ייצוא נתונים
+          </Button>
+          <Link to={createPageUrl('ImportHistoricalData')}>
+            <Button variant="outline" className="gap-2">
+              <FileSpreadsheet className="w-4 h-4" />
+              ייבא נתונים נוספים
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Clickable */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => setServeTypeFilter('all')}
+          className="cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all border-2 border-transparent"
+          onClick={() => {
+            setServeTypeFilter('all');
+            setCarTypeFilter('all');
+            setSearchQuery('');
+            document.getElementById('data-table')?.scrollIntoView({ behavior: 'smooth' });
+          }}
         >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -184,15 +231,15 @@ export default function HistoricalDataAnalysisPage() {
               </div>
               <BarChart3 className="w-8 h-8 text-blue-500" />
             </div>
+            <p className="text-xs text-blue-500 mt-2">לחץ לצפייה בטבלה ←</p>
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-lg hover:border-green-300 transition-all border-2 border-transparent"
           onClick={() => {
             setServeTypeFilter('all');
             setSearchQuery('');
-            // Scroll to bot accuracy chart
             document.getElementById('bot-accuracy-chart')?.scrollIntoView({ behavior: 'smooth' });
           }}
         >
@@ -205,15 +252,15 @@ export default function HistoricalDataAnalysisPage() {
               </div>
               <Bot className="w-8 h-8 text-green-500" />
             </div>
+            <p className="text-xs text-green-500 mt-2">לחץ לצפייה בתרשים ←</p>
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-lg hover:border-orange-300 transition-all border-2 border-transparent"
           onClick={() => {
             setServeTypeFilter('all');
             setSearchQuery('');
-            // Scroll to data table showing nayedet fixed
             document.getElementById('data-table')?.scrollIntoView({ behavior: 'smooth' });
           }}
         >
@@ -226,13 +273,13 @@ export default function HistoricalDataAnalysisPage() {
               </div>
               <Users className="w-8 h-8 text-orange-500" />
             </div>
+            <p className="text-xs text-orange-500 mt-2">לחץ לצפייה בנתונים ←</p>
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-lg hover:border-purple-300 transition-all border-2 border-transparent"
           onClick={() => {
-            // Scroll to serve type chart
             document.getElementById('serve-type-chart')?.scrollIntoView({ behavior: 'smooth' });
           }}
         >
@@ -244,6 +291,7 @@ export default function HistoricalDataAnalysisPage() {
               </div>
               <Wrench className="w-8 h-8 text-purple-500" />
             </div>
+            <p className="text-xs text-purple-500 mt-2">לחץ לצפייה בתרשים ←</p>
           </CardContent>
         </Card>
       </div>
@@ -275,13 +323,13 @@ export default function HistoricalDataAnalysisPage() {
               </SelectContent>
             </Select>
             <Select value={serveTypeFilter} onValueChange={setServeTypeFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="סוג שירות" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">כל סוגי השירות</SelectItem>
                 {serveTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                  <SelectItem key={type} value={type}>{getServeTypeLabel(type)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -297,8 +345,8 @@ export default function HistoricalDataAnalysisPage() {
             <CardTitle className="text-lg">התפלגות סוגי שירות</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[350px] flex flex-col md:flex-row items-center gap-4">
-              <div className="w-full md:w-1/2 h-[200px]">
+            <div className="h-[380px] flex flex-col md:flex-row items-center gap-6">
+              <div className="w-full md:w-1/2 h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -307,28 +355,33 @@ export default function HistoricalDataAnalysisPage() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
-                      label={false}
+                      outerRadius={100}
+                      innerRadius={40}
+                      label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
                     >
                       {serveTypeDistribution.slice(0, 6).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value, name) => [`${value} קריאות`, name]} />
+                    <Tooltip 
+                      formatter={(value, name) => [`${value.toLocaleString()} קריאות`, name]} 
+                      contentStyle={{ direction: 'rtl', textAlign: 'right' }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="w-full md:w-1/2 space-y-2">
+              <div className="w-full md:w-1/2 space-y-3">
                 {serveTypeDistribution.slice(0, 6).map((item, index) => (
-                  <div key={item.name} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
+                  <div key={item.name} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2">
+                    <div className="flex items-center gap-3">
                       <div 
-                        className="w-3 h-3 rounded-full" 
+                        className="w-4 h-4 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       />
-                      <span className="truncate max-w-[150px]">{item.name}</span>
+                      <span className="font-medium">{item.name}</span>
                     </div>
-                    <span className="font-medium">{item.value.toLocaleString()}</span>
+                    <span className="font-bold text-gray-700">{item.value.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -419,7 +472,7 @@ export default function HistoricalDataAnalysisPage() {
                 {filteredData.slice(0, 50).map((item, index) => (
                   <tr key={item.id || index} className="border-b hover:bg-gray-50">
                     <td className="p-3">
-                      <Badge variant="outline">{item.serve_type || '-'}</Badge>
+                      <Badge variant="outline">{getServeTypeLabel(item.serve_type)}</Badge>
                     </td>
                     <td className="p-3">{item.car_name || item.car_type || '-'}</td>
                     <td className="p-3">{item.car_year || '-'}</td>
