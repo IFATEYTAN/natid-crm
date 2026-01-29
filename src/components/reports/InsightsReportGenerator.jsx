@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FileText, Download, Loader2, TrendingUp, AlertTriangle, CheckCircle, Target } from 'lucide-react';
+import { FileText, Download, Loader2, TrendingUp, AlertTriangle, CheckCircle, Target, Mail, MessageCircle } from 'lucide-react';
+import { Input } from "@/components/ui/input";
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -9,6 +10,8 @@ export default function InsightsReportGenerator({ data, stats }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [report, setReport] = useState(null);
+  const [emailAddress, setEmailAddress] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const generateInsights = async () => {
     setIsGenerating(true);
@@ -155,38 +158,38 @@ ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} 
   const getReportStyles = () => `
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Heebo',Arial,sans-serif;background:#f8f9fa;color:#1a1a2e;line-height:1.7;direction:rtl}
+    body{font-family:'Heebo',Arial,sans-serif;background:#f8f9fa;color:#1e3a5f;line-height:1.7;direction:rtl}
     .container{max-width:900px;margin:0 auto;background:#fff;box-shadow:0 0 40px rgba(0,0,0,.1)}
-    .header{background:linear-gradient(135deg,#FF0000,#CC0000);color:#fff;padding:40px;position:relative}
+    .header{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:40px;position:relative}
     .logo{height:60px;filter:brightness(0) invert(1)}
     .report-title{font-size:32px;font-weight:700;margin:20px 0 10px}
     .report-subtitle{font-size:16px;opacity:.9}
     .report-date{margin-top:15px;font-size:13px;opacity:.8}
-    .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);background:#1a1a2e;color:#fff}
+    .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);background:#1e3a5f;color:#fff}
     .stat-item{padding:20px;text-align:center;border-left:1px solid rgba(255,255,255,.1)}
     .stat-item:last-child{border-left:none}
-    .stat-value{font-size:28px;font-weight:700;color:#FF0000}
+    .stat-value{font-size:28px;font-weight:700;color:#3b82f6}
     .stat-label{font-size:12px;opacity:.8;margin-top:5px}
     .content{padding:40px}
     .section{margin-bottom:35px}
-    .section-title{font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:15px;padding-bottom:8px;border-bottom:3px solid #FF0000;display:inline-block}
-    .executive-summary{background:#fff5f5;border-right:4px solid #FF0000;padding:20px;font-size:15px;line-height:1.8;border-radius:0 8px 8px 0}
+    .section-title{font-size:20px;font-weight:700;color:#1e3a5f;margin-bottom:15px;padding-bottom:8px;border-bottom:3px solid #2563eb;display:inline-block}
+    .executive-summary{background:#eff6ff;border-right:4px solid #2563eb;padding:20px;font-size:15px;line-height:1.8;border-radius:0 8px 8px 0}
     .findings-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
-    .finding-card{background:#f8f9fa;border-radius:8px;padding:15px;border-right:4px solid #FF0000}
-    .finding-number{display:inline-block;width:24px;height:24px;background:#FF0000;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-weight:700;font-size:12px;margin-left:8px}
+    .finding-card{background:#f8f9fa;border-radius:8px;padding:15px;border-right:4px solid #2563eb}
+    .finding-number{display:inline-block;width:24px;height:24px;background:#2563eb;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-weight:700;font-size:12px;margin-left:8px}
     .analysis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
     .analysis-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px}
-    .analysis-card h4{color:#FF0000;font-size:14px;margin-bottom:10px}
+    .analysis-card h4{color:#2563eb;font-size:14px;margin-bottom:10px}
     .analysis-card p{font-size:13px;color:#555;line-height:1.6}
     .recommendation{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:15px;margin-bottom:12px;display:flex;gap:12px}
     .recommendation-priority{width:5px;border-radius:3px;flex-shrink:0}
-    .recommendation-priority.high{background:#FF0000}
+    .recommendation-priority.high{background:#dc2626}
     .recommendation-priority.medium{background:#f59e0b}
     .recommendation-priority.low{background:#10b981}
-    .recommendation-content h4{font-size:15px;color:#1a1a2e;margin-bottom:6px}
+    .recommendation-content h4{font-size:15px;color:#1e3a5f;margin-bottom:6px}
     .recommendation-content p{font-size:13px;color:#666}
     .priority-badge{display:inline-block;padding:2px 8px;border-radius:15px;font-size:10px;font-weight:600;margin-right:8px}
-    .priority-badge.high{background:#fee2e2;color:#FF0000}
+    .priority-badge.high{background:#fee2e2;color:#dc2626}
     .priority-badge.medium{background:#fef3c7;color:#d97706}
     .priority-badge.low{background:#d1fae5;color:#059669}
     .risk-opp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
@@ -198,15 +201,15 @@ ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} 
     .risk-card li,.opp-card li{padding:6px 0;padding-right:20px;position:relative;font-size:13px}
     .risk-card li::before{content:'⚠';position:absolute;right:0}
     .opp-card li::before{content:'✓';position:absolute;right:0;color:#16a34a;font-weight:bold}
-    .action-items{background:#1a1a2e;border-radius:8px;padding:25px;color:#fff}
-    .action-items h3{color:#FF0000;margin-bottom:15px}
+    .action-items{background:#1e3a5f;border-radius:8px;padding:25px;color:#fff}
+    .action-items h3{color:#3b82f6;margin-bottom:15px}
     .action-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1)}
     .action-item:last-child{border-bottom:none}
-    .action-number{width:26px;height:26px;background:#FF0000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
-    .conclusion{background:linear-gradient(135deg,#1a1a2e,#2d2d44);color:#fff;padding:30px;border-radius:8px;text-align:center}
-    .conclusion h3{color:#FF0000;margin-bottom:12px;font-size:18px}
+    .action-number{width:26px;height:26px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+    .conclusion{background:linear-gradient(135deg,#1e3a5f,#2d4a6f);color:#fff;padding:30px;border-radius:8px;text-align:center}
+    .conclusion h3{color:#3b82f6;margin-bottom:12px;font-size:18px}
     .conclusion p{font-size:14px;line-height:1.8}
-    .footer{background:#1a1a2e;color:#fff;padding:25px 40px;display:flex;justify-content:space-between;align-items:center}
+    .footer{background:#1e3a5f;color:#fff;padding:25px 40px;display:flex;justify-content:space-between;align-items:center}
     .footer-text{font-size:12px;opacity:.7}
     .footer-logo{height:35px;filter:brightness(0) invert(1)}
     @media print{body{background:#fff}.container{box-shadow:none}}
@@ -370,10 +373,79 @@ ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} 
     toast.success('הדוח הורד בהצלחה - ניתן לפתוח בדפדפן ולהדפיס ל-PDF');
   };
 
+  const sendByEmail = async () => {
+    if (!emailAddress || !report) return;
+    
+    setIsSendingEmail(true);
+    try {
+      const summaryText = `
+דוח תובנות - נתי שירותי דרך
+תאריך: ${new Date().toLocaleDateString('he-IL')}
+
+📊 נתונים עיקריים:
+• סה"כ קריאות: ${report.stats.total.toLocaleString()}
+• דיוק הבוט: ${report.stats.botMatchRate}%
+• תיקוני תפעול: ${report.stats.nayedetFixedRate}%
+
+📝 סיכום מנהלים:
+${report.executive_summary}
+
+🔍 ממצאים מרכזיים:
+${report.key_findings?.map((f, i) => `${i + 1}. ${f}`).join('\n')}
+
+💡 המלצות:
+${report.recommendations?.map(r => `• ${r.title}: ${r.description}`).join('\n')}
+
+✅ פעולות נדרשות:
+${report.action_items?.map((a, i) => `${i + 1}. ${a}`).join('\n')}
+
+🎯 מסקנה:
+${report.conclusion}
+      `.trim();
+
+      await base44.integrations.Core.SendEmail({
+        to: emailAddress,
+        subject: `דוח תובנות - נתי שירותי דרך - ${new Date().toLocaleDateString('he-IL')}`,
+        body: summaryText
+      });
+      
+      toast.success('הדוח נשלח בהצלחה!');
+      setEmailAddress('');
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error('שגיאה בשליחת המייל');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const shareOnWhatsApp = () => {
+    if (!report) return;
+    
+    const text = `📊 *דוח תובנות - נתי שירותי דרך*
+📅 ${new Date().toLocaleDateString('he-IL')}
+
+*נתונים עיקריים:*
+• סה"כ קריאות: ${report.stats.total.toLocaleString()}
+• דיוק הבוט: ${report.stats.botMatchRate}%
+
+*סיכום:*
+${report.executive_summary}
+
+*המלצות עיקריות:*
+${report.recommendations?.slice(0, 2).map(r => `• ${r.title}`).join('\n')}
+
+*מסקנה:*
+${report.conclusion}`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-[#1a1a2e] hover:bg-[#2d2d44]">
+        <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
           <FileText className="w-4 h-4" />
           דוח תובנות מקצועי
         </Button>
@@ -394,7 +466,7 @@ ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} 
               <Button 
                 onClick={generateInsights} 
                 disabled={isGenerating}
-                className="gap-2 bg-red-600 hover:bg-red-700"
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
               >
                 {isGenerating ? (
                   <>
@@ -451,12 +523,44 @@ ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} 
               </div>
               
               <div className="flex gap-3">
-                <Button onClick={downloadReport} className="flex-1 gap-2 bg-red-600 hover:bg-red-700">
+                <Button onClick={downloadReport} className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700">
                   <Download className="w-4 h-4" />
-                  הורד דוח HTML מעוצב
+                  הורד דוח HTML
                 </Button>
                 <Button variant="outline" onClick={() => setReport(null)}>
                   צור מחדש
+                </Button>
+              </div>
+
+              {/* Share Options */}
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-3">שתף את הדוח:</p>
+                
+                <div className="flex gap-2 mb-3">
+                  <Input
+                    type="email"
+                    placeholder="הזן כתובת מייל..."
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={sendByEmail} 
+                    disabled={!emailAddress || isSendingEmail}
+                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isSendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                    שלח
+                  </Button>
+                </div>
+                
+                <Button 
+                  onClick={shareOnWhatsApp} 
+                  variant="outline" 
+                  className="w-full gap-2 border-green-500 text-green-600 hover:bg-green-50"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  שתף בווטסאפ
                 </Button>
               </div>
               
