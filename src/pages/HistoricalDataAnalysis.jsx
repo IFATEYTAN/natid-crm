@@ -375,9 +375,9 @@ export default function HistoricalDataAnalysisPage() {
       </div>
 
       {/* Data Table */}
-      <Card>
+      <Card id="data-table">
         <CardHeader>
-          <CardTitle className="text-lg">נתונים מפורטים ({filteredData.length})</CardTitle>
+          <CardTitle className="text-lg">נתונים מפורטים ({filteredData.length.toLocaleString()})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
