@@ -162,14 +162,15 @@ ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} 
     import('./reportStyles').then(({ generateReportHTML }) => {
       const htmlContent = generateReportHTML(report);
 
-    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `דוח_תובנות_נתי_${new Date().toISOString().split('T')[0]}.html`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toast.success('הדוח הורד בהצלחה - ניתן לפתוח בדפדפן ולהדפיס ל-PDF');
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `דוח_תובנות_נתי_${new Date().toISOString().split('T')[0]}.html`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('הדוח הורד בהצלחה - ניתן לפתוח בדפדפן ולהדפיס ל-PDF');
+    });
   };
 
   const sendByEmail = async () => {
