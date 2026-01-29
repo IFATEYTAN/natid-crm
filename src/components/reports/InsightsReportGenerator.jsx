@@ -269,13 +269,13 @@ ${report.conclusion}`;
   };
 
   const downloadPDF = async () => {
-    if (!pdfContentRef.current || !report) return;
+    if (!report) return;
     
     setIsGeneratingPDF(true);
     try {
       const { exportToPDF } = await import('./pdfExporter');
       await exportToPDF(
-        pdfContentRef.current, 
+        report, 
         `דוח_תובנות_נתי_${new Date().toISOString().split('T')[0]}.pdf`
       );
       toast.success('הדוח הורד בהצלחה כ-PDF');
