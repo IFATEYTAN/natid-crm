@@ -18,7 +18,8 @@ import {
   Bot,
   Users,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileText
 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
