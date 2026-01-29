@@ -25,6 +25,7 @@ import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { toast } from 'sonner';
+import InsightsReportGenerator from '@/components/reports/InsightsReportGenerator';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -198,15 +199,16 @@ export default function HistoricalDataAnalysisPage() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-2xl font-bold text-[#172B4D]">ניתוח נתונים היסטוריים</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <InsightsReportGenerator data={filteredData} stats={stats} />
           <Button variant="outline" onClick={exportToCSV} className="gap-2">
             <Download className="w-4 h-4" />
-            ייצוא נתונים
+            ייצוא CSV
           </Button>
           <Link to={createPageUrl('ImportHistoricalData')}>
             <Button variant="outline" className="gap-2">
               <FileSpreadsheet className="w-4 h-4" />
-              ייבא נתונים נוספים
+              ייבא נתונים
             </Button>
           </Link>
         </div>
