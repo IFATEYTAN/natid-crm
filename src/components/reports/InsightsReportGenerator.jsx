@@ -404,9 +404,17 @@ ${report.conclusion}`;
               </div>
               
               <div className="flex gap-3">
-                <Button onClick={downloadReport} className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700">
+                <Button 
+                  onClick={downloadPDF} 
+                  disabled={isGeneratingPDF}
+                  className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
+                >
+                  {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                  הורד דוח PDF
+                </Button>
+                <Button onClick={downloadReport} variant="outline" className="gap-2">
                   <Download className="w-4 h-4" />
-                  הורד דוח HTML
+                  HTML
                 </Button>
                 <Button variant="outline" onClick={() => setReport(null)}>
                   צור מחדש
