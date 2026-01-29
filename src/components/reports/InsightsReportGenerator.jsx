@@ -152,404 +152,76 @@ ${botAccuracyByType.slice(0, 5).map(d => `${d.type}: ${d.accuracy}% (${d.total} 
     }
   };
 
+  const getReportStyles = () => `
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Heebo',Arial,sans-serif;background:#f8f9fa;color:#1a1a2e;line-height:1.7;direction:rtl}
+    .container{max-width:900px;margin:0 auto;background:#fff;box-shadow:0 0 40px rgba(0,0,0,.1)}
+    .header{background:linear-gradient(135deg,#FF0000,#CC0000);color:#fff;padding:40px;position:relative}
+    .logo{height:60px;filter:brightness(0) invert(1)}
+    .report-title{font-size:32px;font-weight:700;margin:20px 0 10px}
+    .report-subtitle{font-size:16px;opacity:.9}
+    .report-date{margin-top:15px;font-size:13px;opacity:.8}
+    .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);background:#1a1a2e;color:#fff}
+    .stat-item{padding:20px;text-align:center;border-left:1px solid rgba(255,255,255,.1)}
+    .stat-item:last-child{border-left:none}
+    .stat-value{font-size:28px;font-weight:700;color:#FF0000}
+    .stat-label{font-size:12px;opacity:.8;margin-top:5px}
+    .content{padding:40px}
+    .section{margin-bottom:35px}
+    .section-title{font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:15px;padding-bottom:8px;border-bottom:3px solid #FF0000;display:inline-block}
+    .executive-summary{background:#fff5f5;border-right:4px solid #FF0000;padding:20px;font-size:15px;line-height:1.8;border-radius:0 8px 8px 0}
+    .findings-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+    .finding-card{background:#f8f9fa;border-radius:8px;padding:15px;border-right:4px solid #FF0000}
+    .finding-number{display:inline-block;width:24px;height:24px;background:#FF0000;color:#fff;border-radius:50%;text-align:center;line-height:24px;font-weight:700;font-size:12px;margin-left:8px}
+    .analysis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+    .analysis-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px}
+    .analysis-card h4{color:#FF0000;font-size:14px;margin-bottom:10px}
+    .analysis-card p{font-size:13px;color:#555;line-height:1.6}
+    .recommendation{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:15px;margin-bottom:12px;display:flex;gap:12px}
+    .recommendation-priority{width:5px;border-radius:3px;flex-shrink:0}
+    .recommendation-priority.high{background:#FF0000}
+    .recommendation-priority.medium{background:#f59e0b}
+    .recommendation-priority.low{background:#10b981}
+    .recommendation-content h4{font-size:15px;color:#1a1a2e;margin-bottom:6px}
+    .recommendation-content p{font-size:13px;color:#666}
+    .priority-badge{display:inline-block;padding:2px 8px;border-radius:15px;font-size:10px;font-weight:600;margin-right:8px}
+    .priority-badge.high{background:#fee2e2;color:#FF0000}
+    .priority-badge.medium{background:#fef3c7;color:#d97706}
+    .priority-badge.low{background:#d1fae5;color:#059669}
+    .risk-opp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+    .risk-card{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:20px}
+    .opp-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px}
+    .risk-card h4{color:#dc2626;margin-bottom:12px}
+    .opp-card h4{color:#16a34a;margin-bottom:12px}
+    .risk-card ul,.opp-card ul{list-style:none}
+    .risk-card li,.opp-card li{padding:6px 0;padding-right:20px;position:relative;font-size:13px}
+    .risk-card li::before{content:'⚠';position:absolute;right:0}
+    .opp-card li::before{content:'✓';position:absolute;right:0;color:#16a34a;font-weight:bold}
+    .action-items{background:#1a1a2e;border-radius:8px;padding:25px;color:#fff}
+    .action-items h3{color:#FF0000;margin-bottom:15px}
+    .action-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+    .action-item:last-child{border-bottom:none}
+    .action-number{width:26px;height:26px;background:#FF0000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+    .conclusion{background:linear-gradient(135deg,#1a1a2e,#2d2d44);color:#fff;padding:30px;border-radius:8px;text-align:center}
+    .conclusion h3{color:#FF0000;margin-bottom:12px;font-size:18px}
+    .conclusion p{font-size:14px;line-height:1.8}
+    .footer{background:#1a1a2e;color:#fff;padding:25px 40px;display:flex;justify-content:space-between;align-items:center}
+    .footer-text{font-size:12px;opacity:.7}
+    .footer-logo{height:35px;filter:brightness(0) invert(1)}
+    @media print{body{background:#fff}.container{box-shadow:none}}
+  `;
+
   const downloadReport = () => {
     if (!report) return;
 
-    const htmlContent = `
-<!DOCTYPE html>
+    const htmlContent = `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>דוח תובנות - נתי שירותי דרך</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Heebo', Arial, sans-serif;
-      background: #f8f9fa;
-      color: #1a1a2e;
-      line-height: 1.7;
-      direction: rtl;
-    }
-    
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      background: white;
-      box-shadow: 0 0 40px rgba(0,0,0,0.1);
-    }
-    
-    /* Header */
-    .header {
-      background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
-      color: white;
-      padding: 40px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .header::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-    }
-    
-    .header-content {
-      position: relative;
-      z-index: 1;
-    }
-    
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    
-    .logo {
-      height: 60px;
-      filter: brightness(0) invert(1);
-    }
-    
-    .company-name {
-      font-size: 28px;
-      font-weight: 700;
-    }
-    
-    .report-title {
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    
-    .report-subtitle {
-      font-size: 18px;
-      opacity: 0.9;
-    }
-    
-    .report-date {
-      margin-top: 20px;
-      font-size: 14px;
-      opacity: 0.8;
-    }
-    
-    /* Stats Bar */
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: #1a1a2e;
-      color: white;
-    }
-    
-    .stat-item {
-      padding: 25px 20px;
-      text-align: center;
-      border-left: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .stat-item:last-child {
-      border-left: none;
-    }
-    
-    .stat-value {
-      font-size: 32px;
-      font-weight: 700;
-      color: #FF0000;
-    }
-    
-    .stat-label {
-      font-size: 13px;
-      opacity: 0.8;
-      margin-top: 5px;
-    }
-    
-    /* Content */
-    .content {
-      padding: 50px;
-    }
-    
-    .section {
-      margin-bottom: 40px;
-    }
-    
-    .section-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 3px solid #FF0000;
-      display: inline-block;
-    }
-    
-    .executive-summary {
-      background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
-      border-right: 4px solid #FF0000;
-      padding: 25px;
-      font-size: 17px;
-      line-height: 1.8;
-      border-radius: 0 10px 10px 0;
-    }
-    
-    /* Findings */
-    .findings-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-    
-    .finding-card {
-      background: #f8f9fa;
-      border-radius: 10px;
-      padding: 20px;
-      border-right: 4px solid #FF0000;
-    }
-    
-    .finding-number {
-      display: inline-block;
-      width: 28px;
-      height: 28px;
-      background: #FF0000;
-      color: white;
-      border-radius: 50%;
-      text-align: center;
-      line-height: 28px;
-      font-weight: 700;
-      font-size: 14px;
-      margin-left: 10px;
-    }
-    
-    /* Analysis */
-    .analysis-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
-    
-    .analysis-card {
-      background: white;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 25px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    
-    .analysis-card h4 {
-      color: #FF0000;
-      font-size: 15px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .analysis-card p {
-      font-size: 14px;
-      color: #555;
-      line-height: 1.6;
-    }
-    
-    /* Recommendations */
-    .recommendation {
-      background: white;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 15px;
-      display: flex;
-      gap: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .recommendation-priority {
-      width: 6px;
-      border-radius: 3px;
-      flex-shrink: 0;
-    }
-    
-    .recommendation-priority.high { background: #FF0000; }
-    .recommendation-priority.medium { background: #f59e0b; }
-    .recommendation-priority.low { background: #10b981; }
-    
-    .recommendation-content h4 {
-      font-size: 16px;
-      color: #1a1a2e;
-      margin-bottom: 8px;
-    }
-    
-    .recommendation-content p {
-      font-size: 14px;
-      color: #666;
-    }
-    
-    .priority-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-right: 10px;
-    }
-    
-    .priority-badge.high { background: #fee2e2; color: #FF0000; }
-    .priority-badge.medium { background: #fef3c7; color: #d97706; }
-    .priority-badge.low { background: #d1fae5; color: #059669; }
-    
-    /* Risks & Opportunities */
-    .risk-opp-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 30px;
-    }
-    
-    .risk-card, .opp-card {
-      border-radius: 10px;
-      padding: 25px;
-    }
-    
-    .risk-card {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-    }
-    
-    .opp-card {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-    }
-    
-    .risk-card h4 {
-      color: #dc2626;
-      margin-bottom: 15px;
-    }
-    
-    .opp-card h4 {
-      color: #16a34a;
-      margin-bottom: 15px;
-    }
-    
-    .risk-card ul, .opp-card ul {
-      list-style: none;
-    }
-    
-    .risk-card li, .opp-card li {
-      padding: 8px 0;
-      padding-right: 25px;
-      position: relative;
-      font-size: 14px;
-    }
-    
-    .risk-card li::before {
-      content: '⚠';
-      position: absolute;
-      right: 0;
-    }
-    
-    .opp-card li::before {
-      content: '✓';
-      position: absolute;
-      right: 0;
-      color: #16a34a;
-      font-weight: bold;
-    }
-    
-    /* Action Items */
-    .action-items {
-      background: #1a1a2e;
-      border-radius: 10px;
-      padding: 30px;
-      color: white;
-    }
-    
-    .action-items h3 {
-      color: #FF0000;
-      margin-bottom: 20px;
-    }
-    
-    .action-item {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .action-item:last-child {
-      border-bottom: none;
-    }
-    
-    .action-number {
-      width: 30px;
-      height: 30px;
-      background: #FF0000;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
-    }
-    
-    /* Conclusion */
-    .conclusion {
-      background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
-      color: white;
-      padding: 40px;
-      border-radius: 10px;
-      text-align: center;
-    }
-    
-    .conclusion h3 {
-      color: #FF0000;
-      margin-bottom: 15px;
-      font-size: 20px;
-    }
-    
-    .conclusion p {
-      font-size: 16px;
-      line-height: 1.8;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    
-    /* Footer */
-    .footer {
-      background: #1a1a2e;
-      color: white;
-      padding: 30px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .footer-text {
-      font-size: 13px;
-      opacity: 0.7;
-    }
-    
-    .footer-logo {
-      height: 40px;
-      filter: brightness(0) invert(1);
-    }
-    
-    /* Print Styles */
-    @media print {
-      body { background: white; }
-      .container { box-shadow: none; }
-      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .stats-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דוח תובנות - נתי שירותי דרך</title>
+<style>${getReportStyles()}</style>
 </head>
 <body>
   <div class="container">
