@@ -37,40 +37,72 @@ export default function ImportHistoricalDataPage() {
     try {
       // Upload file first
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
-      // Extract data from the uploaded file
-      const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            records: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string" },
-                  serve_type: { type: "string" },
-                  car_type: { type: "string" },
-                  car_name: { type: "string" },
-                  car_year: { type: "number" },
-                  description: { type: "string" },
-                  bot_recommendation: { type: "string" },
-                  bot_match: { type: "string" },
-                  nayedet_fixed: { type: "string" },
-                  diagnose: { type: "string" }
+      
+      // Check file extension
+      const fileName = file.name.toLowerCase();
+      let data;
+      
+      if (fileName.endsWith('.csv')) {
+        // For CSV files, fetch and parse manually
+        const response = await fetch(file_url);
+        const csvText = await response.text();
+        
+        // Parse CSV
+        const lines = csvText.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+          throw new Error('הקובץ ריק או לא מכיל נתונים');
+        }
+        
+        // Get headers from first line
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        
+        // Parse data rows
+        data = [];
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+          if (values.length >= headers.length) {
+            const row = {};
+            headers.forEach((header, idx) => {
+              row[header] = values[idx] || '';
+            });
+            data.push(row);
+          }
+        }
+      } else {
+        // For other files, use ExtractDataFromUploadedFile
+        const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
+          file_url,
+          json_schema: {
+            type: "object",
+            properties: {
+              records: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: { type: "string" },
+                    serve_type: { type: "string" },
+                    car_type: { type: "string" },
+                    car_name: { type: "string" },
+                    car_year: { type: "number" },
+                    description: { type: "string" },
+                    bot_recommendation: { type: "string" },
+                    bot_match: { type: "string" },
+                    nayedet_fixed: { type: "string" },
+                    diagnose: { type: "string" }
+                  }
                 }
               }
             }
           }
+        });
+
+        if (extractResult.status === 'error') {
+          throw new Error(extractResult.details || 'שגיאה בחילוץ הנתונים מהקובץ');
         }
-      });
 
-      if (extractResult.status === 'error') {
-        throw new Error(extractResult.details || 'שגיאה בחילוץ הנתונים מהקובץ');
+        data = extractResult.output?.records || extractResult.output;
       }
-
-      const data = extractResult.output?.records || extractResult.output;
       
       if (!data || data.length === 0) {
         throw new Error('לא נמצאו נתונים בקובץ');
