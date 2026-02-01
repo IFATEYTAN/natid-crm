@@ -54,19 +54,54 @@ export default function AutomationSettingsPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const queryClient = useQueryClient();
 
-  // In a real app, these would be stored in a Settings entity
-  // For now, we'll use localStorage as a placeholder
+  // Load settings from database
+  const settingsQuery = useQuery({
+    queryKey: ['automationSettings'],
+    queryFn: async () => {
+      const results = await base44.entities.Setting.filter({ key: 'auto_assign_settings' });
+      if (results?.[0]?.value) {
+        try {
+          return JSON.parse(results[0].value);
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    },
+  });
+
   useEffect(() => {
-    const saved = localStorage.getItem('autoAssignSettings');
-    if (saved) {
-      setSettings(JSON.parse(saved));
+    if (settingsQuery.data) {
+      setSettings(prev => ({ ...prev, ...settingsQuery.data }));
     }
-  }, []);
+  }, [settingsQuery.data]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (newSettings) => {
+      const existing = await base44.entities.Setting.filter({ key: 'auto_assign_settings' });
+      if (existing?.[0]) {
+        return base44.entities.Setting.update(existing[0].id, {
+          value: JSON.stringify(newSettings)
+        });
+      } else {
+        return base44.entities.Setting.create({
+          key: 'auto_assign_settings',
+          value: JSON.stringify(newSettings)
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['automationSettings'] });
+      toast.success('הגדרות נשמרו בהצלחה');
+      setHasChanges(false);
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בשמירת הגדרות: ${error.message || 'שגיאה לא ידועה'}`);
+    }
+  });
 
   const handleSave = () => {
-    localStorage.setItem('autoAssignSettings', JSON.stringify(settings));
-    setHasChanges(false);
-    toast.success('הגדרות נשמרו בהצלחה');
+    saveMutation.mutate(settings);
   };
 
   const handleReset = () => {
@@ -106,12 +141,16 @@ export default function AutomationSettingsPage() {
               <RotateCcw className="w-4 h-4" />
               איפוס
             </Button>
-            <Button 
-              onClick={handleSave} 
-              disabled={!hasChanges}
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || saveMutation.isPending}
               className="bg-red-600 hover:bg-red-700 gap-2"
             >
-              <Save className="w-4 h-4" />
+              {saveMutation.isPending ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
               שמור שינויים
             </Button>
           </div>

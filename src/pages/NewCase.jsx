@@ -15,16 +15,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  ArrowRight, 
-  User, 
-  Car, 
-  MapPin, 
+import {
+  ArrowRight,
+  User,
+  Car,
+  MapPin,
   Wrench,
   AlertTriangle,
   Save,
   Loader2
 } from 'lucide-react';
+import { validators, validateForm, FieldError, createValidationSchema } from '@/components/forms/FormValidation';
+import { showToast } from '@/components/ui/FeedbackToast';
+
+const newCaseSchema = createValidationSchema({
+  caller_name: { label: 'שם המתקשר', validators: [validators.required] },
+  caller_phone: { label: 'טלפון המתקשר', validators: [validators.required, validators.phone] },
+  location_address: { label: 'כתובת מיקום', validators: [validators.required] },
+});
 
 const serviceTypeLabels = {
   towing: 'גרירה',
@@ -67,6 +75,8 @@ export default function NewCase() {
     problem_description: '',
     internal_notes: ''
   });
+  const [formErrors, setFormErrors] = useState({});
+  const [touched, setTouched] = useState({});
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: ['customers'],
@@ -98,7 +108,11 @@ export default function NewCase() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['cases'] });
+      showToast.success('קריאה נוצרה בהצלחה');
       navigate(createPageUrl(`CaseDetails?id=${result.id}`));
+    },
+    onError: (error) => {
+      showToast.error(`שגיאה ביצירת קריאה: ${error.message || 'שגיאה לא ידועה'}`);
     },
   });
 
@@ -113,8 +127,22 @@ export default function NewCase() {
     }
   };
 
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const { errors } = validateForm(formData, newCaseSchema);
+    setFormErrors(errors);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Mark all required fields as touched
+    setTouched({ caller_name: true, caller_phone: true, location_address: true });
+    const { isValid, errors } = validateForm(formData, newCaseSchema);
+    setFormErrors(errors);
+    if (!isValid) {
+      showToast.error('יש לתקן את השגיאות בטופס');
+      return;
+    }
     createMutation.mutate(formData);
   };
 
@@ -177,18 +205,22 @@ export default function NewCase() {
                 <Input
                   value={formData.caller_name}
                   onChange={(e) => setFormData({ ...formData, caller_name: e.target.value })}
-                  required
+                  onBlur={() => handleBlur('caller_name')}
+                  className={touched.caller_name && formErrors.caller_name ? 'border-red-500' : ''}
                 />
+                {touched.caller_name && <FieldError error={formErrors.caller_name} />}
               </div>
               <div>
                 <Label>טלפון המתקשר *</Label>
                 <Input
                   value={formData.caller_phone}
                   onChange={(e) => setFormData({ ...formData, caller_phone: e.target.value })}
-                  required
+                  onBlur={() => handleBlur('caller_phone')}
                   dir="ltr"
-                  className="text-right"
+                  className={`text-right ${touched.caller_phone && formErrors.caller_phone ? 'border-red-500' : ''}`}
+                  placeholder="0501234567"
                 />
+                {touched.caller_phone && <FieldError error={formErrors.caller_phone} />}
               </div>
             </div>
           </CardContent>
@@ -255,9 +287,11 @@ export default function NewCase() {
                 <Input
                   value={formData.location_address}
                   onChange={(e) => setFormData({ ...formData, location_address: e.target.value })}
-                  required
+                  onBlur={() => handleBlur('location_address')}
                   placeholder="כתובת מלאה"
+                  className={touched.location_address && formErrors.location_address ? 'border-red-500' : ''}
                 />
+                {touched.location_address && <FieldError error={formErrors.location_address} />}
               </div>
               <div>
                 <Label>עיר מיקום</Label>

@@ -16,9 +16,9 @@ import {
 
 export default function BotIntegration() {
   const [copied, setCopied] = useState(false);
-  
+
   const webhookUrl = `${window.location.origin}/api/functions/99digitalBot`;
-  const apiKey = 'YOUR_API_KEY_HERE'; // TODO: Get from settings
+  const apiKey = import.meta.env.VITE_BOT_API_KEY || '[יש להגדיר VITE_BOT_API_KEY בקובץ .env]';
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
