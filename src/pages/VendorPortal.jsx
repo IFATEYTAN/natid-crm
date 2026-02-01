@@ -99,6 +99,19 @@ export default function VendorPortalPage() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
+  // Get vendor's active contract for payment info
+  const contractQuery = useQuery({
+    queryKey: ['vendorContract', vendorProfile?.id],
+    queryFn: async () => {
+      const contracts = await base44.entities.VendorContract.filter({
+        vendor_id: vendorProfile.id,
+        status: 'active'
+      }, '-created_date', 1);
+      return contracts?.[0] || null;
+    },
+    enabled: !!vendorProfile?.id,
+  });
+
   // Check for pending assignment attempts
   const pendingAssignmentsQuery = useQuery({
     queryKey: ['pendingAssignments', vendorProfile?.id],
@@ -335,6 +348,8 @@ export default function VendorPortalPage() {
         onAccept={handleAcceptCall}
         onDecline={handleDeclineCall}
         timeoutSeconds={120}
+        vendorContract={contractQuery.data}
+        vendorProfile={vendorProfile}
       />
 
       {/* Header */}

@@ -21,11 +21,36 @@ Deno.serve(async (req) => {
     }
     const call = calls[0];
 
+    // Duplicate assignment prevention: check if call is already assigned
+    if (call.assigned_vendor_id && ['vendor_enroute', 'in_progress'].includes(call.call_status)) {
+      return Response.json({
+        success: false,
+        error: 'Call already assigned to a vendor',
+        assigned_vendor_id: call.assigned_vendor_id,
+        assigned_vendor_name: call.assigned_vendor_name
+      });
+    }
+
+    // Check for pending (non-expired) assignment attempts
+    const pendingAttempts = await base44.asServiceRole.entities.CallAssignmentAttempt.filter({
+      call_id: call_id,
+      status: 'pending'
+    });
+    const activePending = pendingAttempts.filter(a => new Date(a.expires_at) > new Date());
+    if (activePending.length > 0) {
+      return Response.json({
+        success: false,
+        error: 'Call has a pending assignment attempt',
+        pending_vendor_id: activePending[0].vendor_id,
+        expires_at: activePending[0].expires_at
+      });
+    }
+
     // Get all active vendors
     const allVendors = await base44.asServiceRole.entities.Vendor.filter({ is_active: true });
     
-    // Filter available vendors
-    const availableVendors = allVendors.filter(v => 
+    // Filter available vendors (exclude busy, offline, on_break)
+    const availableVendors = allVendors.filter(v =>
       v.availability_status === 'available' &&
       !exclude_vendor_ids.includes(v.id)
     );
@@ -153,10 +178,40 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Calculate estimated arrival time
-    const estimatedMinutes = topRecommendation.details.distance_km 
-      ? Math.round(topRecommendation.details.distance_km * 2) + 10 // 2 min/km + 10 min buffer
+    // Calculate estimated arrival time using OSRM routing API
+    let estimatedMinutes = topRecommendation.details.distance_km
+      ? Math.round(topRecommendation.details.distance_km * 2) + 10 // fallback: 2 min/km + 10 min buffer
       : 30;
+
+    const topVendor = topRecommendation.vendor;
+    if (topVendor.current_latitude && topVendor.current_longitude &&
+        call.pickup_location_lat && call.pickup_location_lon) {
+      try {
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/` +
+          `${topVendor.current_longitude},${topVendor.current_latitude};` +
+          `${call.pickup_location_lon},${call.pickup_location_lat}?overview=false`;
+
+        const osrmResponse = await fetch(osrmUrl, {
+          signal: AbortSignal.timeout(5000) // 5s timeout
+        });
+
+        if (osrmResponse.ok) {
+          const osrmData = await osrmResponse.json();
+          if (osrmData.code === 'Ok' && osrmData.routes?.[0]) {
+            const durationSeconds = osrmData.routes[0].duration;
+            const routeDistanceKm = osrmData.routes[0].distance / 1000;
+            // OSRM duration + 5 min buffer for parking/finding customer
+            estimatedMinutes = Math.round(durationSeconds / 60) + 5;
+            topRecommendation.details.route_distance_km = Math.round(routeDistanceKm * 10) / 10;
+            topRecommendation.details.eta_source = 'osrm';
+          }
+        }
+      } catch (osrmError) {
+        // OSRM failed - use fallback formula
+        console.log('OSRM routing failed, using fallback ETA:', osrmError.message);
+        topRecommendation.details.eta_source = 'fallback';
+      }
+    }
 
     // Create assignment attempt record
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes

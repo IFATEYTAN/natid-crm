@@ -50,6 +50,19 @@ Deno.serve(async (req) => {
     const call = calls[0];
 
     if (action === 'accept') {
+      // Race condition check: verify call hasn't been assigned to another vendor
+      if (call.assigned_vendor_id && ['vendor_enroute', 'in_progress'].includes(call.call_status)) {
+        await base44.asServiceRole.entities.CallAssignmentAttempt.update(attempt.id, {
+          status: 'expired',
+          decline_reason: 'קריאה כבר שובצה לספק אחר'
+        });
+        return Response.json({
+          success: false,
+          error: 'Call already assigned to another vendor',
+          assigned_vendor_name: call.assigned_vendor_name
+        }, { status: 409 });
+      }
+
       // Update attempt status
       const responseTime = Math.round((Date.now() - new Date(attempt.created_date).getTime()) / 1000);
       await base44.asServiceRole.entities.CallAssignmentAttempt.update(attempt.id, {
