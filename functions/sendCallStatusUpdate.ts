@@ -51,16 +51,69 @@ Deno.serve(async (req) => {
       is_read: false
     });
 
-    // Send SMS to customer if phone exists
+    // Send SMS to customer if phone exists (via Twilio)
     if (call.customer_phone) {
-      try {
-        await base44.integrations.Core.SendEmail({
-          to: call.customer_email || `${call.customer_phone}@sms.placeholder.com`,
-          subject: `עדכון קריאה ${call.call_number || call_id.slice(-6)}`,
-          body: messageText
-        });
-      } catch (smsError) {
-        console.log('Could not send SMS notification:', smsError.message);
+      const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+      const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+      const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
+
+      if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
+        try {
+          // Format phone number for Israel
+          let formattedPhone = call.customer_phone.replace(/\D/g, '');
+          if (formattedPhone.startsWith('0')) {
+            formattedPhone = '972' + formattedPhone.substring(1);
+          }
+          if (!formattedPhone.startsWith('+')) {
+            formattedPhone = '+' + formattedPhone;
+          }
+
+          const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+
+          const formData = new URLSearchParams();
+          formData.append('To', formattedPhone);
+          formData.append('From', twilioPhoneNumber);
+          formData.append('Body', `נתיב: ${messageText}`);
+
+          const smsResponse = await fetch(twilioUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Basic ' + btoa(`${twilioAccountSid}:${twilioAuthToken}`),
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData
+          });
+
+          if (!smsResponse.ok) {
+            const errorText = await smsResponse.text();
+            console.log('SMS send failed:', errorText);
+          }
+        } catch (smsError) {
+          console.log('Could not send SMS notification:', smsError.message);
+        }
+      } else {
+        console.log('Twilio not configured - SMS not sent');
+      }
+
+      // Also send email if customer email exists
+      if (call.customer_email) {
+        try {
+          await base44.integrations.Core.SendEmail({
+            to: call.customer_email,
+            subject: `עדכון קריאה ${call.call_number || call_id.slice(-6)}`,
+            body: `
+              <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right;">
+                <h2 style="color: #FF0000;">עדכון קריאה</h2>
+                <p>${messageText}</p>
+                ${call.call_number ? `<p><strong>מספר קריאה:</strong> ${call.call_number}</p>` : ''}
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="color: #666; font-size: 12px;">הודעה זו נשלחה ממערכת נתיב - שירותי דרך</p>
+              </div>
+            `
+          });
+        } catch (emailError) {
+          console.log('Could not send email notification:', emailError.message);
+        }
       }
     }
 

@@ -275,6 +275,27 @@ export default function Dashboard() {
     ? (recentRatedCalls.reduce((sum, c) => sum + c.customer_rating, 0) / recentRatedCalls.length).toFixed(1)
     : '0.0';
 
+  // Average ETA (from calls with vendor_eta in last 7 days)
+  const recentCallsWithEta = calls.filter(c =>
+    c.vendor_eta &&
+    c.created_date &&
+    parseISO(c.created_date) >= sevenDaysAgo
+  );
+  const avgEta = recentCallsWithEta.length > 0
+    ? Math.round(recentCallsWithEta.reduce((sum, c) => sum + c.vendor_eta, 0) / recentCallsWithEta.length)
+    : 0;
+
+  // Field resolution rate (completed without towing in last 7 days)
+  const recentCompleted = calls.filter(c =>
+    c.call_status === 'completed' &&
+    c.created_date &&
+    parseISO(c.created_date) >= sevenDaysAgo
+  );
+  const resolvedInField = recentCompleted.filter(c => c.resolution_type !== 'tow');
+  const fieldResolutionRate = recentCompleted.length > 0
+    ? Math.round((resolvedInField.length / recentCompleted.length) * 100)
+    : 0;
+
   // Filtered calls for cases tab
   const filteredCalls = calls.filter(call => {
     const matchesSearch = !searchQuery ||
@@ -596,10 +617,13 @@ export default function Dashboard() {
                   <div className="flex items-center gap-3">
                     <Clock className="w-8 h-8 text-blue-500 opacity-80" />
                     <div>
-                      <span className="text-3xl font-bold text-gray-900">32</span>
+                      <span className="text-3xl font-bold text-gray-900">{avgEta || '—'}</span>
                       <span className="text-sm text-gray-500 mr-1">דקות</span>
                     </div>
                   </div>
+                  {recentCallsWithEta.length > 0 && (
+                    <p className="text-xs text-gray-400 mt-2">מבוסס על {recentCallsWithEta.length} קריאות ב-7 ימים</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -611,10 +635,13 @@ export default function Dashboard() {
                   <div className="flex items-center gap-3">
                     <TrendingUp className="w-8 h-8 text-green-500 opacity-80" />
                     <div>
-                      <span className="text-3xl font-bold text-gray-900">68%</span>
+                      <span className="text-3xl font-bold text-gray-900">{fieldResolutionRate || '—'}%</span>
                       <span className="text-sm text-gray-500 mr-1">ללא גרירה</span>
                     </div>
                   </div>
+                  {recentCompleted.length > 0 && (
+                    <p className="text-xs text-gray-400 mt-2">מבוסס על {recentCompleted.length} קריאות ב-7 ימים</p>
+                  )}
                 </CardContent>
               </Card>
             </div>

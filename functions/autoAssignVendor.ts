@@ -21,6 +21,31 @@ Deno.serve(async (req) => {
     }
     const call = calls[0];
 
+    // Duplicate assignment prevention: check if call is already assigned
+    if (call.assigned_vendor_id && ['vendor_enroute', 'in_progress'].includes(call.call_status)) {
+      return Response.json({
+        success: false,
+        error: 'Call already assigned to a vendor',
+        assigned_vendor_id: call.assigned_vendor_id,
+        assigned_vendor_name: call.assigned_vendor_name
+      });
+    }
+
+    // Check for pending (non-expired) assignment attempts
+    const pendingAttempts = await base44.asServiceRole.entities.CallAssignmentAttempt.filter({
+      call_id: call_id,
+      status: 'pending'
+    });
+    const activePending = pendingAttempts.filter(a => new Date(a.expires_at) > new Date());
+    if (activePending.length > 0) {
+      return Response.json({
+        success: false,
+        error: 'Call has a pending assignment attempt',
+        pending_vendor_id: activePending[0].vendor_id,
+        expires_at: activePending[0].expires_at
+      });
+    }
+
     // Get all active vendors
     const allVendors = await base44.asServiceRole.entities.Vendor.filter({ is_active: true });
     

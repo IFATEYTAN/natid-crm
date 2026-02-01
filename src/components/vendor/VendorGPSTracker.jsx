@@ -25,16 +25,33 @@ export default function VendorGPSTracker({
   // Check if location sharing is enabled
   const isLocationSharingEnabled = vendorProfile?.is_location_sharing_enabled;
 
-  // Get battery level if available
+  // Get battery level if available (Battery API is deprecated in most browsers)
   useEffect(() => {
-    if ('getBattery' in navigator) {
-      navigator.getBattery().then(battery => {
-        setBatteryLevel(Math.round(battery.level * 100));
-        battery.addEventListener('levelchange', () => {
-          setBatteryLevel(Math.round(battery.level * 100));
-        });
-      });
-    }
+    let batteryRef = null;
+    const handleLevelChange = () => {
+      if (batteryRef) {
+        setBatteryLevel(Math.round(batteryRef.level * 100));
+      }
+    };
+
+    const initBattery = async () => {
+      try {
+        if ('getBattery' in navigator && typeof navigator.getBattery === 'function') {
+          batteryRef = await navigator.getBattery();
+          setBatteryLevel(Math.round(batteryRef.level * 100));
+          batteryRef.addEventListener('levelchange', handleLevelChange);
+        }
+      } catch {
+        // Battery API not supported or permission denied - silently ignore
+      }
+    };
+    initBattery();
+
+    return () => {
+      if (batteryRef) {
+        batteryRef.removeEventListener('levelchange', handleLevelChange);
+      }
+    };
   }, []);
 
   // Send location to server
