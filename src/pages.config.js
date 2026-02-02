@@ -40,6 +40,8 @@ const UserManagement = lazy(() => import('./pages/UserManagement'));
 const VendorCallManagement = lazy(() => import('./pages/VendorCallManagement'));
 const VendorContracts = lazy(() => import('./pages/VendorContracts'));
 const VendorTracking = lazy(() => import('./pages/VendorTracking'));
+const RoleManagement = lazy(() => import('./pages/RoleManagement'));
+const CustomerFeedback = lazy(() => import('./pages/CustomerFeedback'));
 
 
 export const PAGES = {
@@ -73,6 +75,8 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
+    "RoleManagement": RoleManagement,
+    "CustomerFeedback": CustomerFeedback,
 }
 
 export const pagesConfig = {

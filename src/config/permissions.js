@@ -11,6 +11,7 @@ export const PAGE_PERMISSIONS = {
   AuditLog:             ['admin'],
   AutomationSettings:   ['admin'],
   UserManagement:       ['admin'],
+  RoleManagement:       ['admin'],
   ImportHistoricalData: ['admin'],
   IntegrationSettings:  ['admin'],
   Settings:             ['admin'],
@@ -35,6 +36,7 @@ export const PAGE_PERMISSIONS = {
   HistoricalDataAnalysis:  ['admin', 'operator'],
   NotificationSettings:    ['admin', 'operator'],
   Agents:                  ['admin', 'operator'],
+  CustomerFeedback:        ['admin', 'operator'],
 
   // Vendor only
   VendorPortal:          ['vendor'],

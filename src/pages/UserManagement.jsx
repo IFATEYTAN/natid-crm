@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,12 +28,14 @@ import {
   Search,
   Mail,
   Shield,
-  ShieldCheck
+  ShieldCheck,
+  Key
 } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { cn } from "@/lib/utils";
+import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const roleLabels = {
   admin: 'מנהל',
@@ -49,6 +53,7 @@ export default function UserManagementPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
   const queryClient = useQueryClient();
+  const { logCreate } = useAuditLog();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -57,7 +62,9 @@ export default function UserManagementPage() {
 
   const inviteMutation = useMutation({
     mutationFn: ({ email, role }) => base44.users.inviteUser(email, role),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Log to audit
+      logCreate('User', null, variables.email, `הוזמן משתמש חדש: ${variables.email} בתפקיד ${variables.role}`);
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setInviteDialogOpen(false);
       setInviteEmail('');
@@ -239,6 +246,12 @@ export default function UserManagementPage() {
                     <Badge className={cn("text-xs", roleBadgeColors[user.role])}>
                       {roleLabels[user.role] || user.role}
                     </Badge>
+                    <Link to={createPageUrl('RoleManagement')}>
+                      <Button variant="ghost" size="sm" className="gap-1 text-xs">
+                        <Key className="w-3 h-3" />
+                        הרשאות
+                      </Button>
+                    </Link>
                   </div>
                 ))}
               </div>
