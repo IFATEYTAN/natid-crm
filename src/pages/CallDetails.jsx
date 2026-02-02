@@ -6,6 +6,9 @@ import { useVendors } from '@/components/hooks/useVendors';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
+import { PermissionGuard, PermissionButton } from '@/components/permissions/PermissionGuard';
+import { useAuditLog } from '@/components/hooks/useAuditLog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -101,19 +104,15 @@ export default function CallDetailsPage() {
   const [showSignature, setShowSignature] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState('');
-  const [currentUser, setCurrentUser] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
 
-  // Fetch current user
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (e) {}
-    };
-    fetchUser();
-  }, []);
+  // Permission & Audit
+  const { currentUser, hasPermission } = usePermissions();
+  const { logStatusChange, logAssign, logUpdate } = useAuditLog();
+  
+  const canEdit = hasPermission('calls', 'edit');
+  const canAssign = hasPermission('calls', 'assign');
+  const canDelete = hasPermission('calls', 'delete');
 
   const callQuery = useCall(callId);
   const vendorsQuery = useVendors();
@@ -138,6 +137,8 @@ export default function CallDetailsPage() {
   });
 
   const handleStatusChange = async (newStatus) => {
+    if (!canEdit) return;
+    
     const updates = { call_status: newStatus };
     
     if (newStatus === 'completed') {
@@ -145,6 +146,9 @@ export default function CallDetailsPage() {
     }
     
     updateCall.mutate({ id: callId, data: updates });
+
+    // Log to audit
+    logStatusChange('Call', callId, call?.call_number, call?.call_status, newStatus);
 
     // Generate summary when call is completed
     if (newStatus === 'completed') {
@@ -183,7 +187,7 @@ export default function CallDetailsPage() {
   };
 
   const handleAssignVendor = () => {
-    if (!selectedVendor) return;
+    if (!selectedVendor || !canAssign) return;
     
     const vendor = vendors.find(v => v.id === selectedVendor);
     
@@ -197,13 +201,16 @@ export default function CallDetailsPage() {
       }
     });
 
+    // Log to audit
+    logAssign('Call', callId, call?.call_number, vendor?.vendor_name);
+
     // Log history
     base44.entities.CallHistory.create({
       call_id: callId,
       call_number: call?.call_number,
       change_type: 'vendor_assignment',
       new_value: vendor?.vendor_name,
-      changed_by: 'operator'
+      changed_by: currentUser?.full_name || 'operator'
     });
 
     setShowAssignDialog(false);
@@ -263,13 +270,14 @@ export default function CallDetailsPage() {
           <div className="flex flex-wrap gap-2">
             {call?.call_status !== 'completed' && call?.call_status !== 'cancelled' && (
               <>
-                <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="gap-2">
-                      <Truck className="w-4 h-4" />
-                      שבץ ספק
-                    </Button>
-                  </DialogTrigger>
+                <PermissionGuard category="calls" permission="assign">
+                  <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <Truck className="w-4 h-4" />
+                        שבץ ספק
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>שיבוץ ספק לקריאה</DialogTitle>
@@ -306,20 +314,23 @@ export default function CallDetailsPage() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+                </PermissionGuard>
 
-                <Select 
-                  value={call?.call_status} 
-                  onValueChange={handleStatusChange}
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(statusLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <PermissionGuard category="calls" permission="edit">
+                  <Select 
+                    value={call?.call_status} 
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(statusLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </PermissionGuard>
               </>
             )}
           </div>
