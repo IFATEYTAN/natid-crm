@@ -7,7 +7,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
+
+    // Auth: only admin/operator can trigger auto-assignment
+    const user = await base44.auth.me();
+    if (!user || !['admin', 'operator'].includes(user.role)) {
+      return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
+    }
+
     const { call_id, exclude_vendor_ids = [] } = await req.json();
 
     if (!call_id) {

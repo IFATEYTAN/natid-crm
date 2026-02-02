@@ -13,6 +13,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!['admin', 'operator'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden - admin or operator role required' }, { status: 403 });
+    }
+
     const { call_id } = await req.json();
 
     if (!call_id) {

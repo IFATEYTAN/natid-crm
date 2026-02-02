@@ -13,7 +13,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { 
+    // Only admin/operator can send notifications
+    if (!['admin', 'operator'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden - admin or operator role required' }, { status: 403 });
+    }
+
+    const {
       recipient_type, // 'customer' | 'vendor' | 'user'
       recipient_phone,
       recipient_email,

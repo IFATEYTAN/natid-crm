@@ -12,9 +12,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    
+
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Only admin, operator, or vendor can send status updates
+    if (!['admin', 'operator', 'vendor'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
     }
 
     const { call_id, status, eta, custom_message } = await req.json();

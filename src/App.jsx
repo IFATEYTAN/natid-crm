@@ -10,6 +10,8 @@ import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import AppAccessDeniedError from '@/components/AppAccessDeniedError';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import RoleGuard from '@/components/auth/RoleGuard';
+import { getPageRoles } from '@/config/permissions';
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -58,13 +60,28 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
+  // Render the main app with role-based access control
+  const renderPage = (pageName, Page) => {
+    const roles = getPageRoles(pageName);
+    const content = (
+      <Suspense fallback={<PageLoader />}>
+        <Page />
+      </Suspense>
+    );
+
+    // If page has role restrictions, wrap with RoleGuard
+    if (roles) {
+      return <RoleGuard allowedRoles={roles}>{content}</RoleGuard>;
+    }
+    return content;
+  };
+
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={
           <LayoutWrapper currentPageName={mainPageKey}>
-            <MainPage />
+            {renderPage(mainPageKey, MainPage)}
           </LayoutWrapper>
         } />
         {Object.entries(Pages).map(([path, Page]) => (
@@ -73,9 +90,7 @@ const AuthenticatedApp = () => {
             path={`/${path}`}
             element={
               <LayoutWrapper currentPageName={path}>
-                <Suspense fallback={<PageLoader />}>
-                  <Page />
-                </Suspense>
+                {renderPage(path, Page)}
               </LayoutWrapper>
             }
           />
