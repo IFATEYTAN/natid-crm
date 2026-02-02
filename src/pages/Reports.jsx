@@ -33,15 +33,24 @@ import {
   Users,
   Truck,
   Calendar,
-  Download
+  Download,
+  Lock
 } from 'lucide-react';
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
+import { PermissionGuard } from '@/components/permissions/PermissionGuard';
+import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const COLORS = ['#3b82f6', '#111827', '#6b7280', '#ef4444'];
 
 export default function ReportsPage() {
   const [dateRange, setDateRange] = useState('30');
+  const { hasPermission, canAccessReport } = usePermissions();
+  const { logExport, logSensitiveAccess } = useAuditLog();
+  
+  const canViewFinancial = hasPermission('reports', 'financial');
+  const canExport = hasPermission('reports', 'export');
 
   // Fetch calls
   const callsQuery = useQuery({
@@ -200,6 +209,19 @@ export default function ReportsPage() {
               <SelectItem value="90">90 ימים אחרונים</SelectItem>
             </SelectContent>
           </Select>
+          <PermissionGuard category="reports" permission="export">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => {
+                logExport('Reports', `ייצוא דוח - ${dateRange} ימים`);
+                // Export logic here
+              }}
+            >
+              <Download className="w-4 h-4" />
+              ייצוא
+            </Button>
+          </PermissionGuard>
         </div>
       </div>
 
@@ -337,27 +359,64 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        {/* Vendor Performance */}
+        {/* Vendor Performance - requires performance permission */}
+        <PermissionGuard category="reports" permission="performance" showMessage>
+          <Card className="bg-white border border-[#e5e7eb]">
+            <CardHeader>
+              <CardTitle className="text-lg text-[#111827]">ביצועי ספקים</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={vendorPerformance}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Bar dataKey="total" name="סה״כ" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="completed" name="הושלמו" fill="#111827" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </PermissionGuard>
+      </div>
+
+      {/* Financial Reports Section - Only for authorized users */}
+      <PermissionGuard category="reports" permission="financial" showMessage>
         <Card className="bg-white border border-[#e5e7eb]">
           <CardHeader>
-            <CardTitle className="text-lg text-[#111827]">ביצועי ספקים</CardTitle>
+            <CardTitle className="text-lg text-[#111827] flex items-center gap-2">
+              <Lock className="w-4 h-4 text-yellow-600" />
+              דוחות פיננסיים
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={vendorPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="total" name="סה״כ" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="completed" name="הושלמו" fill="#111827" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            <p className="text-sm text-[#6b7280] mb-4">
+              מידע פיננסי רגיש - נגיש למורשים בלבד
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-gray-50 rounded-lg text-center">
+                <div className="text-2xl font-bold text-[#111827]">₪{(stats.total * 150).toLocaleString()}</div>
+                <div className="text-xs text-[#6b7280]">הכנסות משוערות</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg text-center">
+                <div className="text-2xl font-bold text-[#111827]">₪{(stats.completed * 80).toLocaleString()}</div>
+                <div className="text-xs text-[#6b7280]">עלויות ספקים</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg text-center">
+                <div className="text-2xl font-bold text-[#111827]">₪{((stats.total * 150) - (stats.completed * 80)).toLocaleString()}</div>
+                <div className="text-xs text-[#6b7280]">רווח גולמי</div>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg text-center">
+                <div className="text-2xl font-bold text-[#111827]">{Math.round(((stats.total * 150 - stats.completed * 80) / (stats.total * 150)) * 100) || 0}%</div>
+                <div className="text-xs text-[#6b7280]">מרווח רווחיות</div>
+              </div>
             </div>
           </CardContent>
         </Card>
-      </div>
+      </PermissionGuard>
     </div>
   );
 }
