@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import { Toaster } from 'sonner';
 import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
-import { SecureLayout } from '@/components/permissions/SecureLayout';
+
 import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
 
 export default function Layout({ children, currentPageName }) {
