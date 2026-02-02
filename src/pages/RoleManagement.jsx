@@ -26,6 +26,7 @@ import {
   Shield, Plus, Pencil, Trash2, Users, Key, Save, Phone, Truck, BarChart3, Settings, Map
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const PERMISSION_CATEGORIES = {
   calls: { label: 'קריאות', icon: Phone },
@@ -61,6 +62,7 @@ export default function RoleManagement() {
   const [isUserPermDialogOpen, setIsUserPermDialogOpen] = useState(false);
   const [selectedUserPerm, setSelectedUserPerm] = useState(null);
   const queryClient = useQueryClient();
+  const { logCreate, logUpdate, logDelete, logPermissionChange } = useAuditLog();
 
   const { data: roles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ['roles'],
@@ -84,7 +86,13 @@ export default function RoleManagement() {
       }
       return base44.entities.Role.create(roleData);
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
+      // Log to audit
+      if (variables.id) {
+        logUpdate('Role', variables.id, variables.display_name, null, JSON.stringify(variables.permissions));
+      } else {
+        logCreate('Role', result.id, variables.display_name, `נוצר תפקיד חדש: ${variables.display_name}`);
+      }
       toast.success('התפקיד נשמר בהצלחה');
       queryClient.invalidateQueries({ queryKey: ['roles'] });
       setIsRoleDialogOpen(false);
@@ -93,8 +101,13 @@ export default function RoleManagement() {
   });
 
   const deleteRoleMutation = useMutation({
-    mutationFn: (id) => base44.entities.Role.delete(id),
-    onSuccess: () => {
+    mutationFn: async (id) => {
+      const role = roles.find(r => r.id === id);
+      await base44.entities.Role.delete(id);
+      return role;
+    },
+    onSuccess: (deletedRole) => {
+      logDelete('Role', deletedRole?.id, deletedRole?.display_name, `נמחק תפקיד: ${deletedRole?.display_name}`);
       toast.success('התפקיד נמחק');
       queryClient.invalidateQueries({ queryKey: ['roles'] });
     }
@@ -107,7 +120,9 @@ export default function RoleManagement() {
       }
       return base44.entities.UserPermission.create(permData);
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
+      // Log permission change to audit
+      logPermissionChange(variables.user_email, 'ברירת מחדל', variables.role_name || 'ברירת מחדל');
       toast.success('ההרשאות נשמרו');
       queryClient.invalidateQueries({ queryKey: ['allUserPermissions'] });
       setIsUserPermDialogOpen(false);
