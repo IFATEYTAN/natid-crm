@@ -9,10 +9,19 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    const { 
-      attempt_id, 
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Only vendors (and admins for override) can respond to assignments
+    if (!['admin', 'vendor'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden - vendor role required' }, { status: 403 });
+    }
+
+    const {
+      attempt_id,
       action, // 'accept' | 'decline'
-      decline_reason 
+      decline_reason
     } = await req.json();
 
     if (!attempt_id || !action) {

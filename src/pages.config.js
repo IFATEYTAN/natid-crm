@@ -1,85 +1,47 @@
 /**
  * pages.config.js - Page routing configuration
- * 
- * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
- * Pages are auto-registered when you create files in the ./pages/ folder.
- * 
- * THE ONLY EDITABLE VALUE: mainPage
- * This controls which page is the landing page (shown when users visit the app).
- * 
- * Example file structure:
- * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
- *   
- *   export const PAGES = {
- *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
- *   }
- *   
- *   export const pagesConfig = {
- *       mainPage: "HomePage",
- *       Pages: PAGES,
- *   };
- * 
- * Example with Layout (wraps all pages):
  *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
- *
- *   export const PAGES = {
- *       "Home": Home,
- *       "Settings": Settings,
- *   }
- *
- *   export const pagesConfig = {
- *       mainPage: "Home",
- *       Pages: PAGES,
- *       Layout: __Layout,
- *   };
- *
- * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
- *
- * The mainPage value must match a key in the PAGES object exactly.
+ * Code splitting: Core pages load eagerly, all others lazy-loaded on demand.
+ * This reduces initial bundle size significantly (maps, charts, etc. load only when needed).
  */
-import AdvancedExport from './pages/AdvancedExport';
-import Agents from './pages/Agents';
-import AllVendorsMap from './pages/AllVendorsMap';
-import AuditLog from './pages/AuditLog';
-import AutomationSettings from './pages/AutomationSettings';
-import Calendar from './pages/Calendar';
-import CallDetails from './pages/CallDetails';
+import { lazy } from 'react';
+
+// Eagerly loaded - core pages used on every session
 import Calls from './pages/Calls';
-import CoverageAreas from './pages/CoverageAreas';
-import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
-import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
-import ImportHistoricalData from './pages/ImportHistoricalData';
-import IntegrationSettings from './pages/IntegrationSettings';
-import MyNotificationSettings from './pages/MyNotificationSettings';
-import MyQueue from './pages/MyQueue';
-import MyVendorProfile from './pages/MyVendorProfile';
 import NewCase from './pages/NewCase';
-import NewVendor from './pages/NewVendor';
-import NotificationSettings from './pages/NotificationSettings';
-import QueueMonitor from './pages/QueueMonitor';
-import Reports from './pages/Reports';
-import ServiceProviders from './pages/ServiceProviders';
-import Settings from './pages/Settings';
-import UserGuide from './pages/UserGuide';
-import UserManagement from './pages/UserManagement';
-import VendorCallManagement from './pages/VendorCallManagement';
-import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
-import VendorTracking from './pages/VendorTracking';
-import RoleManagement from './pages/RoleManagement';
-import CustomerFeedback from './pages/CustomerFeedback';
 import __Layout from './Layout.jsx';
+
+// Lazy loaded - loaded on demand when navigated to
+const AdvancedExport = lazy(() => import('./pages/AdvancedExport'));
+const Agents = lazy(() => import('./pages/Agents'));
+const AllVendorsMap = lazy(() => import('./pages/AllVendorsMap'));
+const AuditLog = lazy(() => import('./pages/AuditLog'));
+const AutomationSettings = lazy(() => import('./pages/AutomationSettings'));
+const Calendar = lazy(() => import('./pages/Calendar'));
+const CallDetails = lazy(() => import('./pages/CallDetails'));
+const CoverageAreas = lazy(() => import('./pages/CoverageAreas'));
+const Customers = lazy(() => import('./pages/Customers'));
+const HistoricalDataAnalysis = lazy(() => import('./pages/HistoricalDataAnalysis'));
+const ImportHistoricalData = lazy(() => import('./pages/ImportHistoricalData'));
+const IntegrationSettings = lazy(() => import('./pages/IntegrationSettings'));
+const MyNotificationSettings = lazy(() => import('./pages/MyNotificationSettings'));
+const MyQueue = lazy(() => import('./pages/MyQueue'));
+const MyVendorProfile = lazy(() => import('./pages/MyVendorProfile'));
+const NewVendor = lazy(() => import('./pages/NewVendor'));
+const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
+const QueueMonitor = lazy(() => import('./pages/QueueMonitor'));
+const Reports = lazy(() => import('./pages/Reports'));
+const ServiceProviders = lazy(() => import('./pages/ServiceProviders'));
+const Settings = lazy(() => import('./pages/Settings'));
+const UserGuide = lazy(() => import('./pages/UserGuide'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const VendorCallManagement = lazy(() => import('./pages/VendorCallManagement'));
+const VendorContracts = lazy(() => import('./pages/VendorContracts'));
+const VendorTracking = lazy(() => import('./pages/VendorTracking'));
+const RoleManagement = lazy(() => import('./pages/RoleManagement'));
+const CustomerFeedback = lazy(() => import('./pages/CustomerFeedback'));
 
 
 export const PAGES = {

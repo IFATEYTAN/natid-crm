@@ -13,7 +13,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { 
+    // Only vendors (and admins for testing) can update vendor location
+    if (!['admin', 'vendor'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden - vendor role required' }, { status: 403 });
+    }
+
+    const {
       vendor_id,
       latitude,
       longitude,
