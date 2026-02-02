@@ -77,6 +77,7 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
+import RoleManagement from './pages/RoleManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -111,6 +112,7 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
+    "RoleManagement": RoleManagement,
 }
 
 export const pagesConfig = {
