@@ -1,51 +1,118 @@
-/**
- * Custom Hook for Audit Logging
- */
-
-import { useMutation } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 
-export const useLogAction = () => {
-  return useMutation({
-    mutationFn: async ({ action, entityType, entityId, entityName, details, oldValue, newValue }) => {
-      try {
-        const user = await base44.auth.me();
-        
-        return base44.entities.AuditLog.create({
-          user_id: user?.id,
-          user_email: user?.email || 'anonymous',
-          user_role: user?.role || 'unknown',
-          action,
-          entity_type: entityType,
-          entity_id: entityId,
-          entity_name: entityName,
-          details,
-          old_value: oldValue ? JSON.stringify(oldValue) : null,
-          new_value: newValue ? JSON.stringify(newValue) : null,
-        });
-      } catch (error) {
-        console.error('Audit log error:', error);
-      }
+// Hook לתיעוד פעולות ביומן
+export function useAuditLog() {
+  
+  const logAction = useCallback(async ({
+    action,
+    entity_type,
+    entity_id = null,
+    entity_name = null,
+    details = null,
+    old_value = null,
+    new_value = null,
+    severity = 'info'
+  }) => {
+    try {
+      await base44.functions.invoke('logAuditAction', {
+        action,
+        entity_type,
+        entity_id,
+        entity_name,
+        details,
+        old_value,
+        new_value,
+        severity
+      });
+    } catch (error) {
+      console.error('Failed to log audit action:', error);
+      // Don't throw - audit logging should not break the app
     }
-  });
-};
+  }, []);
 
-// Helper function for simple logging
-export const logAction = async (action, entityType, entityId, entityName, details) => {
-  try {
-    const user = await base44.auth.me();
-    
-    await base44.entities.AuditLog.create({
-      user_id: user?.id,
-      user_email: user?.email || 'anonymous',
-      user_role: user?.role || 'unknown',
-      action,
-      entity_type: entityType,
-      entity_id: entityId,
-      entity_name: entityName,
-      details,
+  // פעולות מוכנות מראש
+  const logCreate = useCallback((entity_type, entity_id, entity_name, details) => {
+    return logAction({ action: 'create', entity_type, entity_id, entity_name, details });
+  }, [logAction]);
+
+  const logUpdate = useCallback((entity_type, entity_id, entity_name, old_value, new_value) => {
+    return logAction({ action: 'update', entity_type, entity_id, entity_name, old_value, new_value });
+  }, [logAction]);
+
+  const logDelete = useCallback((entity_type, entity_id, entity_name, details) => {
+    return logAction({ action: 'delete', entity_type, entity_id, entity_name, details, severity: 'warning' });
+  }, [logAction]);
+
+  const logStatusChange = useCallback((entity_type, entity_id, entity_name, old_status, new_status) => {
+    return logAction({ 
+      action: 'status_change', 
+      entity_type, 
+      entity_id, 
+      entity_name,
+      old_value: old_status,
+      new_value: new_status 
     });
-  } catch (error) {
-    console.error('Audit log error:', error);
-  }
-};
+  }, [logAction]);
+
+  const logAssign = useCallback((entity_type, entity_id, entity_name, assigned_to) => {
+    return logAction({ 
+      action: 'assign', 
+      entity_type, 
+      entity_id, 
+      entity_name,
+      details: `שובץ ל: ${assigned_to}` 
+    });
+  }, [logAction]);
+
+  const logExport = useCallback((entity_type, details) => {
+    return logAction({ action: 'export', entity_type, details });
+  }, [logAction]);
+
+  const logPermissionChange = useCallback((user_email, old_role, new_role) => {
+    return logAction({ 
+      action: 'permission_change', 
+      entity_type: 'UserPermission',
+      entity_name: user_email,
+      old_value: old_role,
+      new_value: new_role,
+      severity: 'warning'
+    });
+  }, [logAction]);
+
+  const logAccessDenied = useCallback((page_name, details) => {
+    return logAction({ 
+      action: 'access_denied', 
+      entity_type: 'Page',
+      entity_name: page_name,
+      details,
+      severity: 'warning'
+    });
+  }, [logAction]);
+
+  const logSensitiveAccess = useCallback((entity_type, entity_id, entity_name, details) => {
+    return logAction({ 
+      action: 'sensitive_data_access', 
+      entity_type, 
+      entity_id, 
+      entity_name,
+      details,
+      severity: 'critical'
+    });
+  }, [logAction]);
+
+  return {
+    logAction,
+    logCreate,
+    logUpdate,
+    logDelete,
+    logStatusChange,
+    logAssign,
+    logExport,
+    logPermissionChange,
+    logAccessDenied,
+    logSensitiveAccess
+  };
+}
+
+export default useAuditLog;
