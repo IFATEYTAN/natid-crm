@@ -28,7 +28,8 @@ import {
   Navigation,
   Shield,
   BookOpen,
-  FileText
+  FileText,
+  Lock
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
@@ -42,32 +43,40 @@ import { cn } from "@/lib/utils";
 import { base44 } from '@/api/base44Client';
 import { Toaster } from 'sonner';
 import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
+import { SecureLayout } from '@/components/permissions/SecureLayout';
+import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
 
 export default function Layout({ children, currentPageName }) {
+  return (
+    <PermissionsProvider>
+      <LayoutContent currentPageName={currentPageName}>
+        {children}
+      </LayoutContent>
+    </PermissionsProvider>
+  );
+}
+
+function LayoutContent({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
   const [isVendor, setIsVendor] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
   const queryClient = useQueryClient();
+  const { currentUser, canAccessPage, isLoading: permissionsLoading, isAdmin } = usePermissions();
 
-  // Fetch current user and check if vendor
+  // Check if user is a vendor
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-        
-        // Check if user is a vendor (has vendor profile linked to their email)
-        if (user?.email) {
-          const vendors = await base44.entities.Vendor.filter({ email: user.email });
-          setIsVendor(vendors.length > 0 && user.role !== 'admin');
+    const checkVendor = async () => {
+      if (currentUser?.email && currentUser.role !== 'admin') {
+        try {
+          const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+          setIsVendor(vendors.length > 0);
+        } catch (e) {
+          // Ignore error
         }
-      } catch (e) {
-        // User not logged in
       }
     };
-    fetchUser();
-  }, []);
+    checkVendor();
+  }, [currentUser]);
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
@@ -129,8 +138,8 @@ export default function Layout({ children, currentPageName }) {
     }
   ];
 
-  // Full navigation for admins/operators
-  const adminNavigationGroups = [
+  // Full navigation for admins/operators - filtered by permissions
+  const allNavigationItems = [
     {
       title: 'תפעול יומי',
       icon: LayoutDashboard,
@@ -155,30 +164,36 @@ export default function Layout({ children, currentPageName }) {
       ]
     },
     {
-        title: 'כלים',
-        icon: Bot,
-        items: [
-          { name: 'סוכנים', href: 'Agents', icon: Bot },
-          { name: 'ייבוא נתונים', href: 'ImportHistoricalData', icon: FileText },
-          { name: 'ניתוח היסטורי', href: 'HistoricalDataAnalysis', icon: BarChart3 },
-        ]
-      },
+      title: 'כלים',
+      icon: Bot,
+      items: [
+        { name: 'סוכנים', href: 'Agents', icon: Bot },
+        { name: 'ייבוא נתונים', href: 'ImportHistoricalData', icon: FileText },
+        { name: 'ניתוח היסטורי', href: 'HistoricalDataAnalysis', icon: BarChart3 },
+      ]
+    },
     {
-        title: 'מערכת',
-        icon: Settings,
-        items: [
-          { name: 'ניהול משתמשים', href: 'UserManagement', icon: UserCog },
-          { name: 'ניהול הרשאות', href: 'RoleManagement', icon: Shield },
-          { name: 'אוטומציה', href: 'AutomationSettings', icon: Zap },
-          { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Link2 },
-          { name: 'הגדרות התראות (מערכת)', href: 'NotificationSettings', icon: BellRing },
-          { name: 'העדפות התראות שלי', href: 'MyNotificationSettings', icon: Bell },
-          { name: 'הגדרות מערכת', href: 'Settings', icon: Settings },
-          { name: 'יומן פעולות', href: 'AuditLog', icon: Shield },
-          { name: 'מדריך למשתמש', href: 'UserGuide', icon: BookOpen },
-        ]
-      }
+      title: 'מערכת',
+      icon: Settings,
+      items: [
+        { name: 'ניהול משתמשים', href: 'UserManagement', icon: UserCog },
+        { name: 'ניהול הרשאות', href: 'RoleManagement', icon: Shield },
+        { name: 'אוטומציה', href: 'AutomationSettings', icon: Zap },
+        { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Link2 },
+        { name: 'הגדרות התראות (מערכת)', href: 'NotificationSettings', icon: BellRing },
+        { name: 'העדפות התראות שלי', href: 'MyNotificationSettings', icon: Bell },
+        { name: 'הגדרות מערכת', href: 'Settings', icon: Settings },
+        { name: 'יומן פעולות', href: 'AuditLog', icon: Shield },
+        { name: 'מדריך למשתמש', href: 'UserGuide', icon: BookOpen },
+      ]
+    }
   ];
+
+  // Filter navigation items based on user permissions
+  const adminNavigationGroups = allNavigationItems.map(group => ({
+    ...group,
+    items: group.items.filter(item => canAccessPage(item.href))
+  })).filter(group => group.items.length > 0);
 
   const navigationGroups = isVendor ? vendorNavigationGroups : adminNavigationGroups;
 
@@ -236,12 +251,18 @@ export default function Layout({ children, currentPageName }) {
                   <ChevronLeft className="w-4 h-4" />
                 )}
               </button>
-              
+
               {expandedGroups[group.title] && (
                 <div className="space-y-0.5 mt-1">
                   {group.items.map((item) => {
                     const isActive = currentPageName === item.href;
                     const Icon = item.icon;
+                    const hasAccess = canAccessPage(item.href);
+
+                    if (!hasAccess && !isAdmin) {
+                      return null; // Hide items without access for non-admins
+                    }
+
                     return (
                       <Link
                         key={item.href}
@@ -251,11 +272,14 @@ export default function Layout({ children, currentPageName }) {
                           "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200",
                           isActive 
                             ? "bg-red-50 text-red-700 border-r-2 border-red-600" 
-                            : "text-[#172B4D] hover:bg-[#F4F5F7]"
+                            : hasAccess
+                              ? "text-[#172B4D] hover:bg-[#F4F5F7]"
+                              : "text-gray-400 cursor-not-allowed"
                         )}
                       >
-                        <Icon className={cn("w-4 h-4", isActive ? "text-red-600" : "text-[#6B778C]")} />
+                        <Icon className={cn("w-4 h-4", isActive ? "text-red-600" : hasAccess ? "text-[#6B778C]" : "text-gray-300")} />
                         {item.name}
+                        {!hasAccess && <Lock className="w-3 h-3 mr-auto text-gray-300" />}
                       </Link>
                     );
                   })}
@@ -265,8 +289,8 @@ export default function Layout({ children, currentPageName }) {
           ))}
         </nav>
 
-        {/* Quick Action - Only for non-vendors */}
-        {!isVendor && (
+        {/* Quick Action - Only for non-vendors with permission */}
+        {!isVendor && canAccessPage('NewCase') && (
           <div className="p-3 border-t border-[#DFE1E6]">
             <Link to={createPageUrl('NewCase')}>
               <Button className="w-full bg-[#FF0000] hover:bg-[#CC0000] text-white gap-2 rounded-md font-semibold">
@@ -380,21 +404,13 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Page Content */}
         <main className="flex-1 p-4 md:p-6 overflow-auto">
-          {/* If vendor tries to access non-vendor page, show redirect message */}
-          {isVendor && !isVendorPage ? (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <Truck className="w-16 h-16 mx-auto mb-4 text-[#6B778C]" />
-                <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין גישה לדף זה</h2>
-                <p className="text-[#6B778C] mb-4">דף זה מיועד למפעילי המערכת בלבד</p>
-                <Link to={createPageUrl('VendorPortal')}>
-                  <Button className="bg-[#3b82f6]">חזרה לפורטל הספקים</Button>
-                </Link>
-              </div>
-            </div>
-          ) : (
-            children
-          )}
+          <SecurePageWrapper 
+            currentPageName={currentPageName} 
+            isVendor={isVendor} 
+            isVendorPage={isVendorPage}
+          >
+            {children}
+          </SecurePageWrapper>
         </main>
       </div>
 
@@ -405,6 +421,66 @@ export default function Layout({ children, currentPageName }) {
           soundEnabled={currentUser?.sound_enabled !== false}
         />
       )}
-    </div>
-  );
-}
+      </div>
+      );
+      }
+
+      // קומפוננטה פנימית לעטיפת הדף עם אבטחה
+      function SecurePageWrapper({ children, currentPageName, isVendor, isVendorPage }) {
+      const { canAccessPage, isLoading } = usePermissions();
+
+      // Public pages that don't need permission checks
+      const publicPages = ['AuthLogin', 'Login', 'SignIn', 'Register', 'UserGuide', 'MyNotificationSettings'];
+
+      if (publicPages.includes(currentPageName)) {
+      return children;
+      }
+
+      // If vendor tries to access non-vendor page
+      if (isVendor && !isVendorPage) {
+      return (
+      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center">
+        <Truck className="w-16 h-16 mx-auto mb-4 text-[#6B778C]" />
+        <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין גישה לדף זה</h2>
+        <p className="text-[#6B778C] mb-4">דף זה מיועד למפעילי המערכת בלבד</p>
+        <Link to={createPageUrl('VendorPortal')}>
+          <Button className="bg-[#3b82f6]">חזרה לפורטל הספקים</Button>
+        </Link>
+      </div>
+      </div>
+      );
+      }
+
+      // Loading state
+      if (isLoading) {
+      return (
+      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+      );
+      }
+
+      // Check page permissions
+      if (!canAccessPage(currentPageName)) {
+      return (
+      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center p-8 max-w-md">
+        <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <Shield className="w-8 h-8 text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">אין גישה לדף זה</h2>
+        <p className="text-gray-500 mb-6">
+          אין לך את ההרשאות הנדרשות לצפות בדף זה. 
+          פנה למנהל המערכת אם אתה צריך גישה.
+        </p>
+        <Link to={createPageUrl('Dashboard')}>
+          <Button>חזרה לדף הבית</Button>
+        </Link>
+      </div>
+      </div>
+      );
+      }
+
+      return children;
+      }
