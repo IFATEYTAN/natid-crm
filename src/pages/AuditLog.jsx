@@ -35,7 +35,11 @@ const actionLabels = {
   logout: 'התנתקות',
   assign: 'שיבוץ',
   status_change: 'שינוי סטטוס',
-  export: 'ייצוא'
+  export: 'ייצוא',
+  permission_change: 'שינוי הרשאות',
+  role_change: 'שינוי תפקיד',
+  access_denied: 'גישה נדחתה',
+  sensitive_data_access: 'גישה למידע רגיש'
 };
 
 const actionColors = {
@@ -47,7 +51,17 @@ const actionColors = {
   logout: 'bg-gray-100 text-gray-800',
   assign: 'bg-orange-100 text-orange-800',
   status_change: 'bg-yellow-100 text-yellow-800',
-  export: 'bg-indigo-100 text-indigo-800'
+  export: 'bg-indigo-100 text-indigo-800',
+  permission_change: 'bg-red-100 text-red-800',
+  role_change: 'bg-red-100 text-red-800',
+  access_denied: 'bg-red-200 text-red-900',
+  sensitive_data_access: 'bg-yellow-200 text-yellow-900'
+};
+
+const severityColors = {
+  info: 'border-l-blue-400',
+  warning: 'border-l-yellow-400',
+  critical: 'border-l-red-500'
 };
 
 export default function AuditLogPage() {
@@ -134,6 +148,20 @@ export default function AuditLogPage() {
           {log.details || '-'}
         </div>
       )
+    },
+    {
+      header: 'חומרה',
+      accessor: 'severity',
+      cell: (log) => (
+        <Badge className={cn("text-xs", 
+          log.severity === 'critical' ? 'bg-red-100 text-red-800' :
+          log.severity === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-gray-100 text-gray-800'
+        )}>
+          {log.severity === 'critical' ? 'קריטי' :
+           log.severity === 'warning' ? 'אזהרה' : 'מידע'}
+        </Badge>
+      )
     }
   ];
 
@@ -177,7 +205,7 @@ export default function AuditLogPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="bg-white">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-[#172B4D]">{logs.length}</div>
@@ -198,6 +226,14 @@ export default function AuditLogPage() {
                 {logs.filter(l => l.action === 'update').length}
               </div>
               <div className="text-sm text-[#6B778C]">עדכונים</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-l-4 border-l-red-500">
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-red-600">
+                {logs.filter(l => l.severity === 'critical' || l.action === 'access_denied').length}
+              </div>
+              <div className="text-sm text-[#6B778C]">אירועי אבטחה</div>
             </CardContent>
           </Card>
           <Card className="bg-white">
