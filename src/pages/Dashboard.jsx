@@ -33,6 +33,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import AIInsightsWidget from '@/components/ai/AIInsightsWidget';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { usePermissions } from '@/components/permissions/PermissionsContext';
+import { PermissionGuard, PermissionLink } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { 
@@ -196,11 +198,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
-  }, []);
+  const { currentUser, hasPermission, canAccessPage } = usePermissions();
 
   const today = new Date();
 
@@ -512,12 +510,14 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex gap-3">
-          <Link to={createPageUrl('NewCase')}>
-            <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-6 transition-all transform hover:scale-105">
-              <Plus className="w-5 h-5 ml-2" />
-              קריאה חדשה
-            </Button>
-          </Link>
+          <PermissionGuard category="calls" permission="create">
+            <Link to={createPageUrl('NewCase')}>
+              <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-6 transition-all transform hover:scale-105">
+                <Plus className="w-5 h-5 ml-2" />
+                קריאה חדשה
+              </Button>
+            </Link>
+          </PermissionGuard>
         </div>
       </div>
 
@@ -647,8 +647,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* AI Insights Widget */}
-          <AIInsightsWidget />
+          {/* AI Insights Widget - Only for users with reports permission */}
+          <PermissionGuard category="reports" permission="performance">
+            <AIInsightsWidget />
+          </PermissionGuard>
 
           {/* Charts Section */}
           <div className="grid lg:grid-cols-2 gap-6">
@@ -788,14 +790,16 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Link to={createPageUrl('NewCase')} className="group">
-                  <div className="flex flex-col items-center justify-center p-6 bg-red-50 rounded-xl border border-red-100 group-hover:border-red-300 group-hover:shadow-md transition-all cursor-pointer h-full">
-                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                      <Plus className="w-6 h-6 text-red-600" />
+                <PermissionGuard category="calls" permission="create">
+                  <Link to={createPageUrl('NewCase')} className="group">
+                    <div className="flex flex-col items-center justify-center p-6 bg-red-50 rounded-xl border border-red-100 group-hover:border-red-300 group-hover:shadow-md transition-all cursor-pointer h-full">
+                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                        <Plus className="w-6 h-6 text-red-600" />
+                      </div>
+                      <span className="font-semibold text-gray-800">קריאה חדשה</span>
                     </div>
-                    <span className="font-semibold text-gray-800">קריאה חדשה</span>
-                  </div>
-                </Link>
+                  </Link>
+                </PermissionGuard>
                 <Button variant="ghost" onClick={() => setActiveTab('cases')} className="h-auto p-0 group">
                   <div className="w-full flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl border border-gray-100 group-hover:border-gray-300 group-hover:shadow-md transition-all cursor-pointer h-full">
                     <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
@@ -804,22 +808,26 @@ export default function Dashboard() {
                     <span className="font-semibold text-gray-800">רשימת קריאות</span>
                   </div>
                 </Button>
-                <Link to={createPageUrl('ServiceProviders')} className="group">
-                  <div className="flex flex-col items-center justify-center p-6 bg-blue-50 rounded-xl border border-blue-100 group-hover:border-blue-300 group-hover:shadow-md transition-all cursor-pointer h-full">
-                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                      <Truck className="w-6 h-6 text-blue-600" />
+                <PermissionGuard category="vendors" permission="view">
+                  <Link to={createPageUrl('ServiceProviders')} className="group">
+                    <div className="flex flex-col items-center justify-center p-6 bg-blue-50 rounded-xl border border-blue-100 group-hover:border-blue-300 group-hover:shadow-md transition-all cursor-pointer h-full">
+                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                        <Truck className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <span className="font-semibold text-gray-800">ניהול ספקים</span>
                     </div>
-                    <span className="font-semibold text-gray-800">ניהול ספקים</span>
-                  </div>
-                </Link>
-                <Link to={createPageUrl('AllVendorsMap')} className="group">
-                  <div className="flex flex-col items-center justify-center p-6 bg-green-50 rounded-xl border border-green-100 group-hover:border-green-300 group-hover:shadow-md transition-all cursor-pointer h-full">
-                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                      <MapPin className="w-6 h-6 text-green-600" />
+                  </Link>
+                </PermissionGuard>
+                <PermissionGuard category="monitoring" permission="live_map">
+                  <Link to={createPageUrl('AllVendorsMap')} className="group">
+                    <div className="flex flex-col items-center justify-center p-6 bg-green-50 rounded-xl border border-green-100 group-hover:border-green-300 group-hover:shadow-md transition-all cursor-pointer h-full">
+                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
+                        <MapPin className="w-6 h-6 text-green-600" />
+                      </div>
+                      <span className="font-semibold text-gray-800">מפת ספקים</span>
                     </div>
-                    <span className="font-semibold text-gray-800">מפת ספקים</span>
-                  </div>
-                </Link>
+                  </Link>
+                </PermissionGuard>
               </div>
             </CardContent>
           </Card>
