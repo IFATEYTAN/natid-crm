@@ -168,6 +168,7 @@ export default function Layout({ children, currentPageName }) {
         icon: Settings,
         items: [
           { name: 'ניהול משתמשים', href: 'UserManagement', icon: UserCog },
+          { name: 'ניהול הרשאות', href: 'RoleManagement', icon: Shield },
           { name: 'אוטומציה', href: 'AutomationSettings', icon: Zap },
           { name: 'אינטגרציות CRM', href: 'IntegrationSettings', icon: Link2 },
           { name: 'הגדרות התראות (מערכת)', href: 'NotificationSettings', icon: BellRing },
