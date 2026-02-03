@@ -1,7 +1,7 @@
 {
-  "name": "NatID CRM - מערכת ניהול קריאות דרך",
-  "short_name": "NatID CRM",
-  "description": "מערכת ניהול קריאות דרך וספקי שירות",
+  "name": "NATID - מערכת CRM",
+  "short_name": "NATID CRM",
+  "description": "NATID - מערכת CRM",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

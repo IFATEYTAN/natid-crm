@@ -122,7 +122,7 @@ export default function Login() {
               NATI GROUP SERVICE
             </CardTitle>
             <CardDescription className="text-sm sm:text-base text-neutral-soft-600">
-              {isForgotPassword ? 'איפוס סיסמה' : 'מערכת ניהול CRM'}
+              {isForgotPassword ? 'איפוס סיסמה' : 'NATID - מערכת CRM'}
             </CardDescription>
           </CardHeader>
 

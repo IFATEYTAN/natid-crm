@@ -109,7 +109,7 @@ export default function AuthLogin() {
               NATI GROUP SERVICE
             </CardTitle>
             <CardDescription className="text-base text-neutral-soft-600">
-              {isForgotPassword ? 'איפוס סיסמה' : 'מערכת ניהול CRM'}
+              {isForgotPassword ? 'איפוס סיסמה' : 'NATID - מערכת CRM'}
             </CardDescription>
           </CardHeader>
 
