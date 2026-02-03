@@ -45,6 +45,7 @@ import { Toaster } from 'sonner';
 import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
 
 import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
+import AppLogin from '@/pages/AppLogin';
 import { useErrorLogger } from '@/components/hooks/useErrorLogger';
 
 export default function Layout({ children, currentPageName }) {
@@ -106,7 +107,7 @@ function LayoutContent({ children, currentPageName }) {
   };
 
   // Don't wrap auth pages in the main layout
-  if (currentPageName === 'SignIn' || currentPageName === 'Register' || currentPageName === 'AuthLogin' || currentPageName === 'Login') {
+  if (currentPageName === 'SignIn' || currentPageName === 'Register' || currentPageName === 'AuthLogin' || currentPageName === 'Login' || currentPageName === 'AppLogin') {
     return children;
   }
 
@@ -434,10 +435,18 @@ function LayoutContent({ children, currentPageName }) {
       const { canAccessPage, isLoading } = usePermissions();
 
       // Public pages that don't need permission checks
-      const publicPages = ['AuthLogin', 'Login', 'SignIn', 'Register', 'UserGuide', 'MyNotificationSettings'];
+      const publicPages = ['AppLogin', 'AuthLogin', 'Login', 'SignIn', 'Register', 'UserGuide', 'MyNotificationSettings'];
 
       if (publicPages.includes(currentPageName)) {
-      return children;
+        return children;
+      }
+
+      // If user is not logged in (and page is not public), redirect to AppLogin
+      // This handles the case where the app is set to Public but we want to force our custom login
+      if (!currentUser && !isLoading) {
+         // Using window.location to force a redirect if needed, or just rendering the login page
+         // But better to use the component
+         return <AppLogin />; 
       }
 
       // If vendor tries to access non-vendor page
