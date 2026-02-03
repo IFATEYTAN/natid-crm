@@ -38,7 +38,7 @@ class ErrorBoundary extends React.Component {
             <p className="text-gray-600 mb-6">
               אירעה שגיאה בלתי צפויה. ניתן לנסות לטעון מחדש את הדף.
             </p>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {this.state.error && (
               <pre className="text-xs text-red-600 bg-red-50 p-3 rounded-lg mb-4 text-left overflow-auto max-h-32" dir="ltr">
                 {this.state.error.toString()}
               </pre>

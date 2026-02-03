@@ -36,7 +36,7 @@ const LayoutWrapper = ({ children, currentPageName }) => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, isAuthenticated, authError } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -58,6 +58,11 @@ const AuthenticatedApp = () => {
       // Handle app_private, unknown, and other error types
       return <AppAccessDeniedError />;
     }
+  }
+
+  // Safety net: if not authenticated and no explicit error, show login
+  if (!isAuthenticated) {
+    return <AuthLogin />;
   }
 
   // Render the main app with role-based access control

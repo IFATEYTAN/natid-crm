@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { base44 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,7 @@ export default function AuthLogin() {
               NATI GROUP SERVICE
             </CardTitle>
             <CardDescription className="text-base text-neutral-soft-600">
-              {isForgotPassword ? 'איפוס סיסמה' : 'מערכת ניהול CRM'}
+              {isForgotPassword ? 'איפוס סיסמה' : 'NATID - מערכת CRM'}
             </CardDescription>
           </CardHeader>
 
@@ -255,9 +255,13 @@ export default function AuthLogin() {
                 {!isForgotPassword && (
                   <div className="mt-6 text-center text-sm">
                     <span className="text-neutral-soft-600">אין לך חשבון? </span>
-                    <Link to="/Register" className="text-primary-soft-600 hover:text-primary-soft-700 font-medium hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                      className="text-primary-soft-600 hover:text-primary-soft-700 font-medium hover:underline"
+                    >
                       הרשם כאן
-                    </Link>
+                    </button>
                   </div>
                 )}
               </form>

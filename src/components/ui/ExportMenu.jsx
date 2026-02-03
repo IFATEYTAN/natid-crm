@@ -312,7 +312,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
 
   <div class="footer">
     <span>נתי שירותי דרך</span>
-    <span>הופק מ-NatID CRM</span>
+    <span>הופק מ-NATID CRM</span>
   </div>
 </body>
 </html>
@@ -393,7 +393,7 @@ export const printData = (data, columns, options = {}) => {
 // Email dialog component
 function EmailDialog({ open, onOpenChange, onSend, title }) {
   const [email, setEmail] = useState('');
-  const [subject, setSubject] = useState(title ? `דוח: ${title}` : 'דוח מ-NatID CRM');
+  const [subject, setSubject] = useState(title ? `דוח: ${title}` : 'דוח מ-NATID CRM');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
