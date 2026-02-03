@@ -14,9 +14,40 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { checkAppState } = useAuth();
+
+  const toggleForgotPassword = () => {
+    setIsForgotPassword(!isForgotPassword);
+    setError('');
+    setSuccessMessage('');
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    if (!email || !email.includes('@')) {
+      setError('נא להזין כתובת אימייל תקינה');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await base44.auth.resetPasswordRequest(email);
+      setSuccessMessage('קישור לאיפוס סיסמה נשלח לכתובת האימייל שלך');
+    } catch (err) {
+      console.error('Reset password error:', err);
+      setError('שגיאה בשליחת בקשה לאיפוס סיסמה. נא לנסות שוב.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
