@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { base44 } from '@/api/base44Client';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -12,8 +13,21 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error, errorInfo) {
+  async componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo);
+    
+    // תיעוד השגיאה ביומן פעולות
+    try {
+      await base44.functions.invoke('logAuditAction', {
+        action: 'error',
+        entity_type: 'System',
+        entity_name: 'React Error Boundary',
+        details: `${error.toString()}\nComponent Stack: ${errorInfo.componentStack?.substring(0, 500)}`,
+        severity: 'critical'
+      });
+    } catch (logError) {
+      console.error('Failed to log error to audit:', logError);
+    }
   }
 
   handleReload = () => {

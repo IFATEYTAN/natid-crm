@@ -101,6 +101,16 @@ export function useAuditLog() {
     });
   }, [logAction]);
 
+  const logError = useCallback((error_message, component_name, details = null) => {
+    return logAction({ 
+      action: 'error', 
+      entity_type: 'System',
+      entity_name: component_name || 'Unknown Component',
+      details: `${error_message}${details ? `\n${details}` : ''}`,
+      severity: 'critical'
+    });
+  }, [logAction]);
+
   return {
     logAction,
     logCreate,
@@ -111,7 +121,8 @@ export function useAuditLog() {
     logExport,
     logPermissionChange,
     logAccessDenied,
-    logSensitiveAccess
+    logSensitiveAccess,
+    logError
   };
 }
 
