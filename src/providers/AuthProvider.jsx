@@ -95,6 +95,8 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
+      // Clear redirect flag on successful auth
+      sessionStorage.removeItem('auth_redirect_time');
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
