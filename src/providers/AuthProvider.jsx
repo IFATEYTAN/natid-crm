@@ -123,9 +123,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    base44.auth.redirectToLogin(window.location.href);
+  const navigateToLogin = async () => {
+    // Unregister service worker before redirecting
+    if ('serviceWorker' in navigator) {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+      } catch (e) {
+        console.warn('Failed to unregister service worker:', e);
+      }
+    }
+    // Use the SDK's redirectToLogin method with origin (not href to avoid nested from_url)
+    base44.auth.redirectToLogin(window.location.origin);
   };
 
   return (

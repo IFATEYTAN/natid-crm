@@ -35,51 +35,111 @@ const LayoutWrapper = ({ children, currentPageName }) => {
     : <>{children}</>;
 };
 
-const PlatformLoginRedirect = () => {
-  const [showFallback, setShowFallback] = useState(false);
-
-  useEffect(() => {
-    // Prevent infinite redirect: if we already redirected recently, show fallback
-    const lastRedirect = sessionStorage.getItem('auth_redirect_time');
-    const now = Date.now();
-    if (lastRedirect && (now - parseInt(lastRedirect)) < 10000) {
-      setShowFallback(true);
-      return;
+const unregisterServiceWorkers = async () => {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+      }
+    } catch (e) {
+      console.warn('Failed to unregister service worker:', e);
     }
-    sessionStorage.setItem('auth_redirect_time', now.toString());
+  }
+};
+
+const getLoginUrl = () => {
+  const appBaseUrl = localStorage.getItem('base44_app_base_url') || '';
+  return `${appBaseUrl}/login?from_url=${encodeURIComponent(window.location.origin)}`;
+};
+
+const PlatformLoginRedirect = () => {
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectFailed, setRedirectFailed] = useState(false);
+
+  const performRedirect = async () => {
+    setIsRedirecting(true);
+    setRedirectFailed(false);
+
+    // Unregister service worker so it doesn't intercept the /login navigation
+    await unregisterServiceWorkers();
+
     try {
       base44.auth.redirectToLogin(window.location.origin);
     } catch (e) {
       console.error('redirectToLogin failed:', e);
-      setShowFallback(true);
+      // Direct fallback using window.location
+      window.location.href = getLoginUrl();
+    }
+
+    // If we're still here after 3 seconds, the redirect didn't work
+    setTimeout(() => {
+      setIsRedirecting(false);
+      setRedirectFailed(true);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    // Auto-redirect on first mount, but only once per session
+    const attempts = parseInt(sessionStorage.getItem('auth_redirect_attempts') || '0');
+    if (attempts === 0) {
+      sessionStorage.setItem('auth_redirect_attempts', '1');
+      performRedirect();
+    } else {
+      // We've been redirected back - show the login page directly
+      setRedirectFailed(true);
     }
   }, []);
 
-  if (showFallback) {
+  if (isRedirecting) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gray-50" dir="rtl">
-        <div className="max-w-md text-center p-8">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">נדרשת התחברות</h1>
-          <p className="text-gray-600 mb-6">
-            יש להתחבר דרך מערכת base44 כדי לגשת לאפליקציה.
-          </p>
-          <button
-            onClick={() => {
-              sessionStorage.removeItem('auth_redirect_time');
-              base44.auth.redirectToLogin(window.location.origin);
-            }}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-          >
-            התחבר / הרשם
-          </button>
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500 text-sm">מעביר לעמוד ההתחברות...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-50" dir="rtl">
+      <div className="max-w-md text-center p-8">
+        <h1 className="text-xl font-bold text-gray-900 mb-2">נדרשת התחברות</h1>
+        <p className="text-gray-600 mb-4">
+          יש להתחבר דרך מערכת base44 כדי לגשת לאפליקציה.
+        </p>
+        {redirectFailed && (
+          <p className="text-orange-600 text-sm mb-4">
+            ההפניה האוטומטית נכשלה. לחץ על הכפתור למטה כדי להתחבר.
+          </p>
+        )}
+        <div className="space-y-3">
+          <a
+            href={getLoginUrl()}
+            className="inline-block w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium no-underline"
+            onClick={async (e) => {
+              e.preventDefault();
+              sessionStorage.removeItem('auth_redirect_attempts');
+              await unregisterServiceWorkers();
+              window.location.href = getLoginUrl();
+            }}
+          >
+            התחבר / הרשם
+          </a>
+          <button
+            onClick={() => {
+              sessionStorage.clear();
+              localStorage.removeItem('base44_access_token');
+              localStorage.removeItem('token');
+              window.location.reload();
+            }}
+            className="w-full px-4 py-2 text-sm text-gray-500 hover:text-gray-700 underline"
+          >
+            נקה נתונים ונסה שוב
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
