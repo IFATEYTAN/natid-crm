@@ -45,6 +45,7 @@ import { Toaster } from 'sonner';
 import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
 
 import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
+import { useErrorLogger } from '@/components/hooks/useErrorLogger';
 
 export default function Layout({ children, currentPageName }) {
   return (
@@ -62,6 +63,9 @@ function LayoutContent({ children, currentPageName }) {
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
   const queryClient = useQueryClient();
   const { currentUser, canAccessPage, isLoading: permissionsLoading, isAdmin } = usePermissions();
+  
+  // הפעלת תיעוד שגיאות גלובלי
+  useErrorLogger();
 
   // Check if user is a vendor
   useEffect(() => {
