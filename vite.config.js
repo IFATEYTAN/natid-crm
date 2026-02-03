@@ -21,6 +21,8 @@ export default defineConfig({
       includeAssets: ['icons/icon.svg', 'icons/*.png'],
       manifest: false, // Using external manifest.json
       workbox: {
+        // Don't intercept navigation to /login - let it reach the platform server
+        navigateFallbackDenylist: [/^\/login/, /^\/api\//],
         // Files to cache
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         // Runtime caching for API calls
