@@ -12,6 +12,7 @@ import AppAccessDeniedError from '@/components/AppAccessDeniedError';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import RoleGuard from '@/components/auth/RoleGuard';
 import { getPageRoles } from '@/config/permissions';
+import AuthLogin from '@/features/auth/AuthLogin';
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -52,8 +53,7 @@ const AuthenticatedApp = () => {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
       // Show our custom Login page instead of redirecting to external login
-      const LoginPage = Pages['Login'];
-      return <LoginPage />;
+      return <AuthLogin />;
     } else {
       // Handle app_private, unknown, and other error types
       return <AppAccessDeniedError />;
