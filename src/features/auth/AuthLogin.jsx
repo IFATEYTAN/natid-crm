@@ -257,8 +257,16 @@ export default function AuthLogin() {
                     <span className="text-neutral-soft-600">אין לך חשבון? </span>
                     <button
                       type="button"
-                      onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                      className="text-primary-soft-600 hover:text-primary-soft-700 font-medium hover:underline"
+                      onClick={() => {
+                        try {
+                          base44.auth.redirectToLogin(window.location.href);
+                        } catch (e) {
+                          console.error('redirectToLogin failed:', e);
+                          // Fallback: redirect to platform login page
+                          window.location.href = `/api/auth/login?return_url=${encodeURIComponent(window.location.href)}`;
+                        }
+                      }}
+                      className="text-primary-soft-600 hover:text-primary-soft-700 font-medium hover:underline cursor-pointer"
                     >
                       הרשם כאן
                     </button>
