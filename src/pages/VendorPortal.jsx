@@ -415,7 +415,7 @@ export default function VendorPortalPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* New Call Alert */}
       <Suspense fallback={null}>
         <VendorNewCallAlertLazy
@@ -548,7 +548,7 @@ export default function VendorPortalPage() {
       {/* Calls Table */}
       <Card className="bg-white">
         <CardHeader>
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs defaultValue="all" className="w-full" dir="rtl">
             <TabsList>
               <TabsTrigger value="all">כל הקריאות</TabsTrigger>
               <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
