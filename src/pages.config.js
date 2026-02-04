@@ -80,6 +80,7 @@ import UserManagement from './pages/UserManagement';
 import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
+import VendorGuide from './pages/VendorGuide';
 import VendorTracking from './pages/VendorTracking';
 import AdminDisplaySettings from './pages/AdminDisplaySettings';
 import __Layout from './Layout.jsx';
@@ -117,6 +118,7 @@ export const PAGES = {
   UserManagement: UserManagement,
   VendorCallManagement: VendorCallManagement,
   VendorContracts: VendorContracts,
+  VendorGuide: VendorGuide,
   VendorPortal: VendorPortal,
   VendorTracking: VendorTracking,
   AdminDisplaySettings: AdminDisplaySettings,
