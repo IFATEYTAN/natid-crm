@@ -379,7 +379,10 @@ export default function VendorPortalPage() {
     {
       header: 'תאריך',
       accessor: 'created_date',
-      cell: (call) => format(new Date(call.created_date), 'dd/MM HH:mm'),
+      cell: (call) => {
+        const d = call?.created_date ? new Date(call.created_date) : null;
+        return d && !isNaN(d) ? format(d, 'dd/MM HH:mm') : '-';
+      },
     },
     {
       header: 'פעולות',
