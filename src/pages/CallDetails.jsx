@@ -32,12 +32,12 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import FileUploader from '@/components/files/FileUploader';
-import SignaturePad from '@/components/signature/SignaturePad';
-import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
+const FileUploader = React.lazy(() => import('@/components/files/FileUploader'));
+const SignaturePad = React.lazy(() => import('@/components/signature/SignaturePad'));
+const EnhancedCallChat = React.lazy(() => import('@/components/chat/EnhancedCallChat'));
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
 const VendorLiveMap = React.lazy(() => import('@/components/maps/VendorLiveMap'));
-import CallSummaryEditor from '@/components/call/CallSummaryEditor';
+const CallSummaryEditor = React.lazy(() => import('@/components/call/CallSummaryEditor'));
 import {
   ArrowRight,
   User,
@@ -165,6 +165,18 @@ export default function CallDetailsPage() {
       return bd - ad; // latest first
     });
   }, [history, messages]);
+
+  // Lightweight status message sender (avoids loading chat UI bundle)
+  const sendStatusMessage = async (callId, content) => {
+    if (!callId || !content) return;
+    await base44.entities.Message.create({
+      call_id: callId,
+      sender_name: currentUser?.full_name || 'מוקדן',
+      sender_role: 'operator',
+      message_text: content,
+    });
+    queryClient.invalidateQueries({ queryKey: ['callMessages', callId] });
+  };
 
   const handleStatusChange = async (newStatus) => {
     if (!canEdit) return;
@@ -553,11 +565,13 @@ export default function CallDetailsPage() {
                 </CardHeader>
                 <CardContent>
                   {showSignature ? (
-                    <SignaturePad
-                      callId={callId}
-                      onSave={handleSignatureSaved}
-                      onCancel={() => setShowSignature(false)}
-                    />
+                    <Suspense fallback={<div className="h-64 w-full bg-gray-50" />}>
+                      <SignaturePad
+                        callId={callId}
+                        onSave={handleSignatureSaved}
+                        onCancel={() => setShowSignature(false)}
+                      />
+                    </Suspense>
                   ) : (
                     <div className="text-center py-6">
                       {photos.some((p) => p.category === 'customer_signature') ? (
@@ -610,12 +624,14 @@ export default function CallDetailsPage() {
           <TabsContent value="chat">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
-                <EnhancedCallChat
-                  callId={callId}
-                  currentUserRole="operator"
-                  currentUserName={currentUser?.full_name || 'מוקדן'}
-                  height="500px"
-                />
+                <Suspense fallback={<div className="h-[500px] w-full bg-gray-50" />}>
+                  <EnhancedCallChat
+                    callId={callId}
+                    currentUserRole="operator"
+                    currentUserName={currentUser?.full_name || 'מוקדן'}
+                    height="500px"
+                  />
+                </Suspense>
               </div>
               <div className="space-y-4">
                 <Card className="bg-white">
@@ -733,7 +749,9 @@ export default function CallDetailsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* File Uploader */}
-                <FileUploader callId={callId} onUploadComplete={handleFilesUploaded} />
+                <Suspense fallback={<div className="h-24 w-full bg-gray-50" />}>
+                  <FileUploader callId={callId} onUploadComplete={handleFilesUploaded} />
+                </Suspense>
 
                 {/* Existing Files */}
                 {photos.length > 0 && (
@@ -853,15 +871,17 @@ export default function CallDetailsPage() {
           {call?.call_status === 'completed' && (
             <TabsContent value="summary">
               <div className="max-w-2xl mx-auto">
-                <CallSummaryEditor
-                  callId={callId}
-                  callNumber={call?.call_number}
-                  summaryDraft={call?.summary_draft}
-                  summaryFinal={call?.summary_final}
-                  onSummaryGenerated={() => {
-                    queryClient.invalidateQueries({ queryKey: ['call', callId] });
-                  }}
-                />
+                <Suspense fallback={<div className="h-40 w-full bg-gray-50" />}>
+                  <CallSummaryEditor
+                    callId={callId}
+                    callNumber={call?.call_number}
+                    summaryDraft={call?.summary_draft}
+                    summaryFinal={call?.summary_final}
+                    onSummaryGenerated={() => {
+                      queryClient.invalidateQueries({ queryKey: ['call', callId] });
+                    }}
+                  />
+                </Suspense>
               </div>
             </TabsContent>
           )}
