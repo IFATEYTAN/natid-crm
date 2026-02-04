@@ -86,8 +86,10 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
       center={defaultCenter}
       zoom={8}
       style={{ height: '100%', width: '100%' }}
-      whenCreated={(map) => {
-        window._vendorTrackingMap = map;
+      ref={(map) => {
+        if (map) {
+          window._vendorTrackingMap = map;
+        }
       }}
     >
       <TileLayer

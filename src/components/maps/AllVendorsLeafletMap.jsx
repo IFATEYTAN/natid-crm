@@ -76,8 +76,10 @@ export default function AllVendorsLeafletMap({
       center={mapCenter}
       zoom={8}
       style={{ height: '100%', width: '100%' }}
-      whenCreated={(map) => {
-        window._allVendorsMap = map;
+      ref={(map) => {
+        if (map) {
+          window._allVendorsMap = map;
+        }
       }}
     >
       <TileLayer
