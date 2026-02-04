@@ -79,6 +79,7 @@ import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
 import Dashboard from './pages/Dashboard';
 import CallDetails from './pages/CallDetails';
+import CustomerDetails from './pages/CustomerDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -115,6 +116,7 @@ export const PAGES = {
     "VendorTracking": VendorTracking,
     "Dashboard": Dashboard,
     "CallDetails": CallDetails,
+    "CustomerDetails": CustomerDetails,
 }
 
 export const pagesConfig = {

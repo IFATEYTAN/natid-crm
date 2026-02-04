@@ -83,12 +83,37 @@ export default function CoverageAreasPage() {
     queryFn: () => base44.entities.Vendor.list('-updated_date', 500),
   });
 
+  // Map cities to areas and derive vendor areas from either coverage_areas or coverage_cities
+  const cityToAreaMap = useMemo(() => {
+    const map = {};
+    coverageAreas.forEach((a) => {
+      a.cities.forEach((c) => {
+        map[c] = a.key;
+      });
+    });
+    return map;
+  }, []);
+
+  const getVendorAreas = (vendor) => {
+    const areas = new Set(vendor.coverage_areas || []);
+    const raw = vendor.coverage_cities;
+    if (raw) {
+      const tokens = Array.isArray(raw) ? raw : String(raw).split(',');
+      tokens.forEach((t) => {
+        const city = String(t).trim();
+        const key = cityToAreaMap[city];
+        if (key) areas.add(key);
+      });
+    }
+    return areas;
+  };
+
   // Calculate coverage stats per area
   const areaStats = useMemo(() => {
     const stats = {};
 
     coverageAreas.forEach((area) => {
-      const areaVendors = vendors.filter((v) => v.coverage_areas?.includes(area.key));
+      const areaVendors = vendors.filter((v) => getVendorAreas(v).has(area.key));
 
       stats[area.key] = {
         total: areaVendors.length,
@@ -106,8 +131,8 @@ export default function CoverageAreasPage() {
     if (selectedArea === 'all') {
       return vendors;
     }
-    return areaStats[selectedArea]?.vendors || [];
-  }, [selectedArea, vendors, areaStats]);
+    return vendors.filter((v) => getVendorAreas(v).has(selectedArea));
+  }, [selectedArea, vendors]);
 
   // Overall stats
   const totalStats = useMemo(
