@@ -4,8 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Shield, Headset, MapPin, Clock, Truck, BarChart3, Zap, CheckCircle } from 'lucide-react';
 
 const getLoginUrl = (next) => {
-  const appBaseUrl = localStorage.getItem('base44_app_base_url') || '';
-  const nextUrl = next || `${window.location.origin}/Dashboard`;
+  const appBaseUrl = localStorage.getItem('base44_app_base_url') || window.location.origin;
+  const nextUrl = next || `${appBaseUrl}/Dashboard`;
   return `${appBaseUrl}/login?from_url=${encodeURIComponent(nextUrl)}`;
 };
 
@@ -235,14 +235,9 @@ export default function LandingPage() {
       sessionStorage.clear();
     } catch {}
 
-    const nextUrl = `${window.location.origin}/Dashboard`;
-
-    try {
-      await base44.auth.redirectToLogin(nextUrl);
-    } catch (e) {
-      // Fallback: force top-level navigation to platform login
-      (window.top || window).location.href = getLoginUrl(nextUrl);
-    }
+    // Always navigate the TOP window to the platform login (works inside editor iframe)
+    const loginUrl = getLoginUrl();
+    (window.top || window).location.href = loginUrl;
   };
 
   return (
