@@ -103,12 +103,27 @@ export default function HistoricalDataAnalysisPage() {
     const botMatches = filteredData.filter((d) => d.bot_match).length;
     const nayedetFixed = filteredData.filter((d) => d.nayedet_fixed).length;
 
+    // Mutually exclusive breakdown (sums to 100%)
+    const onlyBot = filteredData.filter((d) => d.bot_match && !d.nayedet_fixed).length;
+    const onlyManual = filteredData.filter((d) => d.nayedet_fixed && !d.bot_match).length;
+    const both = filteredData.filter((d) => d.bot_match && d.nayedet_fixed).length;
+    const none = Math.max(0, total - (onlyBot + onlyManual + both));
+
     return {
       total,
       botMatchRate: total > 0 ? ((botMatches / total) * 100).toFixed(1) : 0,
       nayedetFixedRate: total > 0 ? ((nayedetFixed / total) * 100).toFixed(1) : 0,
       botMatches,
       nayedetFixed,
+      // 100% breakdown
+      onlyBot,
+      onlyManual,
+      both,
+      none,
+      onlyBotRate: total > 0 ? ((onlyBot / total) * 100).toFixed(1) : 0,
+      onlyManualRate: total > 0 ? ((onlyManual / total) * 100).toFixed(1) : 0,
+      bothRate: total > 0 ? ((both / total) * 100).toFixed(1) : 0,
+      noneRate: total > 0 ? ((none / total) * 100).toFixed(1) : 0,
     };
   }, [filteredData]);
 
@@ -336,6 +351,32 @@ export default function HistoricalDataAnalysisPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="bg-white border border-[#e5e7eb]">
+        <CardContent className="p-4">
+          <div className="text-xs text-gray-500 mb-3">
+            הבהרה: "דיוק הבוט" ו"תיקוני תפעול" הם מדדים חופפים ולכן אינם מסתכמים ל-100%. להלן חלוקה מלאה.
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="p-3 bg-gray-50 rounded-lg text-center">
+              <div className="text-xl font-bold text-green-600">{stats.onlyBotRate}%</div>
+              <div className="text-xs text-gray-600">בוט בלבד ({stats.onlyBot.toLocaleString()})</div>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg text-center">
+              <div className="text-xl font-bold text-blue-600">{stats.onlyManualRate}%</div>
+              <div className="text-xs text-gray-600">ידני בלבד ({stats.onlyManual.toLocaleString()})</div>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg text-center">
+              <div className="text-xl font-bold text-purple-600">{stats.bothRate}%</div>
+              <div className="text-xs text-gray-600">גם וגם ({stats.both.toLocaleString()})</div>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg text-center">
+              <div className="text-xl font-bold text-gray-700">{stats.noneRate}%</div>
+              <div className="text-xs text-gray-600">לא טופל ({stats.none.toLocaleString()})</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
