@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/lib/api';
+import { base44 } from '@/api/base44Client';
 
 const UserNotRegisteredError = () => {
   const handleLogin = async () => {
@@ -21,7 +21,7 @@ const UserNotRegisteredError = () => {
     sessionStorage.clear();
 
     try {
-      base44.auth.redirectToLogin(window.location.origin);
+      base44.auth.redirectToLogin('/Dashboard');
     } catch (e) {
       console.error('redirectToLogin failed:', e);
       const appBaseUrl = localStorage.getItem('base44_app_base_url') || '';

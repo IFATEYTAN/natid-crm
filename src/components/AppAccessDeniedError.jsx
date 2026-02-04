@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '@/providers/AuthProvider';
+import { useAuth } from '@/components/AuthProvider';
 
 const AppAccessDeniedError = () => {
   const { logout, authError } = useAuth();
