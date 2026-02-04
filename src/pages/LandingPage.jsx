@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Shield, Headset, MapPin, Clock, Truck, BarChart3, Zap, CheckCircle } from 'lucide-react';
 
-const getLoginUrl = () => {
+const getLoginUrl = (next) => {
   const appBaseUrl = localStorage.getItem('base44_app_base_url') || '';
-  return `${appBaseUrl}/login?from_url=${encodeURIComponent(window.location.origin)}`;
+  const nextUrl = next || `${window.location.origin}/Dashboard`;
+  return `${appBaseUrl}/login?from_url=${encodeURIComponent(nextUrl)}`;
 };
 
 const unregisterServiceWorkers = async () => {
@@ -239,8 +240,8 @@ export default function LandingPage() {
     try {
       await base44.auth.redirectToLogin(nextUrl);
     } catch (e) {
-      // Fallback: navigate to internal /login which will hand off to the platform login
-      (window.top || window).location.href = `/login?from_url=${encodeURIComponent(nextUrl)}`;
+      // Fallback: force top-level navigation to platform login
+      (window.top || window).location.href = getLoginUrl(nextUrl);
     }
   };
 
