@@ -655,65 +655,71 @@ export default function Dashboard() {
 
             {/* KPI Column - Takes up 1/3 */}
             <div className="space-y-4">
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base text-gray-600">שביעות רצון (CSAT)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-bold text-gray-900">{avgRating}</span>
-                    <span className="text-lg text-gray-500 mb-1">/ 5.0</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
-                    <div
-                      className="bg-yellow-400 h-full rounded-full"
-                      style={{ width: `${(parseFloat(avgRating) / 5) * 100}%` }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base text-gray-600">זמן הגעה ממוצע (ETA)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-8 h-8 text-blue-500 opacity-80" />
-                    <div>
-                      <span className="text-3xl font-bold text-gray-900">{avgEta || '—'}</span>
-                      <span className="text-sm text-gray-500 mr-1">דקות</span>
+              <Link to={createPageUrl('CustomerFeedback')} className="block">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base text-gray-600">שביעות רצון (CSAT)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-end gap-2">
+                      <span className="text-4xl font-bold text-gray-900">{avgRating}</span>
+                      <span className="text-lg text-gray-500 mb-1">/ 5.0</span>
                     </div>
-                  </div>
-                  {recentCallsWithEta.length > 0 && (
-                    <p className="text-xs text-gray-400 mt-2">
-                      מבוסס על {recentCallsWithEta.length} קריאות ב-7 ימים
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base text-gray-600">אחוז פתרון בשטח</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-8 h-8 text-green-500 opacity-80" />
-                    <div>
-                      <span className="text-3xl font-bold text-gray-900">
-                        {fieldResolutionRate || '—'}%
-                      </span>
-                      <span className="text-sm text-gray-500 mr-1">ללא גרירה</span>
+                    <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
+                      <div
+                        className="bg-yellow-400 h-full rounded-full"
+                        style={{ width: `${(parseFloat(avgRating) / 5) * 100}%` }}
+                      />
                     </div>
-                  </div>
-                  {recentCompleted.length > 0 && (
-                    <p className="text-xs text-gray-400 mt-2">
-                      מבוסס על {recentCompleted.length} קריאות ב-7 ימים
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link to={createPageUrl('Reports')} className="block">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base text-gray-600">זמן הגעה ממוצע (ETA)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-8 h-8 text-blue-500 opacity-80" />
+                      <div>
+                        <span className="text-3xl font-bold text-gray-900">{avgEta || '—'}</span>
+                        <span className="text-sm text-gray-500 mr-1">דקות</span>
+                      </div>
+                    </div>
+                    {recentCallsWithEta.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        מבוסס על {recentCallsWithEta.length} קריאות ב-7 ימים
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link to={createPageUrl('Reports')} className="block">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base text-gray-600">אחוז פתרון בשטח</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-8 h-8 text-green-500 opacity-80" />
+                      <div>
+                        <span className="text-3xl font-bold text-gray-900">
+                          {fieldResolutionRate || '—'}%
+                        </span>
+                        <span className="text-sm text-gray-500 mr-1">ללא גרירה</span>
+                      </div>
+                    </div>
+                    {recentCompleted.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        מבוסס על {recentCompleted.length} קריאות ב-7 ימים
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           </div>
 
@@ -775,6 +781,7 @@ export default function Dashboard() {
               subtitle="ביצוע אישי"
               icon={CheckCircle2}
               variant="success"
+              to={createPageUrl('Reports')}
               className="hover:border-green-300 cursor-pointer"
             />
             <StatCard
@@ -792,6 +799,7 @@ export default function Dashboard() {
               subtitle="נדרש טיפול"
               icon={AlertCircle}
               variant="danger"
+              to={createPageUrl('Calls') + '?priority=urgent'}
               className="hover:border-red-300 cursor-pointer"
             />
             <StatCard

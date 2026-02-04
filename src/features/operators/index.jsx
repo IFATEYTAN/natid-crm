@@ -244,11 +244,39 @@ export default function OperatorDashboard() {
 
       {/* Stats Cards - Elegant Minimal Design */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard title="קריאות פתוחות" value={stats.openCalls} />
-        <StatCard title="הושלמו היום" value={stats.completedToday} />
-        <StatCard title="ממתינות לשיוך" value={stats.unassigned} />
-        <StatCard title="דחופות" value={stats.urgent} />
-        <StatCard title="ספקים זמינים" value={stats.availableVendors} />
+        <StatCard
+          title="קריאות פתוחות"
+          value={stats.openCalls}
+          icon={Phone}
+          variant="primary"
+          to={createPageUrl('Calls') + '?status=active'}
+        />
+        <StatCard
+          title="הושלמו היום"
+          value={stats.completedToday}
+          variant="success"
+          to={createPageUrl('Reports')}
+        />
+        <StatCard
+          title="ממתינות לשיוך"
+          value={stats.unassigned}
+          icon={AlertCircle}
+          variant="warning"
+          to={createPageUrl('Calls') + '?status=waiting_treatment'}
+        />
+        <StatCard
+          title="דחופות"
+          value={stats.urgent}
+          variant="danger"
+          to={createPageUrl('Calls') + '?priority=urgent'}
+        />
+        <StatCard
+          title="ספקים זמינים"
+          value={stats.availableVendors}
+          icon={Truck}
+          variant="info"
+          to={createPageUrl('AllVendorsMap')}
+        />
       </div>
 
       {/* Quick Actions */}

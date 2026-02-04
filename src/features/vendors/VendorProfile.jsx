@@ -260,17 +260,31 @@ export default function VendorProfile() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="קריאות הושלמו" value={completedCalls} />
-        <StatCard title="דירוג ממוצע" value={avgRating} />
+        <StatCard
+          title="קריאות הושלמו"
+          value={completedCalls}
+          variant="success"
+          to={createPageUrl('Calls') + `?vendor=${vendorId}`}
+        />
+        <StatCard
+          title="דירוג ממוצע"
+          value={avgRating}
+          variant="warning"
+          to={createPageUrl('CustomerFeedback')}
+        />
         <StatCard
           title="זמן תגובה ממוצע"
           value={
             vendor.average_response_time ? `${Math.round(vendor.average_response_time)} דק'` : '-'
           }
+          variant="primary"
+          to={createPageUrl('Reports')}
         />
         <StatCard
           title="תשלומים ממתינים"
           value={`₪${vendor.pending_payments?.toLocaleString() || 0}`}
+          variant="info"
+          to={createPageUrl('VendorContracts')}
         />
       </div>
 

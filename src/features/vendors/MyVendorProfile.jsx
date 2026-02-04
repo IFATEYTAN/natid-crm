@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatCard from '@/components/ui/StatCard';
+import { createPageUrl } from '@/utils';
 import {
   MapPin,
   Phone,
@@ -341,13 +342,21 @@ export default function MyVendorProfile() {
           value={completedCalls}
           icon={CheckCircle2}
           variant="success"
+          to={createPageUrl('VendorCallManagement')}
         />
-        <StatCard title="דירוג ממוצע" value={avgRating} icon={Star} variant="warning" />
+        <StatCard
+          title="דירוג ממוצע"
+          value={avgRating}
+          icon={Star}
+          variant="warning"
+          to={createPageUrl('CustomerFeedback')}
+        />
         <StatCard
           title="תשלומים ממתינים"
           value={`₪${vendor.pending_payments?.toLocaleString() || 0}`}
           icon={DollarSign}
           variant="info"
+          to={createPageUrl('VendorCallManagement')}
         />
         <StatCard
           title="זמן תגובה ממוצע"
@@ -356,6 +365,7 @@ export default function MyVendorProfile() {
           }
           icon={Activity}
           variant="primary"
+          to={createPageUrl('Reports')}
         />
       </div>
 
