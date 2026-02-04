@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,27 @@ import { Truck, Phone, Star, MapPin, Search, Eye, RefreshCw } from 'lucide-react
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { cn } from '@/lib/utils';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix leaflet default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
+
+const createIcon = (color) =>
+  new L.Icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
 
 const availabilityColors = {
   available: 'green',
@@ -206,9 +227,10 @@ export default function AllVendorsMapPage() {
                 center={mapCenter}
                 zoom={8}
                 style={{ height: '100%', width: '100%' }}
-                whenCreated={(map) => {
-                  // Store map instance for cleanup
-                  window._allVendorsMap = map;
+                ref={(map) => {
+                  if (map) {
+                    window._allVendorsMap = map;
+                  }
                 }}
               >
                 <TileLayer
