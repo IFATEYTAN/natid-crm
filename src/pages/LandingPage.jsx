@@ -234,11 +234,13 @@ export default function LandingPage() {
       sessionStorage.clear();
     } catch {}
 
+    const nextUrl = `${window.location.origin}/Dashboard`;
+
     try {
-      await base44.auth.redirectToLogin('/Dashboard');
+      await base44.auth.redirectToLogin(nextUrl);
     } catch (e) {
-      // Fallback: route via /login (PageNotFound effect will re-route to platform login)
-      window.location.href = `/login?from_url=${encodeURIComponent('/Dashboard')}`;
+      // Fallback: navigate to internal /login which will hand off to the platform login
+      (window.top || window).location.href = `/login?from_url=${encodeURIComponent(nextUrl)}`;
     }
   };
 
