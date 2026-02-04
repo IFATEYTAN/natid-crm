@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import VendorNewCallAlert from '@/components/vendor/VendorNewCallAlert';
@@ -62,6 +63,16 @@ export default function VendorPortalPage() {
   const [lastLocationUpdate, setLastLocationUpdate] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const queryClient = useQueryClient();
+
+  const isAdmin = currentUser?.role === 'admin';
+  const [selectedVendorId, setSelectedVendorId] = useState('');
+
+  // Load all vendors for admin impersonation
+  const allVendorsQuery = useQuery({
+    queryKey: ['allVendors'],
+    queryFn: () => base44.entities.Vendor.list('-vendor_name', 500),
+    enabled: !!isAdmin,
+  });
 
   // Get current user
   useEffect(() => {
@@ -255,7 +266,7 @@ export default function VendorPortalPage() {
     callsQuery.refetch();
   };
 
-  if (!vendorProfile) {
+  if (!vendorProfile && !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md">
@@ -265,6 +276,50 @@ export default function VendorPortalPage() {
             <p className="text-[#6B778C]">
               לא נמצא פרופיל ספק המשויך לחשבון שלך. אנא פנה למנהל המערכת.
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Admin view: choose a vendor to view portal
+  if (isAdmin && !vendorProfile) {
+    const vendors = allVendorsQuery.data || [];
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-lg">צפייה בפורטל ספקים (אדמין)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="label-text">בחר ספק</label>
+              <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר ספק" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vendors.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.vendor_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              className="w-full"
+              disabled={!selectedVendorId}
+              onClick={() => {
+                const v = vendors.find((x) => x.id === selectedVendorId);
+                if (v) {
+                  setVendorProfile(v);
+                  setIsAvailable(!!v.is_available_now);
+                }
+              }}
+            >
+              פתח פורטל לספק
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -368,6 +423,9 @@ export default function VendorPortalPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#172B4D]">שלום, {vendorProfile.vendor_name}</h1>
+          {isAdmin && (
+            <p className="text-xs text-[#6B778C] mt-1">מציג בתור ספק (צפייה כאדמין)</p>
+          )}
           <p className="text-[#6B778C] text-sm">פורטל ספקים - ניהול הקריאות שלך</p>
         </div>
         <div className="flex items-center gap-3">
