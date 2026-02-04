@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Menu, X, Plus, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
@@ -9,13 +9,15 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
-import InstallPrompt from '@/components/pwa/InstallPrompt';
-import OfflineIndicator from '@/components/pwa/OfflineIndicator';
-import UpdatePrompt from '@/components/pwa/UpdatePrompt';
-import { NotificationPermissionBanner } from '@/components/notifications/PushNotifications';
-import { ConnectionStatusIndicator } from '@/components/useRealtimeUpdates';
+// Lazy-load PWA and status widgets to reduce main bundle size
+const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'));
+const OfflineIndicator = lazy(() => import('@/components/pwa/OfflineIndicator'));
+const UpdatePrompt = lazy(() => import('@/components/pwa/UpdatePrompt'));
+const NotificationPermissionBanner = lazy(() => import('@/components/notifications/PushNotifications').then(m => ({ default: m.NotificationPermissionBanner })));
+const ConnectionStatusIndicator = lazy(() => import('@/components/useRealtimeUpdates').then(m => ({ default: m.ConnectionStatusIndicator })));
+
 import { Toaster } from 'sonner';
-import anime from 'animejs';
+// animejs dynamically imported in effect to keep index chunk small
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -76,15 +78,20 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     if (mainContentRef.current) {
-      anime({
-        targets: mainContentRef.current,
-        opacity: [0, 1],
-        translateY: [10, 0],
-        duration: 600,
-        easing: 'easeOutQuad',
+      import('animejs').then(({ default: anime }) => {
+        if (cancelled) return;
+        anime({
+          targets: mainContentRef.current,
+          opacity: [0, 1],
+          translateY: [10, 0],
+          duration: 600,
+          easing: 'easeOutQuad',
+        });
       });
     }
+    return () => { cancelled = true; };
   }, [currentPageName]);
 
   const getInitials = (name) => {
@@ -433,7 +440,9 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Notification Permission Banner */}
-        <NotificationPermissionBanner />
+        <Suspense fallback={null}>
+          <NotificationPermissionBanner />
+        </Suspense>
 
         {/* Page Content */}
         <main ref={mainContentRef} className="p-4 md:p-6">
@@ -443,13 +452,21 @@ export default function Layout({ children, currentPageName }) {
         <AccessibilityWidget />
 
         {/* PWA Components */}
-        <InstallPrompt />
-        <OfflineIndicator />
-        <UpdatePrompt />
+        <Suspense fallback={null}>
+          <InstallPrompt />
+        </Suspense>
+        <Suspense fallback={null}>
+          <OfflineIndicator />
+        </Suspense>
+        <Suspense fallback={null}>
+          <UpdatePrompt />
+        </Suspense>
 
         {/* Connection Status (bottom left) */}
         <div className="fixed bottom-4 left-4 z-40">
-          <ConnectionStatusIndicator />
+          <Suspense fallback={null}>
+            <ConnectionStatusIndicator />
+          </Suspense>
         </div>
         <Toaster position="top-center" richColors />
       </div>
