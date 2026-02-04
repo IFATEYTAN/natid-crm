@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { useCalls } from '@/components/hooks/useCalls';
 import { useVendors } from '@/components/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
-import StatCard from '@/components/ui/StatCard';
-import StatusBadge from '@/components/ui/StatusBadge';
+const StatCard = lazy(() => import('@/components/ui/StatCard'));
+const StatusBadge = lazy(() => import('@/components/ui/StatusBadge'));
 // DataTable lazy import below
 const AvatarStack = lazy(() => import('@/components/ui/AvatarStack'));
 import {
@@ -561,42 +561,50 @@ export default function Dashboard() {
         <TabsContent value="dashboard" className="space-y-6 mt-6 focus-visible:outline-none">
           {/* Main Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <StatCard
-              title="קריאות פעילות"
-              value={openCalls.length}
-              subtitle="ממתינות לטיפול וסיום"
-              icon={AlertCircle}
-              variant="warning"
-              to={createPageUrl('Calls') + '?status=active'}
-              className="hover:border-orange-300 hover:shadow-md cursor-pointer"
-            />
-            <StatCard
-              title="ממתינות לשיוך"
-              value={waitingCalls.length}
-              subtitle="נדרשת פעולה מיידית"
-              icon={Users}
-              variant="danger"
-              to={createPageUrl('Calls') + '?status=waiting_treatment'}
-              className="hover:border-red-300 hover:shadow-md cursor-pointer"
-            />
-            <StatCard
-              title="הושלמו היום"
-              value={completedToday.length}
-              subtitle="ביצוע יומי"
-              icon={CheckCircle2}
-              variant="success"
-              to={createPageUrl('Reports')}
-              className="hover:border-green-300 hover:shadow-md cursor-pointer"
-            />
-            <StatCard
-              title="ספקים זמינים"
-              value={availableVendors.length}
-              subtitle="מוכנים לקבלת קריאה"
-              icon={Truck}
-              variant="info"
-              to={createPageUrl('AllVendorsMap')}
-              className="hover:border-blue-300 hover:shadow-md cursor-pointer"
-            />
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="קריאות פעילות"
+                value={openCalls.length}
+                subtitle="ממתינות לטיפול וסיום"
+                icon={AlertCircle}
+                variant="warning"
+                to={createPageUrl('Calls') + '?status=active'}
+                className="hover:border-orange-300 hover:shadow-md cursor-pointer"
+              />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="ממתינות לשיוך"
+                value={waitingCalls.length}
+                subtitle="נדרשת פעולה מיידית"
+                icon={Users}
+                variant="danger"
+                to={createPageUrl('Calls') + '?status=waiting_treatment'}
+                className="hover:border-red-300 hover:shadow-md cursor-pointer"
+              />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="הושלמו היום"
+                value={completedToday.length}
+                subtitle="ביצוע יומי"
+                icon={CheckCircle2}
+                variant="success"
+                to={createPageUrl('Reports')}
+                className="hover:border-green-300 hover:shadow-md cursor-pointer"
+              />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="ספקים זמינים"
+                value={availableVendors.length}
+                subtitle="מוכנים לקבלת קריאה"
+                icon={Truck}
+                variant="info"
+                to={createPageUrl('AllVendorsMap')}
+                className="hover:border-blue-300 hover:shadow-md cursor-pointer"
+              />
+            </Suspense>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -724,51 +732,61 @@ export default function Dashboard() {
         <TabsContent value="operator" className="space-y-6 mt-6 focus-visible:outline-none">
           {/* Operator Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <StatCard
-              title="הקריאות שלי"
-              value={myOpenCalls.length}
-              subtitle="בטיפול פעיל"
-              icon={Headphones}
-              variant="primary"
-              to={createPageUrl('MyQueue')}
-              className="hover:border-blue-300 cursor-pointer"
-            />
-            <StatCard
-              title="הושלמו היום"
-              value={myCompletedToday.length}
-              subtitle="ביצוע אישי"
-              icon={CheckCircle2}
-              variant="success"
-              to={createPageUrl('Reports')}
-              className="hover:border-green-300 cursor-pointer"
-            />
-            <StatCard
-              title="ממתינות לשיוך"
-              value={unassignedCalls.length}
-              subtitle="כללי במערכת"
-              icon={Users}
-              variant="warning"
-              to={createPageUrl('Calls') + '?status=waiting_treatment'}
-              className="hover:border-orange-300 cursor-pointer"
-            />
-            <StatCard
-              title="דחופות שלי"
-              value={myUrgentCalls.length}
-              subtitle="נדרש טיפול"
-              icon={AlertCircle}
-              variant="danger"
-              to={createPageUrl('Calls') + '?priority=urgent'}
-              className="hover:border-red-300 cursor-pointer"
-            />
-            <StatCard
-              title="ספקים זמינים"
-              value={availableVendors.length}
-              subtitle="בזמן אמת"
-              icon={Truck}
-              variant="default"
-              to={createPageUrl('AllVendorsMap')}
-              className="hover:border-gray-300 cursor-pointer"
-            />
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="הקריאות שלי"
+                value={myOpenCalls.length}
+                subtitle="בטיפול פעיל"
+                icon={Headphones}
+                variant="primary"
+                to={createPageUrl('MyQueue')}
+                className="hover:border-blue-300 cursor-pointer"
+              />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="הושלמו היום"
+                value={myCompletedToday.length}
+                subtitle="ביצוע אישי"
+                icon={CheckCircle2}
+                variant="success"
+                to={createPageUrl('Reports')}
+                className="hover:border-green-300 cursor-pointer"
+              />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="ממתינות לשיוך"
+                value={unassignedCalls.length}
+                subtitle="כללי במערכת"
+                icon={Users}
+                variant="warning"
+                to={createPageUrl('Calls') + '?status=waiting_treatment'}
+                className="hover:border-orange-300 cursor-pointer"
+              />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="דחופות שלי"
+                value={myUrgentCalls.length}
+                subtitle="נדרש טיפול"
+                icon={AlertCircle}
+                variant="danger"
+                to={createPageUrl('Calls') + '?priority=urgent'}
+                className="hover:border-red-300 cursor-pointer"
+              />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-24" />}> 
+              <StatCard
+                title="ספקים זמינים"
+                value={availableVendors.length}
+                subtitle="בזמן אמת"
+                icon={Truck}
+                variant="default"
+                to={createPageUrl('AllVendorsMap')}
+                className="hover:border-gray-300 cursor-pointer"
+              />
+            </Suspense>
           </div>
 
           {/* Quick Actions */}
@@ -859,7 +877,9 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <StatusBadge status={call.call_status} size="sm" />
+                        <Suspense fallback={<span className="text-xs bg-gray-100 px-2 py-1 rounded">...</span>}>
+                          <StatusBadge status={call.call_status} size="sm" />
+                        </Suspense>
                         <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
                           <Button
                             size="sm"
