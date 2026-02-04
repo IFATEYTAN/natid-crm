@@ -42,6 +42,7 @@ export const PAGE_PERMISSIONS = {
   VendorPortal: ['vendor'],
   VendorCallManagement: ['vendor'],
   MyVendorProfile: ['vendor'],
+  VendorGuide: ['vendor'],
 
   // All roles
   MyNotificationSettings: ['admin', 'operator', 'vendor'],

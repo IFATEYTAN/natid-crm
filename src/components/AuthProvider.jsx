@@ -19,27 +19,28 @@ export function AuthProvider({ children }) {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const value = useMemo(() => ({
-    user,
-    loading,
-    isAuthenticated: !!user,
-    refresh: async () => {
-      const me = await base44.auth.me();
-      setUser(me);
-      return me;
-    },
-    login: (nextUrl = window.location.pathname) => base44.auth.redirectToLogin(nextUrl),
-    logout: (redirectUrl) => base44.auth.logout(redirectUrl),
-  }), [user, loading]);
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      isAuthenticated: !!user,
+      refresh: async () => {
+        const me = await base44.auth.me();
+        setUser(me);
+        return me;
+      },
+      login: (nextUrl = window.location.pathname) => base44.auth.redirectToLogin(nextUrl),
+      logout: (redirectUrl) => base44.auth.logout(redirectUrl),
+    }),
+    [user, loading]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
