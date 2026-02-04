@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -143,8 +143,8 @@ export default function AllVendorsMapPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#111827]">מפת ספקים</h1>
-            <p className="text-[#6b7280] text-sm">צפייה במיקום כל נותני השירות בזמן אמת</p>
+            <h1 className="text-2xl font-bold text-[#172B4D]">מפת ספקים</h1>
+            <p className="text-[#6B778C] text-sm">צפייה במיקום כל נותני השירות בזמן אמת</p>
           </div>
           <Button variant="outline" onClick={() => refetch()} className="gap-2">
             <RefreshCw className="w-4 h-4" />
@@ -154,38 +154,38 @@ export default function AllVendorsMapPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="bg-white border border-[#e5e7eb]">
+          <Card className="bg-white border border-[#DFE1E6]">
             <CardContent className="p-3">
-              <div className="text-xl font-bold text-[#111827]">{stats.total}</div>
-              <div className="text-xs text-[#6b7280]">סה"כ ספקים</div>
+              <div className="text-xl font-bold text-[#172B4D]">{stats.total}</div>
+              <div className="text-xs text-[#6B778C]">סה"כ ספקים</div>
             </CardContent>
           </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
+          <Card className="bg-white border border-[#DFE1E6]">
             <CardContent className="p-3">
               <div className="text-xl font-bold text-[#3b82f6]">{stats.withLocation}</div>
-              <div className="text-xs text-[#6b7280]">עם מיקום</div>
+              <div className="text-xs text-[#6B778C]">עם מיקום</div>
             </CardContent>
           </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
+          <Card className="bg-white border border-[#DFE1E6]">
             <CardContent className="p-3">
               <div className="text-xl font-bold text-green-600">{stats.available}</div>
-              <div className="text-xs text-[#6b7280]">זמינים</div>
+              <div className="text-xs text-[#6B778C]">זמינים</div>
             </CardContent>
           </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
+          <Card className="bg-white border border-[#DFE1E6]">
             <CardContent className="p-3">
               <div className="text-xl font-bold text-orange-600">{stats.busy}</div>
-              <div className="text-xs text-[#6b7280]">עסוקים</div>
+              <div className="text-xs text-[#6B778C]">עסוקים</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters */}
-        <Card className="bg-white border border-[#e5e7eb]">
+        <Card className="bg-white border border-[#DFE1E6]">
           <CardContent className="p-3">
             <div className="flex flex-col md:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
                 <Input
                   placeholder="חיפוש לפי שם או אזור..."
                   value={searchQuery}
@@ -211,14 +211,14 @@ export default function AllVendorsMapPage() {
         </Card>
 
         {/* Map */}
-        <Card className="bg-white border border-[#e5e7eb] overflow-hidden">
+        <Card className="bg-white border border-[#DFE1E6] overflow-hidden">
           <div className="h-[500px] md:h-[600px]">
             {vendorsWithLocation.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <MapPin className="w-12 h-12 mx-auto text-[#6b7280] mb-3" />
-                  <h3 className="font-medium text-[#111827]">אין ספקים עם מיקום</h3>
-                  <p className="text-sm text-[#6b7280]">ספקים יופיעו כאן כשישתפו את מיקומם</p>
+                  <MapPin className="w-12 h-12 mx-auto text-[#6B778C] mb-3" />
+                  <h3 className="font-medium text-[#172B4D]">אין ספקים עם מיקום</h3>
+                  <p className="text-sm text-[#6B778C]">ספקים יופיעו כאן כשישתפו את מיקומם</p>
                 </div>
               </div>
             ) : (
@@ -227,10 +227,9 @@ export default function AllVendorsMapPage() {
                 center={mapCenter}
                 zoom={8}
                 style={{ height: '100%', width: '100%' }}
-                whenCreated={(map) => {
-                  // Store map instance for cleanup
-                  window._allVendorsMap = map;
-                }}
+                ref={useCallback((map) => {
+                  if (map) window._allVendorsMap = map;
+                }, [])}
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -245,11 +244,11 @@ export default function AllVendorsMapPage() {
                     <Popup>
                       <div className="min-w-[200px] p-1" dir="rtl">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-8 h-8 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-                            <Truck className="w-4 h-4 text-[#6b7280]" />
+                          <div className="w-8 h-8 rounded-full bg-[#F4F5F7] flex items-center justify-center">
+                            <Truck className="w-4 h-4 text-[#6B778C]" />
                           </div>
                           <div>
-                            <div className="font-semibold text-[#111827]">{vendor.vendor_name}</div>
+                            <div className="font-semibold text-[#172B4D]">{vendor.vendor_name}</div>
                             <Badge
                               className={cn(
                                 'text-xs',
@@ -262,18 +261,18 @@ export default function AllVendorsMapPage() {
                         </div>
 
                         <div className="space-y-1 text-sm mb-3">
-                          <div className="flex items-center gap-2 text-[#6b7280]">
+                          <div className="flex items-center gap-2 text-[#6B778C]">
                             <Phone className="w-3 h-3" />
                             <span dir="ltr">{vendor.phone}</span>
                           </div>
                           {vendor.average_rating && (
-                            <div className="flex items-center gap-2 text-[#6b7280]">
+                            <div className="flex items-center gap-2 text-[#6B778C]">
                               <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                               <span>{vendor.average_rating.toFixed(1)}</span>
                             </div>
                           )}
                           {vendor.service_type?.length > 0 && (
-                            <div className="text-xs text-[#6b7280]">
+                            <div className="text-xs text-[#6B778C]">
                               {vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')}
                             </div>
                           )}
@@ -298,10 +297,10 @@ export default function AllVendorsMapPage() {
         </Card>
 
         {/* Legend */}
-        <Card className="bg-white border border-[#e5e7eb]">
+        <Card className="bg-white border border-[#DFE1E6]">
           <CardContent className="p-3">
             <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span className="font-medium text-[#111827]">מקרא:</span>
+              <span className="font-medium text-[#172B4D]">מקרא:</span>
               {Object.entries(availabilityLabels).map(([key, label]) => (
                 <div key={key} className="flex items-center gap-2">
                   <div
@@ -317,7 +316,7 @@ export default function AllVendorsMapPage() {
                               : '#eab308',
                     }}
                   />
-                  <span className="text-[#6b7280]">{label}</span>
+                  <span className="text-[#6B778C]">{label}</span>
                 </div>
               ))}
             </div>

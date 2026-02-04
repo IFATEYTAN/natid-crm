@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import {
   User,
   Phone,
@@ -22,23 +22,28 @@ import {
   Loader2,
   DollarSign,
   Wrench,
-  Navigation
+  Navigation,
 } from 'lucide-react';
 import VendorGPSTracker from '@/components/vendor/VendorGPSTracker';
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
-import { SlideUp, AnimatedCard, StaggeredList, StaggeredItem } from '@/components/animations/AnimatedComponents';
+import {
+  SlideUp,
+  AnimatedCard,
+  StaggeredList,
+  StaggeredItem,
+} from '@/components/animations/AnimatedComponents';
 
 const serviceTypes = [
   { key: 'towing', label: 'גרירה', icon: '🚛' },
   { key: 'flat_tire', label: 'החלפת גלגל', icon: '🔧' },
-  { key: 'tire_repair', label: 'תיקון פנצ\'ר', icon: '🛞' },
+  { key: 'tire_repair', label: "תיקון פנצ'ר", icon: '🛞' },
   { key: 'battery_jump', label: 'הנעה ממצבר', icon: '🔋' },
   { key: 'battery_replace', label: 'החלפת מצבר', icon: '🔋' },
   { key: 'fuel_delivery', label: 'הבאת דלק', icon: '⛽' },
   { key: 'locksmith', label: 'מנעולן', icon: '🔑' },
   { key: 'mechanic', label: 'מכונאי ניידת', icon: '🔧' },
-  { key: 'windshield', label: 'שמשות', icon: '🪟' }
+  { key: 'windshield', label: 'שמשות', icon: '🪟' },
 ];
 
 const coverageAreas = [
@@ -47,7 +52,7 @@ const coverageAreas = [
   { key: 'north', label: 'צפון' },
   { key: 'south', label: 'דרום' },
   { key: 'jerusalem', label: 'ירושלים' },
-  { key: 'lowlands', label: 'שפלה' }
+  { key: 'lowlands', label: 'שפלה' },
 ];
 
 export default function MyVendorProfilePage() {
@@ -67,7 +72,7 @@ export default function MyVendorProfilePage() {
     works_24_7: false,
     working_hours_start: '08:00',
     working_hours_end: '18:00',
-    notes: ''
+    notes: '',
   });
   const queryClient = useQueryClient();
 
@@ -104,7 +109,7 @@ export default function MyVendorProfilePage() {
           works_24_7: vendor.works_24_7 || false,
           working_hours_start: vendor.working_hours_start || '08:00',
           working_hours_end: vendor.working_hours_end || '18:00',
-          notes: vendor.notes || ''
+          notes: vendor.notes || '',
         });
         return vendor;
       }
@@ -121,7 +126,7 @@ export default function MyVendorProfilePage() {
     },
     onError: () => {
       showToast.error(feedbackMessages.save.error);
-    }
+    },
   });
 
   const handleSubmit = (e) => {
@@ -130,20 +135,20 @@ export default function MyVendorProfilePage() {
   };
 
   const handleServiceTypeChange = (type, checked) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      service_type: checked 
+      service_type: checked
         ? [...prev.service_type, type]
-        : prev.service_type.filter(t => t !== type)
+        : prev.service_type.filter((t) => t !== type),
     }));
   };
 
   const handleCoverageAreaChange = (area, checked) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      coverage_areas: checked 
+      coverage_areas: checked
         ? [...prev.coverage_areas, area]
-        : prev.coverage_areas.filter(a => a !== area)
+        : prev.coverage_areas.filter((a) => a !== area),
     }));
   };
 
@@ -157,11 +162,11 @@ export default function MyVendorProfilePage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-            <Truck className="w-10 h-10 text-[#6b7280]" />
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[#F4F5F7] flex items-center justify-center">
+            <Truck className="w-10 h-10 text-[#6B778C]" />
           </div>
-          <h2 className="text-xl font-bold text-[#111827] mb-2">פרופיל ספק לא נמצא</h2>
-          <p className="text-[#6b7280]">אנא פנה למנהל המערכת</p>
+          <h2 className="text-xl font-bold text-[#172B4D] mb-2">פרופיל ספק לא נמצא</h2>
+          <p className="text-[#6B778C]">אנא פנה למנהל המערכת</p>
         </div>
       </div>
     );
@@ -169,335 +174,349 @@ export default function MyVendorProfilePage() {
 
   return (
     <SlideUp>
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#111827]">הפרופיל שלי</h1>
-        <p className="text-[#6b7280] text-sm">עדכון פרטים אישיים</p>
-      </div>
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#172B4D]">הפרופיל שלי</h1>
+          <p className="text-[#6B778C] text-sm">עדכון פרטים אישיים</p>
+        </div>
 
-      {/* GPS Tracker */}
-      <VendorGPSTracker
-        vendorId={vendor?.id}
-        vendorProfile={vendor}
-        onLocationUpdate={(location) => {
-          console.log('Location updated:', location);
-        }}
-        onError={(error) => {
-          showToast.error(error);
-        }}
-      />
+        {/* GPS Tracker */}
+        <VendorGPSTracker
+          vendorId={vendor?.id}
+          vendorProfile={vendor}
+          onLocationUpdate={(location) => {
+            console.log('Location updated:', location);
+          }}
+          onError={(error) => {
+            showToast.error(error);
+          }}
+        />
 
-      {/* Stats Card */}
-      <StaggeredList className="grid grid-cols-3 gap-4">
-        <StaggeredItem>
-          <AnimatedCard className="p-4 text-center">
-            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-[#111827]" />
-            </div>
-            <div className="text-2xl font-bold text-[#111827]">
-              {vendor.total_calls_completed || 0}
-            </div>
-            <div className="text-xs text-[#6b7280]">קריאות הושלמו</div>
-          </AnimatedCard>
-        </StaggeredItem>
-        <StaggeredItem>
-          <AnimatedCard className="p-4 text-center">
-            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-            </div>
-            <div className="text-2xl font-bold text-[#111827]">
-              {vendor.average_rating?.toFixed(1) || '-'}
-            </div>
-            <div className="text-xs text-[#6b7280]">דירוג ממוצע</div>
-          </AnimatedCard>
-        </StaggeredItem>
-        <StaggeredItem>
-          <AnimatedCard className="p-4 text-center">
-            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-              <Clock className="w-5 h-5 text-[#3b82f6]" />
-            </div>
-            <div className="text-2xl font-bold text-[#111827]">
-              {vendor.completion_rate || 0}%
-            </div>
-            <div className="text-xs text-[#6b7280]">אחוז השלמה</div>
-          </AnimatedCard>
-        </StaggeredItem>
-      </StaggeredList>
-
-      {/* Profile Form */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5 text-[#6B778C]" />
-            פרטי הספק
-          </CardTitle>
-          <CardDescription>עדכן את פרטי הקשר שלך</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>שם הספק/חברה</Label>
-                <Input
-                  value={formData.vendor_name}
-                  onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <p className="text-xs text-[#6B778C] mt-1">לשינוי שם פנה למנהל</p>
+        {/* Stats Card */}
+        <StaggeredList className="grid grid-cols-3 gap-4">
+          <StaggeredItem>
+            <AnimatedCard className="p-4 text-center">
+              <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#F4F5F7] flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-[#172B4D]" />
               </div>
-              <div>
-                <Label>איש קשר</Label>
-                <Input
-                  value={formData.contact_person}
-                  onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                />
+              <div className="text-2xl font-bold text-[#172B4D]">
+                {vendor.total_calls_completed || 0}
               </div>
-            </div>
+              <div className="text-xs text-[#6B778C]">קריאות הושלמו</div>
+            </AnimatedCard>
+          </StaggeredItem>
+          <StaggeredItem>
+            <AnimatedCard className="p-4 text-center">
+              <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#F4F5F7] flex items-center justify-center">
+                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              </div>
+              <div className="text-2xl font-bold text-[#172B4D]">
+                {vendor.average_rating?.toFixed(1) || '-'}
+              </div>
+              <div className="text-xs text-[#6B778C]">דירוג ממוצע</div>
+            </AnimatedCard>
+          </StaggeredItem>
+          <StaggeredItem>
+            <AnimatedCard className="p-4 text-center">
+              <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[#F4F5F7] flex items-center justify-center">
+                <Clock className="w-5 h-5 text-[#3b82f6]" />
+              </div>
+              <div className="text-2xl font-bold text-[#172B4D]">
+                {vendor.completion_rate || 0}%
+              </div>
+              <div className="text-xs text-[#6B778C]">אחוז השלמה</div>
+            </AnimatedCard>
+          </StaggeredItem>
+        </StaggeredList>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>טלפון ראשי</Label>
-                <div className="relative">
-                  <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+        {/* Profile Form */}
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-[#6B778C]" />
+              פרטי הספק
+            </CardTitle>
+            <CardDescription>עדכן את פרטי הקשר שלך</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>שם הספק/חברה</Label>
                   <Input
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="pr-10"
-                    dir="ltr"
+                    value={formData.vendor_name}
+                    onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                  <p className="text-xs text-[#6B778C] mt-1">לשינוי שם פנה למנהל</p>
+                </div>
+                <div>
+                  <Label>איש קשר</Label>
+                  <Input
+                    value={formData.contact_person}
+                    onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                   />
                 </div>
               </div>
-              <div>
-                <Label>טלפון משני</Label>
-                <div className="relative">
-                  <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
-                  <Input
-                    value={formData.phone_2}
-                    onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
-                    className="pr-10"
-                    dir="ltr"
-                  />
-                </div>
-              </div>
-            </div>
 
-            <div>
-              <Label>אימייל</Label>
-              <div className="relative">
-                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="pr-10"
-                  dir="ltr"
-                  disabled
-                />
-              </div>
-              <p className="text-xs text-[#6B778C] mt-1">האימייל משמש להתחברות ולא ניתן לשינוי</p>
-            </div>
-
-            <div>
-              <Label className="mb-3 block flex items-center gap-2">
-                <Wrench className="w-4 h-4" />
-                סוגי שירות ותעריפים
-              </Label>
-              <div className="space-y-3">
-                {serviceTypes.map(type => (
-                  <div key={type.key} className="flex items-center gap-3 p-3 bg-[#f9fafb] rounded-lg">
-                    <Checkbox
-                      id={`service-${type.key}`}
-                      checked={formData.service_type.includes(type.key)}
-                      onCheckedChange={(checked) => handleServiceTypeChange(type.key, checked)}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>טלפון ראשי</Label>
+                  <div className="relative">
+                    <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="pr-10"
+                      dir="ltr"
                     />
-                    <label htmlFor={`service-${type.key}`} className="flex-1 text-sm cursor-pointer flex items-center gap-2">
-                      <span>{type.icon}</span>
-                      {type.label}
-                    </label>
-                    {formData.service_type.includes(type.key) && (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          placeholder="תעריף ₪"
-                          className="w-24 h-8 text-sm"
-                          value={formData.service_rates[type.key] || ''}
-                          onChange={(e) => setFormData({
-                            ...formData,
-                            service_rates: {
-                              ...formData.service_rates,
-                              [type.key]: Number(e.target.value)
+                  </div>
+                </div>
+                <div>
+                  <Label>טלפון משני</Label>
+                  <div className="relative">
+                    <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                    <Input
+                      value={formData.phone_2}
+                      onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
+                      className="pr-10"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label>אימייל</Label>
+                <div className="relative">
+                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="pr-10"
+                    dir="ltr"
+                    disabled
+                  />
+                </div>
+                <p className="text-xs text-[#6B778C] mt-1">האימייל משמש להתחברות ולא ניתן לשינוי</p>
+              </div>
+
+              <div>
+                <Label className="mb-3 block flex items-center gap-2">
+                  <Wrench className="w-4 h-4" />
+                  סוגי שירות ותעריפים
+                </Label>
+                <div className="space-y-3">
+                  {serviceTypes.map((type) => (
+                    <div
+                      key={type.key}
+                      className="flex items-center gap-3 p-3 bg-[#F4F5F7] rounded-lg"
+                    >
+                      <Checkbox
+                        id={`service-${type.key}`}
+                        checked={formData.service_type.includes(type.key)}
+                        onCheckedChange={(checked) => handleServiceTypeChange(type.key, checked)}
+                      />
+                      <label
+                        htmlFor={`service-${type.key}`}
+                        className="flex-1 text-sm cursor-pointer flex items-center gap-2"
+                      >
+                        <span>{type.icon}</span>
+                        {type.label}
+                      </label>
+                      {formData.service_type.includes(type.key) && (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            placeholder="תעריף ₪"
+                            className="w-24 h-8 text-sm"
+                            value={formData.service_rates[type.key] || ''}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                service_rates: {
+                                  ...formData.service_rates,
+                                  [type.key]: Number(e.target.value),
+                                },
+                              })
                             }
-                          })}
-                        />
-                        <span className="text-xs text-[#6b7280]">₪</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                          />
+                          <span className="text-xs text-[#6B778C]">₪</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <Label className="mb-3 block">אזורי כיסוי</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {coverageAreas.map(area => (
-                  <div key={area.key} className="flex items-center gap-2">
-                    <Checkbox
-                      id={`area-${area.key}`}
-                      checked={formData.coverage_areas.includes(area.key)}
-                      onCheckedChange={(checked) => handleCoverageAreaChange(area.key, checked)}
-                    />
-                    <label htmlFor={`area-${area.key}`} className="text-sm cursor-pointer">
-                      {area.label}
-                    </label>
-                  </div>
-                ))}
+              <div>
+                <Label className="mb-3 block">אזורי כיסוי</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {coverageAreas.map((area) => (
+                    <div key={area.key} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`area-${area.key}`}
+                        checked={formData.coverage_areas.includes(area.key)}
+                        onCheckedChange={(checked) => handleCoverageAreaChange(area.key, checked)}
+                      />
+                      <label htmlFor={`area-${area.key}`} className="text-sm cursor-pointer">
+                        {area.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <Label>ערים ספציפיות</Label>
-              <div className="relative">
-                <MapPin className="absolute right-3 top-3 w-4 h-4 text-[#6b7280]" />
-                <Textarea
-                  value={formData.coverage_cities}
-                  onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
-                  className="pr-10 min-h-[80px]"
-                  placeholder="רשום את הערים בהם אתה מספק שירות"
-                />
+              <div>
+                <Label>ערים ספציפיות</Label>
+                <div className="relative">
+                  <MapPin className="absolute right-3 top-3 w-4 h-4 text-[#6B778C]" />
+                  <Textarea
+                    value={formData.coverage_cities}
+                    onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
+                    className="pr-10 min-h-[80px]"
+                    placeholder="רשום את הערים בהם אתה מספק שירות"
+                  />
+                </div>
               </div>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
 
-      {/* Base Rates */}
-      <Card className="bg-white border border-[#e5e7eb]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-[#6b7280]" />
-            תעריפים כלליים
-          </CardTitle>
-          <CardDescription>תעריפי בסיס לקריאות</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>תעריף בסיס (₪)</Label>
-              <Input
-                type="number"
-                value={formData.base_rate || ''}
-                onChange={(e) => setFormData({ ...formData, base_rate: Number(e.target.value) })}
-                placeholder="0"
-              />
-              <p className="text-xs text-[#6b7280] mt-1">תעריף מינימום לכל קריאה</p>
-            </div>
-            <div>
-              <Label>תעריף לק"מ (₪)</Label>
-              <Input
-                type="number"
-                value={formData.rate_per_km || ''}
-                onChange={(e) => setFormData({ ...formData, rate_per_km: Number(e.target.value) })}
-                placeholder="0"
-              />
-              <p className="text-xs text-[#6b7280] mt-1">תוספת לפי מרחק נסיעה</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Working Hours */}
-      <Card className="bg-white border border-[#e5e7eb]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-[#6b7280]" />
-            שעות פעילות
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <Switch
-              checked={formData.works_24_7}
-              onCheckedChange={(checked) => setFormData({ ...formData, works_24_7: checked })}
-            />
-            <Label>עובד 24/7</Label>
-          </div>
-
-          {!formData.works_24_7 && (
+        {/* Base Rates */}
+        <Card className="bg-white border border-[#DFE1E6]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-[#6B778C]" />
+              תעריפים כלליים
+            </CardTitle>
+            <CardDescription>תעריפי בסיס לקריאות</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>שעת התחלה</Label>
+                <Label>תעריף בסיס (₪)</Label>
                 <Input
-                  type="time"
-                  value={formData.working_hours_start}
-                  onChange={(e) => setFormData({ ...formData, working_hours_start: e.target.value })}
+                  type="number"
+                  value={formData.base_rate || ''}
+                  onChange={(e) => setFormData({ ...formData, base_rate: Number(e.target.value) })}
+                  placeholder="0"
                 />
+                <p className="text-xs text-[#6B778C] mt-1">תעריף מינימום לכל קריאה</p>
               </div>
               <div>
-                <Label>שעת סיום</Label>
+                <Label>תעריף לק"מ (₪)</Label>
                 <Input
-                  type="time"
-                  value={formData.working_hours_end}
-                  onChange={(e) => setFormData({ ...formData, working_hours_end: e.target.value })}
+                  type="number"
+                  value={formData.rate_per_km || ''}
+                  onChange={(e) =>
+                    setFormData({ ...formData, rate_per_km: Number(e.target.value) })
+                  }
+                  placeholder="0"
                 />
+                <p className="text-xs text-[#6B778C] mt-1">תוספת לפי מרחק נסיעה</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Working Hours */}
+        <Card className="bg-white border border-[#DFE1E6]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-[#6B778C]" />
+              שעות פעילות
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-4">
+              <Switch
+                checked={formData.works_24_7}
+                onCheckedChange={(checked) => setFormData({ ...formData, works_24_7: checked })}
+              />
+              <Label>עובד 24/7</Label>
+            </div>
+
+            {!formData.works_24_7 && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>שעת התחלה</Label>
+                  <Input
+                    type="time"
+                    value={formData.working_hours_start}
+                    onChange={(e) =>
+                      setFormData({ ...formData, working_hours_start: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>שעת סיום</Label>
+                  <Input
+                    type="time"
+                    value={formData.working_hours_end}
+                    onChange={(e) =>
+                      setFormData({ ...formData, working_hours_end: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Notes */}
+        <Card className="bg-white border border-[#DFE1E6]">
+          <CardHeader>
+            <CardTitle className="text-lg">הערות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="מידע נוסף שחשוב שנדע..."
+            />
+          </CardContent>
+        </Card>
+
+        {/* Save Button */}
+        <Button
+          onClick={handleSubmit}
+          className="w-full bg-[#f97316] hover:bg-[#ea580c] gap-2 h-12"
+          disabled={updateMutation.isPending}
+        >
+          {updateMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              שומר...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              שמור שינויים
+            </>
           )}
-        </CardContent>
-      </Card>
+        </Button>
 
-      {/* Notes */}
-      <Card className="bg-white border border-[#e5e7eb]">
-        <CardHeader>
-          <CardTitle className="text-lg">הערות</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            placeholder="מידע נוסף שחשוב שנדע..."
-          />
-        </CardContent>
-      </Card>
-
-      {/* Save Button */}
-      <Button
-        onClick={handleSubmit}
-        className="w-full bg-[#f97316] hover:bg-[#ea580c] gap-2 h-12"
-        disabled={updateMutation.isPending}
-      >
-        {updateMutation.isPending ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            שומר...
-          </>
-        ) : (
-          <>
-            <Save className="w-4 h-4" />
-            שמור שינויים
-          </>
-        )}
-      </Button>
-
-      {/* Security */}
-      <Card className="bg-white border border-[#e5e7eb]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#6b7280]" />
-            אבטחה
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-[#6b7280] mb-4">
-            לשינוי סיסמה או בעיות התחברות, אנא פנה למנהל המערכת.
-          </p>
-          <div className="text-xs text-[#6b7280]">
-            מחובר כ: <span className="font-medium">{currentUser?.email}</span>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        {/* Security */}
+        <Card className="bg-white border border-[#DFE1E6]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-[#6B778C]" />
+              אבטחה
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-[#6B778C] mb-4">
+              לשינוי סיסמה או בעיות התחברות, אנא פנה למנהל המערכת.
+            </p>
+            <div className="text-xs text-[#6B778C]">
+              מחובר כ: <span className="font-medium">{currentUser?.email}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </SlideUp>
   );
 }

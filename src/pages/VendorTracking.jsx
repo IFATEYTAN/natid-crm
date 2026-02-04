@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useVendors } from '@/components/hooks/useVendors';
@@ -281,9 +281,9 @@ export default function VendorTrackingPage() {
                 center={defaultCenter}
                 zoom={8}
                 style={{ height: '100%', width: '100%' }}
-                whenCreated={(map) => {
-                  window._vendorTrackingMap = map;
-                }}
+                ref={useCallback((map) => {
+                  if (map) window._vendorTrackingMap = map;
+                }, [])}
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
