@@ -1,10 +1,19 @@
 import { useLocation } from 'react-router-dom';
-import { base44 } from '@/lib/api';
+import { useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 export default function PageNotFound({}) {
   const location = useLocation();
   const pageName = location.pathname.substring(1);
+
+  useEffect(() => {
+    if (pageName.toLowerCase() === 'login') {
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('from_url') || params.get('next') || '/Dashboard';
+      base44.auth.redirectToLogin(next);
+    }
+  }, [pageName]);
 
   const { data: authData, isFetched } = useQuery({
     queryKey: ['user'],
