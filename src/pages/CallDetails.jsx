@@ -410,6 +410,7 @@ export default function CallDetailsPage() {
             <TabsTrigger value="details">פרטים</TabsTrigger>
             <TabsTrigger value="map">מפה</TabsTrigger>
             <TabsTrigger value="chat">צ'אט</TabsTrigger>
+            <TabsTrigger value="operatorNotes">הערות מוקדן</TabsTrigger>
             <TabsTrigger value="files">קבצים ({photos.length})</TabsTrigger>
             <TabsTrigger value="history">היסטוריה</TabsTrigger>
             {call?.call_status === 'completed' && (
