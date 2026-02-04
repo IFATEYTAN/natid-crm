@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -25,6 +26,12 @@ import {
   Pie,
   Cell
 } from 'recharts';
+// Replaced by lazy-loaded charts to reduce bundle size
+const DailyCallsChart = React.lazy(() => import('@/components/reports/ReportsCharts').then(m => ({ default: m.DailyCallsChart })));
+const StatusDistributionChart = React.lazy(() => import('@/components/reports/ReportsCharts').then(m => ({ default: m.StatusDistributionChart })));
+const IssueTypesChart = React.lazy(() => import('@/components/reports/ReportsCharts').then(m => ({ default: m.IssueTypesChart })));
+const VendorPerformanceChart = React.lazy(() => import('@/components/reports/ReportsCharts').then(m => ({ default: m.VendorPerformanceChart })));
+
 import {
   BarChart3,
   TrendingUp,
@@ -289,23 +296,9 @@ export default function ReportsPage() {
             <CardTitle className="text-lg text-[#111827]">קריאות לפי יום</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dailyChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="קריאות" 
-                    stroke="#3b82f6" 
-                    strokeWidth={2}
-                    dot={{ fill: '#3b82f6' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <DailyCallsChart data={dailyChartData} />
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -315,27 +308,9 @@ export default function ReportsPage() {
             <CardTitle className="text-lg text-[#111827]">התפלגות סטטוסים</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusChartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {statusChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <StatusDistributionChart data={statusChartData} />
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -345,17 +320,9 @@ export default function ReportsPage() {
             <CardTitle className="text-lg text-[#111827]">סוגי תקלות</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={issueTypeData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} />
-                  <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <IssueTypesChart data={issueTypeData} />
+            </Suspense>
           </CardContent>
         </Card>
 

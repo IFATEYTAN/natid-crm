@@ -1,0 +1,129 @@
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Truck, Phone, Star, Eye } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
+
+// Fix default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const availabilityColors = {
+  available: 'green',
+  busy: 'orange',
+  offline: 'grey',
+  on_break: 'yellow'
+};
+
+const availabilityLabels = {
+  available: 'זמין',
+  busy: 'עסוק',
+  offline: 'לא מחובר',
+  on_break: 'בהפסקה'
+};
+
+const availabilityBadgeColors = {
+  available: 'bg-green-100 text-green-800',
+  busy: 'bg-orange-100 text-orange-800',
+  offline: 'bg-gray-100 text-gray-800',
+  on_break: 'bg-yellow-100 text-yellow-800'
+};
+
+const createIcon = (color) => new L.Icon({
+  iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const serviceTypeLabels = {
+  tow_truck: 'גרר',
+  mechanic: 'מכונאי',
+  tire_service: 'צמיגים',
+  locksmith: 'מנעולן',
+  fuel_delivery: 'דלק',
+  multi_service: 'שירות מולט'
+};
+
+export default function AllVendorsLeafletMap({ vendorsWithLocation = [], mapCenter = [31.7683, 35.2137] }) {
+  useEffect(() => {
+    return () => {
+      if (window._allVendorsMap) {
+        window._allVendorsMap.remove();
+        window._allVendorsMap = null;
+      }
+    };
+  }, []);
+
+  return (
+    <MapContainer
+      key="all-vendors-map"
+      center={mapCenter}
+      zoom={8}
+      style={{ height: '100%', width: '100%' }}
+      whenCreated={(map) => { window._allVendorsMap = map; }}
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      {vendorsWithLocation.map(vendor => (
+        <Marker
+          key={vendor.id}
+          position={[vendor.current_latitude, vendor.current_longitude]}
+          icon={createIcon(availabilityColors[vendor.availability_status] || 'blue')}
+        >
+          <Popup>
+            <div className="min-w-[200px] p-1" dir="rtl">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+                  <Truck className="w-4 h-4 text-[#6b7280]" />
+                </div>
+                <div>
+                  <div className="font-semibold text-[#111827]">{vendor.vendor_name}</div>
+                  <Badge className={cn('text-xs', availabilityBadgeColors[vendor.availability_status])}>
+                    {availabilityLabels[vendor.availability_status]}
+                  </Badge>
+                </div>
+              </div>
+              <div className="space-y-1 text-sm mb-3">
+                <div className="flex items-center gap-2 text-[#6b7280]">
+                  <Phone className="w-3 h-3" />
+                  <span dir="ltr">{vendor.phone}</span>
+                </div>
+                {vendor.average_rating && (
+                  <div className="flex items-center gap-2 text-[#6b7280]">
+                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                    <span>{vendor.average_rating.toFixed(1)}</span>
+                  </div>
+                )}
+                {vendor.service_type?.length > 0 && (
+                  <div className="text-xs text-[#6b7280]">
+                    {vendor.service_type.map(t => serviceTypeLabels[t] || t).join(', ')}
+                  </div>
+                )}
+              </div>
+              <Link to={createPageUrl(`VendorDetails?id=${vendor.id}`)}>
+                <Button size="sm" className="w-full gap-2 bg-[#3b82f6] hover:bg-[#2563eb]">
+                  <Eye className="w-3 h-3" />
+                  צפה בפרטים
+                </Button>
+              </Link>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </MapContainer>
+  );
+}
