@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 
-// Hook לתיעוד פעולות ביומן
+// Hook for audit logging
 export function useAuditLog() {
   const logAction = useCallback(
     async ({
@@ -33,7 +33,6 @@ export function useAuditLog() {
     []
   );
 
-  // פעולות מוכנות מראש
   const logCreate = useCallback(
     (entity_type, entity_id, entity_name, details) => {
       return logAction({ action: 'create', entity_type, entity_id, entity_name, details });

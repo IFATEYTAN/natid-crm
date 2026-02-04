@@ -14,11 +14,17 @@ const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'
 const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'));
 const OfflineIndicator = lazy(() => import('@/components/pwa/OfflineIndicator'));
 const UpdatePrompt = lazy(() => import('@/components/pwa/UpdatePrompt'));
-const NotificationPermissionBanner = lazy(() => import('@/components/notifications/PushNotifications').then(m => ({ default: m.NotificationPermissionBanner })));
-const ConnectionStatusIndicator = lazy(() => import('@/components/useRealtimeUpdates').then(m => ({ default: m.ConnectionStatusIndicator })));
+const NotificationPermissionBanner = lazy(() =>
+  import('@/components/notifications/PushNotifications').then((m) => ({
+    default: m.NotificationPermissionBanner,
+  }))
+);
+const ConnectionStatusIndicator = lazy(() =>
+  import('@/components/useRealtimeUpdates').then((m) => ({ default: m.ConnectionStatusIndicator }))
+);
 
 // Lazy Toaster to reduce main bundle
-const ToasterLazy = lazy(() => import('sonner').then(m => ({ default: m.Toaster })));
+const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaster })));
 // animejs dynamically imported in effect to keep index chunk small
 
 export default function Layout({ children, currentPageName }) {
@@ -93,7 +99,9 @@ export default function Layout({ children, currentPageName }) {
         });
       });
     }
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [currentPageName]);
 
   const getInitials = (name) => {
@@ -117,8 +125,11 @@ export default function Layout({ children, currentPageName }) {
       title: 'תפעול יומי',
       items: [
         { name: 'לוח בקרה', href: 'Dashboard' },
+        { name: 'רשימת קריאות', href: 'Calls' },
+        { name: 'לוח שנה', href: 'Calendar' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
+        { name: 'מעקב ספקים', href: 'VendorTracking' },
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
       ],
     },
@@ -127,8 +138,11 @@ export default function Layout({ children, currentPageName }) {
       items: [
         { name: 'דוחות', href: 'Reports' },
         { name: 'ניתוח נתונים היסטוריים', href: 'HistoricalDataAnalysis' },
+        { name: 'ייצוא מתקדם', href: 'AdvancedExport' },
         { name: 'לקוחות', href: 'Customers' },
+        { name: 'משובי לקוחות', href: 'CustomerFeedback' },
         { name: 'נותני שירות', href: 'ServiceProviders' },
+        { name: 'חוזי ספקים', href: 'VendorContracts' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
         { name: 'הפרופיל שלי', href: 'MyVendorProfile' },
       ],
@@ -141,9 +155,12 @@ export default function Layout({ children, currentPageName }) {
       title: 'מערכת',
       items: [
         { name: 'ניהול משתמשים', href: 'UserManagement' },
+        { name: 'ניהול תפקידים', href: 'RoleManagement' },
+        { name: 'יומן פעולות', href: 'AuditLog' },
         { name: 'אוטומציה', href: 'AutomationSettings' },
         { name: 'אינטגרציות CRM', href: 'IntegrationSettings' },
         { name: 'הגדרות התראות', href: 'NotificationSettings' },
+        { name: 'הגדרות תצוגה', href: 'AdminDisplaySettings' },
         { name: 'הגדרות מערכת', href: 'Settings' },
       ],
     },

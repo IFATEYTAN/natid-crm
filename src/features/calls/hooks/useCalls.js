@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import * as callsApi from '../api';
 
 /**
@@ -9,6 +10,7 @@ export const useCalls = (sort = '-created_date', limit = 500) => {
   return useQuery({
     queryKey: queryKeys.calls.all(),
     queryFn: () => callsApi.getCalls(sort, limit),
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
 
@@ -66,6 +68,10 @@ export const useCreateCall = () => {
     mutationFn: callsApi.createCall,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
+      toast.success('קריאה נוצרה בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה ביצירת קריאה: ${error.message}`);
     },
   });
 };
@@ -78,9 +84,13 @@ export const useUpdateCall = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => callsApi.updateCall(id, data),
-    onSuccess: (_, { id }) => {
+    onSuccess: (updatedCall, { id }) => {
+      queryClient.setQueryData(queryKeys.calls.detail(id), updatedCall);
       queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(id) });
+      toast.success('קריאה עודכנה בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בעדכון קריאה: ${error.message}`);
     },
   });
 };
@@ -95,6 +105,35 @@ export const useDeleteCall = () => {
     mutationFn: callsApi.deleteCall,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
+      toast.success('קריאה נמחקה בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה במחיקת קריאה: ${error.message}`);
+    },
+  });
+};
+
+/**
+ * Hook for assigning a vendor to a call
+ */
+export const useAssignVendor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ callId, vendorId, vendorName }) =>
+      callsApi.updateCall(callId, {
+        assigned_vendor_id: vendorId,
+        assigned_vendor_name: vendorName,
+        call_status: 'assigning',
+        assigned_at: new Date().toISOString(),
+      }),
+    onSuccess: (updatedCall) => {
+      queryClient.setQueryData(queryKeys.calls.detail(updatedCall.id), updatedCall);
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
+      toast.success('ספק שובץ בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בשיבוץ ספק: ${error.message}`);
     },
   });
 };

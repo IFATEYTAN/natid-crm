@@ -1,21 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Truck, Phone, Star, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-
-// Fix default marker icons
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import {
+  TILE_URL,
+  TILE_ATTRIBUTION,
+  DEFAULT_CENTER,
+  DEFAULT_ZOOM,
+  createColorIcon,
+} from './mapUtils';
 
 const availabilityColors = {
   available: 'green',
@@ -38,16 +35,6 @@ const availabilityBadgeColors = {
   on_break: 'bg-yellow-100 text-yellow-800',
 };
 
-const createIcon = (color) =>
-  new L.Icon({
-    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-  });
-
 const serviceTypeLabels = {
   tow_truck: 'גרר',
   mechanic: 'מכונאי',
@@ -59,13 +46,15 @@ const serviceTypeLabels = {
 
 export default function AllVendorsLeafletMap({
   vendorsWithLocation = [],
-  mapCenter = [31.7683, 35.2137],
+  mapCenter = DEFAULT_CENTER,
 }) {
+  const mapRef = useRef(null);
+
   useEffect(() => {
     return () => {
-      if (window._allVendorsMap) {
-        window._allVendorsMap.remove();
-        window._allVendorsMap = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
       }
     };
   }, []);
@@ -74,21 +63,16 @@ export default function AllVendorsLeafletMap({
     <MapContainer
       key="all-vendors-map"
       center={mapCenter}
-      zoom={8}
+      zoom={DEFAULT_ZOOM}
       style={{ height: '100%', width: '100%' }}
-      whenCreated={(map) => {
-        window._allVendorsMap = map;
-      }}
+      ref={mapRef}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
       {vendorsWithLocation.map((vendor) => (
         <Marker
           key={vendor.id}
           position={[vendor.current_latitude, vendor.current_longitude]}
-          icon={createIcon(availabilityColors[vendor.availability_status] || 'blue')}
+          icon={createColorIcon(availabilityColors[vendor.availability_status] || 'blue')}
         >
           <Popup>
             <div className="min-w-[200px] p-1" dir="rtl">
