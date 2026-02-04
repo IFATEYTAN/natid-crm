@@ -259,13 +259,14 @@ export default function LandingPage() {
             </div>
             <span className="text-xl font-bold text-gray-900">NatID CRM</span>
           </div>
-          <button
-            onClick={handleLogin}
-            disabled={isLoading}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-60"
+          <a
+            href={getLoginUrl()}
+            target="_top"
+            className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+            onClick={() => setIsLoading(true)}
           >
-            {isLoading ? 'מתחבר...' : 'כניסה למערכת'}
-          </button>
+            כניסה למערכת
+          </a>
         </div>
       </motion.header>
 
@@ -285,20 +286,15 @@ export default function LandingPage() {
                 ביצועים מקיפים.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={handleLogin}
-                  disabled={isLoading}
-                  className="px-8 py-4 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition-all hover:shadow-lg hover:shadow-red-200 disabled:opacity-60 flex items-center justify-center gap-2"
+                <a
+                  href={getLoginUrl()}
+                  target="_top"
+                  className="px-8 py-4 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition-all hover:shadow-lg hover:shadow-red-200 flex items-center justify-center gap-2"
+                  onClick={() => setIsLoading(true)}
                 >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Shield className="w-5 h-5" />
-                      כניסה למערכת
-                    </>
-                  )}
-                </button>
+                  <Shield className="w-5 h-5" />
+                  כניסה למערכת
+                </a>
               </div>
               <div className="grid grid-cols-4 gap-4 mt-12">
                 {stats.map((stat, i) => (
@@ -380,13 +376,14 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={handleLogin}
-                disabled={isLoading}
-                className="px-10 py-4 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition-all hover:shadow-lg hover:shadow-red-200 disabled:opacity-60"
+              <a
+                href={getLoginUrl()}
+                target="_top"
+                className="px-10 py-4 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition-all hover:shadow-lg hover:shadow-red-200"
+                onClick={() => setIsLoading(true)}
               >
-                {isLoading ? 'מתחבר...' : 'כניסה למערכת'}
-              </button>
+                כניסה למערכת
+              </a>
             </div>
           </motion.div>
         </div>
