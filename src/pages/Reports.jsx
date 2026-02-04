@@ -12,20 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
 // Replaced by lazy-loaded charts to reduce bundle size
 const DailyCallsChart = React.lazy(() => import('@/components/reports/ReportsCharts').then(m => ({ default: m.DailyCallsChart })));
 const StatusDistributionChart = React.lazy(() => import('@/components/reports/ReportsCharts').then(m => ({ default: m.StatusDistributionChart })));
