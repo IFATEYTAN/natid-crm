@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { Toaster } from 'sonner';
 import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
+import VendorAssistant from '@/components/vendor/VendorAssistant';
 
 import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
 
@@ -104,7 +105,12 @@ function LayoutContent({ children, currentPageName }) {
   }
 
   // Vendor-only pages - if vendor tries to access non-vendor pages, redirect
-  const vendorAllowedPages = ['VendorPortal', 'VendorCallManagement', 'MyVendorProfile'];
+  const vendorAllowedPages = [
+    'VendorPortal',
+    'VendorCallManagement',
+    'MyVendorProfile',
+    'VendorGuide',
+  ];
   const isVendorPage = vendorAllowedPages.includes(currentPageName);
 
   const getInitials = (name) => {
@@ -131,6 +137,7 @@ function LayoutContent({ children, currentPageName }) {
       items: [
         { name: 'הקריאות שלי', href: 'VendorPortal', icon: LayoutDashboard },
         { name: 'הפרופיל שלי', href: 'MyVendorProfile', icon: UserCog },
+        { name: 'מדריך לספק', href: 'VendorGuide', icon: BookOpen },
       ],
     },
   ];
@@ -467,6 +474,7 @@ function LayoutContent({ children, currentPageName }) {
           soundEnabled={currentUser?.sound_enabled !== false}
         />
       )}
+      {isVendor && <VendorAssistant currentPageName={currentPageName} />}
     </div>
   );
 }
