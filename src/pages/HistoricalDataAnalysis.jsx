@@ -410,7 +410,11 @@ export default function HistoricalDataAnalysisPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value, name) => [`${value.toLocaleString()} קריאות`, name]}
+                      formatter={(value, name) => {
+                        const total = serveTypeDistribution.slice(0, 6).reduce((sum, i) => sum + i.value, 0);
+                        const pct = total ? Math.round((value / total) * 100) : 0;
+                        return [`${value.toLocaleString()} (${pct}%)`, name];
+                      }}
                       contentStyle={{ direction: 'rtl', textAlign: 'right' }}
                     />
                   </PieChart>
@@ -466,7 +470,11 @@ export default function HistoricalDataAnalysisPage() {
                     axisLine={false}
                   />
                   <Tooltip
-                    formatter={(value) => [value.toLocaleString(), 'קריאות']}
+                    formatter={(value) => {
+                      const total = carTypeDistribution.reduce((sum, i) => sum + i.value, 0);
+                      const pct = total ? Math.round((value / total) * 100) : 0;
+                      return [`${value.toLocaleString()} (${pct}%)`, 'קריאות'];
+                    }}
                     contentStyle={{ direction: 'rtl', textAlign: 'right' }}
                   />
                   <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
