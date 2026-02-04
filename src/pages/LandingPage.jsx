@@ -95,7 +95,20 @@ export default function LandingPage() {
   const handleLogin = async () => {
     setIsLoading(true);
     await unregisterServiceWorkers();
-    base44.auth.redirectToLogin('/Dashboard');
+
+    // Clean local/session tokens just in case
+    try {
+      localStorage.removeItem('base44_access_token');
+      localStorage.removeItem('token');
+      sessionStorage.clear();
+    } catch {}
+
+    try {
+      await base44.auth.redirectToLogin('/Dashboard');
+    } catch (e) {
+      // Fallback: route via /login (PageNotFound effect will re-route to platform login)
+      window.location.href = `/login?from_url=${encodeURIComponent('/Dashboard')}`;
+    }
   };
 
   return (
