@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -6,17 +6,11 @@ import { useCalls } from '@/features/calls/hooks/useCalls';
 import { useVendors } from '@/features/vendors/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
 const StatCard = lazy(() => import('@/components/ui/StatCard'));
-const StatusBadge = lazy(() => import('@/components/ui/StatusBadge'));
-// DataTable lazy import below
-const AvatarStack = lazy(() => import('@/components/ui/AvatarStack'));
 import {
   Plus,
   ChevronLeft,
-  Phone,
   Truck,
   AlertCircle,
-  Eye,
-  MapPin,
   LayoutDashboard,
   Headphones,
   List,
@@ -26,7 +20,6 @@ import {
   Users,
   Calendar,
   BarChart3,
-  Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,15 +31,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-// AIInsightsWidget lazy import below
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
-import { PermissionGuard, PermissionLink } from '@/components/permissions/PermissionGuard';
+import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { statusLabels, openStatuses } from '@/components/dashboard/dashboardConstants';
+import { getCallColumns } from '@/components/dashboard/DashboardColumns';
 
-// Lazy load charts
+// Lazy load sub-components
 const CallsTrendChart = lazy(() =>
   import('@/components/dashboard/DashboardCharts').then((module) => ({
     default: module.CallsTrendChart,
@@ -57,45 +51,17 @@ const StatusDistributionChart = lazy(() =>
     default: module.StatusDistributionChart,
   }))
 );
-// Additional lazy-loaded components to reduce main bundle size
 const WorkQueueOverview = lazy(() => import('@/components/dashboard/WorkQueueOverview'));
 const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
 const AIInsightsWidget = lazy(() => import('@/components/ai/AIInsightsWidget'));
-
-// Work Queue Overview moved to lazy-loaded component components/dashboard/WorkQueueOverview.jsx
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
-
-const statusLabels = {
-  waiting_treatment: 'ממתין לטיפול',
-  awaiting_assignment: 'ממתין לשיוך',
-  assigning: 'בשיוך',
-  vendor_enroute: 'ספק בדרך',
-  in_progress: 'בטיפול',
-  completed: 'הושלם',
-  cancelled: 'בוטל',
-};
+const DashboardOperatorTab = lazy(() => import('@/components/dashboard/DashboardOperatorTab'));
+const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const { currentUser, hasPermission, canAccessPage } = usePermissions();
-
-  // Totals tab date filters
-  const [rangePreset, setRangePreset] = useState('last7');
-  const [customStart, setCustomStart] = useState('');
-  const [customEnd, setCustomEnd] = useState('');
 
   const today = new Date();
 
@@ -107,7 +73,6 @@ export default function Dashboard() {
   const { data: calls = [], isLoading: callsLoading } = useCalls();
   const { data: vendors = [], isLoading: vendorsLoading } = useVendors();
 
-  // Fetch available vendors for operator view
   const { data: availableVendors = [] } = useQuery({
     queryKey: ['availableVendors'],
     queryFn: () =>
@@ -120,71 +85,7 @@ export default function Dashboard() {
 
   const isLoading = callsLoading || vendorsLoading;
 
-  // Compute date range for totals tab
-  const now = new Date();
-  let startDate = startOfDay(now);
-  let endDate = endOfDay(now);
-  switch (rangePreset) {
-    case 'today':
-      startDate = startOfDay(now);
-      endDate = endOfDay(now);
-      break;
-    case 'yesterday':
-      startDate = startOfDay(subDays(now, 1));
-      endDate = endOfDay(subDays(now, 1));
-      break;
-    case 'last7':
-      startDate = startOfDay(subDays(now, 6));
-      endDate = endOfDay(now);
-      break;
-    case 'last30':
-      startDate = startOfDay(subDays(now, 29));
-      endDate = endOfDay(now);
-      break;
-    case 'custom':
-      if (customStart) startDate = new Date(customStart);
-      if (customEnd) endDate = new Date(customEnd);
-      break;
-    default:
-      break;
-  }
-
-  const filteredTotalsCalls = calls.filter(
-    (c) =>
-      c.created_date && parseISO(c.created_date) >= startDate && parseISO(c.created_date) <= endDate
-  );
-
-  const handleExportTotals = () => {
-    const headers = ['call_number', 'customer_name', 'call_status', 'created_date'];
-    const rows = filteredTotalsCalls.map((c) => [
-      c.call_number || `#${c.id?.slice(-6)}`,
-      c.customer_name || '',
-      c.call_status || '',
-      c.created_date || '',
-    ]);
-    const csv = [
-      headers.join(','),
-      ...rows.map((r) => r.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(',')),
-    ].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'calls_totals.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   // Calculate stats
-  const openStatuses = [
-    'waiting_treatment',
-    'awaiting_assignment',
-    'assigning',
-    'vendor_enroute',
-    'in_progress',
-  ];
   const openCalls = calls.filter((c) => openStatuses.includes(c.call_status));
   const waitingCalls = calls.filter((c) => c.call_status === 'waiting_treatment');
   const completedToday = calls.filter((call) => {
@@ -199,8 +100,6 @@ export default function Dashboard() {
   // Operator stats
   const myWorkItems = workQueue.filter((wq) => wq.assigned_to_agent === currentUser?.email);
   const myCallIds = myWorkItems.map((wq) => wq.call_id);
-
-  // Filter calls assigned to this operator
   const myOpenCalls = openCalls.filter((c) => myCallIds.includes(c.id));
   const myCompletedToday = calls.filter((call) => {
     const callDate = new Date(call.created_date);
@@ -214,30 +113,13 @@ export default function Dashboard() {
   const myUrgentCalls = myOpenCalls.filter(
     (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
   );
-
   const unassignedCalls = openCalls.filter((c) => !c.assigned_vendor_id);
   const urgentCalls = openCalls.filter(
     (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
   );
 
-  // Average time to completion (last 7 days)
+  // KPI stats (last 7 days)
   const sevenDaysAgo = subDays(new Date(), 7);
-  const recentCompletedCalls = calls.filter(
-    (c) =>
-      c.call_status === 'completed' &&
-      c.time_to_completion &&
-      c.created_date &&
-      parseISO(c.created_date) >= sevenDaysAgo
-  );
-  const avgCompletion =
-    recentCompletedCalls.length > 0
-      ? Math.round(
-          recentCompletedCalls.reduce((sum, c) => sum + c.time_to_completion, 0) /
-            recentCompletedCalls.length
-        )
-      : 0;
-
-  // Average satisfaction (last 7 days)
   const recentRatedCalls = calls.filter(
     (c) => c.customer_rating && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
   );
@@ -247,8 +129,6 @@ export default function Dashboard() {
           recentRatedCalls.reduce((sum, c) => sum + c.customer_rating, 0) / recentRatedCalls.length
         ).toFixed(1)
       : '0.0';
-
-  // Average ETA (from calls with vendor_eta in last 7 days)
   const recentCallsWithEta = calls.filter(
     (c) => c.vendor_eta && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
   );
@@ -258,8 +138,6 @@ export default function Dashboard() {
           recentCallsWithEta.reduce((sum, c) => sum + c.vendor_eta, 0) / recentCallsWithEta.length
         )
       : 0;
-
-  // Field resolution rate (completed without towing in last 7 days)
   const recentCompleted = calls.filter(
     (c) =>
       c.call_status === 'completed' && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
@@ -281,7 +159,7 @@ export default function Dashboard() {
     return matchesSearch && matchesStatus;
   });
 
-  // Chart data - calls by status
+  // Chart data
   const statusData = Object.keys(statusLabels)
     .map((status) => ({
       name: statusLabels[status],
@@ -289,7 +167,6 @@ export default function Dashboard() {
     }))
     .filter((d) => d.value > 0);
 
-  // Chart data - trend last 7 days
   const trendData = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(new Date(), 6 - i);
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -302,202 +179,7 @@ export default function Dashboard() {
     };
   });
 
-  // Table columns for dashboard
-  const columns = [
-    {
-      header: 'מספר קריאה',
-      accessor: 'call_number',
-      cell: (row) => (
-        <Link
-          to={createPageUrl(`CallDetails?id=${row.id}`)}
-          className="font-bold text-blue-600 hover:text-blue-800 transition-colors"
-        >
-          {row.call_number || `#${row.id?.slice(-6)}`}
-        </Link>
-      ),
-    },
-    {
-      header: 'שם לקוח',
-      accessor: 'customer_name',
-      cell: (row) => <div className="font-medium text-gray-800">{row.customer_name}</div>,
-    },
-    {
-      header: 'סוג תקלה',
-      accessor: 'issue_type',
-      cell: (row) => (
-        <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded-md text-xs font-medium">
-          {issueTypeLabels[row.issue_type] || row.issue_type || '-'}
-        </span>
-      ),
-    },
-    {
-      header: 'סטטוס',
-      accessor: 'call_status',
-      cell: (row) => <StatusBadge status={row.call_status} size="sm" />,
-    },
-    {
-      header: 'תאריך',
-      accessor: 'created_date',
-      cell: (row) =>
-        row.created_date ? (
-          <span className="text-gray-500 text-sm">
-            {format(parseISO(row.created_date), 'dd/MM HH:mm', { locale: he })}
-          </span>
-        ) : (
-          '-'
-        ),
-    },
-    {
-      header: 'ספק',
-      accessor: 'assigned_vendor_name',
-      cell: (row) =>
-        row.assigned_vendor_name ? (
-          <span className="text-green-700 font-medium text-sm">{row.assigned_vendor_name}</span>
-        ) : (
-          <span className="text-red-500 text-xs font-bold bg-red-50 px-2 py-1 rounded-full">
-            טרם שובץ
-          </span>
-        ),
-    },
-  ];
-
-  // Operator call columns
-  const operatorCallColumns = [
-    {
-      header: 'קריאה',
-      accessor: 'call_number',
-      cell: (row) => (
-        <Link
-          to={createPageUrl('CallDetails') + '?id=' + row.id}
-          className="font-bold text-blue-600 hover:text-blue-800"
-        >
-          {row.call_number || `#${row.id?.slice(-6)}`}
-        </Link>
-      ),
-    },
-    {
-      header: 'לקוח',
-      accessor: 'customer_name',
-      cell: (row) => (
-        <div>
-          <div className="font-medium text-gray-800">{row.customer_name}</div>
-          <a
-            href={`tel:${row.customer_phone}`}
-            className="text-gray-500 text-xs flex items-center gap-1 hover:text-blue-600"
-          >
-            <Phone className="w-3 h-3" />
-            {row.customer_phone}
-          </a>
-        </div>
-      ),
-    },
-    {
-      header: 'סוג תקלה',
-      accessor: 'issue_type',
-      cell: (row) => (
-        <span className="text-gray-600">{issueTypeLabels[row.issue_type] || row.issue_type}</span>
-      ),
-    },
-    {
-      header: 'מיקום',
-      accessor: 'pickup_location_city',
-      cell: (row) => (
-        <div className="flex items-center gap-1 text-gray-600">
-          <MapPin className="w-3 h-3" />
-          <span>
-            {row.pickup_location_city || row.pickup_location_address?.substring(0, 20) + '...'}
-          </span>
-        </div>
-      ),
-    },
-    {
-      header: 'סטטוס',
-      accessor: 'call_status',
-      cell: (row) => <StatusBadge status={row.call_status} size="sm" />,
-    },
-    {
-      header: 'ספק',
-      accessor: 'assigned_vendor_name',
-      cell: (row) =>
-        row.assigned_vendor_name ? (
-          <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full font-medium">
-            {row.assigned_vendor_name}
-          </span>
-        ) : (
-          <span className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-full font-medium">
-            לא שובץ
-          </span>
-        ),
-    },
-    {
-      header: '',
-      cell: (row) => (
-        <Link to={createPageUrl('CallDetails') + '?id=' + row.id}>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <Eye className="w-4 h-4" />
-          </Button>
-        </Link>
-      ),
-    },
-  ];
-
-  // Vendor columns for operator view
-  const vendorColumns = [
-    {
-      header: 'ספק',
-      accessor: 'vendor_name',
-      cell: (row) => (
-        <Link
-          to={createPageUrl('VendorProfile') + '?id=' + row.id}
-          className="font-medium text-gray-800 hover:text-blue-600 flex items-center gap-2"
-        >
-          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-            <Truck className="w-4 h-4" />
-          </div>
-          {row.vendor_name}
-        </Link>
-      ),
-    },
-    {
-      header: 'טלפון',
-      accessor: 'phone',
-      cell: (row) => (
-        <a
-          href={`tel:${row.phone}`}
-          className="text-gray-600 flex items-center gap-1 hover:text-blue-600"
-        >
-          <Phone className="w-3 h-3" />
-          {row.phone}
-        </a>
-      ),
-    },
-    {
-      header: 'אזורים',
-      accessor: 'coverage_areas',
-      cell: (row) => (
-        <div className="flex flex-wrap gap-1">
-          {(row.coverage_areas || []).slice(0, 2).map((area, idx) => (
-            <span
-              key={idx}
-              className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200"
-            >
-              {area}
-            </span>
-          ))}
-        </div>
-      ),
-    },
-    {
-      header: 'דירוג',
-      accessor: 'average_rating',
-      cell: (row) => (
-        <div className="flex items-center gap-1 text-amber-500 font-medium">
-          <span>{row.average_rating ? row.average_rating.toFixed(1) : '-'}</span>
-          <span className="text-xs">⭐</span>
-        </div>
-      ),
-    },
-  ];
+  const columns = getCallColumns();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -563,7 +245,6 @@ export default function Dashboard() {
 
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-6 mt-6 focus-visible:outline-none">
-          {/* Main Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
@@ -612,14 +293,11 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Work Queue - Takes up 2/3 */}
             <div className="xl:col-span-2">
               <Suspense fallback={<Skeleton className="h-64" />}>
                 <WorkQueueOverview calls={calls} isLoading={isLoading} />
               </Suspense>
             </div>
-
-            {/* KPI Column - Takes up 1/3 */}
             <div className="space-y-4">
               <Link to={createPageUrl('CustomerFeedback')} className="block">
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -640,7 +318,6 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-
               <Link to={createPageUrl('Reports')} className="block">
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardHeader className="pb-2">
@@ -662,7 +339,6 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-
               <Link to={createPageUrl('Reports')} className="block">
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardHeader className="pb-2">
@@ -689,14 +365,12 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* AI Insights Widget - Only for users with reports permission */}
           <PermissionGuard category="reports" permission="performance">
             <Suspense fallback={<Skeleton className="h-[120px]" />}>
               <AIInsightsWidget />
             </Suspense>
           </PermissionGuard>
 
-          {/* Charts Section */}
           <div className="grid lg:grid-cols-2 gap-6">
             <Suspense fallback={<Skeleton className="h-[300px]" />}>
               <CallsTrendChart data={trendData} isLoading={isLoading} />
@@ -706,7 +380,6 @@ export default function Dashboard() {
             </Suspense>
           </div>
 
-          {/* Recent Calls Table */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>קריאות אחרונות</CardTitle>
@@ -734,223 +407,19 @@ export default function Dashboard() {
 
         {/* Operator Tab */}
         <TabsContent value="operator" className="space-y-6 mt-6 focus-visible:outline-none">
-          {/* Operator Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Suspense fallback={<Skeleton className="h-24" />}>
-              <StatCard
-                title="הקריאות שלי"
-                value={myOpenCalls.length}
-                subtitle="בטיפול פעיל"
-                icon={Headphones}
-                variant="primary"
-                to={createPageUrl('MyQueue')}
-                className="hover:border-blue-300 cursor-pointer"
-              />
-            </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}>
-              <StatCard
-                title="הושלמו היום"
-                value={myCompletedToday.length}
-                subtitle="ביצוע אישי"
-                icon={CheckCircle2}
-                variant="success"
-                to={createPageUrl('Reports')}
-                className="hover:border-green-300 cursor-pointer"
-              />
-            </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}>
-              <StatCard
-                title="ממתינות לשיוך"
-                value={unassignedCalls.length}
-                subtitle="כללי במערכת"
-                icon={Users}
-                variant="warning"
-                to={createPageUrl('Calls') + '?status=waiting_treatment'}
-                className="hover:border-orange-300 cursor-pointer"
-              />
-            </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}>
-              <StatCard
-                title="דחופות שלי"
-                value={myUrgentCalls.length}
-                subtitle="נדרש טיפול"
-                icon={AlertCircle}
-                variant="danger"
-                to={createPageUrl('Calls') + '?priority=urgent'}
-                className="hover:border-red-300 cursor-pointer"
-              />
-            </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}>
-              <StatCard
-                title="ספקים זמינים"
-                value={availableVendors.length}
-                subtitle="בזמן אמת"
-                icon={Truck}
-                variant="default"
-                to={createPageUrl('AllVendorsMap')}
-                className="hover:border-gray-300 cursor-pointer"
-              />
-            </Suspense>
-          </div>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">פעולות מהירות</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <PermissionGuard category="calls" permission="create">
-                  <Link to={createPageUrl('NewCase')} className="group">
-                    <div className="flex flex-col items-center justify-center p-6 bg-red-50 rounded-xl border border-red-100 group-hover:border-red-300 group-hover:shadow-md transition-all cursor-pointer h-full">
-                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                        <Plus className="w-6 h-6 text-red-600" />
-                      </div>
-                      <span className="font-semibold text-gray-800">קריאה חדשה</span>
-                    </div>
-                  </Link>
-                </PermissionGuard>
-                <Button
-                  variant="ghost"
-                  onClick={() => setActiveTab('cases')}
-                  className="h-auto p-0 group"
-                >
-                  <div className="w-full flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl border border-gray-100 group-hover:border-gray-300 group-hover:shadow-md transition-all cursor-pointer h-full">
-                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                      <List className="w-6 h-6 text-gray-600" />
-                    </div>
-                    <span className="font-semibold text-gray-800">רשימת קריאות</span>
-                  </div>
-                </Button>
-                <PermissionGuard category="vendors" permission="view">
-                  <Link to={createPageUrl('ServiceProviders')} className="group">
-                    <div className="flex flex-col items-center justify-center p-6 bg-blue-50 rounded-xl border border-blue-100 group-hover:border-blue-300 group-hover:shadow-md transition-all cursor-pointer h-full">
-                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                        <Truck className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <span className="font-semibold text-gray-800">ניהול ספקים</span>
-                    </div>
-                  </Link>
-                </PermissionGuard>
-                <PermissionGuard category="monitoring" permission="live_map">
-                  <Link to={createPageUrl('AllVendorsMap')} className="group">
-                    <div className="flex flex-col items-center justify-center p-6 bg-green-50 rounded-xl border border-green-100 group-hover:border-green-300 group-hover:shadow-md transition-all cursor-pointer h-full">
-                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
-                        <MapPin className="w-6 h-6 text-green-600" />
-                      </div>
-                      <span className="font-semibold text-gray-800">מפת ספקים</span>
-                    </div>
-                  </Link>
-                </PermissionGuard>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Urgent Calls Alert */}
-          {urgentCalls.length > 0 && (
-            <Card className="border-r-4 border-r-red-500 bg-red-50/30">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2 text-red-700">
-                  <AlertCircle className="w-5 h-5" />
-                  קריאות דחופות בטיפול ({urgentCalls.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {urgentCalls.slice(0, 5).map((call) => (
-                    <div
-                      key={call.id}
-                      className="flex items-center justify-between p-4 bg-white rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Link
-                            to={createPageUrl('CallDetails') + '?id=' + call.id}
-                            className="font-bold text-gray-900 hover:text-blue-600 hover:underline"
-                          >
-                            {call.call_number || `#${call.id?.slice(-6)}`}
-                          </Link>
-                          <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">
-                            דחוף
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 flex items-center gap-2">
-                          <span className="font-medium">{call.customer_name}</span>
-                          <span>•</span>
-                          <span>{call.pickup_location_city}</span>
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Suspense
-                          fallback={
-                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">...</span>
-                          }
-                        >
-                          <StatusBadge status={call.call_status} size="sm" />
-                        </Suspense>
-                        <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-gray-200 hover:bg-gray-50"
-                          >
-                            <Eye className="w-4 h-4 ml-1" />
-                            צפה
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Open Calls Table */}
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle>הקריאות שלי בטיפול</CardTitle>
-                <CardDescription>קריאות המשויכות אליך וממתינות לטיפול</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Suspense fallback={<Skeleton className="h-40" />}>
-                  <DataTableLazy
-                    columns={operatorCallColumns}
-                    data={myOpenCalls}
-                    isLoading={callsLoading}
-                    onRowClick={(row) =>
-                      (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
-                    }
-                    emptyMessage="אין קריאות משויכות אליך כרגע"
-                  />
-                </Suspense>
-              </CardContent>
-            </Card>
-
-            {/* Available Vendors */}
-            <Card className="lg:col-span-1">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>ספקים זמינים</CardTitle>
-                <Suspense fallback={null}>
-                  <AvatarStack users={availableVendors} max={5} size="sm" />
-                </Suspense>
-              </CardHeader>
-              <CardContent>
-                <Suspense fallback={<Skeleton className="h-40" />}>
-                  <DataTableLazy
-                    columns={vendorColumns}
-                    data={availableVendors}
-                    isLoading={vendorsLoading}
-                    onRowClick={(row) =>
-                      (window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id)
-                    }
-                    emptyMessage="אין ספקים זמינים כרגע"
-                  />
-                </Suspense>
-              </CardContent>
-            </Card>
-          </div>
+          <Suspense fallback={<Skeleton className="h-96" />}>
+            <DashboardOperatorTab
+              myOpenCalls={myOpenCalls}
+              myCompletedToday={myCompletedToday}
+              unassignedCalls={unassignedCalls}
+              myUrgentCalls={myUrgentCalls}
+              urgentCalls={urgentCalls}
+              availableVendors={availableVendors}
+              callsLoading={callsLoading}
+              vendorsLoading={vendorsLoading}
+              setActiveTab={setActiveTab}
+            />
+          </Suspense>
         </TabsContent>
 
         {/* Cases Tab */}
@@ -969,7 +438,6 @@ export default function Dashboard() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
                   />
-                  {/* Search icon could be added here absolutely positioned */}
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-full md:w-48">
@@ -1027,104 +495,12 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Totals Tab */}
         <TabsContent value="totals" className="space-y-6 mt-6 focus-visible:outline-none">
-          <Card>
-            <CardHeader>
-              <CardTitle>סה"כ קריאות</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-3 md:items-end mb-4">
-                <div className="w-full md:w-48">
-                  <Select value={rangePreset} onValueChange={setRangePreset}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="טווח תאריכים" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="today">היום</SelectItem>
-                      <SelectItem value="yesterday">אתמול</SelectItem>
-                      <SelectItem value="last7">7 ימים אחרונים</SelectItem>
-                      <SelectItem value="last30">30 ימים אחרונים</SelectItem>
-                      <SelectItem value="custom">מותאם אישית</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {rangePreset === 'custom' && (
-                  <div className="flex flex-col sm:flex-row gap-3 w-full">
-                    <div className="flex-1">
-                      <label className="label-text">מתאריך ושעה</label>
-                      <Input
-                        type="datetime-local"
-                        value={customStart}
-                        onChange={(e) => setCustomStart(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="label-text">עד תאריך ושעה</label>
-                      <Input
-                        type="datetime-local"
-                        value={customEnd}
-                        onChange={(e) => setCustomEnd(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="md:ml-auto">
-                  <Button variant="outline" className="gap-2" onClick={handleExportTotals}>
-                    <Download className="w-4 h-4" /> יצוא
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-100">
-                  <div className="text-2xl font-bold text-gray-900">
-                    {filteredTotalsCalls.length}
-                  </div>
-                  <div className="text-xs text-gray-500">סה"כ קריאות בטווח</div>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {
-                      filteredTotalsCalls.filter((c) =>
-                        [
-                          'waiting_treatment',
-                          'awaiting_assignment',
-                          'assigning',
-                          'vendor_enroute',
-                          'in_progress',
-                        ].includes(c.call_status)
-                      ).length
-                    }
-                  </div>
-                  <div className="text-xs text-blue-500">פתוחות</div>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
-                  <div className="text-2xl font-bold text-green-600">
-                    {filteredTotalsCalls.filter((c) => c.call_status === 'completed').length}
-                  </div>
-                  <div className="text-xs text-green-500">הושלמו</div>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg text-center border border-red-100">
-                  <div className="text-2xl font-bold text-red-600">
-                    {filteredTotalsCalls.filter((c) => c.call_status === 'cancelled').length}
-                  </div>
-                  <div className="text-xs text-red-500">בוטלו</div>
-                </div>
-              </div>
-
-              <Suspense fallback={<Skeleton className="h-40" />}>
-                <DataTableLazy
-                  columns={columns}
-                  data={filteredTotalsCalls}
-                  isLoading={callsLoading}
-                  onRowClick={(row) =>
-                    (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
-                  }
-                  emptyMessage="לא נמצאו קריאות בטווח"
-                />
-              </Suspense>
-            </CardContent>
-          </Card>
+          <Suspense fallback={<Skeleton className="h-96" />}>
+            <DashboardTotalsTab calls={calls} callsLoading={callsLoading} />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>
