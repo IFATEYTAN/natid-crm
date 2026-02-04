@@ -50,7 +50,6 @@
 import AdvancedExport from './pages/AdvancedExport';
 import Agents from './pages/Agents';
 import AllVendorsMap from './pages/AllVendorsMap';
-import AppLogin from './pages/AppLogin';
 import AuditLog from './pages/AuditLog';
 import AutomationSettings from './pages/AutomationSettings';
 import Calendar from './pages/Calendar';
@@ -87,7 +86,6 @@ export const PAGES = {
     "AdvancedExport": AdvancedExport,
     "Agents": Agents,
     "AllVendorsMap": AllVendorsMap,
-    "AppLogin": AppLogin,
     "AuditLog": AuditLog,
     "AutomationSettings": AutomationSettings,
     "Calendar": Calendar,

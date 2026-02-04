@@ -99,10 +99,6 @@ export default function Layout({ children, currentPageName }) {
     }
   }, [currentPageName]);
 
-  // Don't wrap auth pages in the main layout
-  if (currentPageName === 'SignIn' || currentPageName === 'Register' || currentPageName === 'AuthLogin' || currentPageName === 'Login' || currentPageName === 'AppLogin') {
-    return children;
-  }
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -159,7 +155,7 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   const handleLogout = async () => {
-    await base44.auth.logout('/AppLogin');
+    await base44.auth.logout();
   };
 
   return (
