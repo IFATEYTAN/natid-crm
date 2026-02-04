@@ -71,12 +71,24 @@ export default function VendorPortalPage() {
 
   const isAdmin = currentUser?.role === 'admin';
   const [selectedVendorId, setSelectedVendorId] = useState('');
+  const [activeTab, setActiveTab] = useState('vendor');
+  useEffect(() => {
+    if (isAdmin) setActiveTab('admin');
+  }, [isAdmin]);
 
   // Load all vendors for admin impersonation
   const allVendorsQuery = useQuery({
     queryKey: ['allVendors'],
     queryFn: () => base44.entities.Vendor.list('-vendor_name', 500),
     enabled: !!isAdmin,
+  });
+
+  // Admin: all calls overview
+  const adminCallsQuery = useQuery({
+    queryKey: ['adminCalls'],
+    queryFn: () => base44.entities.Call.list('-created_date', 500),
+    enabled: !!isAdmin,
+    refetchInterval: 30000,
   });
 
   // Get current user
@@ -287,49 +299,75 @@ export default function VendorPortalPage() {
     );
   }
 
-  // Admin view: choose a vendor to view portal
-  if (isAdmin && !vendorProfile) {
-    const vendors = allVendorsQuery.data || [];
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle className="text-lg">צפייה בפורטל ספקים (אדמין)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="label-text">בחר ספק</label>
-              <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="בחר ספק" />
-                </SelectTrigger>
-                <SelectContent>
-                  {vendors.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.vendor_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              className="w-full"
-              disabled={!selectedVendorId}
-              onClick={() => {
-                const v = vendors.find((x) => x.id === selectedVendorId);
-                if (v) {
-                  setVendorProfile(v);
-                  setIsAvailable(!!v.is_available_now);
-                }
-              }}
-            >
-              פתח פורטל לספק
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
+
+  // Admin columns for unified view
+  const adminColumns = [
+    {
+      header: 'מספר קריאה',
+      accessor: 'call_number',
+      cell: (call) => (
+        <Link
+          to={createPageUrl(`VendorCallManagement?id=${call.id}`)}
+          className="font-medium text-blue-600 hover:underline"
+        >
+          {call.call_number}
+        </Link>
+      ),
+    },
+    {
+      header: 'לקוח',
+      accessor: 'customer_name',
+      cell: (call) => (
+        <div>
+          <div className="font-medium">{call.customer_name}</div>
+          <div className="text-xs text-[#6B778C]" dir="ltr">
+            {call.customer_phone}
+          </div>
+        </div>
+      ),
+    },
+    {
+      header: 'ספק',
+      accessor: 'assigned_vendor_name',
+      cell: (call) => call.assigned_vendor_name || '-',
+    },
+    {
+      header: 'סוג תקלה',
+      accessor: 'issue_type',
+      cell: (call) => issueTypeLabels[call.issue_type] || call.issue_type,
+    },
+    {
+      header: 'מיקום',
+      accessor: 'pickup_location_address',
+      cell: (call) => (
+        <div className="flex items-center gap-1 text-sm max-w-[200px]">
+          <MapPin className="w-3 h-3 text-[#6B778C] shrink-0" />
+          <span className="truncate">{call.pickup_location_address}</span>
+        </div>
+      ),
+    },
+    {
+      header: 'סטטוס',
+      accessor: 'call_status',
+      cell: (call) => <StatusBadge status={call.call_status} />,
+    },
+    {
+      header: 'תאריך',
+      accessor: 'created_date',
+      cell: (call) => {
+        const d = call?.created_date ? new Date(call.created_date) : null;
+        return d && !isNaN(d) ? format(d, 'dd/MM HH:mm') : '-';
+      },
+    },
+  ];
+
+  const adminCalls = adminCallsQuery?.data || [];
+  const adminActiveCalls = useMemo(
+    () => adminCalls.filter((c) => ['vendor_enroute', 'in_progress', 'assigned', 'assigning'].includes(c.call_status)),
+    [adminCalls]
+  );
+  const adminCompletedCalls = adminCalls.filter((c) => c.call_status === 'completed');
 
   const columns = [
     {
@@ -416,166 +454,266 @@ export default function VendorPortalPage() {
 
   return (
     <div className="space-y-6" dir="rtl">
-      {/* New Call Alert */}
-      <Suspense fallback={null}>
-        <VendorNewCallAlertLazy
-          call={pendingCall}
-          isOpen={showNewCallAlert}
-          onAccept={handleAcceptCall}
-          onDecline={handleDeclineCall}
-          timeoutSeconds={120}
-          vendorContract={contractQuery.data}
-          vendorProfile={vendorProfile}
-        />
-      </Suspense>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
+        <TabsList>
+          <TabsTrigger value="vendor">תצוגת ספק</TabsTrigger>
+          {isAdmin && <TabsTrigger value="admin">אדמין</TabsTrigger>}
+        </TabsList>
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#172B4D]">שלום, {vendorProfile?.vendor_name}</h1>
-          {isAdmin && (
-            <p className="text-xs text-[#6B778C] mt-1">מציג בתור ספק (צפייה כאדמין)</p>
-          )}
-          <p className="text-[#6B778C] text-sm">פורטל ספקים - ניהול הקריאות שלך</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link to={createPageUrl('MyVendorProfile')}>
-            <Button variant="outline" size="sm" className="gap-1">
-              <Settings className="w-4 h-4" />
-              הפרופיל שלי
-            </Button>
-          </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => callsQuery.refetch()}
-            className="gap-1"
-          >
-            <RefreshCw className={cn('w-4 h-4', callsQuery.isFetching && 'animate-spin')} />
-          </Button>
-        </div>
-      </div>
-
-      {/* Availability Toggle - Prominent */}
-      <Suspense fallback={<div className="h-16" />}> 
-        <VendorAvailabilityToggleLazy
-          vendor={vendorProfile}
-          isAvailable={isAvailable}
-          onToggle={toggleAvailability}
-          lastLocationUpdate={lastLocationUpdate}
-          locationError={locationError}
-        />
-      </Suspense>
-
-      {/* Stats */}
-      <Suspense fallback={<Skeleton className="h-32" />}> 
-        <VendorStatsLazy vendor={vendorProfile} calls={calls} />
-      </Suspense>
-
-      {/* Active Calls Alert */}
-      {activeCalls.length > 0 && (
-        <Card className="bg-orange-50 border-orange-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2 text-orange-800">
-              <AlertCircle className="w-5 h-5" />
-              קריאות פעילות שדורשות טיפול
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {activeCalls.map((call) => (
-                <div key={call.id} className="bg-white rounded-lg p-4 border border-orange-200">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold">{call.call_number}</span>
-                        <StatusBadge status={call.call_status} />
-                      </div>
-                      <div className="text-sm text-[#6B778C]">
-                        {call.customer_name} • {issueTypeLabels[call.issue_type]}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {call.pickup_location_address}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <a href={`tel:${call.customer_phone}`}>
-                        <Button size="sm" variant="outline" className="gap-1">
-                          <Phone className="w-3 h-3" />
-                          התקשר
-                        </Button>
-                      </a>
-                      <a
-                        href={`https://waze.com/ul?ll=${call.pickup_location_lat},${call.pickup_location_lon}&navigate=yes`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button size="sm" variant="outline" className="gap-1">
-                          <Navigation className="w-3 h-3" />
-                          נווט
-                        </Button>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    {(call.call_status === 'assigned' || call.call_status === 'assigning') && (
-                      <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
-                        <Button className="bg-blue-600 hover:bg-blue-700">יצא לדרך</Button>
-                      </Link>
-                    )}
-                    {call.call_status === 'vendor_enroute' && (
-                      <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
-                        <Button className="bg-blue-600 hover:bg-blue-700">הגעתי למקום</Button>
-                      </Link>
-                    )}
-                    {call.call_status === 'in_progress' && (
-                      <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
-                        <Button className="bg-[#f97316] hover:bg-[#ea580c]">סיים וחתם</Button>
-                      </Link>
-                    )}
-                    <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
-                      <Button variant="outline">נהל קריאה</Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
+        {isAdmin && (
+          <TabsContent value="admin" className="mt-4 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-[#172B4D]">סקירה אדמינית - פורטל ספקים</h1>
+                <p className="text-[#6B778C] text-sm">צפייה בכל הקריאות וכל הספקים</p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* Calls Table */}
-      <Card className="bg-white">
-        <CardHeader>
-          <Tabs defaultValue="all" className="w-full" dir="rtl">
-            <TabsList>
-              <TabsTrigger value="all">כל הקריאות</TabsTrigger>
-              <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
-              <TabsTrigger value="completed">הושלמו ({completedCalls.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="all" className="mt-4">
-              <Suspense fallback={<Skeleton className="h-40" />}> 
-                <DataTableLazy columns={columns} data={calls} emptyMessage="אין קריאות להצגה" />
-              </Suspense>
-            </TabsContent>
-            <TabsContent value="active" className="mt-4">
-              <Suspense fallback={<Skeleton className="h-40" />}> 
-                <DataTableLazy columns={columns} data={activeCalls} emptyMessage="אין קריאות פעילות" />
-              </Suspense>
-            </TabsContent>
-            <TabsContent value="completed" className="mt-4">
-              <Suspense fallback={<Skeleton className="h-40" />}> 
-                <DataTableLazy
-                  columns={columns}
-                  data={completedCalls}
-                  emptyMessage="אין קריאות שהושלמו"
+            <Card className="max-w-xl">
+              <CardHeader>
+                <CardTitle className="text-lg">פתח פורטל לספק</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="label-text">בחר ספק</label>
+                  <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="בחר ספק" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(allVendorsQuery.data || []).map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.vendor_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  className="w-full"
+                  disabled={!selectedVendorId}
+                  onClick={() => {
+                    const v = (allVendorsQuery.data || []).find((x) => x.id === selectedVendorId);
+                    if (v) {
+                      setVendorProfile(v);
+                      setIsAvailable(!!v.is_available_now);
+                      setActiveTab('vendor');
+                    }
+                  }}
+                >
+                  פתח פורטל לספק
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white">
+              <CardHeader>
+                <Tabs defaultValue="all" className="w-full" dir="rtl">
+                  <TabsList>
+                    <TabsTrigger value="all">כל הקריאות</TabsTrigger>
+                    <TabsTrigger value="active">פעילות ({adminActiveCalls.length})</TabsTrigger>
+                    <TabsTrigger value="completed">הושלמו ({adminCompletedCalls.length})</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="all" className="mt-4">
+                    <Suspense fallback={<Skeleton className="h-40" />}> 
+                      <DataTableLazy columns={adminColumns} data={adminCalls} emptyMessage="אין קריאות להצגה" />
+                    </Suspense>
+                  </TabsContent>
+                  <TabsContent value="active" className="mt-4">
+                    <Suspense fallback={<Skeleton className="h-40" />}> 
+                      <DataTableLazy columns={adminColumns} data={adminActiveCalls} emptyMessage="אין קריאות פעילות" />
+                    </Suspense>
+                  </TabsContent>
+                  <TabsContent value="completed" className="mt-4">
+                    <Suspense fallback={<Skeleton className="h-40" />}> 
+                      <DataTableLazy
+                        columns={adminColumns}
+                        data={adminCompletedCalls}
+                        emptyMessage="אין קריאות שהושלמו"
+                      />
+                    </Suspense>
+                  </TabsContent>
+                </Tabs>
+              </CardHeader>
+            </Card>
+          </TabsContent>
+        )}
+
+        <TabsContent value="vendor" className="mt-4 space-y-6">
+          {!vendorProfile ? (
+            <Card className="max-w-md">
+              <CardContent className="pt-6 text-center">
+                <AlertCircle className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
+                <h2 className="text-xl font-bold mb-2">לא נבחר ספק</h2>
+                <p className="text-[#6B778C]">אנא עברי לטאב "אדמין" ובחרי ספק לצפייה בפורטל.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* New Call Alert */}
+              <Suspense fallback={null}>
+                <VendorNewCallAlertLazy
+                  call={pendingCall}
+                  isOpen={showNewCallAlert}
+                  onAccept={handleAcceptCall}
+                  onDecline={handleDeclineCall}
+                  timeoutSeconds={120}
+                  vendorContract={contractQuery.data}
+                  vendorProfile={vendorProfile}
                 />
               </Suspense>
-            </TabsContent>
-          </Tabs>
-        </CardHeader>
-      </Card>
+
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-[#172B4D]">שלום, {vendorProfile?.vendor_name}</h1>
+                  {isAdmin && (
+                    <p className="text-xs text-[#6B778C] mt-1">מציג בתור ספק (צפייה כאדמין)</p>
+                  )}
+                  <p className="text-[#6B778C] text-sm">פורטל ספקים - ניהול הקריאות שלך</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Link to={createPageUrl('MyVendorProfile')}>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <Settings className="w-4 h-4" />
+                      הפרופיל שלי
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => callsQuery.refetch()}
+                    className="gap-1"
+                  >
+                    <RefreshCw className={cn('w-4 h-4', callsQuery.isFetching && 'animate-spin')} />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Availability Toggle - Prominent */}
+              <Suspense fallback={<div className="h-16" />}> 
+                <VendorAvailabilityToggleLazy
+                  vendor={vendorProfile}
+                  isAvailable={isAvailable}
+                  onToggle={toggleAvailability}
+                  lastLocationUpdate={lastLocationUpdate}
+                  locationError={locationError}
+                />
+              </Suspense>
+
+              {/* Stats */}
+              <Suspense fallback={<Skeleton className="h-32" />}> 
+                <VendorStatsLazy vendor={vendorProfile} calls={calls} />
+              </Suspense>
+
+              {/* Active Calls Alert */}
+              {activeCalls.length > 0 && (
+                <Card className="bg-orange-50 border-orange-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center gap-2 text-orange-800">
+                      <AlertCircle className="w-5 h-5" />
+                      קריאות פעילות שדורשות טיפול
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {activeCalls.map((call) => (
+                        <div key={call.id} className="bg-white rounded-lg p-4 border border-orange-200">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold">{call.call_number}</span>
+                                <StatusBadge status={call.call_status} />
+                              </div>
+                              <div className="text-sm text-[#6B778C]">
+                                {call.customer_name} • {issueTypeLabels[call.issue_type]}
+                              </div>
+                              <div className="flex items-center gap-1 text-sm mt-1">
+                                <MapPin className="w-3 h-3" />
+                                {call.pickup_location_address}
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <a href={`tel:${call.customer_phone}`}>
+                                <Button size="sm" variant="outline" className="gap-1">
+                                  <Phone className="w-3 h-3" />
+                                  התקשר
+                                </Button>
+                              </a>
+                              <a
+                                href={`https://waze.com/ul?ll=${call.pickup_location_lat},${call.pickup_location_lon}&navigate=yes`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Button size="sm" variant="outline" className="gap-1">
+                                  <Navigation className="w-3 h-3" />
+                                  נווט
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mt-3">
+                            {(call.call_status === 'assigned' || call.call_status === 'assigning') && (
+                              <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
+                                <Button className="bg-blue-600 hover:bg-blue-700">יצא לדרך</Button>
+                              </Link>
+                            )}
+                            {call.call_status === 'vendor_enroute' && (
+                              <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
+                                <Button className="bg-blue-600 hover:bg-blue-700">הגעתי למקום</Button>
+                              </Link>
+                            )}
+                            {call.call_status === 'in_progress' && (
+                              <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
+                                <Button className="bg-[#f97316] hover:bg-[#ea580c]">סיים וחתם</Button>
+                              </Link>
+                            )}
+                            <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
+                              <Button variant="outline">נהל קריאה</Button>
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Calls Table */}
+              <Card className="bg-white">
+                <CardHeader>
+                  <Tabs defaultValue="all" className="w-full" dir="rtl">
+                    <TabsList>
+                      <TabsTrigger value="all">כל הקריאות</TabsTrigger>
+                      <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
+                      <TabsTrigger value="completed">הושלמו ({completedCalls.length})</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="all" className="mt-4">
+                      <Suspense fallback={<Skeleton className="h-40" />}> 
+                        <DataTableLazy columns={columns} data={calls} emptyMessage="אין קריאות להצגה" />
+                      </Suspense>
+                    </TabsContent>
+                    <TabsContent value="active" className="mt-4">
+                      <Suspense fallback={<Skeleton className="h-40" />}> 
+                        <DataTableLazy columns={columns} data={activeCalls} emptyMessage="אין קריאות פעילות" />
+                      </Suspense>
+                    </TabsContent>
+                    <TabsContent value="completed" className="mt-4">
+                      <Suspense fallback={<Skeleton className="h-40" />}> 
+                        <DataTableLazy
+                          columns={columns}
+                          data={completedCalls}
+                          emptyMessage="אין קריאות שהושלמו"
+                        />
+                      </Suspense>
+                    </TabsContent>
+                  </Tabs>
+                </CardHeader>
+              </Card>
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
