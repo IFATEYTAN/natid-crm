@@ -417,21 +417,26 @@ export default function HistoricalDataAnalysisPage() {
                 </ResponsiveContainer>
               </div>
               <div className="w-full md:w-1/2 space-y-3">
-                {serveTypeDistribution.slice(0, 6).map((item, index) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-4 h-4 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                      />
-                      <span className="font-medium">{item.name}</span>
+                {(() => {
+                  const total = serveTypeDistribution.slice(0, 6).reduce((sum, i) => sum + i.value, 0);
+                  return serveTypeDistribution.slice(0, 6).map((item, index) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-4 h-4 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        />
+                        <span className="font-medium">{item.name}</span>
+                      </div>
+                      <span className="font-bold text-gray-700">
+                        {item.value.toLocaleString()} ({total ? Math.round((item.value / total) * 100) : 0}%)
+                      </span>
                     </div>
-                    <span className="font-bold text-gray-700">{item.value.toLocaleString()}</span>
-                  </div>
-                ))}
+                  ));
+                })()}
               </div>
             </div>
           </CardContent>

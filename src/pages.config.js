@@ -53,10 +53,13 @@ import AllVendorsMap from './pages/AllVendorsMap';
 import AuditLog from './pages/AuditLog';
 import AutomationSettings from './pages/AutomationSettings';
 import Calendar from './pages/Calendar';
+import CallDetails from './pages/CallDetails';
 import Calls from './pages/Calls';
 import CoverageAreas from './pages/CoverageAreas';
+import CustomerDetails from './pages/CustomerDetails';
 import CustomerFeedback from './pages/CustomerFeedback';
 import Customers from './pages/Customers';
+import Dashboard from './pages/Dashboard';
 import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
 import ImportHistoricalData from './pages/ImportHistoricalData';
 import IntegrationSettings from './pages/IntegrationSettings';
@@ -77,9 +80,6 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import Dashboard from './pages/Dashboard';
-import CallDetails from './pages/CallDetails';
-import CustomerDetails from './pages/CustomerDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -90,10 +90,13 @@ export const PAGES = {
     "AuditLog": AuditLog,
     "AutomationSettings": AutomationSettings,
     "Calendar": Calendar,
+    "CallDetails": CallDetails,
     "Calls": Calls,
     "CoverageAreas": CoverageAreas,
+    "CustomerDetails": CustomerDetails,
     "CustomerFeedback": CustomerFeedback,
     "Customers": Customers,
+    "Dashboard": Dashboard,
     "HistoricalDataAnalysis": HistoricalDataAnalysis,
     "ImportHistoricalData": ImportHistoricalData,
     "IntegrationSettings": IntegrationSettings,
@@ -114,9 +117,6 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "Dashboard": Dashboard,
-    "CallDetails": CallDetails,
-    "CustomerDetails": CustomerDetails,
 }
 
 export const pagesConfig = {
