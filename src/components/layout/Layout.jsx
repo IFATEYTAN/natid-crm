@@ -8,7 +8,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
-import AccessibilityWidget from '@/components/AccessibilityWidget';
+// Lazy-load AccessibilityWidget
+const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
 // Lazy-load PWA and status widgets to reduce main bundle size
 const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'));
 const OfflineIndicator = lazy(() => import('@/components/pwa/OfflineIndicator'));
@@ -16,7 +17,8 @@ const UpdatePrompt = lazy(() => import('@/components/pwa/UpdatePrompt'));
 const NotificationPermissionBanner = lazy(() => import('@/components/notifications/PushNotifications').then(m => ({ default: m.NotificationPermissionBanner })));
 const ConnectionStatusIndicator = lazy(() => import('@/components/useRealtimeUpdates').then(m => ({ default: m.ConnectionStatusIndicator })));
 
-import { Toaster } from 'sonner';
+// Lazy Toaster to reduce main bundle
+const ToasterLazy = lazy(() => import('sonner').then(m => ({ default: m.Toaster })));
 // animejs dynamically imported in effect to keep index chunk small
 
 export default function Layout({ children, currentPageName }) {
@@ -449,7 +451,9 @@ export default function Layout({ children, currentPageName }) {
           {children}
         </main>
 
-        <AccessibilityWidget />
+        <Suspense fallback={null}>
+          <AccessibilityWidget />
+        </Suspense>
 
         {/* PWA Components */}
         <Suspense fallback={null}>
@@ -468,7 +472,9 @@ export default function Layout({ children, currentPageName }) {
             <ConnectionStatusIndicator />
           </Suspense>
         </div>
-        <Toaster position="top-center" richColors />
+        <Suspense fallback={null}>
+          <ToasterLazy position="top-center" richColors />
+        </Suspense>
       </div>
     </div>
   );
