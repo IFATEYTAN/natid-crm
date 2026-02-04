@@ -8,7 +8,7 @@ import { createPageUrl } from '@/components/utils';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
 // DataTable lazy import below
-import AvatarStack from '@/components/ui/AvatarStack';
+const AvatarStack = lazy(() => import('@/components/ui/AvatarStack'));
 import {
   Plus,
   ChevronLeft,
@@ -904,7 +904,9 @@ export default function Dashboard() {
             <Card className="lg:col-span-1">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>ספקים זמינים</CardTitle>
-                <AvatarStack users={availableVendors} max={5} size="sm" />
+                <Suspense fallback={null}>
+                  <AvatarStack users={availableVendors} max={5} size="sm" />
+                </Suspense>
               </CardHeader>
               <CardContent>
                 <Suspense fallback={<Skeleton className="h-40" />}>
