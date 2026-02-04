@@ -89,12 +89,34 @@ npm run storybook    # Component library UI
 7. **Hebrew text** - All user-facing strings in Hebrew
 8. **Toast notifications** - Use Sonner for user feedback
 
+## Getting Started
+
+### New to the project?
+```bash
+bash scripts/quick-start.sh    # Automated setup (installs deps, creates .env.local, verifies build)
+```
+Then read: `docs/CLAUDE_WORKFLOW.md` → section "יוזר חדש - Onboarding מלא"
+
+### Already working on the project?
+Read: `docs/CLAUDE_WORKFLOW.md` → section "יוזר קיים - מה השתנה ואיך מתחילים"
+
 ## Documentation
 - `SYSTEM_SPECIFICATION.md` - Full system specification (Hebrew)
 - `docs/WORKFLOWS.md` - Business workflows
 - `docs/BUSINESS_WORKFLOWS.md` - Detailed business processes
 - `docs/LESSONS_LEARNED.md` - Accumulated knowledge and resolved issues
-- `docs/CLAUDE_WORKFLOW.md` - Claude Code workflow guide
+- `docs/CLAUDE_WORKFLOW.md` - Claude Code workflow guide (includes onboarding for new & existing users)
+
+## Skills (Reusable Workflows)
+Located in `.claude/skills/`:
+- `plan-and-review.md` - Plan before coding + senior review
+- `ci-build-check.md` - Run lint, format, typecheck, build
+- `update-docs.md` - Systematic documentation updates
+- `code-review.md` - Security, performance, RTL review
+- `analytics.md` - Codebase analysis and metrics
+- `learning-mode.md` - Explanations, presentations, spaced repetition
+- `subagents.md` - Break complex tasks into parallel agents
+- `prompt-patterns.md` - Effective prompt templates
 
 ## Workflow Rules
 1. **Always start with a plan** - Use plan mode before implementing any feature
@@ -103,3 +125,5 @@ npm run storybook    # Component library UI
 4. **Check build** - `npm run build` must succeed
 5. **Use skills** - Check `.claude/skills/` for reusable workflows
 6. **Use subagents** - For complex tasks, break into subagents to keep context clean
+7. **Voice dictation** - Use fn+fn (macOS) or Win+H (Windows) for faster, richer prompts
+8. **Challenge mode** - Ask Claude to challenge and verify changes before merging
