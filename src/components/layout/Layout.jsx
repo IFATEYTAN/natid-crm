@@ -125,6 +125,7 @@ export default function Layout({ children, currentPageName }) {
     {
       title: 'תפעול יומי',
       items: [
+        { name: 'מסך הבית', href: 'LandingPage' },
         { name: 'לוח בקרה', href: 'Dashboard' },
         { name: 'רשימת קריאות', href: 'Calls' },
         { name: 'לוח שנה', href: 'Calendar' },
