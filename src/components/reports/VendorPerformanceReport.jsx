@@ -1,71 +1,78 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from '@/components/ui/card';
 import DataTable from '@/components/ui/DataTable';
-import { Star, Clock, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Star, Clock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 export default function VendorPerformanceReport({ vendors, calls, ratings }) {
-  const vendorStats = vendors.map(vendor => {
-    const vendorCalls = calls.filter(c => c.assigned_vendor_id === vendor.id);
-    const completedCalls = vendorCalls.filter(c => c.call_status === 'completed');
-    const vendorRatings = ratings.filter(r => r.vendor_id === vendor.id);
-    
-    // Calculate average response time
-    const responseTimes = vendorCalls
-      .filter(c => c.assigned_at && c.vendor_arrival_time_actual)
-      .map(c => {
-        const assigned = new Date(c.assigned_at);
-        const arrived = new Date(c.vendor_arrival_time_actual);
-        return (arrived - assigned) / 1000 / 60; // minutes
-      });
-    const avgResponseTime = responseTimes.length > 0
-      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
-      : 0;
+  const vendorStats = vendors
+    .map((vendor) => {
+      const vendorCalls = calls.filter((c) => c.assigned_vendor_id === vendor.id);
+      const completedCalls = vendorCalls.filter((c) => c.call_status === 'completed');
+      const vendorRatings = ratings.filter((r) => r.vendor_id === vendor.id);
 
-    // Calculate average completion time
-    const completionTimes = completedCalls
-      .filter(c => c.assigned_at && c.closed_at)
-      .map(c => {
-        const assigned = new Date(c.assigned_at);
-        const closed = new Date(c.closed_at);
-        return (closed - assigned) / 1000 / 60; // minutes
-      });
-    const avgCompletionTime = completionTimes.length > 0
-      ? completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length
-      : 0;
+      // Calculate average response time
+      const responseTimes = vendorCalls
+        .filter((c) => c.assigned_at && c.vendor_arrival_time_actual)
+        .map((c) => {
+          const assigned = new Date(c.assigned_at);
+          const arrived = new Date(c.vendor_arrival_time_actual);
+          return (arrived - assigned) / 1000 / 60; // minutes
+        });
+      const avgResponseTime =
+        responseTimes.length > 0
+          ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+          : 0;
 
-    // Calculate average rating
-    const avgRating = vendorRatings.length > 0
-      ? vendorRatings.reduce((a, b) => a + b.overall_rating, 0) / vendorRatings.length
-      : 0;
+      // Calculate average completion time
+      const completionTimes = completedCalls
+        .filter((c) => c.assigned_at && c.closed_at)
+        .map((c) => {
+          const assigned = new Date(c.assigned_at);
+          const closed = new Date(c.closed_at);
+          return (closed - assigned) / 1000 / 60; // minutes
+        });
+      const avgCompletionTime =
+        completionTimes.length > 0
+          ? completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length
+          : 0;
 
-    // Calculate completion rate
-    const completionRate = vendorCalls.length > 0
-      ? (completedCalls.length / vendorCalls.length) * 100
-      : 0;
+      // Calculate average rating
+      const avgRating =
+        vendorRatings.length > 0
+          ? vendorRatings.reduce((a, b) => a + b.overall_rating, 0) / vendorRatings.length
+          : 0;
 
-    return {
-      id: vendor.id,
-      vendor_name: vendor.vendor_name,
-      total_calls: vendorCalls.length,
-      completed_calls: completedCalls.length,
-      completion_rate: completionRate,
-      avg_response_time: avgResponseTime,
-      avg_completion_time: avgCompletionTime,
-      avg_rating: avgRating,
-      total_ratings: vendorRatings.length
-    };
-  }).sort((a, b) => b.total_calls - a.total_calls);
+      // Calculate completion rate
+      const completionRate =
+        vendorCalls.length > 0 ? (completedCalls.length / vendorCalls.length) * 100 : 0;
+
+      return {
+        id: vendor.id,
+        vendor_name: vendor.vendor_name,
+        total_calls: vendorCalls.length,
+        completed_calls: completedCalls.length,
+        completion_rate: completionRate,
+        avg_response_time: avgResponseTime,
+        avg_completion_time: avgCompletionTime,
+        avg_rating: avgRating,
+        total_ratings: vendorRatings.length,
+      };
+    })
+    .sort((a, b) => b.total_calls - a.total_calls);
 
   const columns = [
     {
       header: 'ספק',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="text-[#FF6B6B] hover:text-[#E85555] hover:underline font-medium">
+        <Link
+          to={createPageUrl('VendorProfile') + '?id=' + row.id}
+          className="text-[#FF6B6B] hover:text-[#E85555] hover:underline font-medium"
+        >
           {row.vendor_name}
         </Link>
-      )
+      ),
     },
     {
       header: 'קריאות',
@@ -75,7 +82,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
           <div className="font-medium">{row.total_calls}</div>
           <div className="text-xs text-[#616161]">{row.completed_calls} הושלמו</div>
         </div>
-      )
+      ),
     },
     {
       header: 'אחוז השלמה',
@@ -89,36 +96,43 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
           </div>
           <span className="text-sm font-medium">{row.completion_rate.toFixed(0)}%</span>
         </div>
-      )
+      ),
     },
     {
       header: 'זמן תגובה ממוצע',
       cell: (row) => (
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-[#FF6B6B]" />
-          <span>{row.avg_response_time > 0 ? `${Math.round(row.avg_response_time)} דק'` : '-'}</span>
+          <span>
+            {row.avg_response_time > 0 ? `${Math.round(row.avg_response_time)} דק'` : '-'}
+          </span>
         </div>
-      )
+      ),
     },
     {
       header: 'זמן השלמה ממוצע',
       cell: (row) => (
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />
-          <span>{row.avg_completion_time > 0 ? `${Math.round(row.avg_completion_time)} דק'` : '-'}</span>
+          <span>
+            {row.avg_completion_time > 0 ? `${Math.round(row.avg_completion_time)} דק'` : '-'}
+          </span>
         </div>
-      )
+      ),
     },
     {
       header: 'דירוג',
-      cell: (row) => row.avg_rating > 0 ? (
-        <div className="flex items-center gap-2">
-          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-          <span className="font-medium">{row.avg_rating.toFixed(1)}</span>
-          <span className="text-xs text-[#616161]">({row.total_ratings})</span>
-        </div>
-      ) : '-'
-    }
+      cell: (row) =>
+        row.avg_rating > 0 ? (
+          <div className="flex items-center gap-2">
+            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+            <span className="font-medium">{row.avg_rating.toFixed(1)}</span>
+            <span className="text-xs text-[#616161]">({row.total_ratings})</span>
+          </div>
+        ) : (
+          '-'
+        ),
+    },
   ];
 
   return (
@@ -152,7 +166,14 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
             </div>
           </CardContent>
         </Card>
-        <Link to={vendorStats.length > 0 ? createPageUrl('VendorProfile') + '?id=' + vendorStats[0].id : '#'} className="block">
+        <Link
+          to={
+            vendorStats.length > 0
+              ? createPageUrl('VendorProfile') + '?id=' + vendorStats[0].id
+              : '#'
+          }
+          className="block"
+        >
           <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:shadow-md hover:border-[#D1D5DB] transition-all duration-200">
             <CardContent className="pt-6 text-right" dir="rtl">
               <div className="text-sm text-[#616161]">ספק מוביל</div>
@@ -169,7 +190,9 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
         columns={columns}
         data={vendorStats}
         emptyMessage="אין נתוני ספקים"
-        onRowClick={(row) => window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id}
+        onRowClick={(row) =>
+          (window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id)
+        }
       />
     </div>
   );

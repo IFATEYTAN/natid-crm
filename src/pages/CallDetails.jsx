@@ -9,20 +9,20 @@ import { base44 } from '@/api/base44Client';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard, PermissionButton } from '@/components/permissions/PermissionGuard';
 import { useAuditLog } from '@/components/hooks/useAuditLog';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import FileUploader from '@/components/files/FileUploader';
 import SignaturePad from '@/components/signature/SignaturePad';
 import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
@@ -62,9 +62,9 @@ import {
   Star,
   Send,
   Copy,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const statusLabels = {
@@ -74,7 +74,7 @@ const statusLabels = {
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
   completed: 'הושלם',
-  cancelled: 'בוטל'
+  cancelled: 'בוטל',
 };
 
 const statusColors = {
@@ -84,19 +84,19 @@ const statusColors = {
   vendor_enroute: 'bg-indigo-100 text-indigo-800 border-indigo-300',
   in_progress: 'bg-purple-100 text-purple-800 border-purple-300',
   completed: 'bg-green-100 text-green-800 border-green-300',
-  cancelled: 'bg-gray-100 text-gray-800 border-gray-300'
+  cancelled: 'bg-gray-100 text-gray-800 border-gray-300',
 };
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'הפסקת נסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'מצבר ריק',
   locked_keys: 'מפתחות נעולים',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 export default function CallDetailsPage() {
@@ -104,7 +104,7 @@ export default function CallDetailsPage() {
   const navigate = useNavigate();
   const callId = searchParams.get('id');
   const queryClient = useQueryClient();
-  
+
   const [showSignature, setShowSignature] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState('');
@@ -115,7 +115,7 @@ export default function CallDetailsPage() {
   // Permission & Audit
   const { currentUser, hasPermission } = usePermissions();
   const { logStatusChange, logAssign, logUpdate } = useAuditLog();
-  
+
   const canEdit = hasPermission('calls', 'edit');
   const canAssign = hasPermission('calls', 'assign');
   const canDelete = hasPermission('calls', 'delete');
@@ -126,31 +126,31 @@ export default function CallDetailsPage() {
 
   const call = callQuery.data?.[0];
   const vendors = vendorsQuery.data || [];
-  const availableVendors = vendors.filter(v => v.is_available_now && v.is_active);
+  const availableVendors = vendors.filter((v) => v.is_available_now && v.is_active);
 
   // Fetch photos for this call
   const { data: photos = [] } = useQuery({
     queryKey: ['callPhotos', callId],
     queryFn: () => base44.entities.CallPhoto.filter({ call_id: callId }),
-    enabled: !!callId
+    enabled: !!callId,
   });
 
   // Fetch history for this call
   const { data: history = [] } = useQuery({
     queryKey: ['callHistory', callId],
     queryFn: () => base44.entities.CallHistory.filter({ call_id: callId }, '-created_date'),
-    enabled: !!callId
+    enabled: !!callId,
   });
 
   const handleStatusChange = async (newStatus) => {
     if (!canEdit) return;
-    
+
     const updates = { call_status: newStatus };
-    
+
     if (newStatus === 'completed') {
       updates.closed_at = new Date().toISOString();
     }
-    
+
     updateCall.mutate({ id: callId, data: updates });
 
     // Log to audit
@@ -164,7 +164,7 @@ export default function CallDetailsPage() {
         console.log('Auto summary generation failed:', e);
       }
     }
-    
+
     // Log history
     base44.entities.CallHistory.create({
       call_id: callId,
@@ -172,16 +172,16 @@ export default function CallDetailsPage() {
       change_type: 'status',
       old_value: call?.call_status,
       new_value: newStatus,
-      changed_by: currentUser?.full_name || 'operator'
+      changed_by: currentUser?.full_name || 'operator',
     });
 
     // Send automatic status update to chat
     const statusMessages = {
       vendor_enroute: 'הספק יצא לדרך ובקרוב יגיע אליך',
       in_progress: 'הספק הגיע ומתחיל בטיפול',
-      completed: 'הטיפול הושלם בהצלחה!'
+      completed: 'הטיפול הושלם בהצלחה!',
     };
-    
+
     if (statusMessages[newStatus]) {
       await sendStatusMessage(callId, statusMessages[newStatus]);
     }
@@ -194,17 +194,17 @@ export default function CallDetailsPage() {
 
   const handleAssignVendor = () => {
     if (!selectedVendor || !canAssign) return;
-    
-    const vendor = vendors.find(v => v.id === selectedVendor);
-    
+
+    const vendor = vendors.find((v) => v.id === selectedVendor);
+
     updateCall.mutate({
       id: callId,
       data: {
         assigned_vendor_id: selectedVendor,
         assigned_vendor_name: vendor?.vendor_name,
         assigned_at: new Date().toISOString(),
-        call_status: 'assigning'
-      }
+        call_status: 'assigning',
+      },
     });
 
     // Log to audit
@@ -216,7 +216,7 @@ export default function CallDetailsPage() {
       call_number: call?.call_number,
       change_type: 'vendor_assignment',
       new_value: vendor?.vendor_name,
-      changed_by: currentUser?.full_name || 'operator'
+      changed_by: currentUser?.full_name || 'operator',
     });
 
     setShowAssignDialog(false);
@@ -290,11 +290,7 @@ export default function CallDetailsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => navigate(-1)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowRight className="w-5 h-5" />
             </Button>
             <div>
@@ -302,13 +298,11 @@ export default function CallDetailsPage() {
                 <h1 className="text-2xl font-bold text-[#172B4D]">
                   קריאה {call?.call_number || `#${callId?.slice(-6)}`}
                 </h1>
-                <Badge className={cn("text-sm", statusColors[call?.call_status])}>
+                <Badge className={cn('text-sm', statusColors[call?.call_status])}>
                   {statusLabels[call?.call_status]}
                 </Badge>
               </div>
-              <p className="text-[#6B778C] text-sm">
-                נפתחה ב-{formatDateTime(call?.created_date)}
-              </p>
+              <p className="text-[#6B778C] text-sm">נפתחה ב-{formatDateTime(call?.created_date)}</p>
             </div>
           </div>
 
@@ -323,55 +317,52 @@ export default function CallDetailsPage() {
                         שבץ ספק
                       </Button>
                     </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>שיבוץ ספק לקריאה</DialogTitle>
-                      <DialogDescription>
-                        בחר ספק זמין לטיפול בקריאה
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <Label>ספק</Label>
-                      <Select value={selectedVendor} onValueChange={setSelectedVendor}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="בחר ספק" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableVendors.map(vendor => (
-                            <SelectItem key={vendor.id} value={vendor.id}>
-                              {vendor.vendor_name} - {vendor.coverage_cities}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowAssignDialog(false)}>
-                        ביטול
-                      </Button>
-                      <Button 
-                        onClick={handleAssignVendor}
-                        disabled={!selectedVendor}
-                        className="bg-[#FF0000] hover:bg-[#CC0000]"
-                      >
-                        שבץ
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>שיבוץ ספק לקריאה</DialogTitle>
+                        <DialogDescription>בחר ספק זמין לטיפול בקריאה</DialogDescription>
+                      </DialogHeader>
+                      <div className="py-4">
+                        <Label>ספק</Label>
+                        <Select value={selectedVendor} onValueChange={setSelectedVendor}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="בחר ספק" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableVendors.map((vendor) => (
+                              <SelectItem key={vendor.id} value={vendor.id}>
+                                {vendor.vendor_name} - {vendor.coverage_cities}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowAssignDialog(false)}>
+                          ביטול
+                        </Button>
+                        <Button
+                          onClick={handleAssignVendor}
+                          disabled={!selectedVendor}
+                          className="bg-[#FF0000] hover:bg-[#CC0000]"
+                        >
+                          שבץ
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </PermissionGuard>
 
                 <PermissionGuard category="calls" permission="edit">
-                  <Select 
-                    value={call?.call_status} 
-                    onValueChange={handleStatusChange}
-                  >
+                  <Select value={call?.call_status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(statusLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -415,7 +406,9 @@ export default function CallDetailsPage() {
                     </div>
                     <div>
                       <Label className="text-xs text-[#6B778C]">טלפון</Label>
-                      <p className="font-medium" dir="ltr">{call?.customer_phone || '-'}</p>
+                      <p className="font-medium" dir="ltr">
+                        {call?.customer_phone || '-'}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-xs text-[#6B778C]">ביטוח</Label>
@@ -441,7 +434,9 @@ export default function CallDetailsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-xs text-[#6B778C]">מספר רכב</Label>
-                      <p className="font-medium" dir="ltr">{call?.vehicle_plate || '-'}</p>
+                      <p className="font-medium" dir="ltr">
+                        {call?.vehicle_plate || '-'}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-xs text-[#6B778C]">דגם</Label>
@@ -449,7 +444,9 @@ export default function CallDetailsPage() {
                     </div>
                     <div>
                       <Label className="text-xs text-[#6B778C]">סוג תקלה</Label>
-                      <p className="font-medium">{issueTypeLabels[call?.issue_type] || call?.issue_type || '-'}</p>
+                      <p className="font-medium">
+                        {issueTypeLabels[call?.issue_type] || call?.issue_type || '-'}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-xs text-[#6B778C]">תיאור</Label>
@@ -499,9 +496,7 @@ export default function CallDetailsPage() {
                         שובץ ב-{formatDateTime(call.assigned_at)}
                       </p>
                       {call.vendor_notes && (
-                        <p className="text-sm bg-[#F4F5F7] p-2 rounded">
-                          {call.vendor_notes}
-                        </p>
+                        <p className="text-sm bg-[#F4F5F7] p-2 rounded">{call.vendor_notes}</p>
                       )}
                     </div>
                   ) : (
@@ -532,7 +527,7 @@ export default function CallDetailsPage() {
                     />
                   ) : (
                     <div className="text-center py-6">
-                      {photos.some(p => p.category === 'customer_signature') ? (
+                      {photos.some((p) => p.category === 'customer_signature') ? (
                         <div>
                           <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2" />
                           <p className="text-green-600 font-medium">חתימה קיימת</p>
@@ -557,7 +552,7 @@ export default function CallDetailsPage() {
           <TabsContent value="map">
             <div className="space-y-4">
               {call?.assigned_vendor_id ? (
-                <Suspense fallback={<div className="h-[500px] w-full bg-gray-50" /> }>
+                <Suspense fallback={<div className="h-[500px] w-full bg-gray-50" />}>
                   <VendorLiveMap
                     vendorId={call.assigned_vendor_id}
                     callId={callId}
@@ -595,36 +590,36 @@ export default function CallDetailsPage() {
                     <CardTitle className="text-sm">שלח עדכון ללקוח</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full justify-start gap-2"
                       onClick={() => sendStatusMessage(callId, 'הקריאה התקבלה ואנחנו מטפלים בה')}
                     >
                       <MessageSquare className="w-4 h-4" />
                       קריאה התקבלה
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full justify-start gap-2"
                       onClick={() => sendStatusMessage(callId, 'הספק בדרך אליך!')}
                     >
                       <Truck className="w-4 h-4" />
                       ספק בדרך
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full justify-start gap-2"
                       onClick={() => sendStatusMessage(callId, 'הספק הגיע למיקום')}
                     >
                       <CheckCircle className="w-4 h-4" />
                       ספק הגיע
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="w-full justify-start gap-2"
                       onClick={() => sendStatusMessage(callId, 'הטיפול הושלם בהצלחה!')}
                     >
@@ -675,23 +670,20 @@ export default function CallDetailsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* File Uploader */}
-                <FileUploader
-                  callId={callId}
-                  onUploadComplete={handleFilesUploaded}
-                />
+                <FileUploader callId={callId} onUploadComplete={handleFilesUploaded} />
 
                 {/* Existing Files */}
                 {photos.length > 0 && (
                   <div>
                     <h4 className="font-medium mb-3">קבצים קיימים ({photos.length})</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {photos.map(photo => (
+                      {photos.map((photo) => (
                         <div key={photo.id} className="relative group">
                           <a href={photo.file_url} target="_blank" rel="noopener noreferrer">
                             <div className="aspect-square rounded-lg overflow-hidden bg-[#F4F5F7] border border-[#DFE1E6]">
                               {photo.file_url?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                                <img 
-                                  src={photo.file_url} 
+                                <img
+                                  src={photo.file_url}
                                   alt={photo.file_name}
                                   className="w-full h-full object-cover"
                                 />
@@ -731,14 +723,25 @@ export default function CallDetailsPage() {
                 ) : (
                   <div className="space-y-4">
                     {history.map((item, idx) => (
-                      <div key={item.id} className="flex gap-4 pb-4 border-b border-[#F4F5F7] last:border-0">
+                      <div
+                        key={item.id}
+                        className="flex gap-4 pb-4 border-b border-[#F4F5F7] last:border-0"
+                      >
                         <div className="w-2 h-2 rounded-full bg-[#6B778C] mt-2" />
                         <div className="flex-1">
                           <p className="text-sm">
-                            <span className="font-medium">{item.change_type === 'status' ? 'שינוי סטטוס' : item.change_type === 'vendor_assignment' ? 'שיבוץ ספק' : item.change_type}</span>
+                            <span className="font-medium">
+                              {item.change_type === 'status'
+                                ? 'שינוי סטטוס'
+                                : item.change_type === 'vendor_assignment'
+                                  ? 'שיבוץ ספק'
+                                  : item.change_type}
+                            </span>
                             {item.old_value && item.new_value && (
                               <span className="text-[#6B778C]">
-                                {' '}מ-{statusLabels[item.old_value] || item.old_value} ל-{statusLabels[item.new_value] || item.new_value}
+                                {' '}
+                                מ-{statusLabels[item.old_value] || item.old_value} ל-
+                                {statusLabels[item.new_value] || item.new_value}
                               </span>
                             )}
                             {!item.old_value && item.new_value && (
@@ -795,10 +798,10 @@ export default function CallDetailsPage() {
                             <Star
                               key={star}
                               className={cn(
-                                "w-8 h-8",
-                                star <= call.customer_rating 
-                                  ? "text-yellow-400 fill-yellow-400" 
-                                  : "text-gray-300"
+                                'w-8 h-8',
+                                star <= call.customer_rating
+                                  ? 'text-yellow-400 fill-yellow-400'
+                                  : 'text-gray-300'
                               )}
                             />
                           ))}
@@ -815,27 +818,31 @@ export default function CallDetailsPage() {
                         <p className="text-sm text-gray-600">
                           שלח ללקוח קישור לסקר קצר לדירוג השירות
                         </p>
-                        
+
                         {feedbackToken ? (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
                               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                              <span className="text-sm text-green-700">קישור לסקר נוצר בהצלחה!</span>
+                              <span className="text-sm text-green-700">
+                                קישור לסקר נוצר בהצלחה!
+                              </span>
                             </div>
-                            
+
                             <div className="flex gap-2">
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 className="flex-1 gap-2"
                                 onClick={copyFeedbackLink}
                               >
                                 <Copy className="w-4 h-4" />
                                 העתק קישור
                               </Button>
-                              <Button 
+                              <Button
                                 variant="outline"
                                 className="gap-2"
-                                onClick={() => window.open(`/CustomerFeedback?token=${feedbackToken}`, '_blank')}
+                                onClick={() =>
+                                  window.open(`/CustomerFeedback?token=${feedbackToken}`, '_blank')
+                                }
                               >
                                 <ExternalLink className="w-4 h-4" />
                                 תצוגה מקדימה
@@ -844,7 +851,7 @@ export default function CallDetailsPage() {
                           </div>
                         ) : (
                           <div className="flex flex-col sm:flex-row gap-3">
-                            <Button 
+                            <Button
                               onClick={handleSendSurvey}
                               disabled={sendingSurvey || !call?.customer_phone}
                               className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700"
@@ -856,7 +863,7 @@ export default function CallDetailsPage() {
                               )}
                               שלח SMS ללקוח
                             </Button>
-                            <Button 
+                            <Button
                               variant="outline"
                               onClick={handleCreateSurveyLink}
                               disabled={sendingSurvey}
@@ -866,7 +873,7 @@ export default function CallDetailsPage() {
                             </Button>
                           </div>
                         )}
-                        
+
                         {!call?.customer_phone && (
                           <p className="text-xs text-orange-600">
                             * לא ניתן לשלוח SMS - חסר מספר טלפון של הלקוח

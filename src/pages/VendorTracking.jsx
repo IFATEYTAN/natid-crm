@@ -6,19 +6,17 @@ import { useCalls } from '@/components/hooks/useCalls';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-
-
+} from '@/components/ui/select';
 
 import {
   Truck,
@@ -30,32 +28,29 @@ import {
   RefreshCw,
   Search,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-
-
 // Lazy map component
-const VendorTrackingLeafletMap = React.lazy(() => import('@/components/maps/VendorTrackingLeafletMap'));
+const VendorTrackingLeafletMap = React.lazy(
+  () => import('@/components/maps/VendorTrackingLeafletMap')
+);
 
-
-
-
-  const availabilityLabels = {
+const availabilityLabels = {
   available: 'זמין',
   busy: 'עסוק',
   offline: 'לא מחובר',
-  on_break: 'בהפסקה'
+  on_break: 'בהפסקה',
 };
 
 const availabilityColors = {
   available: 'bg-green-100 text-green-800',
   busy: 'bg-orange-100 text-orange-800',
   offline: 'bg-gray-100 text-gray-800',
-  on_break: 'bg-yellow-100 text-yellow-800'
+  on_break: 'bg-yellow-100 text-yellow-800',
 };
 
 export default function VendorTrackingPage() {
@@ -71,47 +66,50 @@ export default function VendorTrackingPage() {
   const calls = callsQuery.data || [];
 
   // Get active calls (in progress)
-  const activeCalls = calls.filter(c => 
+  const activeCalls = calls.filter((c) =>
     ['vendor_enroute', 'in_progress', 'assigning'].includes(c.call_status)
   );
 
   // Filter vendors
   const filteredVendors = useMemo(() => {
-    return vendors.filter(vendor => {
-      const matchesSearch = !searchQuery || 
-        vendor.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return vendors.filter((vendor) => {
+      const matchesSearch =
+        !searchQuery || vendor.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase());
       const hasLocation = vendor.current_latitude && vendor.current_longitude;
-      
+
       // Handle special 'online' filter (vendors with active location)
       if (statusFilter === 'online') {
         return matchesSearch && hasLocation;
       }
-      
+
       const matchesStatus = statusFilter === 'all' || vendor.availability_status === statusFilter;
       return matchesSearch && matchesStatus && hasLocation;
     });
   }, [vendors, searchQuery, statusFilter]);
 
   // Vendors with location
-  const vendorsWithLocation = vendors.filter(v => v.current_latitude && v.current_longitude);
+  const vendorsWithLocation = vendors.filter((v) => v.current_latitude && v.current_longitude);
 
   // Stats
-  const stats = useMemo(() => ({
-    total: vendors.length,
-    online: vendorsWithLocation.length,
-    available: vendors.filter(v => v.availability_status === 'available').length,
-    busy: vendors.filter(v => v.availability_status === 'busy').length,
-  }), [vendors, vendorsWithLocation]);
+  const stats = useMemo(
+    () => ({
+      total: vendors.length,
+      online: vendorsWithLocation.length,
+      available: vendors.filter((v) => v.availability_status === 'available').length,
+      busy: vendors.filter((v) => v.availability_status === 'busy').length,
+    }),
+    [vendors, vendorsWithLocation]
+  );
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
     if (!autoRefresh) return;
-    
+
     const interval = setInterval(() => {
       vendorsQuery.refetch();
       callsQuery.refetch();
     }, 30000);
-    
+
     return () => clearInterval(interval);
   }, [autoRefresh]);
 
@@ -126,7 +124,7 @@ export default function VendorTrackingPage() {
   }, []);
 
   const getVendorActiveCall = (vendorId) => {
-    return activeCalls.find(c => c.assigned_vendor_id === vendorId);
+    return activeCalls.find((c) => c.assigned_vendor_id === vendorId);
   };
 
   // Israel center coordinates
@@ -141,8 +139,8 @@ export default function VendorTrackingPage() {
           <p className="text-[#6B778C] text-sm">מעקב מיקום ספקים בזמן אמת</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => {
               vendorsQuery.refetch();
@@ -150,10 +148,10 @@ export default function VendorTrackingPage() {
             }}
             className="gap-2"
           >
-            <RefreshCw className={cn("w-4 h-4", vendorsQuery.isFetching && "animate-spin")} />
+            <RefreshCw className={cn('w-4 h-4', vendorsQuery.isFetching && 'animate-spin')} />
             רענן
           </Button>
-          <Badge 
+          <Badge
             variant={autoRefresh ? 'default' : 'outline'}
             className="cursor-pointer"
             onClick={() => setAutoRefresh(!autoRefresh)}
@@ -165,10 +163,10 @@ export default function VendorTrackingPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card 
+        <Card
           className={cn(
-            "bg-white cursor-pointer transition-all hover:shadow-md",
-            statusFilter === 'all' && "ring-2 ring-blue-500"
+            'bg-white cursor-pointer transition-all hover:shadow-md',
+            statusFilter === 'all' && 'ring-2 ring-blue-500'
           )}
           onClick={() => setStatusFilter('all')}
         >
@@ -177,10 +175,10 @@ export default function VendorTrackingPage() {
             <div className="text-sm text-[#6B778C]">סה"כ ספקים</div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className={cn(
-            "bg-white cursor-pointer transition-all hover:shadow-md",
-            statusFilter === 'online' && "ring-2 ring-blue-500"
+            'bg-white cursor-pointer transition-all hover:shadow-md',
+            statusFilter === 'online' && 'ring-2 ring-blue-500'
           )}
           onClick={() => setStatusFilter('online')}
         >
@@ -189,10 +187,10 @@ export default function VendorTrackingPage() {
             <div className="text-sm text-[#6B778C]">עם מיקום פעיל</div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className={cn(
-            "bg-white cursor-pointer transition-all hover:shadow-md",
-            statusFilter === 'available' && "ring-2 ring-green-500"
+            'bg-white cursor-pointer transition-all hover:shadow-md',
+            statusFilter === 'available' && 'ring-2 ring-green-500'
           )}
           onClick={() => setStatusFilter('available')}
         >
@@ -201,10 +199,10 @@ export default function VendorTrackingPage() {
             <div className="text-sm text-[#6B778C]">זמינים</div>
           </CardContent>
         </Card>
-        <Card 
+        <Card
           className={cn(
-            "bg-white cursor-pointer transition-all hover:shadow-md",
-            statusFilter === 'busy' && "ring-2 ring-orange-500"
+            'bg-white cursor-pointer transition-all hover:shadow-md',
+            statusFilter === 'busy' && 'ring-2 ring-orange-500'
           )}
           onClick={() => setStatusFilter('busy')}
         >
@@ -220,8 +218,11 @@ export default function VendorTrackingPage() {
         <Card className="lg:col-span-3 bg-white overflow-hidden">
           <CardContent className="p-0">
             <div className="h-[500px]">
-              <Suspense fallback={<div className='h-full w-full bg-gray-50' />}> 
-                <VendorTrackingLeafletMap vendors={filteredVendors} onSelectVendor={setSelectedVendor} />
+              <Suspense fallback={<div className="h-full w-full bg-gray-50" />}>
+                <VendorTrackingLeafletMap
+                  vendors={filteredVendors}
+                  onSelectVendor={setSelectedVendor}
+                />
               </Suspense>
             </div>
           </CardContent>
@@ -248,7 +249,9 @@ export default function VendorTrackingPage() {
                 <SelectContent>
                   <SelectItem value="all">הכל</SelectItem>
                   {Object.entries(availabilityLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -262,26 +265,28 @@ export default function VendorTrackingPage() {
                   <p className="text-sm">אין ספקים עם מיקום פעיל</p>
                 </div>
               ) : (
-                filteredVendors.map(vendor => {
+                filteredVendors.map((vendor) => {
                   const activeCall = getVendorActiveCall(vendor.id);
                   return (
                     <div
                       key={vendor.id}
                       onClick={() => setSelectedVendor(vendor.id)}
                       className={cn(
-                        "p-3 rounded-lg border cursor-pointer transition-colors",
-                        selectedVendor === vendor.id 
-                          ? "border-red-500 bg-red-50" 
-                          : "border-[#DFE1E6] hover:border-red-300"
+                        'p-3 rounded-lg border cursor-pointer transition-colors',
+                        selectedVendor === vendor.id
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-[#DFE1E6] hover:border-red-300'
                       )}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <span className="font-medium text-sm">{vendor.vendor_name}</span>
-                        <Badge className={cn("text-xs", availabilityColors[vendor.availability_status])}>
+                        <Badge
+                          className={cn('text-xs', availabilityColors[vendor.availability_status])}
+                        >
                           {availabilityLabels[vendor.availability_status]}
                         </Badge>
                       </div>
-                      
+
                       <div className="space-y-1 text-xs text-[#6B778C]">
                         <div className="flex items-center gap-1">
                           <Phone className="w-3 h-3" />
@@ -291,15 +296,15 @@ export default function VendorTrackingPage() {
                           <div className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             <span>
-                              {formatDistanceToNow(new Date(vendor.last_location_update), { 
-                                addSuffix: true, 
-                                locale: he 
+                              {formatDistanceToNow(new Date(vendor.last_location_update), {
+                                addSuffix: true,
+                                locale: he,
                               })}
                             </span>
                           </div>
                         )}
                       </div>
-                      
+
                       {activeCall && (
                         <div className="mt-2 flex items-center gap-1 text-xs text-orange-600">
                           <AlertCircle className="w-3 h-3" />

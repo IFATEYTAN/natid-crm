@@ -1,26 +1,19 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Eraser, 
-  Check, 
-  RotateCcw,
-  Pen,
-  Download
-} from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Eraser, Check, RotateCcw, Pen, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
-export default function SignaturePad({ 
-  onSave, 
+export default function SignaturePad({
+  onSave,
   onCancel,
-  title = "חתימת לקוח",
+  title = 'חתימת לקוח',
   width = 400,
   height = 200,
   penColor = '#000000',
   backgroundColor = '#ffffff',
-  callId = null
+  callId = null,
 }) {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -32,15 +25,15 @@ export default function SignaturePad({
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    
+
     // Set canvas size
     canvas.width = width;
     canvas.height = height;
-    
+
     // Fill background
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
-    
+
     // Set drawing style
     ctx.strokeStyle = penColor;
     ctx.lineWidth = 2;
@@ -53,17 +46,17 @@ export default function SignaturePad({
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    
+
     if (e.touches) {
       return {
         x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY
+        y: (e.touches[0].clientY - rect.top) * scaleY,
       };
     }
-    
+
     return {
       x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY
+      y: (e.clientY - rect.top) * scaleY,
     };
   };
 
@@ -72,7 +65,7 @@ export default function SignaturePad({
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const { x, y } = getCoordinates(e);
-    
+
     ctx.beginPath();
     ctx.moveTo(x, y);
     setIsDrawing(true);
@@ -82,11 +75,11 @@ export default function SignaturePad({
   const draw = (e) => {
     if (!isDrawing) return;
     e.preventDefault();
-    
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const { x, y } = getCoordinates(e);
-    
+
     ctx.lineTo(x, y);
     ctx.stroke();
   };
@@ -99,7 +92,7 @@ export default function SignaturePad({
   const clearSignature = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    
+
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, width, height);
     setHasSignature(false);
@@ -112,12 +105,12 @@ export default function SignaturePad({
     }
 
     setSaving(true);
-    
+
     try {
       const canvas = canvasRef.current;
-      
+
       // Convert canvas to blob
-      const blob = await new Promise(resolve => {
+      const blob = await new Promise((resolve) => {
         canvas.toBlob(resolve, 'image/png');
       });
 
@@ -134,16 +127,15 @@ export default function SignaturePad({
           file_url: file_url,
           file_name: 'חתימת לקוח',
           category: 'customer_signature',
-          uploaded_by: 'customer'
+          uploaded_by: 'customer',
         });
       }
 
       toast.success('החתימה נשמרה בהצלחה');
-      
+
       if (onSave) {
         onSave(file_url);
       }
-
     } catch (error) {
       console.error('Error saving signature:', error);
       toast.error('שגיאה בשמירת החתימה');
@@ -186,9 +178,7 @@ export default function SignaturePad({
         </div>
 
         {/* Instructions */}
-        <p className="text-xs text-[#6B778C] text-center">
-          חתום באמצעות העכבר או האצבע על המסך
-        </p>
+        <p className="text-xs text-[#6B778C] text-center">חתום באמצעות העכבר או האצבע על המסך</p>
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2">
@@ -202,7 +192,7 @@ export default function SignaturePad({
             <Eraser className="w-4 h-4" />
             נקה
           </Button>
-          
+
           {hasSignature && (
             <Button
               type="button"
@@ -215,20 +205,15 @@ export default function SignaturePad({
               הורד
             </Button>
           )}
-          
+
           <div className="flex-1" />
-          
+
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onCancel}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={onCancel}>
               ביטול
             </Button>
           )}
-          
+
           <Button
             type="button"
             size="sm"

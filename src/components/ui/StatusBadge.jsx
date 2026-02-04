@@ -1,10 +1,10 @@
 import React from 'react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 /**
  * Minimalist Status Badge - 4 Colors Only
  * Primary (Blue #3b82f6): In progress, active states
- * Dark (Black #111827): Completed, success states  
+ * Dark (Black #111827): Completed, success states
  * Danger (Red #ef4444): Cancelled, error states
  * Light (Gray #6b7280): Neutral, secondary states
  */
@@ -16,10 +16,10 @@ const statusConfig = {
   assigning: { label: 'בשיוך', variant: 'primary' },
   vendor_enroute: { label: 'ספק בדרך', variant: 'primary' },
   in_progress: { label: 'בטיפול', variant: 'primary' },
-  
+
   // DARK (Black) for completed/success
   completed: { label: 'הושלם', variant: 'dark' },
-  
+
   // DANGER (Red) for cancelled/errors
   cancelled: { label: 'בוטל', variant: 'danger' },
   sla_breach: { label: 'חרג SLA', variant: 'danger' },
@@ -71,13 +71,15 @@ const variantStyles = {
 export default function StatusBadge({ status, size = 'default', showIcon = false }) {
   const config = statusConfig[status] || { label: status, variant: 'light' };
   const variantClass = variantStyles[config.variant] || variantStyles.light;
-  
+
   return (
-    <span className={cn(
-      "inline-flex items-center gap-1 rounded-[8px] font-medium",
-      variantClass,
-      size === 'sm' ? "px-2 py-0.5 text-[11px]" : "px-3 py-1 text-[12px]"
-    )}>
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-[8px] font-medium',
+        variantClass,
+        size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-[12px]'
+      )}
+    >
       {config.label}
     </span>
   );

@@ -7,12 +7,14 @@
 // Haversine formula for straight-line distance
 export function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -24,7 +26,7 @@ async function osrmDistanceMatrix(origins, destinations) {
   // OSRM Table API can handle multiple points
   // Format: /table/v1/driving/lon1,lat1;lon2,lat2;...
   const allPoints = [...origins, ...destinations];
-  const coords = allPoints.map(p => `${p.longitude},${p.latitude}`).join(';');
+  const coords = allPoints.map((p) => `${p.longitude},${p.latitude}`).join(';');
 
   // Specify which are sources and which are destinations
   const sources = origins.map((_, i) => i).join(';');
@@ -47,7 +49,7 @@ async function osrmDistanceMatrix(origins, destinations) {
           destination: destinations[j],
           distance: data.distances[i][j] / 1000, // Convert to km
           duration: Math.round(data.durations[i][j] / 60), // Convert to minutes
-          source: 'osrm'
+          source: 'osrm',
         });
       }
     }
@@ -77,7 +79,7 @@ async function fallbackDistanceMatrix(origins, destinations) {
             destination,
             distance: data.routes[0].distance / 1000,
             duration: Math.round(data.routes[0].duration / 60),
-            source: 'osrm-route'
+            source: 'osrm-route',
           });
         } else {
           // Use haversine as last resort
@@ -85,14 +87,22 @@ async function fallbackDistanceMatrix(origins, destinations) {
             origin,
             destination,
             distance: haversineDistance(
-              origin.latitude, origin.longitude,
-              destination.latitude, destination.longitude
+              origin.latitude,
+              origin.longitude,
+              destination.latitude,
+              destination.longitude
             ),
-            duration: Math.round(haversineDistance(
-              origin.latitude, origin.longitude,
-              destination.latitude, destination.longitude
-            ) / 50 * 60), // Assume 50 km/h average
-            source: 'haversine'
+            duration: Math.round(
+              (haversineDistance(
+                origin.latitude,
+                origin.longitude,
+                destination.latitude,
+                destination.longitude
+              ) /
+                50) *
+                60
+            ), // Assume 50 km/h average
+            source: 'haversine',
           });
         }
       } catch {
@@ -101,14 +111,22 @@ async function fallbackDistanceMatrix(origins, destinations) {
           origin,
           destination,
           distance: haversineDistance(
-            origin.latitude, origin.longitude,
-            destination.latitude, destination.longitude
+            origin.latitude,
+            origin.longitude,
+            destination.latitude,
+            destination.longitude
           ),
-          duration: Math.round(haversineDistance(
-            origin.latitude, origin.longitude,
-            destination.latitude, destination.longitude
-          ) / 50 * 60),
-          source: 'haversine'
+          duration: Math.round(
+            (haversineDistance(
+              origin.latitude,
+              origin.longitude,
+              destination.latitude,
+              destination.longitude
+            ) /
+              50) *
+              60
+          ),
+          source: 'haversine',
         });
       }
     }
@@ -165,11 +183,11 @@ export async function findNearestVendors(callLocation, vendors) {
   if (!vendors?.length) return [];
 
   const vendorLocations = vendors
-    .filter(v => v.latitude && v.longitude)
-    .map(v => ({
+    .filter((v) => v.latitude && v.longitude)
+    .map((v) => ({
       ...v,
       latitude: v.latitude,
-      longitude: v.longitude
+      longitude: v.longitude,
     }));
 
   if (!vendorLocations.length) return [];
@@ -177,17 +195,16 @@ export async function findNearestVendors(callLocation, vendors) {
   const matrix = await calculateDistanceMatrix(vendorLocations, [callLocation]);
 
   // Merge distance data with vendor data
-  const vendorsWithDistance = vendorLocations.map(vendor => {
-    const distanceData = matrix.find(m =>
-      m.origin.latitude === vendor.latitude &&
-      m.origin.longitude === vendor.longitude
+  const vendorsWithDistance = vendorLocations.map((vendor) => {
+    const distanceData = matrix.find(
+      (m) => m.origin.latitude === vendor.latitude && m.origin.longitude === vendor.longitude
     );
 
     return {
       ...vendor,
       distance: distanceData?.distance || null,
       duration: distanceData?.duration || null,
-      distanceSource: distanceData?.source || null
+      distanceSource: distanceData?.source || null,
     };
   });
 
@@ -223,16 +240,16 @@ export async function calculateOptimalRoute(start, stops, end = null) {
     route.push({
       ...nearest.destination,
       distanceFromPrevious: nearest.distance,
-      durationFromPrevious: nearest.duration
+      durationFromPrevious: nearest.duration,
     });
 
     totalDistance += nearest.distance;
     totalDuration += nearest.duration;
 
     // Remove from unvisited
-    const index = unvisited.findIndex(s =>
-      s.latitude === nearest.destination.latitude &&
-      s.longitude === nearest.destination.longitude
+    const index = unvisited.findIndex(
+      (s) =>
+        s.latitude === nearest.destination.latitude && s.longitude === nearest.destination.longitude
     );
     if (index > -1) unvisited.splice(index, 1);
 
@@ -251,7 +268,7 @@ export async function calculateOptimalRoute(start, stops, end = null) {
   return {
     route,
     totalDistance: Math.round(totalDistance * 10) / 10,
-    totalDuration: Math.round(totalDuration)
+    totalDuration: Math.round(totalDuration),
   };
 }
 
@@ -264,7 +281,7 @@ export function useDistanceMatrix() {
     findNearest: findNearestDestination,
     findNearestVendors,
     calculateOptimalRoute,
-    haversineDistance
+    haversineDistance,
   };
 }
 
@@ -274,5 +291,5 @@ export default {
   findNearestVendors,
   calculateOptimalRoute,
   haversineDistance,
-  useDistanceMatrix
+  useDistanceMatrix,
 };

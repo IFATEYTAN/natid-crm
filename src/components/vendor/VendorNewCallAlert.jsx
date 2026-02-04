@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertCircle,
   MapPin,
@@ -18,21 +13,19 @@ import {
   X,
   Timer,
   Banknote,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { he } from 'date-fns/locale';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'רכב לא נוסע',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'מצבר',
   locked_keys: 'מפתחות נעולים',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const DECLINE_REASONS = [
@@ -51,7 +44,7 @@ export default function VendorNewCallAlert({
   onDecline,
   timeoutSeconds = 120,
   vendorContract,
-  vendorProfile
+  vendorProfile,
 }) {
   const [remainingTime, setRemainingTime] = useState(timeoutSeconds);
   const [showDeclineReasons, setShowDeclineReasons] = useState(false);
@@ -64,7 +57,7 @@ export default function VendorNewCallAlert({
     }
 
     const timer = setInterval(() => {
-      setRemainingTime(prev => {
+      setRemainingTime((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
           onDecline?.('timeout');
@@ -100,7 +93,11 @@ export default function VendorNewCallAlert({
     } else if (vendorContract.contract_type === 'hourly') {
       return { amount: vendorContract.hourly_rate, source: 'לשעה (לפי חוזה)', perHour: true };
     } else if (vendorContract.contract_type === 'monthly') {
-      return { amount: vendorContract.monthly_fee, source: 'חודשי (ללא עלות נוספת)', monthly: true };
+      return {
+        amount: vendorContract.monthly_fee,
+        source: 'חודשי (ללא עלות נוספת)',
+        monthly: true,
+      };
     }
     return null;
   };
@@ -131,7 +128,7 @@ export default function VendorNewCallAlert({
             </div>
 
             <div className="space-y-2">
-              {DECLINE_REASONS.map(reason => (
+              {DECLINE_REASONS.map((reason) => (
                 <Button
                   key={reason.id}
                   variant="outline"
@@ -158,9 +155,7 @@ export default function VendorNewCallAlert({
             {/* Timer */}
             <div className="flex items-center justify-center gap-2 bg-orange-50 p-3 rounded-lg">
               <Timer className="w-5 h-5 text-orange-600" />
-              <span className="text-lg font-bold text-orange-600">
-                {formatTime(remainingTime)}
-              </span>
+              <span className="text-lg font-bold text-orange-600">{formatTime(remainingTime)}</span>
               <span className="text-sm text-orange-600">לקבלת הקריאה</span>
             </div>
 
@@ -211,7 +206,11 @@ export default function VendorNewCallAlert({
                     {call.estimated_arrival_time && (
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4 text-green-500" />
-                        <span>~{Math.round((new Date(call.estimated_arrival_time) - new Date()) / 60000)} דקות</span>
+                        <span>
+                          ~
+                          {Math.round((new Date(call.estimated_arrival_time) - new Date()) / 60000)}{' '}
+                          דקות
+                        </span>
                       </div>
                     )}
                   </div>
@@ -225,8 +224,7 @@ export default function VendorNewCallAlert({
                       <div className="font-bold text-green-800">
                         {payment.monthly
                           ? 'כלול בחוזה חודשי'
-                          : `₪${payment.amount?.toLocaleString() || 0}${payment.perHour ? '/שעה' : ''}`
-                        }
+                          : `₪${payment.amount?.toLocaleString() || 0}${payment.perHour ? '/שעה' : ''}`}
                       </div>
                       <div className="text-xs text-green-600">{payment.source}</div>
                     </div>
@@ -259,10 +257,7 @@ export default function VendorNewCallAlert({
                 <X className="w-5 h-5 ml-2" />
                 דחה
               </Button>
-              <Button
-                className="flex-1 h-14 bg-green-600 hover:bg-green-700"
-                onClick={onAccept}
-              >
+              <Button className="flex-1 h-14 bg-green-600 hover:bg-green-700" onClick={onAccept}>
                 <CheckCircle className="w-5 h-5 ml-2" />
                 קבל קריאה
               </Button>

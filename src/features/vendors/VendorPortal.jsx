@@ -6,18 +6,18 @@ import { createPageUrl } from '@/utils';
 import StatCard from '@/components/ui/StatCard';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Button } from "@/components/ui/button";
-import { 
-  FileText, 
-  Clock, 
-  Star, 
+import { Button } from '@/components/ui/button';
+import {
+  FileText,
+  Clock,
+  Star,
   Timer,
   Phone,
   MapPin,
   Navigation,
   Eye,
   CheckCircle2,
-  User
+  User,
 } from 'lucide-react';
 import { format, parseISO, startOfWeek, endOfWeek } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -25,13 +25,13 @@ import { he } from 'date-fns/locale';
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'סוללה ריקה',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 export default function VendorPortal() {
@@ -47,7 +47,7 @@ export default function VendorPortal() {
   });
 
   // Find current vendor by user email or explicit link
-  const currentVendor = vendors.find(v => v.id === user?.vendor_id || v.email === user?.email);
+  const currentVendor = vendors.find((v) => v.id === user?.vendor_id || v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
     queryKey: ['vendorCalls', currentVendor?.id],
@@ -56,48 +56,51 @@ export default function VendorPortal() {
   });
 
   // Filter only this vendor's calls
-  const myCalls = allCalls.filter(call => call.assigned_vendor_id === currentVendor?.id);
+  const myCalls = allCalls.filter((call) => call.assigned_vendor_id === currentVendor?.id);
 
   // Active calls (not completed or cancelled)
-  const activeCalls = myCalls.filter(c => 
-    !['completed', 'cancelled'].includes(c.call_status)
-  );
+  const activeCalls = myCalls.filter((c) => !['completed', 'cancelled'].includes(c.call_status));
 
   // Auto-Assignment Requests
   const { data: assignmentRequests = [], refetch: refetchRequests } = useQuery({
     queryKey: ['assignmentRequests', currentVendor?.id],
-    queryFn: () => base44.entities.CallAssignmentAttempt.filter({ 
-      vendor_id: currentVendor.id,
-      status: 'pending'
-    }),
+    queryFn: () =>
+      base44.entities.CallAssignmentAttempt.filter({
+        vendor_id: currentVendor.id,
+        status: 'pending',
+      }),
     enabled: !!currentVendor,
-    refetchInterval: 5000
+    refetchInterval: 5000,
   });
 
   const handleAssignmentResponse = useMutation({
-    mutationFn: ({ attemptId, response }) => 
+    mutationFn: ({ attemptId, response }) =>
       base44.functions.invoke('handleAssignmentResponse', { attemptId, response }),
     onSuccess: () => {
       refetchRequests();
       queryClient.invalidateQueries({ queryKey: ['vendorCalls'] });
-    }
+    },
   });
 
   // This week's calls
   const now = new Date();
   const weekStart = startOfWeek(now, { locale: he });
   const weekEnd = endOfWeek(now, { locale: he });
-  const thisWeekCalls = myCalls.filter(c => {
+  const thisWeekCalls = myCalls.filter((c) => {
     if (!c.created_date) return false;
     const callDate = parseISO(c.created_date);
     return callDate >= weekStart && callDate <= weekEnd;
   });
 
   // Average response time
-  const completedCalls = myCalls.filter(c => c.time_to_vendor_assignment);
-  const avgResponseTime = completedCalls.length > 0
-    ? Math.round(completedCalls.reduce((sum, c) => sum + (c.time_to_vendor_assignment || 0), 0) / completedCalls.length)
-    : 0;
+  const completedCalls = myCalls.filter((c) => c.time_to_vendor_assignment);
+  const avgResponseTime =
+    completedCalls.length > 0
+      ? Math.round(
+          completedCalls.reduce((sum, c) => sum + (c.time_to_vendor_assignment || 0), 0) /
+            completedCalls.length
+        )
+      : 0;
 
   // Rating
   const rating = currentVendor?.average_rating || 0;
@@ -113,45 +116,48 @@ export default function VendorPortal() {
       header: 'מספר קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link 
+        <Link
           to={createPageUrl(`CallDetailsVendor?id=${row.id}`)}
           className="font-semibold text-[#0078D4] hover:underline"
         >
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
-      )
+      ),
     },
     {
       header: 'תאריך',
       accessor: 'created_date',
-      cell: (row) => row.created_date ? (
-        <span className="text-[#616161] text-sm whitespace-nowrap">
-          {format(parseISO(row.created_date), 'dd/MM/yy HH:mm', { locale: he })}
-        </span>
-      ) : '-'
+      cell: (row) =>
+        row.created_date ? (
+          <span className="text-[#616161] text-sm whitespace-nowrap">
+            {format(parseISO(row.created_date), 'dd/MM/yy HH:mm', { locale: he })}
+          </span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'לקוח',
       accessor: 'customer_name',
-      cell: (row) => <span className="font-medium">{row.customer_name}</span>
+      cell: (row) => <span className="font-medium">{row.customer_name}</span>,
     },
     {
       header: 'טלפון',
       accessor: 'customer_phone',
       cell: (row) => (
-        <a 
+        <a
           href={`tel:${row.customer_phone}`}
           className="flex items-center gap-1 text-[#0078D4] hover:underline"
         >
           <Phone className="w-3 h-3" />
           {row.customer_phone}
         </a>
-      )
+      ),
     },
     {
       header: 'רכב',
       accessor: 'vehicle_plate',
-      cell: (row) => row.vehicle_plate || '-'
+      cell: (row) => row.vehicle_plate || '-',
     },
     {
       header: 'כתובת איסוף',
@@ -161,24 +167,27 @@ export default function VendorPortal() {
           <MapPin className="w-3 h-3 text-[#616161]" />
           <span className="max-w-[200px] truncate">{row.pickup_location_address}</span>
         </div>
-      )
+      ),
     },
     {
       header: 'יעד',
       accessor: 'dropoff_location_address',
-      cell: (row) => row.dropoff_location_address ? (
-        <span className="max-w-[150px] truncate">{row.dropoff_location_address}</span>
-      ) : '-'
+      cell: (row) =>
+        row.dropoff_location_address ? (
+          <span className="max-w-[150px] truncate">{row.dropoff_location_address}</span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'תקלה',
       accessor: 'issue_type',
-      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-'
+      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-',
     },
     {
       header: 'סטטוס',
       accessor: 'call_status',
-      cell: (row) => <StatusBadge status={row.call_status} />
+      cell: (row) => <StatusBadge status={row.call_status} />,
     },
     {
       header: 'פעולות',
@@ -190,16 +199,16 @@ export default function VendorPortal() {
               <Eye className="w-4 h-4" />
             </Button>
           </Link>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8"
             onClick={() => openNavigation(row.pickup_location_address)}
           >
             <Navigation className="w-4 h-4" />
           </Button>
         </div>
-      )
+      ),
     },
   ];
 
@@ -247,7 +256,7 @@ export default function VendorPortal() {
         <StatCard
           title="קריאות השבוע"
           value={thisWeekCalls.length}
-          subtitle={`${Math.round((thisWeekCalls.length / 7))} ממוצע יומי`}
+          subtitle={`${Math.round(thisWeekCalls.length / 7)} ממוצע יומי`}
           icon={Clock}
           variant="info"
           to={createPageUrl('MyCallsVendor') + '?date=week'}
@@ -280,17 +289,22 @@ export default function VendorPortal() {
             </Button>
           </Link>
         </div>
-        
+
         {/* Assignment Requests (AI Auto-Assign) */}
         {assignmentRequests.length > 0 && (
           <div className="mb-6 space-y-4">
-            <h3 className="text-[15px] font-semibold text-[#111827]">בקשות קריאה חדשות ({assignmentRequests.length})</h3>
-            {assignmentRequests.map(request => {
-              const call = allCalls.find(c => c.id === request.call_id);
+            <h3 className="text-[15px] font-semibold text-[#111827]">
+              בקשות קריאה חדשות ({assignmentRequests.length})
+            </h3>
+            {assignmentRequests.map((request) => {
+              const call = allCalls.find((c) => c.id === request.call_id);
               if (!call) return null;
 
               return (
-                <div key={request.id} className="bg-white border-2 border-blue-500 rounded-lg p-5 shadow-sm animate-pulse-border">
+                <div
+                  key={request.id}
+                  className="bg-white border-2 border-blue-500 rounded-lg p-5 shadow-sm animate-pulse-border"
+                >
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -302,7 +316,8 @@ export default function VendorPortal() {
                         </span>
                       </div>
                       <h4 className="text-lg font-bold text-gray-900 mb-1">
-                        קריאה #{call.call_number || call.id.slice(-6)} - {issueTypeLabels[call.issue_type] || call.issue_type}
+                        קריאה #{call.call_number || call.id.slice(-6)} -{' '}
+                        {issueTypeLabels[call.issue_type] || call.issue_type}
                       </h4>
                       <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
@@ -320,17 +335,27 @@ export default function VendorPortal() {
                       </div>
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
-                      <Button 
+                      <Button
                         className="flex-1 md:flex-none bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
                         variant="ghost"
-                        onClick={() => handleAssignmentResponse.mutate({ attemptId: request.id, response: 'decline' })}
+                        onClick={() =>
+                          handleAssignmentResponse.mutate({
+                            attemptId: request.id,
+                            response: 'decline',
+                          })
+                        }
                         disabled={handleAssignmentResponse.isPending}
                       >
                         דחה
                       </Button>
-                      <Button 
+                      <Button
                         className="flex-1 md:flex-none bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => handleAssignmentResponse.mutate({ attemptId: request.id, response: 'accept' })}
+                        onClick={() =>
+                          handleAssignmentResponse.mutate({
+                            attemptId: request.id,
+                            response: 'accept',
+                          })
+                        }
                         disabled={handleAssignmentResponse.isPending}
                       >
                         <CheckCircle2 className="w-4 h-4 mr-2" />

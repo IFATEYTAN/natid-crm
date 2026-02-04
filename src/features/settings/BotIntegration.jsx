@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Bot,
-  Copy,
-  CheckCircle2,
-  ExternalLink,
-  MessageSquare,
-  Phone,
-  Globe
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Bot, Copy, CheckCircle2, ExternalLink, MessageSquare, Phone, Globe } from 'lucide-react';
 
 export default function BotIntegration() {
   const [copied, setCopied] = useState(false);
@@ -133,16 +125,8 @@ export default function BotIntegration() {
           <div>
             <Label>Webhook URL</Label>
             <div className="flex gap-2">
-              <Input
-                value={webhookUrl}
-                readOnly
-                className="font-mono text-sm"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => copyToClipboard(webhookUrl)}
-              >
+              <Input value={webhookUrl} readOnly className="font-mono text-sm" />
+              <Button variant="outline" size="icon" onClick={() => copyToClipboard(webhookUrl)}>
                 {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
@@ -167,12 +151,7 @@ X-Bot-Source: 99digital`}
 
           <div>
             <Label>Payload Structure</Label>
-            <Textarea
-              value={samplePayload}
-              readOnly
-              rows={15}
-              className="font-mono text-xs"
-            />
+            <Textarea value={samplePayload} readOnly rows={15} className="font-mono text-xs" />
             <Button
               variant="outline"
               size="sm"

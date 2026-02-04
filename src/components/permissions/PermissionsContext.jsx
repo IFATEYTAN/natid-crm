@@ -9,8 +9,15 @@ const DEFAULT_OPERATOR_PERMISSIONS = {
   vendors: { view: true, create: false, edit: false, delete: false, manage_contracts: false },
   customers: { view: true, create: true, edit: true, delete: false },
   reports: { view: true, export: false, financial: false, performance: true, historical: false },
-  system: { users: false, roles: false, settings: false, automations: false, integrations: false, audit_log: false },
-  monitoring: { live_map: true, tracking: true, queue: true }
+  system: {
+    users: false,
+    roles: false,
+    settings: false,
+    automations: false,
+    integrations: false,
+    audit_log: false,
+  },
+  monitoring: { live_map: true, tracking: true, queue: true },
 };
 
 // מיפוי דפים להרשאות
@@ -39,7 +46,7 @@ const PAGE_PERMISSIONS = {
   CoverageAreas: { category: 'monitoring', permission: 'live_map' },
   NotificationSettings: { category: 'system', permission: 'settings' },
   ImportHistoricalData: { category: 'system', permission: 'settings' },
-  Agents: { category: 'system', permission: 'automations' }
+  Agents: { category: 'system', permission: 'automations' },
 };
 
 export function PermissionsProvider({ children }) {
@@ -53,7 +60,7 @@ export function PermissionsProvider({ children }) {
       try {
         const user = await base44.auth.me();
         setCurrentUser(user);
-        
+
         if (user?.id) {
           const permissions = await base44.entities.UserPermission.filter({ user_id: user.id });
           if (permissions.length > 0) {
@@ -84,59 +91,74 @@ export function PermissionsProvider({ children }) {
   }, []);
 
   // בדיקת הרשאה
-  const hasPermission = useCallback((category, permission) => {
-    // אדמינים מקבלים הכל
-    if (currentUser?.role === 'admin') return true;
-    
-    // בדיקת הרשאות מותאמות אישית (עוקפות את התפקיד)
-    if (userPermissions?.custom_permissions?.[category]?.[permission] !== undefined) {
-      return userPermissions.custom_permissions[category][permission];
-    }
-    
-    // בדיקת הרשאות מהתפקיד
-    if (userPermissions?.roleData?.permissions?.[category]?.[permission] !== undefined) {
-      return userPermissions.roleData.permissions[category][permission];
-    }
-    
-    // ברירת מחדל - מוקדן
-    return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
-  }, [currentUser, userPermissions]);
+  const hasPermission = useCallback(
+    (category, permission) => {
+      // אדמינים מקבלים הכל
+      if (currentUser?.role === 'admin') return true;
+
+      // בדיקת הרשאות מותאמות אישית (עוקפות את התפקיד)
+      if (userPermissions?.custom_permissions?.[category]?.[permission] !== undefined) {
+        return userPermissions.custom_permissions[category][permission];
+      }
+
+      // בדיקת הרשאות מהתפקיד
+      if (userPermissions?.roleData?.permissions?.[category]?.[permission] !== undefined) {
+        return userPermissions.roleData.permissions[category][permission];
+      }
+
+      // ברירת מחדל - מוקדן
+      return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
+    },
+    [currentUser, userPermissions]
+  );
 
   // בדיקת גישה לדף
-  const canAccessPage = useCallback((pageName) => {
-    if (currentUser?.role === 'admin') return true;
-    
-    // בדיקת דפים מוגבלים למשתמש ספציפי
-    if (userPermissions?.restricted_pages?.includes(pageName)) {
-      return false;
-    }
-    
-    const pageConfig = PAGE_PERMISSIONS[pageName];
-    if (!pageConfig) return true; // דפים ללא הגדרה - מותרים לכולם
-    
-    return hasPermission(pageConfig.category, pageConfig.permission);
-  }, [currentUser, userPermissions, hasPermission]);
+  const canAccessPage = useCallback(
+    (pageName) => {
+      if (currentUser?.role === 'admin') return true;
+
+      // בדיקת דפים מוגבלים למשתמש ספציפי
+      if (userPermissions?.restricted_pages?.includes(pageName)) {
+        return false;
+      }
+
+      const pageConfig = PAGE_PERMISSIONS[pageName];
+      if (!pageConfig) return true; // דפים ללא הגדרה - מותרים לכולם
+
+      return hasPermission(pageConfig.category, pageConfig.permission);
+    },
+    [currentUser, userPermissions, hasPermission]
+  );
 
   // בדיקת גישה לדוח
-  const canAccessReport = useCallback((reportType) => {
-    if (currentUser?.role === 'admin') return true;
-    
-    if (userPermissions?.allowed_reports?.length > 0) {
-      return userPermissions.allowed_reports.includes(reportType);
-    }
-    
-    return hasPermission('reports', reportType);
-  }, [currentUser, userPermissions, hasPermission]);
+  const canAccessReport = useCallback(
+    (reportType) => {
+      if (currentUser?.role === 'admin') return true;
+
+      if (userPermissions?.allowed_reports?.length > 0) {
+        return userPermissions.allowed_reports.includes(reportType);
+      }
+
+      return hasPermission('reports', reportType);
+    },
+    [currentUser, userPermissions, hasPermission]
+  );
 
   // בדיקת הרשאות מרובות בבת אחת
-  const hasAnyPermission = useCallback((permissions) => {
-    return permissions.some(({ category, permission }) => hasPermission(category, permission));
-  }, [hasPermission]);
+  const hasAnyPermission = useCallback(
+    (permissions) => {
+      return permissions.some(({ category, permission }) => hasPermission(category, permission));
+    },
+    [hasPermission]
+  );
 
   // בדיקת כל ההרשאות
-  const hasAllPermissions = useCallback((permissions) => {
-    return permissions.every(({ category, permission }) => hasPermission(category, permission));
-  }, [hasPermission]);
+  const hasAllPermissions = useCallback(
+    (permissions) => {
+      return permissions.every(({ category, permission }) => hasPermission(category, permission));
+    },
+    [hasPermission]
+  );
 
   const value = {
     currentUser,
@@ -147,14 +169,10 @@ export function PermissionsProvider({ children }) {
     hasAnyPermission,
     hasAllPermissions,
     isAdmin: currentUser?.role === 'admin',
-    isLoading
+    isLoading,
   };
 
-  return (
-    <PermissionsContext.Provider value={value}>
-      {children}
-    </PermissionsContext.Provider>
-  );
+  return <PermissionsContext.Provider value={value}>{children}</PermissionsContext.Provider>;
 }
 
 export function usePermissions() {
@@ -170,7 +188,7 @@ export function usePermissions() {
       hasAnyPermission: () => false,
       hasAllPermissions: () => false,
       isAdmin: false,
-      isLoading: true
+      isLoading: true,
     };
   }
   return context;

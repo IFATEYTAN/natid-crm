@@ -1,16 +1,7 @@
 import React from 'react';
-import { cn } from "@/lib/utils";
-import { Button } from "./button";
-import {
-  Inbox,
-  Search,
-  FileX,
-  Users,
-  Truck,
-  Phone,
-  AlertCircle,
-  Plus
-} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from './button';
+import { Inbox, Search, FileX, Users, Truck, Phone, AlertCircle, Plus } from 'lucide-react';
 
 // Pre-configured empty states for common scenarios
 const presets = {
@@ -111,50 +102,27 @@ export default function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center",
+        'flex flex-col items-center justify-center text-center',
         sizes.container,
         className
       )}
     >
       {/* Icon */}
       <div className="mb-4 p-4 bg-gray-50 rounded-full">
-        <Icon
-          className={cn(
-            "text-gray-400",
-            sizes.icon
-          )}
-          strokeWidth={1.5}
-        />
+        <Icon className={cn('text-gray-400', sizes.icon)} strokeWidth={1.5} />
       </div>
 
       {/* Title */}
-      <h3
-        className={cn(
-          "font-semibold text-gray-900 mb-2",
-          sizes.title
-        )}
-      >
-        {displayTitle}
-      </h3>
+      <h3 className={cn('font-semibold text-gray-900 mb-2', sizes.title)}>{displayTitle}</h3>
 
       {/* Description */}
-      <p
-        className={cn(
-          "text-gray-500 max-w-sm mb-6",
-          sizes.description
-        )}
-      >
-        {displayDescription}
-      </p>
+      <p className={cn('text-gray-500 max-w-sm mb-6', sizes.description)}>{displayDescription}</p>
 
       {/* Action Button */}
       {displayActionLabel && onAction && (
         <Button
           onClick={onAction}
-          className={cn(
-            "bg-[#FF0000] hover:bg-[#CC0000] text-white",
-            sizes.button
-          )}
+          className={cn('bg-[#FF0000] hover:bg-[#CC0000] text-white', sizes.button)}
         >
           <ActionIcon className="w-4 h-4 ml-2" />
           {displayActionLabel}
@@ -166,34 +134,15 @@ export default function EmptyState({
 
 // Named exports for common scenarios
 export function EmptyCallsList({ onAction, ...props }) {
-  return (
-    <EmptyState
-      preset="calls"
-      actionLabel="קריאה חדשה"
-      onAction={onAction}
-      {...props}
-    />
-  );
+  return <EmptyState preset="calls" actionLabel="קריאה חדשה" onAction={onAction} {...props} />;
 }
 
 export function EmptyCustomersList({ onAction, ...props }) {
-  return (
-    <EmptyState
-      preset="customers"
-      onAction={onAction}
-      {...props}
-    />
-  );
+  return <EmptyState preset="customers" onAction={onAction} {...props} />;
 }
 
 export function EmptyVendorsList({ onAction, ...props }) {
-  return (
-    <EmptyState
-      preset="vendors"
-      onAction={onAction}
-      {...props}
-    />
-  );
+  return <EmptyState preset="vendors" onAction={onAction} {...props} />;
 }
 
 export function EmptySearchResults(props) {
@@ -201,12 +150,5 @@ export function EmptySearchResults(props) {
 }
 
 export function ErrorState({ onRetry, ...props }) {
-  return (
-    <EmptyState
-      preset="error"
-      onAction={onRetry}
-      actionIcon={AlertCircle}
-      {...props}
-    />
-  );
+  return <EmptyState preset="error" onAction={onRetry} actionIcon={AlertCircle} {...props} />;
 }

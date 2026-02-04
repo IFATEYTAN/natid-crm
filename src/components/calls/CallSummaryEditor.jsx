@@ -1,18 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  Sparkles, 
-  Save, 
-  RefreshCw, 
-  Check, 
-  Edit2,
-  Clock,
-  Loader2
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Sparkles, Save, RefreshCw, Check, Edit2, Clock, Loader2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -33,7 +24,7 @@ export default function CallSummaryEditor({ call, onSummaryUpdated }) {
   const generateMutation = useMutation({
     mutationFn: async () => {
       const response = await base44.functions.invoke('generateCallSummary', {
-        call_id: call.id
+        call_id: call.id,
       });
       return response.data;
     },
@@ -44,7 +35,7 @@ export default function CallSummaryEditor({ call, onSummaryUpdated }) {
     },
     onError: (error) => {
       toast.error('שגיאה ביצירת סיכום: ' + error.message);
-    }
+    },
   });
 
   // Save summary mutation
@@ -52,7 +43,7 @@ export default function CallSummaryEditor({ call, onSummaryUpdated }) {
     mutationFn: async (summary) => {
       await base44.entities.Call.update(call.id, {
         summary_final: summary,
-        summary_draft: summary
+        summary_draft: summary,
       });
     },
     onSuccess: () => {
@@ -65,7 +56,7 @@ export default function CallSummaryEditor({ call, onSummaryUpdated }) {
     },
     onError: (error) => {
       toast.error('שגיאה בשמירת סיכום: ' + error.message);
-    }
+    },
   });
 
   const hasSummary = call?.summary_draft || call?.summary_final;
@@ -86,7 +77,10 @@ export default function CallSummaryEditor({ call, onSummaryUpdated }) {
           </CardTitle>
           <div className="flex items-center gap-2">
             {call?.summary_final && (
-              <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 gap-1">
+              <Badge
+                variant="outline"
+                className="text-green-600 border-green-200 bg-green-50 gap-1"
+              >
                 <Check className="w-3 h-3" />
                 סיכום סופי
               </Badge>
@@ -104,9 +98,7 @@ export default function CallSummaryEditor({ call, onSummaryUpdated }) {
         {!hasSummary ? (
           <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
             <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600 mb-4">
-              צור סיכום אוטומטי של הקריאה באמצעות בינה מלאכותית
-            </p>
+            <p className="text-gray-600 mb-4">צור סיכום אוטומטי של הקריאה באמצעות בינה מלאכותית</p>
             <Button
               onClick={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}

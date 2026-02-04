@@ -9,7 +9,7 @@ import {
   ChevronDown,
   Check,
   Loader2,
-  Printer
+  Printer,
 } from 'lucide-react';
 import { Button } from './button';
 import {
@@ -19,13 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from './dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './dialog';
 import { Input } from './input';
 import { Textarea } from './textarea';
 import { Label } from './label';
@@ -48,17 +42,21 @@ export const exportToCSV = (data, columns, filename = 'export') => {
   const BOM = '\uFEFF'; // UTF-8 BOM for Excel Hebrew support
 
   // Headers
-  const headers = columns.map(col => col.header).join(',');
+  const headers = columns.map((col) => col.header).join(',');
 
   // Rows
-  const rows = data.map(row =>
-    columns.map(col => {
-      const value = col.accessor ? row[col.accessor] : '';
-      // Escape quotes and wrap in quotes if contains comma
-      const escaped = String(value || '').replace(/"/g, '""');
-      return `"${escaped}"`;
-    }).join(',')
-  ).join('\n');
+  const rows = data
+    .map((row) =>
+      columns
+        .map((col) => {
+          const value = col.accessor ? row[col.accessor] : '';
+          // Escape quotes and wrap in quotes if contains comma
+          const escaped = String(value || '').replace(/"/g, '""');
+          return `"${escaped}"`;
+        })
+        .join(',')
+    )
+    .join('\n');
 
   const csv = BOM + headers + '\n' + rows;
 
@@ -90,15 +88,18 @@ export const exportToExcel = async (data, columns, filename = 'export', options 
   }
 
   // Headers
-  content += columns.map(col => `"${col.header}"`).join(',') + '\n';
+  content += columns.map((col) => `"${col.header}"`).join(',') + '\n';
 
   // Rows
-  data.forEach(row => {
-    content += columns.map(col => {
-      const value = col.accessor ? row[col.accessor] : '';
-      const escaped = String(value || '').replace(/"/g, '""');
-      return `"${escaped}"`;
-    }).join(',') + '\n';
+  data.forEach((row) => {
+    content +=
+      columns
+        .map((col) => {
+          const value = col.accessor ? row[col.accessor] : '';
+          const escaped = String(value || '').replace(/"/g, '""');
+          return `"${escaped}"`;
+        })
+        .join(',') + '\n';
   });
 
   const blob = new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8;' });
@@ -119,7 +120,7 @@ export const exportToPDF = async (data, columns, filename = 'export', options = 
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -199,12 +200,7 @@ export const exportToPDF = async (data, columns, filename = 'export', options = 
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(
-      `עמוד ${i} מתוך ${totalPages}`,
-      pageWidth / 2,
-      pageHeight - 10,
-      { align: 'center' }
-    );
+    doc.text(`עמוד ${i} מתוך ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
     doc.text('נתי שירותי דרך', margin, pageHeight - 10);
   }
 
@@ -298,15 +294,19 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
   <table>
     <thead>
       <tr>
-        ${columns.map(col => `<th>${col.header}</th>`).join('')}
+        ${columns.map((col) => `<th>${col.header}</th>`).join('')}
       </tr>
     </thead>
     <tbody>
-      ${data.map(row => `
+      ${data
+        .map(
+          (row) => `
         <tr>
-          ${columns.map(col => `<td>${row[col.accessor] || ''}</td>`).join('')}
+          ${columns.map((col) => `<td>${row[col.accessor] || ''}</td>`).join('')}
         </tr>
-      `).join('')}
+      `
+        )
+        .join('')}
     </tbody>
   </table>
 
@@ -363,15 +363,19 @@ export const printData = (data, columns, options = {}) => {
   <table>
     <thead>
       <tr>
-        ${columns.map(col => `<th>${col.header}</th>`).join('')}
+        ${columns.map((col) => `<th>${col.header}</th>`).join('')}
       </tr>
     </thead>
     <tbody>
-      ${data.map(row => `
+      ${data
+        .map(
+          (row) => `
         <tr>
-          ${columns.map(col => `<td>${row[col.accessor] || ''}</td>`).join('')}
+          ${columns.map((col) => `<td>${row[col.accessor] || ''}</td>`).join('')}
         </tr>
-      `).join('')}
+      `
+        )
+        .join('')}
     </tbody>
   </table>
 
@@ -443,11 +447,7 @@ function EmailDialog({ open, onOpenChange, onSend, title }) {
 
           <div className="space-y-2">
             <Label htmlFor="subject">נושא</Label>
-            <Input
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
+            <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
           </div>
 
           <div className="space-y-2">
@@ -547,11 +547,7 @@ export default function ExportMenu({
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className={cn(
-              "gap-2 transition-all",
-              isExporting && "opacity-70",
-              className
-            )}
+            className={cn('gap-2 transition-all', isExporting && 'opacity-70', className)}
             disabled={!data?.length}
           >
             {isExporting ? (
@@ -579,13 +575,15 @@ export default function ExportMenu({
                   className="cursor-pointer"
                 >
                   <div className="flex items-center gap-3 w-full">
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center",
-                      option.type === 'pdf' && "bg-red-100 text-red-600",
-                      option.type === 'excel' && "bg-green-100 text-green-600",
-                      option.type === 'csv' && "bg-blue-100 text-blue-600",
-                      option.type === 'html' && "bg-purple-100 text-purple-600",
-                    )}>
+                    <div
+                      className={cn(
+                        'w-8 h-8 rounded-lg flex items-center justify-center',
+                        option.type === 'pdf' && 'bg-red-100 text-red-600',
+                        option.type === 'excel' && 'bg-green-100 text-green-600',
+                        option.type === 'csv' && 'bg-blue-100 text-blue-600',
+                        option.type === 'html' && 'bg-purple-100 text-purple-600'
+                      )}
+                    >
                       {isExporting && exportType === option.type ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
@@ -608,10 +606,7 @@ export default function ExportMenu({
           {(showPrint || showEmail) && <DropdownMenuSeparator />}
 
           {showPrint && (
-            <DropdownMenuItem
-              onClick={() => handleExport('print')}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem onClick={() => handleExport('print')} className="cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
                   <Printer className="w-4 h-4 text-gray-600" />
@@ -625,10 +620,7 @@ export default function ExportMenu({
           )}
 
           {showEmail && onEmailSend && (
-            <DropdownMenuItem
-              onClick={() => setEmailDialogOpen(true)}
-              className="cursor-pointer"
-            >
+            <DropdownMenuItem onClick={() => setEmailDialogOpen(true)} className="cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
                   <Mail className="w-4 h-4 text-orange-600" />

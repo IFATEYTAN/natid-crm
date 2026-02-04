@@ -1,47 +1,46 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  CheckCircle,
-  Clock,
-  Star,
-  TrendingUp,
-  Calendar,
-  DollarSign
-} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { CheckCircle, Clock, Star, TrendingUp, Calendar, DollarSign } from 'lucide-react';
 
 export default function VendorStats({ vendor, calls = [] }) {
   // Calculate stats
-  const completedCalls = calls.filter(c => c.call_status === 'completed');
-  
+  const completedCalls = calls.filter((c) => c.call_status === 'completed');
+
   const thisMonth = new Date();
-  const thisMonthCalls = completedCalls.filter(c => {
+  const thisMonthCalls = completedCalls.filter((c) => {
     const created = new Date(c.created_date);
-    return created.getMonth() === thisMonth.getMonth() && 
-           created.getFullYear() === thisMonth.getFullYear();
+    return (
+      created.getMonth() === thisMonth.getMonth() &&
+      created.getFullYear() === thisMonth.getFullYear()
+    );
   });
 
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
-  const lastMonthCalls = completedCalls.filter(c => {
+  const lastMonthCalls = completedCalls.filter((c) => {
     const created = new Date(c.created_date);
-    return created.getMonth() === lastMonth.getMonth() && 
-           created.getFullYear() === lastMonth.getFullYear();
+    return (
+      created.getMonth() === lastMonth.getMonth() &&
+      created.getFullYear() === lastMonth.getFullYear()
+    );
   });
 
-  const monthlyGrowth = lastMonthCalls.length > 0 
-    ? ((thisMonthCalls.length - lastMonthCalls.length) / lastMonthCalls.length * 100).toFixed(0)
-    : 0;
+  const monthlyGrowth =
+    lastMonthCalls.length > 0
+      ? (((thisMonthCalls.length - lastMonthCalls.length) / lastMonthCalls.length) * 100).toFixed(0)
+      : 0;
 
   // Calculate average response time
-  const avgResponseTime = completedCalls.length > 0
-    ? completedCalls
-        .filter(c => c.assigned_at && c.vendor_arrival_time_actual)
-        .reduce((sum, c) => {
-          const assigned = new Date(c.assigned_at);
-          const arrived = new Date(c.vendor_arrival_time_actual);
-          return sum + (arrived - assigned) / 60000; // minutes
-        }, 0) / completedCalls.filter(c => c.assigned_at && c.vendor_arrival_time_actual).length
-    : 0;
+  const avgResponseTime =
+    completedCalls.length > 0
+      ? completedCalls
+          .filter((c) => c.assigned_at && c.vendor_arrival_time_actual)
+          .reduce((sum, c) => {
+            const assigned = new Date(c.assigned_at);
+            const arrived = new Date(c.vendor_arrival_time_actual);
+            return sum + (arrived - assigned) / 60000; // minutes
+          }, 0) / completedCalls.filter((c) => c.assigned_at && c.vendor_arrival_time_actual).length
+      : 0;
 
   const stats = [
     {
@@ -49,43 +48,47 @@ export default function VendorStats({ vendor, calls = [] }) {
       value: thisMonthCalls.length,
       icon: Calendar,
       color: 'bg-blue-100 text-blue-600',
-      trend: monthlyGrowth > 0 ? `+${monthlyGrowth}%` : monthlyGrowth < 0 ? `${monthlyGrowth}%` : null,
-      trendPositive: monthlyGrowth > 0
+      trend:
+        monthlyGrowth > 0 ? `+${monthlyGrowth}%` : monthlyGrowth < 0 ? `${monthlyGrowth}%` : null,
+      trendPositive: monthlyGrowth > 0,
     },
     {
       title: 'סה"כ הושלמו',
       value: vendor?.total_calls_completed || completedCalls.length,
       icon: CheckCircle,
-      color: 'bg-green-100 text-green-600'
+      color: 'bg-green-100 text-green-600',
     },
     {
       title: 'דירוג ממוצע',
       value: vendor?.average_rating?.toFixed(1) || '-',
       icon: Star,
       color: 'bg-yellow-100 text-yellow-600',
-      suffix: vendor?.total_ratings ? `(${vendor.total_ratings})` : null
+      suffix: vendor?.total_ratings ? `(${vendor.total_ratings})` : null,
     },
     {
       title: 'זמן הגעה ממוצע',
-      value: avgResponseTime > 0 ? Math.round(avgResponseTime) : vendor?.average_response_time || '-',
+      value:
+        avgResponseTime > 0 ? Math.round(avgResponseTime) : vendor?.average_response_time || '-',
       icon: Clock,
       color: 'bg-purple-100 text-purple-600',
-      suffix: 'דק\''
+      suffix: "דק'",
     },
     {
       title: 'אחוז השלמה',
-      value: vendor?.completion_rate || (calls.length > 0 ? Math.round(completedCalls.length / calls.length * 100) : 0),
+      value:
+        vendor?.completion_rate ||
+        (calls.length > 0 ? Math.round((completedCalls.length / calls.length) * 100) : 0),
       icon: TrendingUp,
       color: 'bg-indigo-100 text-indigo-600',
-      suffix: '%'
+      suffix: '%',
     },
     {
       title: 'תשלומים ממתינים',
       value: vendor?.pending_payments || 0,
       icon: DollarSign,
       color: 'bg-orange-100 text-orange-600',
-      prefix: '₪'
-    }
+      prefix: '₪',
+    },
   ];
 
   return (
@@ -96,7 +99,9 @@ export default function VendorStats({ vendor, calls = [] }) {
           <Card key={idx} className="bg-white">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full ${stat.color} flex items-center justify-center`}>
+                <div
+                  className={`w-10 h-10 rounded-full ${stat.color} flex items-center justify-center`}
+                >
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
@@ -107,7 +112,9 @@ export default function VendorStats({ vendor, calls = [] }) {
                   </div>
                   <div className="text-xs text-[#6B778C]">{stat.title}</div>
                   {stat.trend && (
-                    <div className={`text-xs ${stat.trendPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    <div
+                      className={`text-xs ${stat.trendPositive ? 'text-green-600' : 'text-red-600'}`}
+                    >
                       {stat.trend} מהחודש הקודם
                     </div>
                   )}

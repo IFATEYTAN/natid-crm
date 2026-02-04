@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import {
@@ -26,34 +26,34 @@ import {
   Clock,
   AlertTriangle,
   RefreshCw,
-  Calendar
+  Calendar,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'רכב לא נוסע',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'מצבר',
   locked_keys: 'מפתחות נעולים',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const priorityLabels = {
   normal: 'רגיל',
   urgent: 'דחוף',
-  critical: 'קריטי'
+  critical: 'קריטי',
 };
 
 const priorityColors = {
   normal: 'bg-gray-100 text-gray-800',
   urgent: 'bg-orange-100 text-orange-800',
-  critical: 'bg-red-100 text-red-800'
+  critical: 'bg-red-100 text-red-800',
 };
 
 export default function CallsPage() {
@@ -62,65 +62,84 @@ export default function CallsPage() {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('active');
 
-  const { data: calls = [], isLoading, refetch, isFetching } = useQuery({
+  const {
+    data: calls = [],
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ['allCalls'],
     queryFn: () => base44.entities.Call.list('-created_date', 500),
-    refetchInterval: 30000
+    refetchInterval: 30000,
   });
 
   // Filter calls
   const filteredCalls = useMemo(() => {
-    return calls.filter(call => {
-      const matchesSearch = !searchQuery || 
+    return calls.filter((call) => {
+      const matchesSearch =
+        !searchQuery ||
         call.call_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         call.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         call.customer_phone?.includes(searchQuery) ||
         call.vehicle_plate?.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesStatus = statusFilter === 'all' || call.call_status === statusFilter;
       const matchesPriority = priorityFilter === 'all' || call.call_priority === priorityFilter;
-      
+
       return matchesSearch && matchesStatus && matchesPriority;
     });
   }, [calls, searchQuery, statusFilter, priorityFilter]);
 
   // Separate active and completed calls
-  const activeCalls = filteredCalls.filter(c => 
-    ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress'].includes(c.call_status)
+  const activeCalls = filteredCalls.filter((c) =>
+    [
+      'waiting_treatment',
+      'awaiting_assignment',
+      'assigning',
+      'vendor_enroute',
+      'in_progress',
+    ].includes(c.call_status)
   );
-  const completedCalls = filteredCalls.filter(c => 
+  const completedCalls = filteredCalls.filter((c) =>
     ['completed', 'cancelled'].includes(c.call_status)
   );
 
   // Stats
-  const stats = useMemo(() => ({
-    total: calls.length,
-    waiting: calls.filter(c => c.call_status === 'waiting_treatment').length,
-    inProgress: calls.filter(c => ['vendor_enroute', 'in_progress'].includes(c.call_status)).length,
-    urgent: calls.filter(c => c.call_priority === 'urgent' || c.call_priority === 'critical').length,
-  }), [calls]);
+  const stats = useMemo(
+    () => ({
+      total: calls.length,
+      waiting: calls.filter((c) => c.call_status === 'waiting_treatment').length,
+      inProgress: calls.filter((c) => ['vendor_enroute', 'in_progress'].includes(c.call_status))
+        .length,
+      urgent: calls.filter((c) => c.call_priority === 'urgent' || c.call_priority === 'critical')
+        .length,
+    }),
+    [calls]
+  );
 
   const columns = [
     {
       header: 'מספר קריאה',
       accessor: 'call_number',
       cell: (call) => (
-        <Link 
+        <Link
           to={createPageUrl(`CallDetails?id=${call.id}`)}
           className="font-medium text-blue-600 hover:underline"
         >
           {call.call_number || call.id.slice(0, 8)}
         </Link>
-      )
+      ),
     },
     {
       header: 'עדיפות',
       accessor: 'call_priority',
       cell: (call) => (
-        <Badge className={cn("text-xs", priorityColors[call.call_priority] || priorityColors.normal)}>
+        <Badge
+          className={cn('text-xs', priorityColors[call.call_priority] || priorityColors.normal)}
+        >
           {priorityLabels[call.call_priority] || 'רגיל'}
         </Badge>
-      )
+      ),
     },
     {
       header: 'לקוח',
@@ -128,14 +147,16 @@ export default function CallsPage() {
       cell: (call) => (
         <div>
           <div className="font-medium">{call.customer_name}</div>
-          <div className="text-xs text-[#6B778C]" dir="ltr">{call.customer_phone}</div>
+          <div className="text-xs text-[#6B778C]" dir="ltr">
+            {call.customer_phone}
+          </div>
         </div>
-      )
+      ),
     },
     {
       header: 'סוג תקלה',
       accessor: 'issue_type',
-      cell: (call) => issueTypeLabels[call.issue_type] || call.issue_type || '-'
+      cell: (call) => issueTypeLabels[call.issue_type] || call.issue_type || '-',
     },
     {
       header: 'מיקום',
@@ -143,19 +164,21 @@ export default function CallsPage() {
       cell: (call) => (
         <div className="flex items-center gap-1 text-sm max-w-[200px]">
           <MapPin className="w-3 h-3 text-[#6B778C] shrink-0" />
-          <span className="truncate">{call.pickup_location_city || call.pickup_location_address || '-'}</span>
+          <span className="truncate">
+            {call.pickup_location_city || call.pickup_location_address || '-'}
+          </span>
         </div>
-      )
+      ),
     },
     {
       header: 'ספק',
       accessor: 'assigned_vendor_name',
-      cell: (call) => call.assigned_vendor_name || <span className="text-[#6B778C]">לא שובץ</span>
+      cell: (call) => call.assigned_vendor_name || <span className="text-[#6B778C]">לא שובץ</span>,
     },
     {
       header: 'סטטוס',
       accessor: 'call_status',
-      cell: (call) => <StatusBadge status={call.call_status} />
+      cell: (call) => <StatusBadge status={call.call_status} />,
     },
     {
       header: 'נוצר',
@@ -167,16 +190,18 @@ export default function CallsPage() {
             {formatDistanceToNow(new Date(call.created_date), { addSuffix: true, locale: he })}
           </div>
         </div>
-      )
+      ),
     },
     {
       header: 'פעולות',
       cell: (call) => (
         <Link to={createPageUrl(`CallDetails?id=${call.id}`)}>
-          <Button size="sm" variant="outline">צפה</Button>
+          <Button size="sm" variant="outline">
+            צפה
+          </Button>
         </Link>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -188,13 +213,8 @@ export default function CallsPage() {
           <p className="text-[#6B778C] text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => refetch()}
-            className="gap-2"
-          >
-            <RefreshCw className={cn("w-4 h-4", isFetching && "animate-spin")} />
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+            <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן
           </Button>
           <Link to={createPageUrl('NewCase')}>

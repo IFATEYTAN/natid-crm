@@ -1,8 +1,8 @@
 import React from 'react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { AlertCircle } from 'lucide-react';
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function FormInput({
   label,
@@ -22,10 +22,11 @@ export default function FormInput({
       )}
       <Input
         className={cn(
-          "border border-neutral-soft-200 rounded-[4px] px-4 py-3 text-base text-right bg-white",
-          "focus:border-secondary-soft-500 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.1)] focus:outline-none",
-          error && "border-error-soft-500 focus:border-error-soft-600 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.1)]",
-          props.disabled && "bg-neutral-soft-50 text-neutral-soft-400 cursor-not-allowed",
+          'border border-neutral-soft-200 rounded-[4px] px-4 py-3 text-base text-right bg-white',
+          'focus:border-secondary-soft-500 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.1)] focus:outline-none',
+          error &&
+            'border-error-soft-500 focus:border-error-soft-600 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.1)]',
+          props.disabled && 'bg-neutral-soft-50 text-neutral-soft-400 cursor-not-allowed',
           className
         )}
         {...props}

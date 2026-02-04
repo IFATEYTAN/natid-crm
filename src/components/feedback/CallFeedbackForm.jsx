@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Star, ThumbsUp, ThumbsDown, Send, CheckCircle, Loader2 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 function StarRating({ value, onChange, label }) {
@@ -25,13 +25,13 @@ function StarRating({ value, onChange, label }) {
             onMouseLeave={() => setHovered(0)}
             className="p-1 transition-transform hover:scale-110"
           >
-            <Star 
+            <Star
               className={cn(
-                "w-7 h-7 transition-colors",
-                (hovered >= star || value >= star) 
-                  ? "fill-yellow-400 text-yellow-400" 
-                  : "text-gray-300"
-              )} 
+                'w-7 h-7 transition-colors',
+                hovered >= star || value >= star
+                  ? 'fill-yellow-400 text-yellow-400'
+                  : 'text-gray-300'
+              )}
             />
           </button>
         ))}
@@ -40,21 +40,21 @@ function StarRating({ value, onChange, label }) {
   );
 }
 
-export default function CallFeedbackForm({ 
-  callId, 
+export default function CallFeedbackForm({
+  callId,
   callNumber,
   customerName,
   customerPhone,
-  vendorId, 
+  vendorId,
   vendorName,
   onSubmitSuccess,
-  feedbackSource = 'customer'
+  feedbackSource = 'customer',
 }) {
   const [ratings, setRatings] = useState({
     overall: 0,
     serviceQuality: 0,
     responseTime: 0,
-    professionalism: 0
+    professionalism: 0,
   });
   const [feedbackText, setFeedbackText] = useState('');
   const [wouldRecommend, setWouldRecommend] = useState(null);
@@ -78,13 +78,13 @@ export default function CallFeedbackForm({
         feedback_text: feedbackText,
         would_recommend: wouldRecommend,
         feedback_source: feedbackSource,
-        submitted_at: new Date().toISOString()
+        submitted_at: new Date().toISOString(),
       });
 
       // Update call with customer rating
       await base44.entities.Call.update(callId, {
         customer_rating: ratings.overall,
-        customer_feedback: feedbackText
+        customer_feedback: feedbackText,
       });
 
       // Also create VendorRating record
@@ -100,7 +100,7 @@ export default function CallFeedbackForm({
           service_quality_rating: ratings.serviceQuality,
           professionalism_rating: ratings.professionalism,
           feedback: feedbackText,
-          would_recommend: wouldRecommend
+          would_recommend: wouldRecommend,
         });
       }
     },
@@ -112,7 +112,7 @@ export default function CallFeedbackForm({
     },
     onError: () => {
       toast.error('שגיאה בשליחת המשוב');
-    }
+    },
   });
 
   const handleSubmit = (e) => {
@@ -143,15 +143,13 @@ export default function CallFeedbackForm({
           <Star className="w-5 h-5 text-yellow-500" />
           דרג את השירות
         </CardTitle>
-        {vendorName && (
-          <p className="text-sm text-[#6b7280]">ספק: {vendorName}</p>
-        )}
+        {vendorName && <p className="text-sm text-[#6b7280]">ספק: {vendorName}</p>}
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Overall Rating */}
           <div className="p-4 bg-[#f3f4f6] rounded-lg">
-            <StarRating 
+            <StarRating
               value={ratings.overall}
               onChange={(val) => setRatings({ ...ratings, overall: val })}
               label="דירוג כללי *"
@@ -160,17 +158,17 @@ export default function CallFeedbackForm({
 
           {/* Detailed Ratings */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <StarRating 
+            <StarRating
               value={ratings.serviceQuality}
               onChange={(val) => setRatings({ ...ratings, serviceQuality: val })}
               label="איכות השירות"
             />
-            <StarRating 
+            <StarRating
               value={ratings.responseTime}
               onChange={(val) => setRatings({ ...ratings, responseTime: val })}
               label="זמן תגובה"
             />
-            <StarRating 
+            <StarRating
               value={ratings.professionalism}
               onChange={(val) => setRatings({ ...ratings, professionalism: val })}
               label="מקצועיות"
@@ -183,10 +181,10 @@ export default function CallFeedbackForm({
             <div className="flex gap-3">
               <Button
                 type="button"
-                variant={wouldRecommend === true ? "default" : "outline"}
+                variant={wouldRecommend === true ? 'default' : 'outline'}
                 className={cn(
-                  "flex-1 gap-2",
-                  wouldRecommend === true && "bg-green-500 hover:bg-green-600"
+                  'flex-1 gap-2',
+                  wouldRecommend === true && 'bg-green-500 hover:bg-green-600'
                 )}
                 onClick={() => setWouldRecommend(true)}
               >
@@ -195,10 +193,10 @@ export default function CallFeedbackForm({
               </Button>
               <Button
                 type="button"
-                variant={wouldRecommend === false ? "default" : "outline"}
+                variant={wouldRecommend === false ? 'default' : 'outline'}
                 className={cn(
-                  "flex-1 gap-2",
-                  wouldRecommend === false && "bg-red-500 hover:bg-red-600"
+                  'flex-1 gap-2',
+                  wouldRecommend === false && 'bg-red-500 hover:bg-red-600'
                 )}
                 onClick={() => setWouldRecommend(false)}
               >
@@ -220,8 +218,8 @@ export default function CallFeedbackForm({
           </div>
 
           {/* Submit Button */}
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-[#3b82f6] hover:bg-[#2563eb] gap-2"
             disabled={submitFeedbackMutation.isPending}
           >

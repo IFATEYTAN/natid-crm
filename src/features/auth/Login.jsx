@@ -5,8 +5,14 @@ import { base44 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import FormInput from '@/components/ui/FormInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { LogIn, Truck, ShieldCheck, AlertCircle, ArrowRight, Mail, CheckCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  LogIn,
+  ShieldCheck,
+  AlertCircle,
+  ArrowRight,
+  Mail,
+  CheckCircle,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 
@@ -75,7 +81,7 @@ export default function Login() {
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary-soft-900/70 via-primary-soft-800/60 to-neutral-soft-900/75" />
@@ -87,24 +93,24 @@ export default function Login() {
           className="absolute top-20 right-20 w-64 h-64 bg-primary-soft-500/10 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3]
+            opacity: [0.3, 0.5, 0.3],
           }}
           transition={{
             duration: 4,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
         <motion.div
           className="absolute bottom-20 left-20 w-96 h-96 bg-secondary-soft-500/10 rounded-full blur-3xl"
           animate={{
             scale: [1.2, 1, 1.2],
-            opacity: [0.5, 0.3, 0.5]
+            opacity: [0.5, 0.3, 0.5],
           }}
           transition={{
             duration: 5,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
       </div>

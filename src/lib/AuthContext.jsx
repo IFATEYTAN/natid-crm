@@ -3,7 +3,7 @@ export const useAuth = () => {
     user: null,
     loading: false,
     signOut: () => {},
-    signIn: () => {}
+    signIn: () => {},
   };
 };
 

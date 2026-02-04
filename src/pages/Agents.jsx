@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, MessageSquare, Zap, Settings } from 'lucide-react';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 
@@ -24,7 +24,7 @@ export default function AgentsPage() {
               <p className="text-[#6b7280] max-w-md mx-auto mb-6">
                 בקרוב תוכלו להגדיר סוכנים אוטומטיים שיטפלו במשימות שונות במערכת
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                 <div className="p-4 rounded-[8px] bg-[#f9fafb] border border-[#e5e7eb]">
                   <MessageSquare className="w-6 h-6 text-[#3b82f6] mx-auto mb-2" />

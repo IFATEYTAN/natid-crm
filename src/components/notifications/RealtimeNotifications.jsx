@@ -8,14 +8,14 @@ const notificationIcons = {
   info: Info,
   success: CheckCircle2,
   warning: AlertTriangle,
-  error: XCircle
+  error: XCircle,
 };
 
 const notificationColors = {
   info: 'text-blue-500',
   success: 'text-green-500',
   warning: 'text-orange-500',
-  error: 'text-red-500'
+  error: 'text-red-500',
 };
 
 export default function RealtimeNotifications({ userId, soundEnabled = true }) {
@@ -29,7 +29,7 @@ export default function RealtimeNotifications({ userId, soundEnabled = true }) {
     const unsubscribe = base44.entities.Notification.subscribe((event) => {
       if (event.type === 'create' && event.data?.user_id === userId) {
         const notification = event.data;
-        
+
         // Play sound if enabled
         if (soundEnabled && audioRef.current) {
           audioRef.current.play().catch(() => {});
@@ -38,17 +38,19 @@ export default function RealtimeNotifications({ userId, soundEnabled = true }) {
         // Show toast notification
         const Icon = notificationIcons[notification.type] || Bell;
         const colorClass = notificationColors[notification.type] || 'text-blue-500';
-        
+
         toast(notification.title, {
           description: notification.message,
           icon: <Icon className={`w-5 h-5 ${colorClass}`} />,
-          action: notification.link ? {
-            label: 'צפה',
-            onClick: () => {
-              window.location.href = notification.link;
-            }
-          } : undefined,
-          duration: 5000
+          action: notification.link
+            ? {
+                label: 'צפה',
+                onClick: () => {
+                  window.location.href = notification.link;
+                },
+              }
+            : undefined,
+          duration: 5000,
         });
 
         // Invalidate notifications query to update the bell counter
@@ -60,8 +62,8 @@ export default function RealtimeNotifications({ userId, soundEnabled = true }) {
   }, [userId, soundEnabled, queryClient]);
 
   return (
-    <audio 
-      ref={audioRef} 
+    <audio
+      ref={audioRef}
       src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
       preload="auto"
     />

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { Zap, MessageSquare, UserCheck, Bell, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -23,22 +23,22 @@ export default function AutomationSettings() {
     smsTemplates: {
       assigned: 'שלום {customer_name}, קריאתך {call_number} שובצה לטיפול. הספק בדרך אליך.',
       enroute: 'הספק בדרך למיקומך. זמן הגעה משוער: 20-30 דקות.',
-      completed: 'הטיפול בקריאתך הושלם. תודה שבחרת בנתי שירותי דרך!'
+      completed: 'הטיפול בקריאתך הושלם. תודה שבחרת בנתי שירותי דרך!',
     },
-    
+
     // Auto Assignment
     autoAssignEnabled: true,
     autoAssignCriteria: 'rating', // rating, proximity, response_time
     autoAssignOnBotCall: true,
     autoAssignOnOperatorCall: false,
-    
+
     // Notifications
     notifyManagerOnSLA: true,
     notifyManagerThreshold: 5, // minutes before SLA breach
-    
+
     // Auto Status Updates
     autoStatusEnabled: false,
-    autoCompleteOnVendorConfirm: false
+    autoCompleteOnVendorConfirm: false,
   });
 
   const handleSave = () => {
@@ -47,19 +47,19 @@ export default function AutomationSettings() {
   };
 
   const updateSetting = (key, value) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
   const updateTemplate = (key, value) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       smsTemplates: {
         ...prev.smsTemplates,
-        [key]: value
-      }
+        [key]: value,
+      },
     }));
   };
 
@@ -114,7 +114,7 @@ export default function AutomationSettings() {
 
           <div className="space-y-4 pt-4 border-t">
             <h4 className="font-medium">תבניות הודעות</h4>
-            
+
             <div>
               <Label className="text-sm">הודעת שיבוץ</Label>
               <Textarea
@@ -260,10 +260,7 @@ export default function AutomationSettings() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          className="bg-[#0078D4] hover:bg-[#1976D2] gap-2"
-        >
+        <Button onClick={handleSave} className="bg-[#0078D4] hover:bg-[#1976D2] gap-2">
           <Save className="w-4 h-4" />
           שמור הגדרות
         </Button>

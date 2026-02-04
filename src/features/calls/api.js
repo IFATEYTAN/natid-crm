@@ -12,7 +12,7 @@ export const getCalls = (sort = '-created_date', limit = 500) => {
 
 // Get a single call by ID
 export const getCallById = (id) => {
-  return base44.entities.Call.filter({ id }).then(calls => calls[0]);
+  return base44.entities.Call.filter({ id }).then((calls) => calls[0]);
 };
 
 // Filter calls with custom criteria
@@ -32,9 +32,18 @@ export const getCallsByCustomer = (customerId, sort = '-created_date') => {
 
 // Get open calls (for operators)
 export const getOpenCalls = (sort = '-created_date') => {
-  return base44.entities.Call.filter({
-    call_status: ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress']
-  }, sort);
+  return base44.entities.Call.filter(
+    {
+      call_status: [
+        'waiting_treatment',
+        'awaiting_assignment',
+        'assigning',
+        'vendor_enroute',
+        'in_progress',
+      ],
+    },
+    sort
+  );
 };
 
 // Get today's completed calls
@@ -44,10 +53,13 @@ export const getTodayCompletedCalls = (date) => {
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
-  return base44.entities.Call.filter({
-    call_status: 'completed',
-    created_date: { $gte: startOfDay.toISOString(), $lte: endOfDay.toISOString() }
-  }, '-created_date');
+  return base44.entities.Call.filter(
+    {
+      call_status: 'completed',
+      created_date: { $gte: startOfDay.toISOString(), $lte: endOfDay.toISOString() },
+    },
+    '-created_date'
+  );
 };
 
 // Create a new call

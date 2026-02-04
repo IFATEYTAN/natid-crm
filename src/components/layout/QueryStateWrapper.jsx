@@ -1,10 +1,10 @@
-import { PageLoader, CardSkeleton, TableSkeleton } from "@/components/ui/LoadingSpinner";
-import { ErrorMessage, EmptyState } from "@/components/ui/ErrorMessage";
+import { PageLoader, CardSkeleton, TableSkeleton } from '@/components/ui/LoadingSpinner';
+import { ErrorMessage, EmptyState } from '@/components/ui/ErrorMessage';
 
-export function QueryStateWrapper({ 
-  query, 
-  children, 
-  loadingType = "spinner", // "spinner" | "card" | "table"
+export function QueryStateWrapper({
+  query,
+  children,
+  loadingType = 'spinner', // "spinner" | "card" | "table"
   loadingText,
   emptyTitle,
   emptyDescription,
@@ -13,11 +13,11 @@ export function QueryStateWrapper({
   onRetry,
   skeletonCount = 3,
   tableRows = 5,
-  tableCols = 4
+  tableCols = 4,
 }) {
   if (query.isLoading) {
     switch (loadingType) {
-      case "card":
+      case 'card':
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: skeletonCount }).map((_, i) => (
@@ -25,7 +25,7 @@ export function QueryStateWrapper({
             ))}
           </div>
         );
-      case "table":
+      case 'table':
         return <TableSkeleton rows={tableRows} cols={tableCols} />;
       default:
         return <PageLoader text={loadingText} />;
@@ -33,12 +33,7 @@ export function QueryStateWrapper({
   }
 
   if (query.isError) {
-    return (
-      <ErrorMessage 
-        error={query.error} 
-        onRetry={onRetry || query.refetch}
-      />
-    );
+    return <ErrorMessage error={query.error} onRetry={onRetry || query.refetch} />;
   }
 
   // Handle empty data state

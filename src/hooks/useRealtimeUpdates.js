@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { createAppNotification, NotificationTypes } from '@/components/notifications/PushNotifications';
+import {
+  createAppNotification,
+  NotificationTypes,
+} from '@/components/notifications/PushNotifications';
 
 // Event types for real-time updates
 export const RealtimeEvents = {
@@ -13,7 +16,7 @@ export const RealtimeEvents = {
   VENDOR_STATUS_CHANGED: 'vendor.status_changed',
   NOTIFICATION_RECEIVED: 'notification.received',
   SLA_WARNING: 'sla.warning',
-  SYSTEM_MESSAGE: 'system.message'
+  SYSTEM_MESSAGE: 'system.message',
 };
 
 // Connection states
@@ -22,7 +25,7 @@ export const ConnectionState = {
   CONNECTED: 'connected',
   DISCONNECTED: 'disconnected',
   RECONNECTING: 'reconnecting',
-  ERROR: 'error'
+  ERROR: 'error',
 };
 
 // Simulated real-time update manager (uses polling with smart intervals)
@@ -116,7 +119,7 @@ class RealtimeManager {
   // Set connection state
   setState(state) {
     this.state = state;
-    this.stateListeners.forEach(listener => listener(state));
+    this.stateListeners.forEach((listener) => listener(state));
   }
 
   // Subscribe to state changes
@@ -141,7 +144,7 @@ class RealtimeManager {
   emit(event, data) {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
-      callbacks.forEach(callback => {
+      callbacks.forEach((callback) => {
         try {
           callback(data);
         } catch (error) {
@@ -153,7 +156,7 @@ class RealtimeManager {
     // Also emit to wildcard listeners
     const wildcardCallbacks = this.listeners.get('*');
     if (wildcardCallbacks) {
-      wildcardCallbacks.forEach(callback => {
+      wildcardCallbacks.forEach((callback) => {
         try {
           callback({ event, data });
         } catch (error) {
@@ -174,11 +177,7 @@ const realtimeManager = new RealtimeManager();
 
 // Hook for using real-time updates
 export function useRealtimeUpdates(options = {}) {
-  const {
-    autoConnect = true,
-    onEvent,
-    onStateChange
-  } = options;
+  const { autoConnect = true, onEvent, onStateChange } = options;
 
   const [connectionState, setConnectionState] = useState(realtimeManager.state);
   const queryClient = useQueryClient();
@@ -203,7 +202,7 @@ export function useRealtimeUpdates(options = {}) {
 
     return () => {
       // Clean up all subscriptions
-      cleanupRef.current.forEach(cleanup => cleanup());
+      cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
   }, [autoConnect]);
@@ -216,9 +215,12 @@ export function useRealtimeUpdates(options = {}) {
   }, []);
 
   // Subscribe to all events
-  const subscribeAll = useCallback((callback) => {
-    return subscribe('*', callback);
-  }, [subscribe]);
+  const subscribeAll = useCallback(
+    (callback) => {
+      return subscribe('*', callback);
+    },
+    [subscribe]
+  );
 
   // Connect manually
   const connect = useCallback(() => {
@@ -242,7 +244,7 @@ export function useRealtimeUpdates(options = {}) {
     subscribeAll,
     connect,
     disconnect,
-    simulateEvent
+    simulateEvent,
   };
 }
 
@@ -259,32 +261,38 @@ export function useRealtimeEntity(entityType, options = {}) {
 
     // Subscribe to create events
     if (onCreate) {
-      cleanups.push(subscribe(`${entityType}.created`, (data) => {
-        onCreate(data);
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({ queryKey: [entityType] });
-      }));
+      cleanups.push(
+        subscribe(`${entityType}.created`, (data) => {
+          onCreate(data);
+          // Invalidate relevant queries
+          queryClient.invalidateQueries({ queryKey: [entityType] });
+        })
+      );
     }
 
     // Subscribe to update events
     if (onUpdate) {
-      cleanups.push(subscribe(`${entityType}.updated`, (data) => {
-        onUpdate(data);
-        queryClient.invalidateQueries({ queryKey: [entityType] });
-        queryClient.invalidateQueries({ queryKey: [entityType, data.id] });
-      }));
+      cleanups.push(
+        subscribe(`${entityType}.updated`, (data) => {
+          onUpdate(data);
+          queryClient.invalidateQueries({ queryKey: [entityType] });
+          queryClient.invalidateQueries({ queryKey: [entityType, data.id] });
+        })
+      );
     }
 
     // Subscribe to delete events
     if (onDelete) {
-      cleanups.push(subscribe(`${entityType}.deleted`, (data) => {
-        onDelete(data);
-        queryClient.invalidateQueries({ queryKey: [entityType] });
-      }));
+      cleanups.push(
+        subscribe(`${entityType}.deleted`, (data) => {
+          onDelete(data);
+          queryClient.invalidateQueries({ queryKey: [entityType] });
+        })
+      );
     }
 
     return () => {
-      cleanups.forEach(cleanup => cleanup());
+      cleanups.forEach((cleanup) => cleanup());
     };
   }, [entityType, isConnected, onCreate, onUpdate, onDelete, subscribe, queryClient]);
 
@@ -303,71 +311,89 @@ export function useRealtimeCalls(options = {}) {
     const cleanups = [];
 
     // New call created
-    cleanups.push(subscribe(RealtimeEvents.CALL_CREATED, (call) => {
-      onNewCall?.(call);
-      queryClient.invalidateQueries({ queryKey: ['calls'] });
+    cleanups.push(
+      subscribe(RealtimeEvents.CALL_CREATED, (call) => {
+        onNewCall?.(call);
+        queryClient.invalidateQueries({ queryKey: ['calls'] });
 
-      if (showNotifications) {
-        createAppNotification(NotificationTypes.NEW_CALL, {
-          callId: call.id,
-          callNumber: call.call_number,
-          customerName: call.customer_name,
-          location: call.location_address
-        });
-      }
-    }));
+        if (showNotifications) {
+          createAppNotification(NotificationTypes.NEW_CALL, {
+            callId: call.id,
+            callNumber: call.call_number,
+            customerName: call.customer_name,
+            location: call.location_address,
+          });
+        }
+      })
+    );
 
     // Call updated
-    cleanups.push(subscribe(RealtimeEvents.CALL_UPDATED, (call) => {
-      onCallUpdate?.(call);
-      queryClient.invalidateQueries({ queryKey: ['calls'] });
-      queryClient.invalidateQueries({ queryKey: ['call', call.id] });
-    }));
+    cleanups.push(
+      subscribe(RealtimeEvents.CALL_UPDATED, (call) => {
+        onCallUpdate?.(call);
+        queryClient.invalidateQueries({ queryKey: ['calls'] });
+        queryClient.invalidateQueries({ queryKey: ['call', call.id] });
+      })
+    );
 
     // Call assigned
-    cleanups.push(subscribe(RealtimeEvents.CALL_ASSIGNED, (data) => {
-      onAssignment?.(data);
-      queryClient.invalidateQueries({ queryKey: ['calls'] });
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+    cleanups.push(
+      subscribe(RealtimeEvents.CALL_ASSIGNED, (data) => {
+        onAssignment?.(data);
+        queryClient.invalidateQueries({ queryKey: ['calls'] });
+        queryClient.invalidateQueries({ queryKey: ['vendors'] });
 
-      if (showNotifications) {
-        createAppNotification(NotificationTypes.CALL_ASSIGNED, {
-          callId: data.call_id,
-          callNumber: data.call_number,
-          location: data.location
-        });
-      }
-    }));
+        if (showNotifications) {
+          createAppNotification(NotificationTypes.CALL_ASSIGNED, {
+            callId: data.call_id,
+            callNumber: data.call_number,
+            location: data.location,
+          });
+        }
+      })
+    );
 
     // Status changed
-    cleanups.push(subscribe(RealtimeEvents.CALL_STATUS_CHANGED, (data) => {
-      queryClient.invalidateQueries({ queryKey: ['calls'] });
-      queryClient.invalidateQueries({ queryKey: ['call', data.call_id] });
+    cleanups.push(
+      subscribe(RealtimeEvents.CALL_STATUS_CHANGED, (data) => {
+        queryClient.invalidateQueries({ queryKey: ['calls'] });
+        queryClient.invalidateQueries({ queryKey: ['call', data.call_id] });
 
-      if (showNotifications) {
-        createAppNotification(NotificationTypes.CALL_STATUS_CHANGE, {
-          callId: data.call_id,
-          callNumber: data.call_number,
-          newStatus: data.new_status
-        });
-      }
-    }));
+        if (showNotifications) {
+          createAppNotification(NotificationTypes.CALL_STATUS_CHANGE, {
+            callId: data.call_id,
+            callNumber: data.call_number,
+            newStatus: data.new_status,
+          });
+        }
+      })
+    );
 
     // SLA warning
-    cleanups.push(subscribe(RealtimeEvents.SLA_WARNING, (data) => {
-      if (showNotifications) {
-        createAppNotification(NotificationTypes.SLA_WARNING, {
-          callId: data.call_id,
-          callNumber: data.call_number,
-          minutesLeft: data.minutes_left
-        });
-      }
-    }));
+    cleanups.push(
+      subscribe(RealtimeEvents.SLA_WARNING, (data) => {
+        if (showNotifications) {
+          createAppNotification(NotificationTypes.SLA_WARNING, {
+            callId: data.call_id,
+            callNumber: data.call_number,
+            minutesLeft: data.minutes_left,
+          });
+        }
+      })
+    );
 
     return () => {
-      cleanups.forEach(cleanup => cleanup());
+      cleanups.forEach((cleanup) => cleanup());
     };
-  }, [isConnected, onNewCall, onCallUpdate, onAssignment, showNotifications, subscribe, queryClient]);
+  }, [
+    isConnected,
+    onNewCall,
+    onCallUpdate,
+    onAssignment,
+    showNotifications,
+    subscribe,
+    queryClient,
+  ]);
 
   return { isConnected };
 }
@@ -404,35 +430,37 @@ export function ConnectionStatusIndicator() {
     [ConnectionState.CONNECTED]: {
       color: 'bg-green-500',
       text: 'מחובר',
-      pulse: false
+      pulse: false,
     },
     [ConnectionState.CONNECTING]: {
       color: 'bg-yellow-500',
       text: 'מתחבר...',
-      pulse: true
+      pulse: true,
     },
     [ConnectionState.RECONNECTING]: {
       color: 'bg-yellow-500',
       text: 'מתחבר מחדש...',
-      pulse: true
+      pulse: true,
     },
     [ConnectionState.DISCONNECTED]: {
       color: 'bg-gray-400',
       text: 'מנותק',
-      pulse: false
+      pulse: false,
     },
     [ConnectionState.ERROR]: {
       color: 'bg-red-500',
       text: 'שגיאת חיבור',
-      pulse: false
-    }
+      pulse: false,
+    },
   };
 
   const config = statusConfig[connectionState] || statusConfig[ConnectionState.DISCONNECTED];
 
   return (
     <div className="flex items-center gap-2 text-sm">
-      <div className={`w-2 h-2 rounded-full ${config.color} ${config.pulse ? 'animate-pulse' : ''}`} />
+      <div
+        className={`w-2 h-2 rounded-full ${config.color} ${config.pulse ? 'animate-pulse' : ''}`}
+      />
       <span className="text-gray-600">{config.text}</span>
     </div>
   );
@@ -445,5 +473,5 @@ export default {
   useRealtimeVendorLocations,
   RealtimeEvents,
   ConnectionState,
-  ConnectionStatusIndicator
+  ConnectionStatusIndicator,
 };

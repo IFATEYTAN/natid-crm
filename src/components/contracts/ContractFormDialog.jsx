@@ -1,27 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, FileText, DollarSign, Shield, MapPin } from 'lucide-react';
 import { format, addYears } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -32,7 +32,7 @@ const coverageAreas = [
   { key: 'north', label: 'צפון' },
   { key: 'south', label: 'דרום' },
   { key: 'jerusalem', label: 'ירושלים' },
-  { key: 'lowlands', label: 'שפלה' }
+  { key: 'lowlands', label: 'שפלה' },
 ];
 
 const serviceTypes = [
@@ -41,12 +41,12 @@ const serviceTypes = [
   { key: 'battery_jump', label: 'הנעה ממצבר' },
   { key: 'fuel_delivery', label: 'הבאת דלק' },
   { key: 'locksmith', label: 'מנעולן' },
-  { key: 'mechanic', label: 'מכונאי' }
+  { key: 'mechanic', label: 'מכונאי' },
 ];
 
 export default function ContractFormDialog({ open, onOpenChange, vendors, contract, onSuccess }) {
   const isEdit = !!contract;
-  
+
   const [formData, setFormData] = useState({
     vendor_id: '',
     vendor_name: '',
@@ -74,7 +74,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
     insurance_required: true,
     insurance_minimum_amount: 1000000,
     special_terms: '',
-    notes: ''
+    notes: '',
   });
 
   useEffect(() => {
@@ -83,25 +83,25 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
         ...formData,
         ...contract,
         start_date: contract.start_date?.split('T')[0] || formData.start_date,
-        end_date: contract.end_date?.split('T')[0] || formData.end_date
+        end_date: contract.end_date?.split('T')[0] || formData.end_date,
       });
     } else {
       // Generate contract number
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        contract_number: `CON-${Date.now().toString().slice(-6)}`
+        contract_number: `CON-${Date.now().toString().slice(-6)}`,
       }));
     }
   }, [contract, open]);
 
   const handleVendorChange = (vendorId) => {
-    const vendor = vendors.find(v => v.id === vendorId);
-    setFormData(prev => ({
+    const vendor = vendors.find((v) => v.id === vendorId);
+    setFormData((prev) => ({
       ...prev,
       vendor_id: vendorId,
       vendor_name: vendor?.vendor_name || '',
       coverage_areas: vendor?.coverage_areas || [],
-      service_types: vendor?.service_type || []
+      service_types: vendor?.service_type || [],
     }));
   };
 
@@ -112,7 +112,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
     },
     onError: (error) => {
       showToast.error('שגיאה ביצירת החוזה');
-    }
+    },
   });
 
   const updateMutation = useMutation({
@@ -122,12 +122,12 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
     },
     onError: (error) => {
       showToast.error('שגיאה בעדכון החוזה');
-    }
+    },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!formData.vendor_id) {
       showToast.error('נא לבחור ספק');
       return;
@@ -141,20 +141,20 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
   };
 
   const handleAreaChange = (area, checked) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      coverage_areas: checked 
+      coverage_areas: checked
         ? [...prev.coverage_areas, area]
-        : prev.coverage_areas.filter(a => a !== area)
+        : prev.coverage_areas.filter((a) => a !== area),
     }));
   };
 
   const handleServiceChange = (service, checked) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      service_types: checked 
+      service_types: checked
         ? [...prev.service_types, service]
-        : prev.service_types.filter(s => s !== service)
+        : prev.service_types.filter((s) => s !== service),
     }));
   };
 
@@ -183,8 +183,8 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>ספק *</Label>
-                  <Select 
-                    value={formData.vendor_id} 
+                  <Select
+                    value={formData.vendor_id}
                     onValueChange={handleVendorChange}
                     disabled={isEdit}
                   >
@@ -192,7 +192,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                       <SelectValue placeholder="בחר ספק" />
                     </SelectTrigger>
                     <SelectContent>
-                      {vendors.map(vendor => (
+                      {vendors.map((vendor) => (
                         <SelectItem key={vendor.id} value={vendor.id}>
                           {vendor.vendor_name}
                         </SelectItem>
@@ -212,8 +212,8 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>סוג חוזה *</Label>
-                  <Select 
-                    value={formData.contract_type} 
+                  <Select
+                    value={formData.contract_type}
                     onValueChange={(v) => setFormData({ ...formData, contract_type: v })}
                   >
                     <SelectTrigger>
@@ -229,8 +229,8 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 </div>
                 <div>
                   <Label>סטטוס</Label>
-                  <Select 
-                    value={formData.status} 
+                  <Select
+                    value={formData.status}
                     onValueChange={(v) => setFormData({ ...formData, status: v })}
                   >
                     <SelectTrigger>
@@ -280,7 +280,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                       type="number"
                       className="w-20"
                       value={formData.renewal_period_months}
-                      onChange={(e) => setFormData({ ...formData, renewal_period_months: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, renewal_period_months: Number(e.target.value) })
+                      }
                     />
                   </div>
                 )}
@@ -300,7 +302,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                       <Input
                         type="number"
                         value={formData.rate_per_call || ''}
-                        onChange={(e) => setFormData({ ...formData, rate_per_call: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, rate_per_call: Number(e.target.value) })
+                        }
                       />
                     </div>
                   )}
@@ -310,7 +314,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                       <Input
                         type="number"
                         value={formData.monthly_fee || ''}
-                        onChange={(e) => setFormData({ ...formData, monthly_fee: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, monthly_fee: Number(e.target.value) })
+                        }
                       />
                     </div>
                   )}
@@ -320,7 +326,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                       <Input
                         type="number"
                         value={formData.hourly_rate || ''}
-                        onChange={(e) => setFormData({ ...formData, hourly_rate: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, hourly_rate: Number(e.target.value) })
+                        }
                       />
                     </div>
                   )}
@@ -333,7 +341,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   <Input
                     type="number"
                     value={formData.minimum_calls || ''}
-                    onChange={(e) => setFormData({ ...formData, minimum_calls: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, minimum_calls: Number(e.target.value) })
+                    }
                   />
                 </div>
                 <div>
@@ -341,7 +351,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   <Input
                     type="number"
                     value={formData.maximum_calls || ''}
-                    onChange={(e) => setFormData({ ...formData, maximum_calls: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, maximum_calls: Number(e.target.value) })
+                    }
                   />
                 </div>
               </div>
@@ -354,7 +366,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     <Input
                       type="number"
                       value={formData.bonus_threshold || ''}
-                      onChange={(e) => setFormData({ ...formData, bonus_threshold: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, bonus_threshold: Number(e.target.value) })
+                      }
                     />
                   </div>
                   <div>
@@ -362,7 +376,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     <Input
                       type="number"
                       value={formData.bonus_rate || ''}
-                      onChange={(e) => setFormData({ ...formData, bonus_rate: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, bonus_rate: Number(e.target.value) })
+                      }
                     />
                   </div>
                 </div>
@@ -376,7 +392,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     <Input
                       type="number"
                       value={formData.penalty_late_arrival || ''}
-                      onChange={(e) => setFormData({ ...formData, penalty_late_arrival: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, penalty_late_arrival: Number(e.target.value) })
+                      }
                     />
                   </div>
                   <div>
@@ -384,7 +402,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     <Input
                       type="number"
                       value={formData.penalty_cancellation || ''}
-                      onChange={(e) => setFormData({ ...formData, penalty_cancellation: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, penalty_cancellation: Number(e.target.value) })
+                      }
                     />
                   </div>
                 </div>
@@ -392,8 +412,8 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
 
               <div>
                 <Label>תנאי תשלום</Label>
-                <Select 
-                  value={formData.payment_terms} 
+                <Select
+                  value={formData.payment_terms}
                   onValueChange={(v) => setFormData({ ...formData, payment_terms: v })}
                 >
                   <SelectTrigger>
@@ -417,7 +437,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   אזורי כיסוי
                 </Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {coverageAreas.map(area => (
+                  {coverageAreas.map((area) => (
                     <div key={area.key} className="flex items-center gap-2">
                       <Checkbox
                         id={`area-${area.key}`}
@@ -435,7 +455,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               <div>
                 <Label className="mb-3">סוגי שירות</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {serviceTypes.map(service => (
+                  {serviceTypes.map((service) => (
                     <div key={service.key} className="flex items-center gap-2">
                       <Checkbox
                         id={`service-${service.key}`}
@@ -458,7 +478,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     <Input
                       type="number"
                       value={formData.sla_response_minutes || ''}
-                      onChange={(e) => setFormData({ ...formData, sla_response_minutes: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, sla_response_minutes: Number(e.target.value) })
+                      }
                     />
                   </div>
                   <div>
@@ -466,7 +488,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     <Input
                       type="number"
                       value={formData.sla_arrival_minutes || ''}
-                      onChange={(e) => setFormData({ ...formData, sla_arrival_minutes: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, sla_arrival_minutes: Number(e.target.value) })
+                      }
                     />
                   </div>
                 </div>
@@ -482,7 +506,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 <div className="flex items-center gap-4 mb-3">
                   <Switch
                     checked={formData.insurance_required}
-                    onCheckedChange={(checked) => setFormData({ ...formData, insurance_required: checked })}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, insurance_required: checked })
+                    }
                   />
                   <Label>נדרש ביטוח</Label>
                 </div>
@@ -492,7 +518,12 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     <Input
                       type="number"
                       value={formData.insurance_minimum_amount || ''}
-                      onChange={(e) => setFormData({ ...formData, insurance_minimum_amount: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          insurance_minimum_amount: Number(e.target.value),
+                        })
+                      }
                     />
                   </div>
                 )}
@@ -530,8 +561,10 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   <Loader2 className="w-4 h-4 animate-spin ml-2" />
                   שומר...
                 </>
+              ) : isEdit ? (
+                'עדכן חוזה'
               ) : (
-                isEdit ? 'עדכן חוזה' : 'צור חוזה'
+                'צור חוזה'
               )}
             </Button>
           </DialogFooter>

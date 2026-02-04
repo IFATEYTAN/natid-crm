@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import anime from 'animejs';
 
 export default function StatCard({
@@ -13,7 +13,7 @@ export default function StatCard({
   variant,
   className,
   onClick,
-  to
+  to,
 }) {
   const cardRef = useRef(null);
 
@@ -25,23 +25,23 @@ export default function StatCard({
       scale: [0.95, 1],
       duration: 800,
       easing: 'easeOutExpo',
-      delay: anime.random(0, 150)
+      delay: anime.random(0, 150),
     });
   }, []);
 
   const cardClasses = cn(
-    "bg-white border border-[#E5E7EB] rounded-lg p-5 transition-all duration-200",
-    (onClick || to) && "cursor-pointer hover:shadow-md hover:border-[#D1D5DB]",
+    'bg-white border border-[#E5E7EB] rounded-lg p-5 transition-all duration-200',
+    (onClick || to) && 'cursor-pointer hover:shadow-md hover:border-[#D1D5DB]',
     className
   );
 
   const variantStyles = {
-    primary: "bg-blue-50 text-blue-600",
-    success: "bg-green-50 text-green-600",
-    warning: "bg-orange-50 text-orange-600",
-    info: "bg-indigo-50 text-indigo-600",
-    danger: "bg-red-50 text-red-600",
-    default: "bg-gray-50 text-gray-600"
+    primary: 'bg-blue-50 text-blue-600',
+    success: 'bg-green-50 text-green-600',
+    warning: 'bg-orange-50 text-orange-600',
+    info: 'bg-indigo-50 text-indigo-600',
+    danger: 'bg-red-50 text-red-600',
+    default: 'bg-gray-50 text-gray-600',
   };
 
   const iconStyle = variantStyles[variant] || variantStyles.default;
@@ -50,30 +50,24 @@ export default function StatCard({
     <div className="text-right relative">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-[13px] font-medium text-[#6B7280] mb-2">
-            {title}
-          </p>
-          <p className="text-[28px] font-bold text-[#111827] leading-none">
-            {value}
-          </p>
+          <p className="text-[13px] font-medium text-[#6B7280] mb-2">{title}</p>
+          <p className="text-[28px] font-bold text-[#111827] leading-none">{value}</p>
         </div>
         {Icon && (
-          <div className={cn("p-2 rounded-lg", iconStyle)}>
+          <div className={cn('p-2 rounded-lg', iconStyle)}>
             <Icon className="w-5 h-5" />
           </div>
         )}
       </div>
-      
-      {subtitle && (
-        <p className="text-[12px] text-[#9CA3AF] mt-2">
-          {subtitle}
-        </p>
-      )}
+
+      {subtitle && <p className="text-[12px] text-[#9CA3AF] mt-2">{subtitle}</p>}
       {trend && (
-        <div className={cn(
-          "mt-2 flex items-center gap-1 text-[12px] font-medium",
-          trend === 'up' ? "text-[#059669]" : "text-[#DC2626]"
-        )}>
+        <div
+          className={cn(
+            'mt-2 flex items-center gap-1 text-[12px] font-medium',
+            trend === 'up' ? 'text-[#059669]' : 'text-[#DC2626]'
+          )}
+        >
           <span>{trend === 'up' ? '↑' : '↓'}</span>
           <span>{trendValue}</span>
         </div>
@@ -84,18 +78,24 @@ export default function StatCard({
   if (to) {
     return (
       <Link to={to} className="block">
-        <div ref={cardRef} className={cardClasses}>{cardContent}</div>
+        <div ref={cardRef} className={cardClasses}>
+          {cardContent}
+        </div>
       </Link>
     );
   }
 
   if (onClick) {
     return (
-      <div ref={cardRef} className={cardClasses} onClick={onClick}>{cardContent}</div>
+      <div ref={cardRef} className={cardClasses} onClick={onClick}>
+        {cardContent}
+      </div>
     );
   }
 
   return (
-    <div ref={cardRef} className={cardClasses}>{cardContent}</div>
+    <div ref={cardRef} className={cardClasses}>
+      {cardContent}
+    </div>
   );
 }

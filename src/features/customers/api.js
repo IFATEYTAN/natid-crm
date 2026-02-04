@@ -12,7 +12,7 @@ export const getCustomers = (sort = '-created_date') => {
 
 // Get a single customer by ID
 export const getCustomerById = (id) => {
-  return base44.entities.Customer.filter({ id }).then(customers => customers[0]);
+  return base44.entities.Customer.filter({ id }).then((customers) => customers[0]);
 };
 
 // Filter customers with custom criteria

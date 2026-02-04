@@ -97,7 +97,9 @@ export const useCreateCustomerInteraction = () => {
   return useMutation({
     mutationFn: customersApi.createCustomerInteraction,
     onSuccess: (_, data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.interactions(data.customer_id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.customers.interactions(data.customer_id),
+      });
     },
   });
 };

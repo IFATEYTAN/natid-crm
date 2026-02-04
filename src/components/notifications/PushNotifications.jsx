@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Bell, BellOff, Check, X, AlertTriangle } from 'lucide-react';
+import { Bell, BellOff, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -43,12 +43,12 @@ export const showNotification = (title, options = {}) => {
     lang: 'he',
     vibrate: [200, 100, 200],
     requireInteraction: false,
-    ...options
+    ...options,
   };
 
   // Try to show via service worker first (works in background)
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.ready.then(registration => {
+    navigator.serviceWorker.ready.then((registration) => {
       registration.showNotification(title, defaultOptions);
     });
   } else {
@@ -65,7 +65,7 @@ export const NotificationTypes = {
   VENDOR_ARRIVED: 'vendor_arrived',
   CALL_COMPLETED: 'call_completed',
   SLA_WARNING: 'sla_warning',
-  SYSTEM_ALERT: 'system_alert'
+  SYSTEM_ALERT: 'system_alert',
 };
 
 // Create notification based on type
@@ -76,46 +76,46 @@ export const createAppNotification = (type, data) => {
       body: `קריאה חדשה מ-${data.customerName || 'לקוח'} ב-${data.location || 'מיקום לא ידוע'}`,
       tag: `call-${data.callId}`,
       data: { url: `/CaseDetails/${data.callId}` },
-      requireInteraction: true
+      requireInteraction: true,
     },
     [NotificationTypes.CALL_ASSIGNED]: {
       title: 'קריאה שובצה אליך',
       body: `קריאה #${data.callNumber} שובצה אליך. יעד: ${data.location}`,
       tag: `assigned-${data.callId}`,
       data: { url: `/CallDetailsVendor/${data.callId}` },
-      requireInteraction: true
+      requireInteraction: true,
     },
     [NotificationTypes.CALL_STATUS_CHANGE]: {
       title: 'עדכון סטטוס קריאה',
       body: `קריאה #${data.callNumber} עודכנה ל: ${data.newStatus}`,
       tag: `status-${data.callId}`,
-      data: { url: `/CaseDetails/${data.callId}` }
+      data: { url: `/CaseDetails/${data.callId}` },
     },
     [NotificationTypes.VENDOR_ARRIVED]: {
       title: 'ספק הגיע ליעד',
       body: `${data.vendorName} הגיע לקריאה #${data.callNumber}`,
       tag: `arrived-${data.callId}`,
-      data: { url: `/CaseDetails/${data.callId}` }
+      data: { url: `/CaseDetails/${data.callId}` },
     },
     [NotificationTypes.CALL_COMPLETED]: {
       title: 'קריאה הושלמה',
       body: `קריאה #${data.callNumber} הושלמה בהצלחה`,
       tag: `completed-${data.callId}`,
-      data: { url: `/CaseDetails/${data.callId}` }
+      data: { url: `/CaseDetails/${data.callId}` },
     },
     [NotificationTypes.SLA_WARNING]: {
       title: '⚠️ אזהרת SLA',
       body: `קריאה #${data.callNumber} עומדת לחרוג מ-SLA! נותרו ${data.minutesLeft} דקות`,
       tag: `sla-${data.callId}`,
       data: { url: `/CaseDetails/${data.callId}` },
-      requireInteraction: true
+      requireInteraction: true,
     },
     [NotificationTypes.SYSTEM_ALERT]: {
       title: 'התראת מערכת',
       body: data.message,
       tag: `system-${Date.now()}`,
-      requireInteraction: data.important
-    }
+      requireInteraction: data.important,
+    },
   };
 
   const config = notifications[type];
@@ -125,7 +125,7 @@ export const createAppNotification = (type, data) => {
     body: config.body,
     tag: config.tag,
     data: config.data,
-    requireInteraction: config.requireInteraction
+    requireInteraction: config.requireInteraction,
   });
 };
 
@@ -140,7 +140,7 @@ export function usePushNotifications() {
 
     // Listen for permission changes
     if ('permissions' in navigator) {
-      navigator.permissions.query({ name: 'notifications' }).then(permissionStatus => {
+      navigator.permissions.query({ name: 'notifications' }).then((permissionStatus) => {
         permissionStatus.onchange = () => {
           setPermission(Notification.permission);
         };
@@ -178,7 +178,7 @@ export function usePushNotifications() {
     requestPermission,
     subscribe,
     unsubscribe,
-    showNotification: createAppNotification
+    showNotification: createAppNotification,
   };
 }
 
@@ -227,9 +227,7 @@ export function NotificationPermissionBanner() {
             </div>
             <div>
               <div className="font-medium">הפעל התראות</div>
-              <div className="text-sm text-blue-100">
-                קבל התראות על קריאות חדשות ועדכוני סטטוס
-              </div>
+              <div className="text-sm text-blue-100">קבל התראות על קריאות חדשות ועדכוני סטטוס</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -258,17 +256,18 @@ export function NotificationPermissionBanner() {
 
 // Notification settings component
 export function NotificationSettings() {
-  const { permission, isSupported, isSubscribed, subscribe, unsubscribe, requestPermission } = usePushNotifications();
+  const { permission, isSupported, isSubscribed, subscribe, unsubscribe, requestPermission } =
+    usePushNotifications();
   const [settings, setSettings] = useState({
     newCalls: true,
     statusChanges: true,
     slaWarnings: true,
     vendorUpdates: true,
-    systemAlerts: true
+    systemAlerts: true,
   });
 
   const handleToggle = (key) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
     // In a real app, save to backend
   };
 
@@ -334,7 +333,7 @@ export function NotificationSettings() {
           </div>
           {permission !== 'denied' && (
             <Button
-              variant={isSubscribed ? "outline" : "default"}
+              variant={isSubscribed ? 'outline' : 'default'}
               onClick={isSubscribed ? handleDisableNotifications : handleEnableNotifications}
             >
               {isSubscribed ? 'כבה' : 'הפעל'}
@@ -353,8 +352,8 @@ export function NotificationSettings() {
             { key: 'statusChanges', label: 'שינויי סטטוס', desc: 'עדכונים על שינוי סטטוס קריאות' },
             { key: 'slaWarnings', label: 'אזהרות SLA', desc: 'התראה כאשר קריאה עומדת לחרוג מ-SLA' },
             { key: 'vendorUpdates', label: 'עדכוני ספקים', desc: 'הגעה ליעד, השלמת קריאה' },
-            { key: 'systemAlerts', label: 'התראות מערכת', desc: 'הודעות מערכת חשובות' }
-          ].map(item => (
+            { key: 'systemAlerts', label: 'התראות מערכת', desc: 'הודעות מערכת חשובות' },
+          ].map((item) => (
             <div
               key={item.key}
               className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
@@ -387,7 +386,7 @@ export function NotificationSettings() {
           onClick={() => {
             createAppNotification(NotificationTypes.SYSTEM_ALERT, {
               message: 'זוהי התראת בדיקה - ההתראות עובדות!',
-              important: false
+              important: false,
             });
             toast.success('התראת בדיקה נשלחה');
           }}
@@ -409,5 +408,5 @@ export default {
   NotificationTypes,
   usePushNotifications,
   NotificationPermissionBanner,
-  NotificationSettings
+  NotificationSettings,
 };

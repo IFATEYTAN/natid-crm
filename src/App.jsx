@@ -1,9 +1,9 @@
-import { Suspense, useEffect, useState } from 'react'
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
-import NavigationTracker from '@/lib/NavigationTracker'
-import { pagesConfig } from './pages.config'
+import { Suspense, useEffect, useState } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
+import NavigationTracker from '@/lib/NavigationTracker';
+import { pagesConfig } from './pages.config';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
@@ -30,9 +30,7 @@ const LayoutWrapper = ({ children, currentPageName }) => {
     return <>{children}</>;
   }
 
-  return Layout ?
-    <Layout currentPageName={currentPageName}>{children}</Layout>
-    : <>{children}</>;
+  return Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : <>{children}</>;
 };
 
 const unregisterServiceWorkers = async () => {
@@ -106,9 +104,7 @@ const PlatformLoginRedirect = () => {
     <div className="fixed inset-0 flex items-center justify-center bg-gray-50" dir="rtl">
       <div className="max-w-md text-center p-8">
         <h1 className="text-xl font-bold text-gray-900 mb-2">נדרשת התחברות</h1>
-        <p className="text-gray-600 mb-4">
-          יש להתחבר דרך מערכת base44 כדי לגשת לאפליקציה.
-        </p>
+        <p className="text-gray-600 mb-4">יש להתחבר דרך מערכת base44 כדי לגשת לאפליקציה.</p>
         {redirectFailed && (
           <p className="text-orange-600 text-sm mb-4">
             ההפניה האוטומטית נכשלה. לחץ על הכפתור למטה כדי להתחבר.
@@ -192,20 +188,19 @@ const AuthenticatedApp = () => {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={
-          <LayoutWrapper currentPageName={mainPageKey}>
-            {renderPage(mainPageKey, MainPage)}
-          </LayoutWrapper>
-        } />
+        <Route
+          path="/"
+          element={
+            <LayoutWrapper currentPageName={mainPageKey}>
+              {renderPage(mainPageKey, MainPage)}
+            </LayoutWrapper>
+          }
+        />
         {Object.entries(Pages).map(([path, Page]) => (
           <Route
             key={path}
             path={`/${path}`}
-            element={
-              <LayoutWrapper currentPageName={path}>
-                {renderPage(path, Page)}
-              </LayoutWrapper>
-            }
+            element={<LayoutWrapper currentPageName={path}>{renderPage(path, Page)}</LayoutWrapper>}
           />
         ))}
         <Route path="*" element={<PageNotFound />} />
@@ -214,9 +209,7 @@ const AuthenticatedApp = () => {
   );
 };
 
-
 function App() {
-
   return (
     <ErrorBoundary>
       <AuthProvider>
@@ -229,7 +222,7 @@ function App() {
         </QueryClientProvider>
       </AuthProvider>
     </ErrorBoundary>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog";
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   Phone,
   MapPin,
@@ -33,7 +33,7 @@ import {
   Send,
   X,
   Upload,
-  Pencil
+  Pencil,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -48,20 +48,20 @@ import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'רכב לא נוסע',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'מצבר',
   locked_keys: 'מפתחות נעולים',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const statusSteps = [
   { key: 'assigned', label: 'שובץ', icon: CheckCircle },
   { key: 'vendor_enroute', label: 'בדרך', icon: Navigation },
   { key: 'in_progress', label: 'בטיפול', icon: Clock },
-  { key: 'completed', label: 'הושלם', icon: CheckCircle }
+  { key: 'completed', label: 'הושלם', icon: CheckCircle },
 ];
 
 const photoCategories = [
@@ -69,7 +69,7 @@ const photoCategories = [
   { key: 'after_treatment', label: 'אחרי טיפול' },
   { key: 'damage', label: 'נזק' },
   { key: 'customer_document', label: 'מסמך לקוח' },
-  { key: 'other', label: 'אחר' }
+  { key: 'other', label: 'אחר' },
 ];
 
 export default function VendorCallManagementPage() {
@@ -153,7 +153,7 @@ export default function VendorCallManagementPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendorCall', selectedCallId] });
       showToast.success('הקריאה עודכנה בהצלחה');
-    }
+    },
   });
 
   // Add photo mutation
@@ -163,7 +163,7 @@ export default function VendorCallManagementPage() {
       queryClient.invalidateQueries({ queryKey: ['callPhotos', selectedCallId] });
       showToast.success('התמונה נוספה בהצלחה');
       setShowPhotoDialog(false);
-    }
+    },
   });
 
   // Send message mutation
@@ -171,12 +171,12 @@ export default function VendorCallManagementPage() {
     mutationFn: (data) => base44.entities.Message.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['callMessages', selectedCallId] });
-    }
+    },
   });
 
   // Add history mutation
   const addHistoryMutation = useMutation({
-    mutationFn: (data) => base44.entities.CallHistory.create(data)
+    mutationFn: (data) => base44.entities.CallHistory.create(data),
   });
 
   const call = callQuery.data;
@@ -191,14 +191,14 @@ export default function VendorCallManagementPage() {
       change_type: 'status',
       old_value: call.call_status,
       new_value: newStatus,
-      changed_by: vendorProfile?.vendor_name || 'ספק'
+      changed_by: vendorProfile?.vendor_name || 'ספק',
     };
 
     // Status messages for chat
     const statusMessages = {
       vendor_enroute: `הספק ${vendorProfile?.vendor_name || ''} יצא לדרך`,
       in_progress: 'הספק הגיע למקום ומתחיל בטיפול',
-      completed: 'הטיפול הושלם בהצלחה!'
+      completed: 'הטיפול הושלם בהצלחה!',
     };
 
     if (newStatus === 'vendor_enroute') {
@@ -232,7 +232,7 @@ export default function VendorCallManagementPage() {
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      
+
       addPhotoMutation.mutate({
         call_id: selectedCallId,
         uploaded_by: vendorProfile?.vendor_name || 'ספק',
@@ -240,7 +240,7 @@ export default function VendorCallManagementPage() {
         file_name: file.name,
         file_size: file.size,
         category: photoCategory,
-        is_deleted: false
+        is_deleted: false,
       });
     } catch (error) {
       showToast.error('שגיאה בהעלאת התמונה');
@@ -256,16 +256,16 @@ export default function VendorCallManagementPage() {
       const response = await fetch(signatureDataUrl);
       const blob = await response.blob();
       const file = new File([blob], 'signature.png', { type: 'image/png' });
-      
+
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      
+
       addPhotoMutation.mutate({
         call_id: selectedCallId,
         uploaded_by: vendorProfile?.vendor_name || 'ספק',
         file_url,
         file_name: 'חתימת לקוח',
         category: 'customer_signature',
-        is_deleted: false
+        is_deleted: false,
       });
 
       setShowSignatureDialog(false);
@@ -278,7 +278,7 @@ export default function VendorCallManagementPage() {
 
   const handleCompleteCall = () => {
     // Check if signature exists
-    const hasSignature = photos.some(p => p.category === 'customer_signature');
+    const hasSignature = photos.some((p) => p.category === 'customer_signature');
     if (!hasSignature) {
       showToast.error('יש לקבל חתימת לקוח לפני סיום הקריאה');
       setShowSignatureDialog(true);
@@ -290,11 +290,11 @@ export default function VendorCallManagementPage() {
   const getCurrentStepIndex = () => {
     if (!call) return 0;
     const statusMap = {
-      'assigned': 0,
-      'assigning': 0,
-      'vendor_enroute': 1,
-      'in_progress': 2,
-      'completed': 3
+      assigned: 0,
+      assigning: 0,
+      vendor_enroute: 1,
+      in_progress: 2,
+      completed: 3,
     };
     return statusMap[call.call_status] ?? 0;
   };
@@ -350,7 +350,9 @@ export default function VendorCallManagementPage() {
         </Link>
         <div>
           <h1 className="text-xl font-bold text-[#172B4D]">קריאה {call.call_number}</h1>
-          <p className="text-sm text-[#6B778C]">{issueTypeLabels[call.issue_type] || call.issue_type}</p>
+          <p className="text-sm text-[#6B778C]">
+            {issueTypeLabels[call.issue_type] || call.issue_type}
+          </p>
         </div>
       </div>
 
@@ -365,19 +367,27 @@ export default function VendorCallManagementPage() {
               return (
                 <React.Fragment key={step.key}>
                   <div className="flex flex-col items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isDone ? 'bg-green-500 text-white' :
-                      isActive ? 'bg-blue-500 text-white' :
-                      'bg-gray-200 text-gray-500'
-                    }`}>
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        isDone
+                          ? 'bg-green-500 text-white'
+                          : isActive
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className={`text-xs mt-1 ${isActive ? 'font-bold text-blue-600' : 'text-gray-500'}`}>
+                    <span
+                      className={`text-xs mt-1 ${isActive ? 'font-bold text-blue-600' : 'text-gray-500'}`}
+                    >
                       {step.label}
                     </span>
                   </div>
                   {idx < statusSteps.length - 1 && (
-                    <div className={`flex-1 h-1 mx-2 ${idx < currentStep ? 'bg-green-500' : 'bg-gray-200'}`} />
+                    <div
+                      className={`flex-1 h-1 mx-2 ${idx < currentStep ? 'bg-green-500' : 'bg-gray-200'}`}
+                    />
                   )}
                 </React.Fragment>
               );
@@ -398,7 +408,9 @@ export default function VendorCallManagementPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium">{call.customer_name}</div>
-              <div className="text-sm text-[#6B778C]" dir="ltr">{call.customer_phone}</div>
+              <div className="text-sm text-[#6B778C]" dir="ltr">
+                {call.customer_phone}
+              </div>
             </div>
             <a href={`tel:${call.customer_phone}`}>
               <Button size="sm" variant="outline" className="gap-1">
@@ -407,7 +419,7 @@ export default function VendorCallManagementPage() {
               </Button>
             </a>
           </div>
-          
+
           <div className="border-t pt-3">
             <div className="flex items-start gap-2 mb-2">
               <MapPin className="w-4 h-4 text-red-500 mt-0.5" />
@@ -419,7 +431,7 @@ export default function VendorCallManagementPage() {
                 )}
               </div>
             </div>
-            <a 
+            <a
               href={`https://waze.com/ul?ll=${call.pickup_location_lat},${call.pickup_location_lon}&navigate=yes`}
               target="_blank"
               rel="noopener noreferrer"
@@ -460,7 +472,9 @@ export default function VendorCallManagementPage() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <span className="text-[#6B778C]">מספר רכב:</span>
-              <div className="font-medium" dir="ltr">{call.vehicle_plate || '-'}</div>
+              <div className="font-medium" dir="ltr">
+                {call.vehicle_plate || '-'}
+              </div>
             </div>
             <div>
               <span className="text-[#6B778C]">דגם:</span>
@@ -468,7 +482,9 @@ export default function VendorCallManagementPage() {
             </div>
             <div>
               <span className="text-[#6B778C]">סוג תקלה:</span>
-              <div className="font-medium">{issueTypeLabels[call.issue_type] || call.issue_type}</div>
+              <div className="font-medium">
+                {issueTypeLabels[call.issue_type] || call.issue_type}
+              </div>
             </div>
             <div>
               <span className="text-[#6B778C]">דלק:</span>
@@ -511,8 +527,8 @@ export default function VendorCallManagementPage() {
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-medium">תמונות</h3>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={() => setShowPhotoDialog(true)}
                   disabled={isCompleted}
                   className="gap-1"
@@ -528,15 +544,16 @@ export default function VendorCallManagementPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  {photos.map(photo => (
+                  {photos.map((photo) => (
                     <div key={photo.id} className="relative">
-                      <img 
-                        src={photo.file_url} 
+                      <img
+                        src={photo.file_url}
                         alt={photo.file_name}
                         className="w-full h-32 object-cover rounded-lg"
                       />
                       <Badge className="absolute bottom-2 right-2 text-xs">
-                        {photoCategories.find(c => c.key === photo.category)?.label || photo.category}
+                        {photoCategories.find((c) => c.key === photo.category)?.label ||
+                          photo.category}
                       </Badge>
                     </div>
                   ))}
@@ -556,8 +573,8 @@ export default function VendorCallManagementPage() {
                 className="min-h-[120px]"
                 disabled={isCompleted}
               />
-              <Button 
-                onClick={handleSaveNotes} 
+              <Button
+                onClick={handleSaveNotes}
                 disabled={isCompleted || updateCallMutation.isPending}
                 className="w-full"
               >
@@ -599,7 +616,7 @@ export default function VendorCallManagementPage() {
       {!isCompleted && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex gap-3">
           {call.call_status === 'assigned' || call.call_status === 'assigning' ? (
-            <Button 
+            <Button
               className="flex-1 bg-blue-600 hover:bg-blue-700 h-12"
               onClick={() => handleStatusUpdate('vendor_enroute')}
               disabled={updateCallMutation.isPending}
@@ -608,7 +625,7 @@ export default function VendorCallManagementPage() {
               יצאתי לדרך
             </Button>
           ) : call.call_status === 'vendor_enroute' ? (
-            <Button 
+            <Button
               className="flex-1 bg-green-600 hover:bg-green-700 h-12"
               onClick={() => handleStatusUpdate('in_progress')}
               disabled={updateCallMutation.isPending}
@@ -618,7 +635,7 @@ export default function VendorCallManagementPage() {
             </Button>
           ) : call.call_status === 'in_progress' ? (
             <>
-              <Button 
+              <Button
                 variant="outline"
                 className="flex-1 h-12"
                 onClick={() => setShowSignatureDialog(true)}
@@ -626,7 +643,7 @@ export default function VendorCallManagementPage() {
                 <Pencil className="w-5 h-5 ml-2" />
                 חתימת לקוח
               </Button>
-              <Button 
+              <Button
                 className="flex-1 bg-orange-500 hover:bg-orange-600 h-12"
                 onClick={handleCompleteCall}
                 disabled={updateCallMutation.isPending}
@@ -649,7 +666,7 @@ export default function VendorCallManagementPage() {
             <div>
               <Label>קטגוריה</Label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {photoCategories.map(cat => (
+                {photoCategories.map((cat) => (
                   <Button
                     key={cat.key}
                     variant={photoCategory === cat.key ? 'default' : 'outline'}
@@ -670,7 +687,7 @@ export default function VendorCallManagementPage() {
                 ref={fileInputRef}
                 className="hidden"
               />
-              <Button 
+              <Button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 className="gap-2"
@@ -693,7 +710,7 @@ export default function VendorCallManagementPage() {
           <DialogHeader>
             <DialogTitle>חתימת לקוח</DialogTitle>
           </DialogHeader>
-          <SignaturePad 
+          <SignaturePad
             onSave={handleSignatureSave}
             onCancel={() => setShowSignatureDialog(false)}
             loading={uploading}

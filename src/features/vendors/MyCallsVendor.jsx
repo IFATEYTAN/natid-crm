@@ -5,36 +5,30 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  Search,
-  Phone,
-  MapPin,
-  Navigation,
-  Eye
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Search, Phone, MapPin, Navigation, Eye } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'סוללה ריקה',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const statusOptions = [
@@ -63,7 +57,7 @@ export default function MyCallsVendor() {
     queryFn: () => base44.entities.Vendor.list(),
   });
 
-  const currentVendor = vendors.find(v => v.email === user?.email);
+  const currentVendor = vendors.find((v) => v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
     queryKey: ['vendorCalls', currentVendor?.id],
@@ -72,12 +66,13 @@ export default function MyCallsVendor() {
   });
 
   // Filter only this vendor's calls
-  const myCalls = allCalls.filter(call => call.assigned_vendor_id === currentVendor?.id);
+  const myCalls = allCalls.filter((call) => call.assigned_vendor_id === currentVendor?.id);
 
   // Apply filters
-  const filteredCalls = myCalls.filter(call => {
+  const filteredCalls = myCalls.filter((call) => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm || 
+    const matchesSearch =
+      !searchTerm ||
       call.call_number?.toLowerCase().includes(searchLower) ||
       call.customer_name?.toLowerCase().includes(searchLower) ||
       call.customer_phone?.includes(searchTerm) ||
@@ -102,45 +97,48 @@ export default function MyCallsVendor() {
       header: 'מספר קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link 
+        <Link
           to={createPageUrl(`CallDetailsVendor?id=${row.id}`)}
           className="font-semibold text-[#0078D4] hover:underline"
         >
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
-      )
+      ),
     },
     {
       header: 'תאריך ושעה',
       accessor: 'created_date',
-      cell: (row) => row.created_date ? (
-        <span className="text-[#616161] text-sm whitespace-nowrap">
-          {format(parseISO(row.created_date), 'dd/MM/yy HH:mm', { locale: he })}
-        </span>
-      ) : '-'
+      cell: (row) =>
+        row.created_date ? (
+          <span className="text-[#616161] text-sm whitespace-nowrap">
+            {format(parseISO(row.created_date), 'dd/MM/yy HH:mm', { locale: he })}
+          </span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'שם לקוח',
       accessor: 'customer_name',
-      cell: (row) => <span className="font-medium">{row.customer_name}</span>
+      cell: (row) => <span className="font-medium">{row.customer_name}</span>,
     },
     {
       header: 'טלפון',
       accessor: 'customer_phone',
       cell: (row) => (
-        <a 
+        <a
           href={`tel:${row.customer_phone}`}
           className="flex items-center gap-1 text-[#0078D4] hover:underline"
         >
           <Phone className="w-3 h-3" />
           {row.customer_phone}
         </a>
-      )
+      ),
     },
     {
       header: 'מספר רכב',
       accessor: 'vehicle_plate',
-      cell: (row) => row.vehicle_plate || '-'
+      cell: (row) => row.vehicle_plate || '-',
     },
     {
       header: 'כתובת איסוף',
@@ -150,24 +148,27 @@ export default function MyCallsVendor() {
           <MapPin className="w-3 h-3 text-[#616161]" />
           <span className="max-w-[200px] truncate">{row.pickup_location_address}</span>
         </div>
-      )
+      ),
     },
     {
       header: 'כתובת יעד',
       accessor: 'dropoff_location_address',
-      cell: (row) => row.dropoff_location_address ? (
-        <span className="max-w-[150px] truncate">{row.dropoff_location_address}</span>
-      ) : '-'
+      cell: (row) =>
+        row.dropoff_location_address ? (
+          <span className="max-w-[150px] truncate">{row.dropoff_location_address}</span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'סוג תקלה',
       accessor: 'issue_type',
-      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-'
+      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-',
     },
     {
       header: 'סטטוס',
       accessor: 'call_status',
-      cell: (row) => <StatusBadge status={row.call_status} />
+      cell: (row) => <StatusBadge status={row.call_status} />,
     },
     {
       header: 'פעולות',
@@ -179,9 +180,9 @@ export default function MyCallsVendor() {
               <Eye className="w-4 h-4" />
             </Button>
           </Link>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8"
             onClick={() => openNavigation(row.pickup_location_address)}
             title="ניווט"
@@ -189,7 +190,7 @@ export default function MyCallsVendor() {
             <Navigation className="w-4 h-4" />
           </Button>
         </div>
-      )
+      ),
     },
   ];
 
@@ -233,7 +234,7 @@ export default function MyCallsVendor() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {statusOptions.map(opt => (
+                {statusOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </SelectItem>
@@ -244,11 +245,7 @@ export default function MyCallsVendor() {
 
           <div>
             <Label className="text-[#6B7280] text-sm mb-1.5 block">מתאריך</Label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-            />
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
           </div>
         </div>
       </div>

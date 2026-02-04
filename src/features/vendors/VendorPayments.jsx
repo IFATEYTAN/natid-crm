@@ -4,22 +4,15 @@ import { base44 } from '@/lib/api';
 import StatCard from '@/components/ui/StatCard';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  Wallet,
-  FileText,
-  TrendingUp,
-  Clock,
-  Download
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Wallet, FileText, TrendingUp, Clock } from 'lucide-react';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -28,18 +21,28 @@ import ImportExport from '@/components/ImportExport';
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'סוללה ריקה',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const monthNames = [
-  'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-  'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
+  'ינואר',
+  'פברואר',
+  'מרץ',
+  'אפריל',
+  'מאי',
+  'יוני',
+  'יולי',
+  'אוגוסט',
+  'ספטמבר',
+  'אוקטובר',
+  'נובמבר',
+  'דצמבר',
 ];
 
 export default function VendorPayments() {
@@ -58,7 +61,7 @@ export default function VendorPayments() {
     queryFn: () => base44.entities.Vendor.list(),
   });
 
-  const currentVendor = vendors.find(v => v.email === user?.email);
+  const currentVendor = vendors.find((v) => v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
     queryKey: ['vendorPayments', currentVendor?.id],
@@ -67,17 +70,18 @@ export default function VendorPayments() {
   });
 
   // Filter vendor's completed calls
-  const vendorCalls = allCalls.filter(c => 
-    c.assigned_vendor_id === currentVendor?.id && 
-    c.call_status === 'completed' &&
-    c.cost_to_vendor
+  const vendorCalls = allCalls.filter(
+    (c) =>
+      c.assigned_vendor_id === currentVendor?.id &&
+      c.call_status === 'completed' &&
+      c.cost_to_vendor
   );
 
   // Current month calls
   const monthStart = startOfMonth(new Date(selectedYear, selectedMonth));
   const monthEnd = endOfMonth(new Date(selectedYear, selectedMonth));
-  
-  const monthCalls = vendorCalls.filter(c => {
+
+  const monthCalls = vendorCalls.filter((c) => {
     if (!c.closed_at) return false;
     const callDate = parseISO(c.closed_at);
     return callDate >= monthStart && callDate <= monthEnd;
@@ -88,7 +92,7 @@ export default function VendorPayments() {
   const monthCount = monthCalls.length;
   const monthAvg = monthCount > 0 ? monthTotal / monthCount : 0;
   const pendingPayment = vendorCalls
-    .filter(c => c.payment_status === 'pending')
+    .filter((c) => c.payment_status === 'pending')
     .reduce((sum, c) => sum + (c.cost_to_vendor || 0), 0);
 
   // Last 6 months chart data
@@ -97,18 +101,18 @@ export default function VendorPayments() {
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
     const start = startOfMonth(date);
     const end = endOfMonth(date);
-    
-    const calls = vendorCalls.filter(c => {
+
+    const calls = vendorCalls.filter((c) => {
       if (!c.closed_at) return false;
       const callDate = parseISO(c.closed_at);
       return callDate >= start && callDate <= end;
     });
-    
+
     const total = calls.reduce((sum, c) => sum + (c.cost_to_vendor || 0), 0);
-    
+
     chartData.push({
       month: monthNames[date.getMonth()],
-      total: total
+      total: total,
     });
   }
 
@@ -120,31 +124,34 @@ export default function VendorPayments() {
         <span className="font-semibold text-[#0078D4]">
           {row.call_number || `#${row.id?.slice(-6)}`}
         </span>
-      )
+      ),
     },
     {
       header: 'תאריך סגירה',
       accessor: 'closed_at',
-      cell: (row) => row.closed_at ? (
-        <span className="text-[#616161] text-sm">
-          {format(parseISO(row.closed_at), 'dd/MM/yy', { locale: he })}
-        </span>
-      ) : '-'
+      cell: (row) =>
+        row.closed_at ? (
+          <span className="text-[#616161] text-sm">
+            {format(parseISO(row.closed_at), 'dd/MM/yy', { locale: he })}
+          </span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'לקוח',
       accessor: 'customer_name',
-      cell: (row) => <span className="font-medium">{row.customer_name}</span>
+      cell: (row) => <span className="font-medium">{row.customer_name}</span>,
     },
     {
       header: 'סוג שירות',
       accessor: 'issue_type',
-      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-'
+      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-',
     },
     {
       header: 'עיר',
       accessor: 'pickup_location_city',
-      cell: (row) => row.pickup_location_city || '-'
+      cell: (row) => row.pickup_location_city || '-',
     },
     {
       header: 'סכום',
@@ -153,38 +160,41 @@ export default function VendorPayments() {
         <span className="font-bold text-[#2E7D32]">
           ₪{(row.cost_to_vendor || 0).toLocaleString()}
         </span>
-      )
+      ),
     },
     {
       header: 'סטטוס תשלום',
       accessor: 'payment_status',
-      cell: (row) => <StatusBadge status={row.payment_status || 'pending'} />
+      cell: (row) => <StatusBadge status={row.payment_status || 'pending'} />,
     },
     {
       header: 'תאריך תשלום',
       accessor: 'payment_date',
-      cell: (row) => row.payment_date ? (
-        <span className="text-sm text-[#616161]">
-          {format(parseISO(row.payment_date), 'dd/MM/yy', { locale: he })}
-        </span>
-      ) : '-'
+      cell: (row) =>
+        row.payment_date ? (
+          <span className="text-sm text-[#616161]">
+            {format(parseISO(row.payment_date), 'dd/MM/yy', { locale: he })}
+          </span>
+        ) : (
+          '-'
+        ),
     },
   ];
 
   const exportToExcel = () => {
     // Simple CSV export
     const headers = ['מספר קריאה', 'תאריך', 'לקוח', 'שירות', 'עיר', 'סכום', 'סטטוס'];
-    const rows = monthCalls.map(c => [
+    const rows = monthCalls.map((c) => [
       c.call_number,
       c.closed_at ? format(parseISO(c.closed_at), 'dd/MM/yy') : '',
       c.customer_name,
       issueTypeLabels[c.issue_type] || c.issue_type,
       c.pickup_location_city || '',
       c.cost_to_vendor || 0,
-      c.payment_status || 'pending'
+      c.payment_status || 'pending',
     ]);
-    
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+
+    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -252,8 +262,8 @@ export default function VendorPayments() {
         <div className="flex flex-wrap items-end gap-4">
           <div>
             <Label className="text-[#6B7280] text-sm mb-1.5 block">חודש</Label>
-            <Select 
-              value={selectedMonth.toString()} 
+            <Select
+              value={selectedMonth.toString()}
               onValueChange={(v) => setSelectedMonth(parseInt(v))}
             >
               <SelectTrigger className="w-40">
@@ -271,15 +281,15 @@ export default function VendorPayments() {
 
           <div>
             <Label className="text-[#6B7280] text-sm mb-1.5 block">שנה</Label>
-            <Select 
-              value={selectedYear.toString()} 
+            <Select
+              value={selectedYear.toString()}
               onValueChange={(v) => setSelectedYear(parseInt(v))}
             >
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[2024, 2025, 2026].map(year => (
+                {[2024, 2025, 2026].map((year) => (
                   <SelectItem key={year} value={year.toString()}>
                     {year}
                   </SelectItem>
@@ -288,16 +298,16 @@ export default function VendorPayments() {
             </Select>
           </div>
 
-          <ImportExport 
-            entityName="VendorPayment" 
-            data={monthCalls.map(c => ({
+          <ImportExport
+            entityName="VendorPayment"
+            data={monthCalls.map((c) => ({
               call_number: c.call_number,
               closed_at: c.closed_at ? format(parseISO(c.closed_at), 'dd/MM/yy') : '',
               customer_name: c.customer_name,
               issue_type: issueTypeLabels[c.issue_type] || c.issue_type,
               pickup_location_city: c.pickup_location_city || '',
               cost_to_vendor: c.cost_to_vendor || 0,
-              payment_status: c.payment_status || 'pending'
+              payment_status: c.payment_status || 'pending',
             }))}
             columns={[
               { header: 'מספר קריאה', accessor: 'call_number' },
@@ -306,7 +316,7 @@ export default function VendorPayments() {
               { header: 'סוג שירות', accessor: 'issue_type' },
               { header: 'עיר', accessor: 'pickup_location_city' },
               { header: 'סכום', accessor: 'cost_to_vendor' },
-              { header: 'סטטוס תשלום', accessor: 'payment_status' }
+              { header: 'סטטוס תשלום', accessor: 'payment_status' },
             ]}
             title={`דוח תשלומים - ${monthNames[selectedMonth]} ${selectedYear}`}
           />
@@ -319,20 +329,20 @@ export default function VendorPayments() {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-            <XAxis 
-              dataKey="month" 
-              tick={{ fill: '#6B7280', fontSize: 12 }} 
-              stroke="#E5E7EB" 
-              tickLine={false} 
+            <XAxis
+              dataKey="month"
+              tick={{ fill: '#6B7280', fontSize: 12 }}
+              stroke="#E5E7EB"
+              tickLine={false}
               axisLine={false}
             />
-            <YAxis 
-              tick={{ fill: '#6B7280', fontSize: 12 }} 
-              stroke="#E5E7EB" 
-              tickLine={false} 
+            <YAxis
+              tick={{ fill: '#6B7280', fontSize: 12 }}
+              stroke="#E5E7EB"
+              tickLine={false}
               axisLine={false}
             />
-            <Tooltip 
+            <Tooltip
               formatter={(value) => [`₪${value.toLocaleString()}`, 'סה״כ']}
               labelStyle={{ direction: 'rtl' }}
               contentStyle={{
@@ -341,7 +351,7 @@ export default function VendorPayments() {
                 borderRadius: '8px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                 fontSize: 14,
-                padding: '8px 12px'
+                padding: '8px 12px',
               }}
             />
             <Bar dataKey="total" fill="#111827" radius={[4, 4, 0, 0]} barSize={40} />
@@ -358,7 +368,7 @@ export default function VendorPayments() {
           isLoading={isLoading}
           emptyMessage="לא נמצאו תשלומים"
         />
-        
+
         {monthCalls.length > 0 && (
           <div className="bg-[#F9FAFB] rounded-b-lg p-4 border-t border-[#E5E7EB] mt-4">
             <div className="flex justify-between items-center">

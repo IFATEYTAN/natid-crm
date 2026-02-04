@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import {
   Bell,
   BellRing,
@@ -19,74 +19,74 @@ import {
   XCircle,
   MessageSquare,
   Save,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { showToast } from '@/components/ui/FeedbackToast';
 
 const notificationEvents = [
-  { 
-    key: 'new_call', 
-    label: 'קריאה חדשה', 
+  {
+    key: 'new_call',
+    label: 'קריאה חדשה',
     description: 'התראה כאשר נפתחת קריאה חדשה',
     icon: Bell,
-    defaultEnabled: true
+    defaultEnabled: true,
   },
-  { 
-    key: 'call_status_change', 
-    label: 'שינוי סטטוס קריאה', 
+  {
+    key: 'call_status_change',
+    label: 'שינוי סטטוס קריאה',
     description: 'התראה כאשר סטטוס קריאה משתנה',
     icon: BellRing,
-    defaultEnabled: true
+    defaultEnabled: true,
   },
-  { 
-    key: 'call_assigned', 
-    label: 'שיבוץ לקריאה', 
+  {
+    key: 'call_assigned',
+    label: 'שיבוץ לקריאה',
     description: 'התראה כאשר קריאה משובצת אליך',
     icon: CheckCircle,
-    defaultEnabled: true
+    defaultEnabled: true,
   },
-  { 
-    key: 'vendor_arrived', 
-    label: 'הגעת ספק', 
+  {
+    key: 'vendor_arrived',
+    label: 'הגעת ספק',
     description: 'התראה כאשר ספק מגיע ליעד',
     icon: Truck,
-    defaultEnabled: true
+    defaultEnabled: true,
   },
-  { 
-    key: 'call_completed', 
-    label: 'קריאה הושלמה', 
+  {
+    key: 'call_completed',
+    label: 'קריאה הושלמה',
     description: 'התראה כאשר קריאה מסתיימת',
     icon: CheckCircle,
-    defaultEnabled: true
+    defaultEnabled: true,
   },
-  { 
-    key: 'call_cancelled', 
-    label: 'ביטול קריאה', 
+  {
+    key: 'call_cancelled',
+    label: 'ביטול קריאה',
     description: 'התראה כאשר קריאה מבוטלת',
     icon: XCircle,
-    defaultEnabled: false
+    defaultEnabled: false,
   },
-  { 
-    key: 'sla_warning', 
-    label: 'אזהרת SLA', 
+  {
+    key: 'sla_warning',
+    label: 'אזהרת SLA',
     description: 'התראה כאשר קריאה מתקרבת לחריגת SLA',
     icon: AlertTriangle,
-    defaultEnabled: true
+    defaultEnabled: true,
   },
-  { 
-    key: 'sla_breach', 
-    label: 'חריגת SLA', 
+  {
+    key: 'sla_breach',
+    label: 'חריגת SLA',
     description: 'התראה כאשר קריאה חורגת מ-SLA',
     icon: Clock,
-    defaultEnabled: true
+    defaultEnabled: true,
   },
-  { 
-    key: 'new_message', 
-    label: 'הודעה חדשה', 
-    description: 'התראה על הודעות חדשות בצ\'אט',
+  {
+    key: 'new_message',
+    label: 'הודעה חדשה',
+    description: "התראה על הודעות חדשות בצ'אט",
     icon: MessageSquare,
-    defaultEnabled: true
-  }
+    defaultEnabled: true,
+  },
 ];
 
 export default function UserNotificationPreferences({ user, onUpdate }) {
@@ -94,7 +94,7 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
     push_enabled: true,
     email_notifications: true,
     sound_enabled: true,
-    events: {}
+    events: {},
   });
 
   useEffect(() => {
@@ -103,14 +103,14 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
         push_enabled: user.push_enabled !== false,
         email_notifications: user.email_notifications !== false,
         sound_enabled: user.sound_enabled !== false,
-        events: user.notification_preferences || getDefaultEvents()
+        events: user.notification_preferences || getDefaultEvents(),
       });
     }
   }, [user]);
 
   const getDefaultEvents = () => {
     const defaults = {};
-    notificationEvents.forEach(event => {
+    notificationEvents.forEach((event) => {
       defaults[event.key] = event.defaultEnabled;
     });
     return defaults;
@@ -122,7 +122,7 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
         push_enabled: prefs.push_enabled,
         email_notifications: prefs.email_notifications,
         sound_enabled: prefs.sound_enabled,
-        notification_preferences: prefs.events
+        notification_preferences: prefs.events,
       });
     },
     onSuccess: () => {
@@ -131,23 +131,23 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
     },
     onError: () => {
       showToast.error('שגיאה בשמירת ההעדפות');
-    }
+    },
   });
 
   const handleToggleEvent = (eventKey) => {
-    setPreferences(prev => ({
+    setPreferences((prev) => ({
       ...prev,
       events: {
         ...prev.events,
-        [eventKey]: !prev.events[eventKey]
-      }
+        [eventKey]: !prev.events[eventKey],
+      },
     }));
   };
 
   const handleToggleChannel = (channel) => {
-    setPreferences(prev => ({
+    setPreferences((prev) => ({
       ...prev,
-      [channel]: !prev[channel]
+      [channel]: !prev[channel],
     }));
   };
 
@@ -157,18 +157,18 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
 
   const enableAll = () => {
     const allEnabled = {};
-    notificationEvents.forEach(event => {
+    notificationEvents.forEach((event) => {
       allEnabled[event.key] = true;
     });
-    setPreferences(prev => ({ ...prev, events: allEnabled }));
+    setPreferences((prev) => ({ ...prev, events: allEnabled }));
   };
 
   const disableAll = () => {
     const allDisabled = {};
-    notificationEvents.forEach(event => {
+    notificationEvents.forEach((event) => {
       allDisabled[event.key] = false;
     });
-    setPreferences(prev => ({ ...prev, events: allDisabled }));
+    setPreferences((prev) => ({ ...prev, events: allDisabled }));
   };
 
   return (
@@ -264,8 +264,12 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
                 <div key={event.key}>
                   <div className="flex items-center justify-between p-3 rounded-[8px] hover:bg-[#f9fafb] transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-[8px] flex items-center justify-center ${isEnabled ? 'bg-blue-100' : 'bg-[#f3f4f6]'}`}>
-                        <Icon className={`w-4 h-4 ${isEnabled ? 'text-[#3b82f6]' : 'text-[#6b7280]'}`} />
+                      <div
+                        className={`w-8 h-8 rounded-[8px] flex items-center justify-center ${isEnabled ? 'bg-blue-100' : 'bg-[#f3f4f6]'}`}
+                      >
+                        <Icon
+                          className={`w-4 h-4 ${isEnabled ? 'text-[#3b82f6]' : 'text-[#6b7280]'}`}
+                        />
                       </div>
                       <div>
                         <Label className="font-medium cursor-pointer">{event.label}</Label>
@@ -277,9 +281,7 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
                       onCheckedChange={() => handleToggleEvent(event.key)}
                     />
                   </div>
-                  {index < notificationEvents.length - 1 && (
-                    <Separator className="my-1" />
-                  )}
+                  {index < notificationEvents.length - 1 && <Separator className="my-1" />}
                 </div>
               );
             })}
@@ -289,7 +291,7 @@ export default function UserNotificationPreferences({ user, onUpdate }) {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button 
+        <Button
           onClick={handleSave}
           disabled={saveMutation.isPending}
           className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2"

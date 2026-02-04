@@ -1,27 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  Sparkles, 
-  Save, 
-  Loader2, 
-  CheckCircle,
-  RotateCcw,
-  Pencil
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Sparkles, Save, Loader2, RotateCcw, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function CallSummaryEditor({ 
-  callId, 
+export default function CallSummaryEditor({
+  callId,
   callNumber,
   summaryDraft,
   summaryFinal,
-  onSummaryGenerated 
+  onSummaryGenerated,
 }) {
   const [summary, setSummary] = useState(summaryDraft || summaryFinal || '');
   const [isEditing, setIsEditing] = useState(false);
@@ -53,7 +45,7 @@ export default function CallSummaryEditor({
     },
     onSettled: () => {
       setIsGenerating(false);
-    }
+    },
   });
 
   // Save summary mutation
@@ -61,7 +53,7 @@ export default function CallSummaryEditor({
     mutationFn: async (finalSummary) => {
       await base44.entities.Call.update(callId, {
         summary_final: finalSummary,
-        summary_draft: finalSummary
+        summary_draft: finalSummary,
       });
     },
     onSuccess: () => {
@@ -71,7 +63,7 @@ export default function CallSummaryEditor({
     },
     onError: () => {
       toast.error('שגיאה בשמירת הסיכום');
-    }
+    },
   });
 
   const handleGenerate = () => {
@@ -97,14 +89,10 @@ export default function CallSummaryEditor({
           <CardTitle className="text-base flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#6B778C]" />
             סיכום קריאה
-            {hasFinalSummary && (
-              <Badge className="bg-green-100 text-green-700 text-xs">נשמר</Badge>
-            )}
-            {hasDraft && (
-              <Badge className="bg-yellow-100 text-yellow-700 text-xs">טיוטה</Badge>
-            )}
+            {hasFinalSummary && <Badge className="bg-green-100 text-green-700 text-xs">נשמר</Badge>}
+            {hasDraft && <Badge className="bg-yellow-100 text-yellow-700 text-xs">טיוטה</Badge>}
           </CardTitle>
-          
+
           {!isEditing && !isGenerating && (
             <div className="flex gap-2">
               {!summary && (
@@ -119,12 +107,7 @@ export default function CallSummaryEditor({
               )}
               {summary && (
                 <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleGenerate}
-                    className="gap-1"
-                  >
+                  <Button size="sm" variant="outline" onClick={handleGenerate} className="gap-1">
                     <RotateCcw className="w-4 h-4" />
                     צור מחדש
                   </Button>
@@ -143,7 +126,7 @@ export default function CallSummaryEditor({
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent>
         {isGenerating ? (
           <div className="flex flex-col items-center justify-center py-8 text-[#6B778C]">
@@ -166,11 +149,7 @@ export default function CallSummaryEditor({
               dir="rtl"
             />
             <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                disabled={saveMutation.isPending}
-              >
+              <Button variant="outline" onClick={handleCancel} disabled={saveMutation.isPending}>
                 ביטול
               </Button>
               <Button

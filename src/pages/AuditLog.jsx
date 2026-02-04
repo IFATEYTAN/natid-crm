@@ -3,27 +3,20 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import RoleGuard from '@/components/auth/RoleGuard';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import DataTable from '@/components/ui/DataTable';
-import {
-  Search,
-  Shield,
-  User,
-  Clock,
-  FileText,
-  Download
-} from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { Search, Shield, User, Clock, FileText, Download } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/components/utils';
 
 const actionLabels = {
@@ -39,7 +32,7 @@ const actionLabels = {
   permission_change: 'שינוי הרשאות',
   role_change: 'שינוי תפקיד',
   access_denied: 'גישה נדחתה',
-  sensitive_data_access: 'גישה למידע רגיש'
+  sensitive_data_access: 'גישה למידע רגיש',
 };
 
 const actionColors = {
@@ -55,13 +48,13 @@ const actionColors = {
   permission_change: 'bg-red-100 text-red-800',
   role_change: 'bg-red-100 text-red-800',
   access_denied: 'bg-red-200 text-red-900',
-  sensitive_data_access: 'bg-yellow-200 text-yellow-900'
+  sensitive_data_access: 'bg-yellow-200 text-yellow-900',
 };
 
 const severityColors = {
   info: 'border-l-blue-400',
   warning: 'border-l-yellow-400',
-  critical: 'border-l-red-500'
+  critical: 'border-l-red-500',
 };
 
 export default function AuditLogPage() {
@@ -77,8 +70,9 @@ export default function AuditLogPage() {
   const logs = auditQuery.data || [];
 
   const filteredLogs = useMemo(() => {
-    return logs.filter(log => {
-      const matchesSearch = !searchQuery || 
+    return logs.filter((log) => {
+      const matchesSearch =
+        !searchQuery ||
         log.user_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.entity_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.details?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -89,7 +83,7 @@ export default function AuditLogPage() {
   }, [logs, searchQuery, actionFilter, entityFilter]);
 
   // Get unique entity types
-  const entityTypes = [...new Set(logs.map(l => l.entity_type).filter(Boolean))];
+  const entityTypes = [...new Set(logs.map((l) => l.entity_type).filter(Boolean))];
 
   const columns = [
     {
@@ -102,7 +96,7 @@ export default function AuditLogPage() {
             {formatDateTime(log.created_date)}
           </div>
         </div>
-      )
+      ),
     },
     {
       header: 'משתמש',
@@ -117,16 +111,16 @@ export default function AuditLogPage() {
             <div className="text-xs text-[#6B778C]">{log.user_role}</div>
           </div>
         </div>
-      )
+      ),
     },
     {
       header: 'פעולה',
       accessor: 'action',
       cell: (log) => (
-        <Badge className={cn("text-xs", actionColors[log.action])}>
+        <Badge className={cn('text-xs', actionColors[log.action])}>
           {actionLabels[log.action] || log.action}
         </Badge>
-      )
+      ),
     },
     {
       header: 'ישות',
@@ -134,49 +128,51 @@ export default function AuditLogPage() {
       cell: (log) => (
         <div className="text-sm">
           <div className="font-medium">{log.entity_type}</div>
-          {log.entity_name && (
-            <div className="text-xs text-[#6B778C]">{log.entity_name}</div>
-          )}
+          {log.entity_name && <div className="text-xs text-[#6B778C]">{log.entity_name}</div>}
         </div>
-      )
+      ),
     },
     {
       header: 'פרטים',
       accessor: 'details',
       cell: (log) => (
-        <div className="text-sm text-[#6B778C] max-w-[300px] truncate">
-          {log.details || '-'}
-        </div>
-      )
+        <div className="text-sm text-[#6B778C] max-w-[300px] truncate">{log.details || '-'}</div>
+      ),
     },
     {
       header: 'חומרה',
       accessor: 'severity',
       cell: (log) => (
-        <Badge className={cn("text-xs", 
-          log.severity === 'critical' ? 'bg-red-100 text-red-800' :
-          log.severity === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-gray-100 text-gray-800'
-        )}>
-          {log.severity === 'critical' ? 'קריטי' :
-           log.severity === 'warning' ? 'אזהרה' : 'מידע'}
+        <Badge
+          className={cn(
+            'text-xs',
+            log.severity === 'critical'
+              ? 'bg-red-100 text-red-800'
+              : log.severity === 'warning'
+                ? 'bg-yellow-100 text-yellow-800'
+                : 'bg-gray-100 text-gray-800'
+          )}
+        >
+          {log.severity === 'critical' ? 'קריטי' : log.severity === 'warning' ? 'אזהרה' : 'מידע'}
         </Badge>
-      )
-    }
+      ),
+    },
   ];
 
   const exportLogs = () => {
     const csv = [
       ['תאריך', 'משתמש', 'תפקיד', 'פעולה', 'ישות', 'מזהה', 'פרטים'].join(','),
-      ...filteredLogs.map(log => [
-        log.created_date,
-        log.user_email,
-        log.user_role,
-        actionLabels[log.action] || log.action,
-        log.entity_type,
-        log.entity_id,
-        `"${(log.details || '').replace(/"/g, '""')}"`
-      ].join(','))
+      ...filteredLogs.map((log) =>
+        [
+          log.created_date,
+          log.user_email,
+          log.user_role,
+          actionLabels[log.action] || log.action,
+          log.entity_type,
+          log.entity_id,
+          `"${(log.details || '').replace(/"/g, '""')}"`,
+        ].join(',')
+      ),
     ].join('\n');
 
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -215,7 +211,7 @@ export default function AuditLogPage() {
           <Card className="bg-white">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-600">
-                {logs.filter(l => l.action === 'create').length}
+                {logs.filter((l) => l.action === 'create').length}
               </div>
               <div className="text-sm text-[#6B778C]">יצירות</div>
             </CardContent>
@@ -223,7 +219,7 @@ export default function AuditLogPage() {
           <Card className="bg-white">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-blue-600">
-                {logs.filter(l => l.action === 'update').length}
+                {logs.filter((l) => l.action === 'update').length}
               </div>
               <div className="text-sm text-[#6B778C]">עדכונים</div>
             </CardContent>
@@ -231,7 +227,10 @@ export default function AuditLogPage() {
           <Card className="bg-white border-l-4 border-l-red-500">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-red-600">
-                {logs.filter(l => l.severity === 'critical' || l.action === 'access_denied').length}
+                {
+                  logs.filter((l) => l.severity === 'critical' || l.action === 'access_denied')
+                    .length
+                }
               </div>
               <div className="text-sm text-[#6B778C]">אירועי אבטחה</div>
             </CardContent>
@@ -239,7 +238,7 @@ export default function AuditLogPage() {
           <Card className="bg-white">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-purple-600">
-                {[...new Set(logs.map(l => l.user_email))].length}
+                {[...new Set(logs.map((l) => l.user_email))].length}
               </div>
               <div className="text-sm text-[#6B778C]">משתמשים פעילים</div>
             </CardContent>
@@ -266,7 +265,9 @@ export default function AuditLogPage() {
                 <SelectContent>
                   <SelectItem value="all">כל הפעולות</SelectItem>
                   {Object.entries(actionLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -276,8 +277,10 @@ export default function AuditLogPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">כל הישויות</SelectItem>
-                  {entityTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  {entityTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

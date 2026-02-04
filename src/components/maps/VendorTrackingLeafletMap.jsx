@@ -20,14 +20,14 @@ const availabilityLabels = {
   available: 'זמין',
   busy: 'עסוק',
   offline: 'לא מחובר',
-  on_break: 'בהפסקה'
+  on_break: 'בהפסקה',
 };
 
 const availabilityColors = {
   available: 'bg-green-100 text-green-800',
   busy: 'bg-orange-100 text-orange-800',
   offline: 'bg-gray-100 text-gray-800',
-  on_break: 'bg-yellow-100 text-yellow-800'
+  on_break: 'bg-yellow-100 text-yellow-800',
 };
 
 function createVendorIcon(status) {
@@ -35,7 +35,7 @@ function createVendorIcon(status) {
     available: '#22c55e',
     busy: '#f97316',
     offline: '#6b7280',
-    on_break: '#eab308'
+    on_break: '#eab308',
   };
 
   return L.divIcon({
@@ -59,7 +59,7 @@ function createVendorIcon(status) {
     `,
     iconSize: [36, 36],
     iconAnchor: [18, 18],
-    popupAnchor: [0, -18]
+    popupAnchor: [0, -18],
   });
 }
 
@@ -67,9 +67,9 @@ function FitBounds({ vendors }) {
   const map = useMap();
   React.useEffect(() => {
     if (vendors.length > 0) {
-      const valid = vendors.filter(v => v.current_latitude && v.current_longitude);
+      const valid = vendors.filter((v) => v.current_latitude && v.current_longitude);
       if (valid.length > 0) {
-        const bounds = L.latLngBounds(valid.map(v => [v.current_latitude, v.current_longitude]));
+        const bounds = L.latLngBounds(valid.map((v) => [v.current_latitude, v.current_longitude]));
         map.fitBounds(bounds, { padding: [50, 50] });
       }
     }
@@ -86,7 +86,9 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
       center={defaultCenter}
       zoom={8}
       style={{ height: '100%', width: '100%' }}
-      whenCreated={(map) => { window._vendorTrackingMap = map; }}
+      whenCreated={(map) => {
+        window._vendorTrackingMap = map;
+      }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -94,7 +96,7 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
       />
       <FitBounds vendors={vendors} />
 
-      {vendors.map(vendor => (
+      {vendors.map((vendor) => (
         <Marker
           key={vendor.id}
           position={[vendor.current_latitude, vendor.current_longitude]}
@@ -118,7 +120,10 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     <span>
-                      {formatDistanceToNow(new Date(vendor.last_location_update), { addSuffix: true, locale: he })}
+                      {formatDistanceToNow(new Date(vendor.last_location_update), {
+                        addSuffix: true,
+                        locale: he,
+                      })}
                     </span>
                   </div>
                 )}

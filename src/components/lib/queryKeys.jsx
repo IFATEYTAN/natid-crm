@@ -1,6 +1,6 @@
 /**
  * Centralized Query Keys for React Query
- * 
+ *
  * This file defines all query keys used throughout the application.
  * Using a centralized location prevents typos and makes it easy to manage cache invalidation.
  */

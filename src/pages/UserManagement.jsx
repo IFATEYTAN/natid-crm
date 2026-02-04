@@ -3,48 +3,40 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { 
-  Users, 
-  UserPlus, 
-  Search,
-  Mail,
-  Shield,
-  ShieldCheck,
-  Key
-} from 'lucide-react';
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Users, UserPlus, Search, Mail, Shield, ShieldCheck, Key } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const roleLabels = {
   admin: 'מנהל',
-  user: 'משתמש'
+  user: 'משתמש',
 };
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',
-  user: 'bg-[#f3f4f6] text-[#111827]'
+  user: 'bg-[#f3f4f6] text-[#111827]',
 };
 
 export default function UserManagementPage() {
@@ -64,7 +56,12 @@ export default function UserManagementPage() {
     mutationFn: ({ email, role }) => base44.users.inviteUser(email, role),
     onSuccess: (_, variables) => {
       // Log to audit
-      logCreate('User', null, variables.email, `הוזמן משתמש חדש: ${variables.email} בתפקיד ${variables.role}`);
+      logCreate(
+        'User',
+        null,
+        variables.email,
+        `הוזמן משתמש חדש: ${variables.email} בתפקיד ${variables.role}`
+      );
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setInviteDialogOpen(false);
       setInviteEmail('');
@@ -73,19 +70,20 @@ export default function UserManagementPage() {
     },
     onError: (error) => {
       showToast.error('שגיאה בשליחת ההזמנה: ' + error.message);
-    }
+    },
   });
 
-  const filteredUsers = users.filter(user => 
-    !searchQuery || 
-    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      !searchQuery ||
+      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const stats = {
     total: users.length,
-    admins: users.filter(u => u.role === 'admin').length,
-    users: users.filter(u => u.role === 'user').length
+    admins: users.filter((u) => u.role === 'admin').length,
+    users: users.filter((u) => u.role === 'user').length,
   };
 
   const handleInvite = () => {
@@ -143,7 +141,7 @@ export default function UserManagementPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button 
+                <Button
                   className="w-full bg-[#3b82f6] hover:bg-[#2563eb]"
                   onClick={handleInvite}
                   disabled={inviteMutation.isPending}
@@ -226,8 +224,8 @@ export default function UserManagementPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredUsers.map(user => (
-                  <div 
+                {filteredUsers.map((user) => (
+                  <div
                     key={user.id}
                     className="flex items-center gap-3 p-3 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
                   >
@@ -243,7 +241,7 @@ export default function UserManagementPage() {
                         <span dir="ltr">{user.email}</span>
                       </div>
                     </div>
-                    <Badge className={cn("text-xs", roleBadgeColors[user.role])}>
+                    <Badge className={cn('text-xs', roleBadgeColors[user.role])}>
                       {roleLabels[user.role] || user.role}
                     </Badge>
                     <Link to={createPageUrl('RoleManagement')}>

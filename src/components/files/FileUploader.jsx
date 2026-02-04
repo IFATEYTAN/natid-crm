@@ -1,28 +1,28 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Upload, 
-  X, 
-  FileImage, 
-  FileText, 
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Upload,
+  X,
+  FileImage,
+  FileText,
   Loader2,
   CheckCircle,
   AlertCircle,
-  Camera
+  Camera,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const categoryLabels = {
@@ -31,15 +31,15 @@ const categoryLabels = {
   damage: 'נזק',
   customer_document: 'מסמך לקוח',
   customer_signature: 'חתימת לקוח',
-  other: 'אחר'
+  other: 'אחר',
 };
 
-export default function FileUploader({ 
-  callId, 
-  onUploadComplete, 
+export default function FileUploader({
+  callId,
+  onUploadComplete,
   maxFiles = 10,
-  acceptedTypes = "image/*,application/pdf",
-  showCategory = true 
+  acceptedTypes = 'image/*,application/pdf',
+  showCategory = true,
 }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -55,7 +55,7 @@ export default function FileUploader({
       return;
     }
 
-    const newFiles = selectedFiles.map(file => ({
+    const newFiles = selectedFiles.map((file) => ({
       file,
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
@@ -64,19 +64,19 @@ export default function FileUploader({
       preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
       status: 'pending', // pending | uploading | success | error
       progress: 0,
-      url: null
+      url: null,
     }));
 
-    setFiles(prev => [...prev, ...newFiles]);
+    setFiles((prev) => [...prev, ...newFiles]);
   };
 
   const removeFile = (fileId) => {
-    setFiles(prev => {
-      const file = prev.find(f => f.id === fileId);
+    setFiles((prev) => {
+      const file = prev.find((f) => f.id === fileId);
       if (file?.preview) {
         URL.revokeObjectURL(file.preview);
       }
-      return prev.filter(f => f.id !== fileId);
+      return prev.filter((f) => f.id !== fileId);
     });
   };
 
@@ -95,19 +95,21 @@ export default function FileUploader({
 
       try {
         // Update status to uploading
-        setFiles(prev => prev.map(f => 
-          f.id === fileItem.id ? { ...f, status: 'uploading', progress: 30 } : f
-        ));
+        setFiles((prev) =>
+          prev.map((f) => (f.id === fileItem.id ? { ...f, status: 'uploading', progress: 30 } : f))
+        );
 
         // Upload file using Base44 integration
-        const { file_url } = await base44.integrations.Core.UploadFile({ 
-          file: fileItem.file 
+        const { file_url } = await base44.integrations.Core.UploadFile({
+          file: fileItem.file,
         });
 
         // Update status to success
-        setFiles(prev => prev.map(f => 
-          f.id === fileItem.id ? { ...f, status: 'success', progress: 100, url: file_url } : f
-        ));
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileItem.id ? { ...f, status: 'success', progress: 100, url: file_url } : f
+          )
+        );
 
         // Save to CallPhoto entity if callId provided
         if (callId) {
@@ -118,24 +120,23 @@ export default function FileUploader({
             file_size: fileItem.size,
             category: category,
             note: note,
-            uploaded_by: 'operator' // Will be replaced with actual user
+            uploaded_by: 'operator', // Will be replaced with actual user
           });
           uploadedFiles.push(photoRecord);
         } else {
           uploadedFiles.push({ file_url, file_name: fileItem.name, category });
         }
-
       } catch (error) {
         console.error('Upload error:', error);
-        setFiles(prev => prev.map(f => 
-          f.id === fileItem.id ? { ...f, status: 'error', progress: 0 } : f
-        ));
+        setFiles((prev) =>
+          prev.map((f) => (f.id === fileItem.id ? { ...f, status: 'error', progress: 0 } : f))
+        );
         toast.error(`שגיאה בהעלאת ${fileItem.name}`);
       }
     }
 
     setUploading(false);
-    
+
     if (uploadedFiles.length > 0) {
       toast.success(`${uploadedFiles.length} קבצים הועלו בהצלחה`);
       if (onUploadComplete) {
@@ -161,17 +162,13 @@ export default function FileUploader({
       <div
         onClick={() => fileInputRef.current?.click()}
         className={cn(
-          "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
-          "border-[#DFE1E6] hover:border-red-400 hover:bg-red-50/50"
+          'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
+          'border-[#DFE1E6] hover:border-red-400 hover:bg-red-50/50'
         )}
       >
         <Upload className="w-10 h-10 mx-auto mb-3 text-[#6B778C]" />
-        <p className="text-sm font-medium text-[#172B4D] mb-1">
-          גרור קבצים לכאן או לחץ לבחירה
-        </p>
-        <p className="text-xs text-[#6B778C]">
-          תמונות (JPG, PNG) ומסמכים (PDF) עד 10MB
-        </p>
+        <p className="text-sm font-medium text-[#172B4D] mb-1">גרור קבצים לכאן או לחץ לבחירה</p>
+        <p className="text-xs text-[#6B778C]">תמונות (JPG, PNG) ומסמכים (PDF) עד 10MB</p>
       </div>
 
       <input
@@ -224,7 +221,9 @@ export default function FileUploader({
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(categoryLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -245,7 +244,7 @@ export default function FileUploader({
         <div className="space-y-2">
           {files.map((fileItem) => {
             const FileIcon = getFileIcon(fileItem.type);
-            
+
             return (
               <Card key={fileItem.id} className="bg-white">
                 <CardContent className="p-3">
@@ -253,8 +252,8 @@ export default function FileUploader({
                     {/* Preview/Icon */}
                     <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F4F5F7] flex items-center justify-center shrink-0">
                       {fileItem.preview ? (
-                        <img 
-                          src={fileItem.preview} 
+                        <img
+                          src={fileItem.preview}
                           alt={fileItem.name}
                           className="w-full h-full object-cover"
                         />
@@ -265,12 +264,8 @@ export default function FileUploader({
 
                     {/* File Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#172B4D] truncate">
-                        {fileItem.name}
-                      </p>
-                      <p className="text-xs text-[#6B778C]">
-                        {formatFileSize(fileItem.size)}
-                      </p>
+                      <p className="text-sm font-medium text-[#172B4D] truncate">{fileItem.name}</p>
+                      <p className="text-xs text-[#6B778C]">{formatFileSize(fileItem.size)}</p>
                       {fileItem.status === 'uploading' && (
                         <Progress value={fileItem.progress} className="h-1 mt-1" />
                       )}
@@ -310,7 +305,7 @@ export default function FileUploader({
       {files.length > 0 && (
         <Button
           onClick={uploadFiles}
-          disabled={uploading || files.every(f => f.status === 'success')}
+          disabled={uploading || files.every((f) => f.status === 'success')}
           className="w-full bg-[#FF0000] hover:bg-[#CC0000] gap-2"
         >
           {uploading ? (
@@ -321,7 +316,7 @@ export default function FileUploader({
           ) : (
             <>
               <Upload className="w-4 h-4" />
-              העלה {files.filter(f => f.status === 'pending').length} קבצים
+              העלה {files.filter((f) => f.status === 'pending').length} קבצים
             </>
           )}
         </Button>

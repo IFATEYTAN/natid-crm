@@ -1,33 +1,33 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
 
 export default function AIInsightsWidget() {
   const insights = [
     {
       icon: TrendingUp,
-      title: "עומס צפוי",
-      description: "צפי לעלייה של 20% בקריאות בשעות הערב",
-      type: "info"
+      title: 'עומס צפוי',
+      description: 'צפי לעלייה של 20% בקריאות בשעות הערב',
+      type: 'info',
     },
     {
       icon: AlertTriangle,
-      title: "SLA בסיכון",
-      description: "3 קריאות קרובות לחריגה מזמן SLA",
-      type: "warning"
+      title: 'SLA בסיכון',
+      description: '3 קריאות קרובות לחריגה מזמן SLA',
+      type: 'warning',
     },
     {
       icon: Clock,
-      title: "זמן תגובה",
-      description: "זמן התגובה הממוצע השתפר ב-15% השבוע",
-      type: "success"
-    }
+      title: 'זמן תגובה',
+      description: 'זמן התגובה הממוצע השתפר ב-15% השבוע',
+      type: 'success',
+    },
   ];
 
   const typeColors = {
-    info: "text-blue-600 bg-blue-50",
-    warning: "text-amber-600 bg-amber-50",
-    success: "text-green-600 bg-green-50"
+    info: 'text-blue-600 bg-blue-50',
+    warning: 'text-amber-600 bg-amber-50',
+    success: 'text-green-600 bg-green-50',
   };
 
   return (
@@ -40,7 +40,7 @@ export default function AIInsightsWidget() {
       </CardHeader>
       <CardContent className="space-y-3">
         {insights.map((insight, index) => (
-          <div 
+          <div
             key={index}
             className={`flex items-start gap-3 p-3 rounded-lg ${typeColors[insight.type]}`}
           >

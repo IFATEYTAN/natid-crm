@@ -1,33 +1,33 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  Bell, 
+} from '@/components/ui/select';
+import {
+  Bell,
   BellRing,
   Mail,
   MessageSquare,
   Smartphone,
   Plus,
   Settings,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const eventLabels = {
   call_status_change: 'שינוי סטטוס קריאה',
@@ -37,7 +37,7 @@ const eventLabels = {
   call_unassigned: 'קריאה ללא שיבוץ',
   low_rating: 'דירוג נמוך',
   call_cancelled: 'קריאה בוטלה',
-  vendor_delayed: 'עיכוב ספק'
+  vendor_delayed: 'עיכוב ספק',
 };
 
 const eventIcons = {
@@ -48,7 +48,7 @@ const eventIcons = {
   call_unassigned: Bell,
   low_rating: Bell,
   call_cancelled: Bell,
-  vendor_delayed: Bell
+  vendor_delayed: Bell,
 };
 
 export default function NotificationSettingsPage() {
@@ -67,7 +67,7 @@ export default function NotificationSettingsPage() {
     },
     onError: () => {
       showToast.error('שגיאה בעדכון ההגדרה');
-    }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -78,7 +78,7 @@ export default function NotificationSettingsPage() {
     },
     onError: () => {
       showToast.error('שגיאה במחיקת ההגדרה');
-    }
+    },
   });
 
   const handleToggle = (id, currentEnabled) => {
@@ -123,7 +123,7 @@ export default function NotificationSettingsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-[#111827]">
-                    {settings.filter(s => s.enabled).length}
+                    {settings.filter((s) => s.enabled).length}
                   </div>
                   <div className="text-sm text-[#6b7280]">פעילות</div>
                 </div>
@@ -142,14 +142,16 @@ export default function NotificationSettingsPage() {
               <div className="text-center py-12">
                 <Bell className="w-12 h-12 mx-auto text-[#6b7280] mb-3" />
                 <h3 className="font-medium text-[#111827] mb-1">אין הגדרות התראות</h3>
-                <p className="text-sm text-[#6b7280]">צור הגדרות התראות כדי לקבל עדכונים אוטומטיים</p>
+                <p className="text-sm text-[#6b7280]">
+                  צור הגדרות התראות כדי לקבל עדכונים אוטומטיים
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
-                {settings.map(setting => {
+                {settings.map((setting) => {
                   const Icon = eventIcons[setting.event] || Bell;
                   return (
-                    <div 
+                    <div
                       key={setting.id}
                       className="flex items-center gap-4 p-4 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
                     >
@@ -214,10 +216,7 @@ export default function NotificationSettingsPage() {
               {Object.entries(eventLabels).map(([key, label]) => {
                 const Icon = eventIcons[key] || Bell;
                 return (
-                  <div 
-                    key={key}
-                    className="p-3 rounded-[8px] border border-[#e5e7eb] bg-[#f9fafb]"
-                  >
+                  <div key={key} className="p-3 rounded-[8px] border border-[#e5e7eb] bg-[#f9fafb]">
                     <div className="flex items-center gap-2">
                       <Icon className="w-4 h-4 text-[#6b7280]" />
                       <span className="text-sm text-[#111827]">{label}</span>

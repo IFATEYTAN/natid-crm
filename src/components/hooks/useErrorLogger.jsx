@@ -15,7 +15,7 @@ export function useErrorLogger() {
           entity_type: 'System',
           entity_name: 'Global Error Handler',
           details: `${event.message}\nFile: ${event.filename}:${event.lineno}:${event.colno}\nError: ${event.error?.stack?.substring(0, 500)}`,
-          severity: 'critical'
+          severity: 'critical',
         });
       } catch (logError) {
         console.error('Failed to log error:', logError);
@@ -30,7 +30,7 @@ export function useErrorLogger() {
           entity_type: 'System',
           entity_name: 'Unhandled Promise Rejection',
           details: `Reason: ${event.reason?.toString()}\nStack: ${event.reason?.stack?.substring(0, 500)}`,
-          severity: 'critical'
+          severity: 'critical',
         });
       } catch (logError) {
         console.error('Failed to log rejection:', logError);
