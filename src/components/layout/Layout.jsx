@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
-import { AuthProvider } from '@/lib/AuthContext';
+import { AuthProvider } from '@/components/AuthProvider';
 // Lazy-load AccessibilityWidget
 const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
 // Lazy-load PWA and status widgets to reduce main bundle size
