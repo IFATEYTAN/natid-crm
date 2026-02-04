@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import {
   Menu,
@@ -8,10 +8,8 @@ import {
   LogOut,
   ChevronDown,
   ChevronLeft,
-  ChevronRight,
   Bell,
   LayoutDashboard,
-  Phone,
   Users,
   Truck,
   Map,
@@ -29,17 +27,12 @@ import {
   Shield,
   BookOpen,
   FileText,
-  Lock
+  Lock,
 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { Toaster } from 'sonner';
 import RealtimeNotifications from '@/components/notifications/RealtimeNotifications';
@@ -49,9 +42,7 @@ import { usePermissions, PermissionsProvider } from '@/components/permissions/Pe
 export default function Layout({ children, currentPageName }) {
   return (
     <PermissionsProvider>
-      <LayoutContent currentPageName={currentPageName}>
-        {children}
-      </LayoutContent>
+      <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
     </PermissionsProvider>
   );
 }
@@ -81,18 +72,19 @@ function LayoutContent({ children, currentPageName }) {
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date', 20),
+    queryFn: () =>
+      base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_date', 20),
     enabled: !!currentUser?.id,
-    refetchInterval: 30000
+    refetchInterval: 30000,
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const markAsReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    }
+    },
   });
 
   const handleNotificationClick = (notification) => {
@@ -102,7 +94,12 @@ function LayoutContent({ children, currentPageName }) {
   };
 
   // Don't wrap auth pages in the main layout
-  if (currentPageName === 'SignIn' || currentPageName === 'Register' || currentPageName === 'AuthLogin' || currentPageName === 'Login') {
+  if (
+    currentPageName === 'SignIn' ||
+    currentPageName === 'Register' ||
+    currentPageName === 'AuthLogin' ||
+    currentPageName === 'Login'
+  ) {
     return children;
   }
 
@@ -120,9 +117,9 @@ function LayoutContent({ children, currentPageName }) {
   };
 
   const toggleGroup = (title) => {
-    setExpandedGroups(prev => ({
+    setExpandedGroups((prev) => ({
       ...prev,
-      [title]: !prev[title]
+      [title]: !prev[title],
     }));
   };
 
@@ -134,8 +131,8 @@ function LayoutContent({ children, currentPageName }) {
       items: [
         { name: 'הקריאות שלי', href: 'VendorPortal', icon: LayoutDashboard },
         { name: 'הפרופיל שלי', href: 'MyVendorProfile', icon: UserCog },
-      ]
-    }
+      ],
+    },
   ];
 
   // Full navigation for admins/operators - filtered by permissions
@@ -150,7 +147,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'מפת ספקים', href: 'AllVendorsMap', icon: Map },
         { name: 'מעקב GPS', href: 'VendorTracking', icon: Navigation },
         { name: 'אזורי כיסוי', href: 'CoverageAreas', icon: MapPin },
-      ]
+      ],
     },
     {
       title: 'ניהול ונתונים',
@@ -161,7 +158,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'נותני שירות', href: 'ServiceProviders', icon: Truck },
         { name: 'ניהול חוזים', href: 'VendorContracts', icon: FileText },
         { name: 'פורטל ספקים (תצוגה)', href: 'VendorPortal', icon: Truck },
-      ]
+      ],
     },
     {
       title: 'כלים',
@@ -170,7 +167,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'סוכנים', href: 'Agents', icon: Bot },
         { name: 'ייבוא נתונים', href: 'ImportHistoricalData', icon: FileText },
         { name: 'ניתוח היסטורי', href: 'HistoricalDataAnalysis', icon: BarChart3 },
-      ]
+      ],
     },
     {
       title: 'מערכת',
@@ -185,50 +182,66 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'הגדרות מערכת', href: 'Settings', icon: Settings },
         { name: 'יומן פעולות', href: 'AuditLog', icon: Shield },
         { name: 'מדריך למשתמש', href: 'UserGuide', icon: BookOpen },
-      ]
-    }
+      ],
+    },
   ];
 
   // Filter navigation items based on user permissions
-  const adminNavigationGroups = allNavigationItems.map(group => ({
-    ...group,
-    items: group.items.filter(item => canAccessPage(item.href))
-  })).filter(group => group.items.length > 0);
+  const adminNavigationGroups = allNavigationItems
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => canAccessPage(item.href)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const navigationGroups = isVendor ? vendorNavigationGroups : adminNavigationGroups;
 
   const handleLogout = async () => {
-    await base44.auth.logout('/AuthLogin');
+    // Unregister service worker before logout
+    if ('serviceWorker' in navigator) {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    sessionStorage.clear();
+    await base44.auth.logout(window.location.origin);
   };
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#F4F5F7]">
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={cn(
-        "fixed top-0 right-0 h-full w-64 bg-white border-l border-[#DFE1E6] z-50 transition-transform duration-300 ease-in-out flex flex-col",
-        "lg:translate-x-0",
-        sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-      )}>
+      <aside
+        className={cn(
+          'fixed top-0 right-0 h-full w-64 bg-white border-l border-[#DFE1E6] z-50 transition-transform duration-300 ease-in-out flex flex-col',
+          'lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+        )}
+      >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#DFE1E6] shrink-0">
           <div className="flex items-center gap-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-              alt="נתי" 
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
+              alt="נתי"
               className="h-10 w-auto object-contain"
             />
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="lg:hidden"
             onClick={() => setSidebarOpen(false)}
           >
@@ -269,15 +282,24 @@ function LayoutContent({ children, currentPageName }) {
                         to={createPageUrl(item.href)}
                         onClick={() => setSidebarOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200",
-                          isActive 
-                            ? "bg-red-50 text-red-700 border-r-2 border-red-600" 
+                          'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200',
+                          isActive
+                            ? 'bg-red-50 text-red-700 border-r-2 border-red-600'
                             : hasAccess
-                              ? "text-[#172B4D] hover:bg-[#F4F5F7]"
-                              : "text-gray-400 cursor-not-allowed"
+                              ? 'text-[#172B4D] hover:bg-[#F4F5F7]'
+                              : 'text-gray-400 cursor-not-allowed'
                         )}
                       >
-                        <Icon className={cn("w-4 h-4", isActive ? "text-red-600" : hasAccess ? "text-[#6B778C]" : "text-gray-300")} />
+                        <Icon
+                          className={cn(
+                            'w-4 h-4',
+                            isActive
+                              ? 'text-red-600'
+                              : hasAccess
+                                ? 'text-[#6B778C]'
+                                : 'text-gray-300'
+                          )}
+                        />
                         {item.name}
                         {!hasAccess && <Lock className="w-3 h-3 mr-auto text-gray-300" />}
                       </Link>
@@ -306,18 +328,26 @@ function LayoutContent({ children, currentPageName }) {
           <div className="flex items-center gap-3 mb-3 px-2">
             <div className="w-9 h-9 rounded-full bg-[#F4F5F7] border border-[#DFE1E6] flex items-center justify-center overflow-hidden">
               {currentUser?.profile_image ? (
-                <img src={currentUser.profile_image} alt={currentUser.full_name} className="w-full h-full object-cover" />
+                <img
+                  src={currentUser.profile_image}
+                  alt={currentUser.full_name}
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <span className="text-[#6B778C] text-sm font-medium">{getInitials(currentUser?.full_name)}</span>
+                <span className="text-[#6B778C] text-sm font-medium">
+                  {getInitials(currentUser?.full_name)}
+                </span>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[#172B4D] truncate">{currentUser?.full_name || 'משתמש'}</p>
+              <p className="text-sm font-medium text-[#172B4D] truncate">
+                {currentUser?.full_name || 'משתמש'}
+              </p>
               <p className="text-xs text-[#6B778C] truncate">{currentUser?.email}</p>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full justify-start gap-2 text-[#6B778C] hover:text-red-600 hover:bg-red-50 text-sm"
             onClick={handleLogout}
           >
@@ -332,17 +362,17 @@ function LayoutContent({ children, currentPageName }) {
         {/* Top Bar */}
         <header className="sticky top-0 h-16 bg-white border-b border-[#DFE1E6] z-30 flex items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="w-6 h-6 text-[#6B778C]" />
             </Button>
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-              alt="נתי" 
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
+              alt="נתי"
               className="h-8 w-auto object-contain lg:hidden"
             />
           </div>
@@ -367,18 +397,26 @@ function LayoutContent({ children, currentPageName }) {
                   {notifications.length === 0 ? (
                     <div className="p-6 text-center text-[#6B778C] text-sm">אין התראות חדשות</div>
                   ) : (
-                    notifications.slice(0, 5).map(notification => (
-                      <Link 
-                        key={notification.id} 
-                        to={notification.link ? createPageUrl(notification.link.replace(/^\//, '')) : '#'}
+                    notifications.slice(0, 5).map((notification) => (
+                      <Link
+                        key={notification.id}
+                        to={
+                          notification.link
+                            ? createPageUrl(notification.link.replace(/^\//, ''))
+                            : '#'
+                        }
                         onClick={() => handleNotificationClick(notification)}
                         className={cn(
-                          "block p-3 border-b border-[#F4F5F7] hover:bg-[#F4F5F7] transition-colors",
-                          !notification.is_read && "bg-blue-50"
+                          'block p-3 border-b border-[#F4F5F7] hover:bg-[#F4F5F7] transition-colors',
+                          !notification.is_read && 'bg-blue-50'
                         )}
                       >
-                        <h5 className="text-sm font-medium text-[#172B4D] mb-0.5">{notification.title}</h5>
-                        <p className="text-xs text-[#6B778C] line-clamp-2">{notification.message}</p>
+                        <h5 className="text-sm font-medium text-[#172B4D] mb-0.5">
+                          {notification.title}
+                        </h5>
+                        <p className="text-xs text-[#6B778C] line-clamp-2">
+                          {notification.message}
+                        </p>
                       </Link>
                     ))
                   )}
@@ -389,13 +427,21 @@ function LayoutContent({ children, currentPageName }) {
             {/* User - Desktop */}
             <div className="hidden md:flex items-center gap-2">
               <div className="text-right">
-                <p className="text-sm font-medium text-[#172B4D]">{currentUser?.full_name || 'משתמש'}</p>
+                <p className="text-sm font-medium text-[#172B4D]">
+                  {currentUser?.full_name || 'משתמש'}
+                </p>
               </div>
               <div className="w-8 h-8 rounded-full bg-[#F4F5F7] border border-[#DFE1E6] flex items-center justify-center">
                 {currentUser?.profile_image ? (
-                  <img src={currentUser.profile_image} alt="" className="w-full h-full object-cover rounded-full" />
+                  <img
+                    src={currentUser.profile_image}
+                    alt=""
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 ) : (
-                  <span className="text-[#6B778C] text-xs font-medium">{getInitials(currentUser?.full_name)}</span>
+                  <span className="text-[#6B778C] text-xs font-medium">
+                    {getInitials(currentUser?.full_name)}
+                  </span>
                 )}
               </div>
             </div>
@@ -404,9 +450,9 @@ function LayoutContent({ children, currentPageName }) {
 
         {/* Page Content */}
         <main className="flex-1 p-4 md:p-6 overflow-auto">
-          <SecurePageWrapper 
-            currentPageName={currentPageName} 
-            isVendor={isVendor} 
+          <SecurePageWrapper
+            currentPageName={currentPageName}
+            isVendor={isVendor}
             isVendorPage={isVendorPage}
           >
             {children}
@@ -416,71 +462,77 @@ function LayoutContent({ children, currentPageName }) {
 
       <Toaster position="top-center" richColors />
       {currentUser?.id && (
-        <RealtimeNotifications 
-          userId={currentUser.id} 
+        <RealtimeNotifications
+          userId={currentUser.id}
           soundEnabled={currentUser?.sound_enabled !== false}
         />
       )}
-      </div>
-      );
-      }
+    </div>
+  );
+}
 
-      // קומפוננטה פנימית לעטיפת הדף עם אבטחה
-      function SecurePageWrapper({ children, currentPageName, isVendor, isVendorPage }) {
-      const { canAccessPage, isLoading } = usePermissions();
+// קומפוננטה פנימית לעטיפת הדף עם אבטחה
+function SecurePageWrapper({ children, currentPageName, isVendor, isVendorPage }) {
+  const { canAccessPage, isLoading } = usePermissions();
 
-      // Public pages that don't need permission checks
-      const publicPages = ['AuthLogin', 'Login', 'SignIn', 'Register', 'UserGuide', 'MyNotificationSettings'];
+  // Public pages that don't need permission checks
+  const publicPages = [
+    'AuthLogin',
+    'Login',
+    'SignIn',
+    'Register',
+    'UserGuide',
+    'MyNotificationSettings',
+  ];
 
-      if (publicPages.includes(currentPageName)) {
-      return children;
-      }
+  if (publicPages.includes(currentPageName)) {
+    return children;
+  }
 
-      // If vendor tries to access non-vendor page
-      if (isVendor && !isVendorPage) {
-      return (
+  // If vendor tries to access non-vendor page
+  if (isVendor && !isVendorPage) {
+    return (
       <div className="flex items-center justify-center min-h-[400px]">
-      <div className="text-center">
-        <Truck className="w-16 h-16 mx-auto mb-4 text-[#6B778C]" />
-        <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין גישה לדף זה</h2>
-        <p className="text-[#6B778C] mb-4">דף זה מיועד למפעילי המערכת בלבד</p>
-        <Link to={createPageUrl('VendorPortal')}>
-          <Button className="bg-[#3b82f6]">חזרה לפורטל הספקים</Button>
-        </Link>
-      </div>
-      </div>
-      );
-      }
-
-      // Loading state
-      if (isLoading) {
-      return (
-      <div className="flex items-center justify-center min-h-[400px]">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-      );
-      }
-
-      // Check page permissions
-      if (!canAccessPage(currentPageName)) {
-      return (
-      <div className="flex items-center justify-center min-h-[400px]">
-      <div className="text-center p-8 max-w-md">
-        <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-          <Shield className="w-8 h-8 text-red-500" />
+        <div className="text-center">
+          <Truck className="w-16 h-16 mx-auto mb-4 text-[#6B778C]" />
+          <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין גישה לדף זה</h2>
+          <p className="text-[#6B778C] mb-4">דף זה מיועד למפעילי המערכת בלבד</p>
+          <Link to={createPageUrl('VendorPortal')}>
+            <Button className="bg-[#3b82f6]">חזרה לפורטל הספקים</Button>
+          </Link>
         </div>
-        <h2 className="text-xl font-bold text-gray-800 mb-2">אין גישה לדף זה</h2>
-        <p className="text-gray-500 mb-6">
-          אין לך את ההרשאות הנדרשות לצפות בדף זה. 
-          פנה למנהל המערכת אם אתה צריך גישה.
-        </p>
-        <Link to={createPageUrl('Dashboard')}>
-          <Button>חזרה לדף הבית</Button>
-        </Link>
       </div>
-      </div>
-      );
-      }
+    );
+  }
 
-      return children;
-      }
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Check page permissions
+  if (!canAccessPage(currentPageName)) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center p-8 max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <Shield className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">אין גישה לדף זה</h2>
+          <p className="text-gray-500 mb-6">
+            אין לך את ההרשאות הנדרשות לצפות בדף זה. פנה למנהל המערכת אם אתה צריך גישה.
+          </p>
+          <Link to={createPageUrl('Dashboard')}>
+            <Button>חזרה לדף הבית</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return children;
+}

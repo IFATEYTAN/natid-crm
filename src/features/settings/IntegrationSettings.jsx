@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  Save, 
-  Copy, 
-  Check, 
-  ExternalLink,
-  AlertCircle,
-  Key
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Save, Copy, Check, ExternalLink, AlertCircle, Key } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function IntegrationSettings() {
@@ -28,7 +20,7 @@ export default function IntegrationSettings() {
     webhookEnabled: true,
     webhookUrl: '',
     webhookSecret: '',
-    
+
     // CRM Integration
     crmType: 'salesforce', // salesforce, hubspot, custom
     apiKey: '',
@@ -36,7 +28,7 @@ export default function IntegrationSettings() {
     syncInterval: '5', // minutes
     autoCreateCalls: true,
     autoAssignToQueue: true,
-    
+
     // Field Mapping
     fieldMapping: {
       customer_name: 'Name',
@@ -45,8 +37,8 @@ export default function IntegrationSettings() {
       issue_type: 'Case_Type__c',
       priority: 'Priority',
       description: 'Description',
-      location: 'Location__c'
-    }
+      location: 'Location__c',
+    },
   });
 
   useEffect(() => {
@@ -59,7 +51,7 @@ export default function IntegrationSettings() {
     // Generate webhook URL
     const baseUrl = window.location.origin;
     const webhookUrl = `${baseUrl}/api/functions/externalCrmWebhook`;
-    setSettings(prev => ({ ...prev, webhookUrl }));
+    setSettings((prev) => ({ ...prev, webhookUrl }));
   }, []);
 
   const handleSave = () => {
@@ -75,45 +67,50 @@ export default function IntegrationSettings() {
   };
 
   const generateWebhookSecret = () => {
-    const secret = 'whsec_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    setSettings(prev => ({ ...prev, webhookSecret: secret }));
+    const secret =
+      'whsec_' +
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
+    setSettings((prev) => ({ ...prev, webhookSecret: secret }));
     toast.success('נוצר מפתח חדש');
   };
 
   const samplePayload = {
     customer: {
-      name: "John Doe",
-      phone: "+972501234567",
-      email: "john@example.com",
-      company: "ABC Corp"
+      name: 'John Doe',
+      phone: '+972501234567',
+      email: 'john@example.com',
+      company: 'ABC Corp',
     },
     case: {
-      type: "mechanical",
-      priority: "urgent",
+      type: 'mechanical',
+      priority: 'urgent',
       description: "Car won't start",
       location: {
-        address: "123 Main St, Tel Aviv",
-        city: "Tel Aviv",
+        address: '123 Main St, Tel Aviv',
+        city: 'Tel Aviv',
         lat: 32.0853,
-        lon: 34.7818
+        lon: 34.7818,
       },
       vehicle: {
-        plate: "12-345-67",
-        model: "Toyota Corolla 2020",
-        type: "private"
-      }
+        plate: '12-345-67',
+        model: 'Toyota Corolla 2020',
+        type: 'private',
+      },
     },
     metadata: {
-      crm_id: "SF-12345",
-      source: "salesforce"
-    }
+      crm_id: 'SF-12345',
+      source: 'salesforce',
+    },
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1>אינטגרציות CRM</h1>
-        <p className="text-[var(--color-text-secondary)]">חיבור למערכות CRM חיצוניות וסנכרון אוטומטי</p>
+        <p className="text-[var(--color-text-secondary)]">
+          חיבור למערכות CRM חיצוניות וסנכרון אוטומטי
+        </p>
       </div>
 
       {/* Webhook Configuration */}
@@ -127,7 +124,9 @@ export default function IntegrationSettings() {
             </div>
             <Switch
               checked={settings.webhookEnabled}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, webhookEnabled: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, webhookEnabled: checked }))
+              }
             />
           </div>
 
@@ -136,22 +135,20 @@ export default function IntegrationSettings() {
               <div>
                 <Label>Webhook URL</Label>
                 <div className="flex gap-2 mt-1">
-                  <Input
-                    value={settings.webhookUrl}
-                    readOnly
-                    className="font-mono text-sm"
-                  />
+                  <Input value={settings.webhookUrl} readOnly className="font-mono text-sm" />
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => copyToClipboard(settings.webhookUrl)}
                   >
-                    {copied ? <Check className="w-4 h-4 text-[#2E7D32]" /> : <Copy className="w-4 h-4" />}
+                    {copied ? (
+                      <Check className="w-4 h-4 text-[#2E7D32]" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
-                <p className="text-xs text-[#616161] mt-1">
-                  שלח POST request לכתובת זו מה-CRM שלך
-                </p>
+                <p className="text-xs text-[#616161] mt-1">שלח POST request לכתובת זו מה-CRM שלך</p>
               </div>
 
               <div>
@@ -159,14 +156,13 @@ export default function IntegrationSettings() {
                 <div className="flex gap-2 mt-1">
                   <Input
                     value={settings.webhookSecret}
-                    onChange={(e) => setSettings(prev => ({ ...prev, webhookSecret: e.target.value }))}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, webhookSecret: e.target.value }))
+                    }
                     placeholder="whsec_..."
                     className="font-mono text-sm"
                   />
-                  <Button
-                    variant="outline"
-                    onClick={generateWebhookSecret}
-                  >
+                  <Button variant="outline" onClick={generateWebhookSecret}>
                     <Key className="w-4 h-4 ml-2" />
                     צור חדש
                   </Button>
@@ -203,7 +199,7 @@ export default function IntegrationSettings() {
             <Label>סוג CRM</Label>
             <Select
               value={settings.crmType}
-              onValueChange={(value) => setSettings(prev => ({ ...prev, crmType: value }))}
+              onValueChange={(value) => setSettings((prev) => ({ ...prev, crmType: value }))}
             >
               <SelectTrigger className="mt-1">
                 <SelectValue />
@@ -222,7 +218,7 @@ export default function IntegrationSettings() {
             <Input
               type="password"
               value={settings.apiKey}
-              onChange={(e) => setSettings(prev => ({ ...prev, apiKey: e.target.value }))}
+              onChange={(e) => setSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
               placeholder="Enter your API key..."
               className="mt-1"
             />
@@ -236,7 +232,7 @@ export default function IntegrationSettings() {
               <Label>API Endpoint</Label>
               <Input
                 value={settings.apiEndpoint}
-                onChange={(e) => setSettings(prev => ({ ...prev, apiEndpoint: e.target.value }))}
+                onChange={(e) => setSettings((prev) => ({ ...prev, apiEndpoint: e.target.value }))}
                 placeholder="https://api.yourcrm.com/v1"
                 className="mt-1"
               />
@@ -250,7 +246,9 @@ export default function IntegrationSettings() {
             </div>
             <Switch
               checked={settings.autoCreateCalls}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoCreateCalls: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, autoCreateCalls: checked }))
+              }
             />
           </div>
 
@@ -261,7 +259,9 @@ export default function IntegrationSettings() {
             </div>
             <Switch
               checked={settings.autoAssignToQueue}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoAssignToQueue: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, autoAssignToQueue: checked }))
+              }
             />
           </div>
         </div>
@@ -272,9 +272,9 @@ export default function IntegrationSettings() {
         <h3 className="mb-4">מיפוי שדות</h3>
         <div className="space-y-4">
           <p className="text-sm text-[#6B7280]">
-              התאם את שמות השדות מה-CRM החיצוני לשדות במערכת Base44
-            </p>
-            
+            התאם את שמות השדות מה-CRM החיצוני לשדות במערכת Base44
+          </p>
+
           {Object.entries(settings.fieldMapping).map(([key, value]) => (
             <div key={key} className="grid grid-cols-2 gap-4 items-center">
               <div>
@@ -282,13 +282,15 @@ export default function IntegrationSettings() {
               </div>
               <Input
                 value={value}
-                onChange={(e) => setSettings(prev => ({
-                  ...prev,
-                  fieldMapping: {
-                    ...prev.fieldMapping,
-                    [key]: e.target.value
-                  }
-                }))}
+                onChange={(e) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    fieldMapping: {
+                      ...prev.fieldMapping,
+                      [key]: e.target.value,
+                    },
+                  }))
+                }
                 placeholder="שם השדה ב-CRM"
                 className="text-sm"
               />
@@ -302,26 +304,26 @@ export default function IntegrationSettings() {
         <h3 className="mb-4">דוגמת Payload</h3>
         <div className="space-y-3">
           <p className="text-sm text-[#6B7280]">
-              שלח POST request ל-webhook עם payload בפורמט הבא:
-            </p>
-            <div className="relative">
-              <pre className="bg-[#212121] text-[#E0E0E0] p-4 rounded-lg overflow-x-auto text-xs">
-                {JSON.stringify(samplePayload, null, 2)}
-              </pre>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 left-2"
-                onClick={() => copyToClipboard(JSON.stringify(samplePayload, null, 2))}
-              >
-                <Copy className="w-4 h-4 text-white" />
-              </Button>
-            </div>
+            שלח POST request ל-webhook עם payload בפורמט הבא:
+          </p>
+          <div className="relative">
+            <pre className="bg-[#212121] text-[#E0E0E0] p-4 rounded-lg overflow-x-auto text-xs">
+              {JSON.stringify(samplePayload, null, 2)}
+            </pre>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 left-2"
+              onClick={() => copyToClipboard(JSON.stringify(samplePayload, null, 2))}
+            >
+              <Copy className="w-4 h-4 text-white" />
+            </Button>
+          </div>
           <div className="flex items-center gap-2 text-sm text-[#6B7280]">
             <ExternalLink className="w-4 h-4" />
-            <a 
-              href="https://docs.base44.com/integrations/webhook" 
-              target="_blank" 
+            <a
+              href="https://docs.base44.com/integrations/webhook"
+              target="_blank"
               className="text-[#111827] hover:underline"
             >
               תיעוד מלא

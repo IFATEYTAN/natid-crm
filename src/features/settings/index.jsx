@@ -1,17 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { 
-  Building2, 
-  Bell, 
-  Shield, 
-  Clock,
-  Truck,
-  Save
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 export default function Settings() {
   return (
@@ -24,9 +16,7 @@ export default function Settings() {
       {/* Company Settings */}
       <Card className="card-base border-none shadow-none p-0">
         <CardHeader>
-          <CardTitle className="text-base text-[var(--color-text-primary)]">
-            פרטי חברה
-          </CardTitle>
+          <CardTitle className="text-base text-[var(--color-text-primary)]">פרטי חברה</CardTitle>
           <CardDescription>הגדרות בסיסיות של העסק</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -54,9 +44,7 @@ export default function Settings() {
       {/* SLA Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            הגדרות SLA ברירת מחדל
-          </CardTitle>
+          <CardTitle className="text-base">הגדרות SLA ברירת מחדל</CardTitle>
           <CardDescription>זמני תגובה והגעה ברירת מחדל ללקוחות חדשים</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -76,9 +64,7 @@ export default function Settings() {
       {/* Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            התראות
-          </CardTitle>
+          <CardTitle className="text-base">התראות</CardTitle>
           <CardDescription>הגדרות התראות והודעות</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -109,28 +95,29 @@ export default function Settings() {
       {/* Service Types */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            סוגי שירות
-          </CardTitle>
+          <CardTitle className="text-base">סוגי שירות</CardTitle>
           <CardDescription>ניהול סוגי השירות הזמינים</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {['גרירה', 'פנצ\'ר', 'מצבר', 'פתיחת רכב', 'דלק', 'תאונה', 'תקלה מכנית'].map((service, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2 bg-[#FAFAFA] rounded-lg">
-                <span>{service}</span>
-                <Switch defaultChecked />
-              </div>
-            ))}
+            {['גרירה', "פנצ'ר", 'מצבר', 'פתיחת רכב', 'דלק', 'תאונה', 'תקלה מכנית'].map(
+              (service, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-2 bg-[#FAFAFA] rounded-lg"
+                >
+                  <span>{service}</span>
+                  <Switch defaultChecked />
+                </div>
+              )
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Save */}
       <div className="flex justify-end">
-        <Button className="btn-primary flex items-center gap-2">
-          שמור שינויים
-        </Button>
+        <Button className="btn-primary flex items-center gap-2">שמור שינויים</Button>
       </div>
     </div>
   );

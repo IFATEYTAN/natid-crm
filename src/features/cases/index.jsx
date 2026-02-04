@@ -5,36 +5,29 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  Plus, 
-  Search, 
-  Filter,
-  Phone,
-  MapPin,
-  Calendar
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Plus, Search, Phone, MapPin } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import ImportExport from '@/components/ImportExport';
 import { he } from 'date-fns/locale';
 
 const serviceTypeLabels = {
   towing: 'גרירה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   battery: 'מצבר',
   lockout: 'פתיחת רכב',
   fuel: 'דלק',
   accident: 'תאונה',
   mechanical: 'תקלה מכנית',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 export default function Cases() {
@@ -48,16 +41,17 @@ export default function Cases() {
   });
 
   // Filter cases
-  const filteredCases = cases.filter(c => {
-    const matchesSearch = !search || 
+  const filteredCases = cases.filter((c) => {
+    const matchesSearch =
+      !search ||
       c.case_number?.toLowerCase().includes(search.toLowerCase()) ||
       c.customer_name?.toLowerCase().includes(search.toLowerCase()) ||
       c.caller_phone?.includes(search) ||
       c.vehicle_number?.includes(search);
-    
+
     const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
     const matchesService = serviceFilter === 'all' || c.service_type === serviceFilter;
-    
+
     return matchesSearch && matchesStatus && matchesService;
   });
 
@@ -69,12 +63,12 @@ export default function Cases() {
         <span className="font-semibold text-[#FF0000]">
           {row.case_number || `#${row.id?.slice(-6)}`}
         </span>
-      )
+      ),
     },
     {
       header: 'סטטוס',
       accessor: 'status',
-      cell: (row) => <StatusBadge status={row.status} />
+      cell: (row) => <StatusBadge status={row.status} />,
     },
     {
       header: 'לקוח',
@@ -87,7 +81,7 @@ export default function Cases() {
             {row.caller_phone}
           </p>
         </div>
-      )
+      ),
     },
     {
       header: 'סוג שירות',
@@ -96,7 +90,7 @@ export default function Cases() {
         <span className="text-[#212121]">
           {serviceTypeLabels[row.service_type] || row.service_type}
         </span>
-      )
+      ),
     },
     {
       header: 'מיקום',
@@ -106,30 +100,34 @@ export default function Cases() {
           <MapPin className="w-4 h-4" strokeWidth={2} />
           {row.location_city || row.location_address?.slice(0, 20)}
         </span>
-      )
+      ),
     },
     {
       header: 'נותן שירות',
       accessor: 'assigned_provider_name',
-      cell: (row) => (
-        <span className="text-[#212121]">
-          {row.assigned_provider_name || '-'}
-        </span>
-      )
+      cell: (row) => <span className="text-[#212121]">{row.assigned_provider_name || '-'}</span>,
     },
     {
       header: 'תאריך',
       accessor: 'created_date',
-      cell: (row) => row.created_date ? (
-        <span className="text-[#616161] caption">
-          {format(parseISO(row.created_date), 'dd/MM HH:mm', { locale: he })}
-        </span>
-      ) : '-'
+      cell: (row) =>
+        row.created_date ? (
+          <span className="text-[#616161] caption">
+            {format(parseISO(row.created_date), 'dd/MM HH:mm', { locale: he })}
+          </span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'עדיפות',
       accessor: 'priority',
-      cell: (row) => <StatusBadge status={row.priority || 'normal'} showIcon={row.priority === 'high' || row.priority === 'urgent'} />
+      cell: (row) => (
+        <StatusBadge
+          status={row.priority || 'normal'}
+          showIcon={row.priority === 'high' || row.priority === 'urgent'}
+        />
+      ),
     },
   ];
 
@@ -142,8 +140,8 @@ export default function Cases() {
           <p className="text-[var(--color-text-secondary)]">{filteredCases.length} קריאות במערכת</p>
         </div>
         <div className="flex gap-2">
-          <ImportExport 
-            entityName="Case" 
+          <ImportExport
+            entityName="Case"
             data={filteredCases}
             columns={columns}
             title="דוח קריאות שירות"
@@ -191,7 +189,9 @@ export default function Cases() {
             <SelectContent>
               <SelectItem value="all">כל השירותים</SelectItem>
               {Object.entries(serviceTypeLabels).map(([key, label]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -203,7 +203,7 @@ export default function Cases() {
         columns={columns}
         data={filteredCases}
         isLoading={isLoading}
-        onRowClick={(row) => window.location.href = createPageUrl(`CaseDetails?id=${row.id}`)}
+        onRowClick={(row) => (window.location.href = createPageUrl(`CaseDetails?id=${row.id}`))}
         emptyMessage="לא נמצאו קריאות"
       />
     </div>

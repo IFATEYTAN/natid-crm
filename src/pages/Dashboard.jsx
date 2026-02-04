@@ -24,34 +24,40 @@ import {
   Clock,
   CheckCircle2,
   Users,
-  Calendar
+  Calendar,
 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import AIInsightsWidget from '@/components/ai/AIInsightsWidget';
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard, PermissionLink } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { 
-  BarChart, 
-  Bar, 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from 'recharts';
 
 // Colors for charts
@@ -69,27 +75,31 @@ function WorkQueueOverview({ calls, isLoading }) {
     queryKey: ['agents'],
     queryFn: async () => {
       const users = await base44.entities.User.list();
-      return users.filter(u => u.role === 'user');
+      return users.filter((u) => u.role === 'user');
     },
   });
 
-  const waitingInQueue = queueItems.filter(q => q.queue_status === 'waiting_in_queue').length;
-  const assignedToAgents = queueItems.filter(q => q.queue_status === 'assigned_to_agent').length;
-  const inProgress = queueItems.filter(q => q.queue_status === 'in_progress').length;
+  const waitingInQueue = queueItems.filter((q) => q.queue_status === 'waiting_in_queue').length;
+  const assignedToAgents = queueItems.filter((q) => q.queue_status === 'assigned_to_agent').length;
+  const inProgress = queueItems.filter((q) => q.queue_status === 'in_progress').length;
 
-  const completed = queueItems.filter(q => q.queue_status === 'completed' && q.time_to_complete);
-  const avgTime = completed.length > 0
-    ? Math.round(completed.reduce((sum, q) => sum + q.time_to_complete, 0) / completed.length)
-    : 0;
+  const completed = queueItems.filter((q) => q.queue_status === 'completed' && q.time_to_complete);
+  const avgTime =
+    completed.length > 0
+      ? Math.round(completed.reduce((sum, q) => sum + q.time_to_complete, 0) / completed.length)
+      : 0;
 
   // Agent breakdown
-  const agentStats = agents.map(agent => {
-    const count = queueItems.filter(q =>
-      q.assigned_to_agent === agent.email &&
-      ['assigned_to_agent', 'in_progress'].includes(q.queue_status)
-    ).length;
-    return { name: agent.full_name, count };
-  }).filter(a => a.count > 0);
+  const agentStats = agents
+    .map((agent) => {
+      const count = queueItems.filter(
+        (q) =>
+          q.assigned_to_agent === agent.email &&
+          ['assigned_to_agent', 'in_progress'].includes(q.queue_status)
+      ).length;
+      return { name: agent.full_name, count };
+    })
+    .filter((a) => a.count > 0);
 
   if (isLoading) return <Skeleton className="h-64" />;
 
@@ -101,7 +111,10 @@ function WorkQueueOverview({ calls, isLoading }) {
             <CardTitle className="text-lg font-bold text-gray-800">תור עבודה בזמן אמת</CardTitle>
             <CardDescription>מבט על עומסי העבודה במוקד</CardDescription>
           </div>
-          <Link to={createPageUrl('MyQueue')} className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline flex items-center gap-1 transition-colors">
+          <Link
+            to={createPageUrl('MyQueue')}
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline flex items-center gap-1 transition-colors"
+          >
             הצג תור מלא
             <ChevronLeft className="w-4 h-4" />
           </Link>
@@ -145,7 +158,7 @@ function WorkQueueOverview({ calls, isLoading }) {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-              {agentStats.map(agent => (
+              {agentStats.map((agent) => (
                 <div key={agent.name} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
                     {agent.name.slice(0, 2)}
@@ -175,13 +188,13 @@ function WorkQueueOverview({ calls, isLoading }) {
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'סוללה ריקה',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const statusLabels = {
@@ -191,7 +204,7 @@ const statusLabels = {
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
   completed: 'הושלם',
-  cancelled: 'בוטל'
+  cancelled: 'בוטל',
 };
 
 export default function Dashboard() {
@@ -213,90 +226,113 @@ export default function Dashboard() {
   // Fetch available vendors for operator view
   const { data: availableVendors = [] } = useQuery({
     queryKey: ['availableVendors'],
-    queryFn: () => base44.entities.Vendor.filter({
-      is_active: true,
-      availability_status: 'available'
-    }),
+    queryFn: () =>
+      base44.entities.Vendor.filter({
+        is_active: true,
+        availability_status: 'available',
+      }),
     refetchInterval: 30000,
   });
 
   const isLoading = callsLoading || vendorsLoading;
 
   // Calculate stats
-  const openStatuses = ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress'];
-  const openCalls = calls.filter(c => openStatuses.includes(c.call_status));
-  const waitingCalls = calls.filter(c => c.call_status === 'waiting_treatment');
-  const completedToday = calls.filter(call => {
+  const openStatuses = [
+    'waiting_treatment',
+    'awaiting_assignment',
+    'assigning',
+    'vendor_enroute',
+    'in_progress',
+  ];
+  const openCalls = calls.filter((c) => openStatuses.includes(c.call_status));
+  const waitingCalls = calls.filter((c) => c.call_status === 'waiting_treatment');
+  const completedToday = calls.filter((call) => {
     const callDate = new Date(call.created_date);
-    return call.call_status === 'completed' &&
-           callDate >= startOfDay(today) &&
-           callDate <= endOfDay(today);
+    return (
+      call.call_status === 'completed' &&
+      callDate >= startOfDay(today) &&
+      callDate <= endOfDay(today)
+    );
   });
 
   // Operator stats
-  const myWorkItems = workQueue.filter(wq => wq.assigned_to_agent === currentUser?.email);
-  const myCallIds = myWorkItems.map(wq => wq.call_id);
+  const myWorkItems = workQueue.filter((wq) => wq.assigned_to_agent === currentUser?.email);
+  const myCallIds = myWorkItems.map((wq) => wq.call_id);
 
   // Filter calls assigned to this operator
-  const myOpenCalls = openCalls.filter(c => myCallIds.includes(c.id));
-  const myCompletedToday = calls.filter(call => {
+  const myOpenCalls = openCalls.filter((c) => myCallIds.includes(c.id));
+  const myCompletedToday = calls.filter((call) => {
     const callDate = new Date(call.created_date);
-    return call.call_status === 'completed' &&
-           myCallIds.includes(call.id) &&
-           callDate >= startOfDay(today) &&
-           callDate <= endOfDay(today);
+    return (
+      call.call_status === 'completed' &&
+      myCallIds.includes(call.id) &&
+      callDate >= startOfDay(today) &&
+      callDate <= endOfDay(today)
+    );
   });
-  const myUrgentCalls = myOpenCalls.filter(c => c.call_priority === 'urgent' || c.call_priority === 'critical');
+  const myUrgentCalls = myOpenCalls.filter(
+    (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
+  );
 
-  const unassignedCalls = openCalls.filter(c => !c.assigned_vendor_id);
-  const urgentCalls = openCalls.filter(c => c.call_priority === 'urgent' || c.call_priority === 'critical');
+  const unassignedCalls = openCalls.filter((c) => !c.assigned_vendor_id);
+  const urgentCalls = openCalls.filter(
+    (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
+  );
 
   // Average time to completion (last 7 days)
   const sevenDaysAgo = subDays(new Date(), 7);
-  const recentCompletedCalls = calls.filter(c =>
-    c.call_status === 'completed' &&
-    c.time_to_completion &&
-    c.created_date &&
-    parseISO(c.created_date) >= sevenDaysAgo
+  const recentCompletedCalls = calls.filter(
+    (c) =>
+      c.call_status === 'completed' &&
+      c.time_to_completion &&
+      c.created_date &&
+      parseISO(c.created_date) >= sevenDaysAgo
   );
-  const avgCompletion = recentCompletedCalls.length > 0
-    ? Math.round(recentCompletedCalls.reduce((sum, c) => sum + c.time_to_completion, 0) / recentCompletedCalls.length)
-    : 0;
+  const avgCompletion =
+    recentCompletedCalls.length > 0
+      ? Math.round(
+          recentCompletedCalls.reduce((sum, c) => sum + c.time_to_completion, 0) /
+            recentCompletedCalls.length
+        )
+      : 0;
 
   // Average satisfaction (last 7 days)
-  const recentRatedCalls = calls.filter(c =>
-    c.customer_rating &&
-    c.created_date &&
-    parseISO(c.created_date) >= sevenDaysAgo
+  const recentRatedCalls = calls.filter(
+    (c) => c.customer_rating && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
   );
-  const avgRating = recentRatedCalls.length > 0
-    ? (recentRatedCalls.reduce((sum, c) => sum + c.customer_rating, 0) / recentRatedCalls.length).toFixed(1)
-    : '0.0';
+  const avgRating =
+    recentRatedCalls.length > 0
+      ? (
+          recentRatedCalls.reduce((sum, c) => sum + c.customer_rating, 0) / recentRatedCalls.length
+        ).toFixed(1)
+      : '0.0';
 
   // Average ETA (from calls with vendor_eta in last 7 days)
-  const recentCallsWithEta = calls.filter(c =>
-    c.vendor_eta &&
-    c.created_date &&
-    parseISO(c.created_date) >= sevenDaysAgo
+  const recentCallsWithEta = calls.filter(
+    (c) => c.vendor_eta && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
   );
-  const avgEta = recentCallsWithEta.length > 0
-    ? Math.round(recentCallsWithEta.reduce((sum, c) => sum + c.vendor_eta, 0) / recentCallsWithEta.length)
-    : 0;
+  const avgEta =
+    recentCallsWithEta.length > 0
+      ? Math.round(
+          recentCallsWithEta.reduce((sum, c) => sum + c.vendor_eta, 0) / recentCallsWithEta.length
+        )
+      : 0;
 
   // Field resolution rate (completed without towing in last 7 days)
-  const recentCompleted = calls.filter(c =>
-    c.call_status === 'completed' &&
-    c.created_date &&
-    parseISO(c.created_date) >= sevenDaysAgo
+  const recentCompleted = calls.filter(
+    (c) =>
+      c.call_status === 'completed' && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
   );
-  const resolvedInField = recentCompleted.filter(c => c.resolution_type !== 'tow');
-  const fieldResolutionRate = recentCompleted.length > 0
-    ? Math.round((resolvedInField.length / recentCompleted.length) * 100)
-    : 0;
+  const resolvedInField = recentCompleted.filter((c) => c.resolution_type !== 'tow');
+  const fieldResolutionRate =
+    recentCompleted.length > 0
+      ? Math.round((resolvedInField.length / recentCompleted.length) * 100)
+      : 0;
 
   // Filtered calls for cases tab
-  const filteredCalls = calls.filter(call => {
-    const matchesSearch = !searchQuery ||
+  const filteredCalls = calls.filter((call) => {
+    const matchesSearch =
+      !searchQuery ||
       call.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       call.call_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       call.customer_phone?.includes(searchQuery);
@@ -305,21 +341,23 @@ export default function Dashboard() {
   });
 
   // Chart data - calls by status
-  const statusData = Object.keys(statusLabels).map(status => ({
-    name: statusLabels[status],
-    value: calls.filter(c => c.call_status === status).length
-  })).filter(d => d.value > 0);
+  const statusData = Object.keys(statusLabels)
+    .map((status) => ({
+      name: statusLabels[status],
+      value: calls.filter((c) => c.call_status === status).length,
+    }))
+    .filter((d) => d.value > 0);
 
   // Chart data - trend last 7 days
   const trendData = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(new Date(), 6 - i);
     const dateStr = format(date, 'yyyy-MM-dd');
-    const count = calls.filter(c =>
-      c.created_date && format(parseISO(c.created_date), 'yyyy-MM-dd') === dateStr
+    const count = calls.filter(
+      (c) => c.created_date && format(parseISO(c.created_date), 'yyyy-MM-dd') === dateStr
     ).length;
     return {
       name: format(date, 'dd/MM', { locale: he }),
-      value: count
+      value: count,
     };
   });
 
@@ -335,14 +373,12 @@ export default function Dashboard() {
         >
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
-      )
+      ),
     },
     {
       header: 'שם לקוח',
       accessor: 'customer_name',
-      cell: (row) => (
-        <div className="font-medium text-gray-800">{row.customer_name}</div>
-      )
+      cell: (row) => <div className="font-medium text-gray-800">{row.customer_name}</div>,
     },
     {
       header: 'סוג תקלה',
@@ -351,30 +387,36 @@ export default function Dashboard() {
         <span className="text-gray-600 bg-gray-100 px-2 py-1 rounded-md text-xs font-medium">
           {issueTypeLabels[row.issue_type] || row.issue_type || '-'}
         </span>
-      )
+      ),
     },
     {
       header: 'סטטוס',
       accessor: 'call_status',
-      cell: (row) => <StatusBadge status={row.call_status} size="sm" />
+      cell: (row) => <StatusBadge status={row.call_status} size="sm" />,
     },
     {
       header: 'תאריך',
       accessor: 'created_date',
-      cell: (row) => row.created_date ? (
-        <span className="text-gray-500 text-sm">
-          {format(parseISO(row.created_date), 'dd/MM HH:mm', { locale: he })}
-        </span>
-      ) : '-'
+      cell: (row) =>
+        row.created_date ? (
+          <span className="text-gray-500 text-sm">
+            {format(parseISO(row.created_date), 'dd/MM HH:mm', { locale: he })}
+          </span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'ספק',
       accessor: 'assigned_vendor_name',
-      cell: (row) => row.assigned_vendor_name ? (
-        <span className="text-green-700 font-medium text-sm">{row.assigned_vendor_name}</span>
-      ) : (
-        <span className="text-red-500 text-xs font-bold bg-red-50 px-2 py-1 rounded-full">טרם שובץ</span>
-      )
+      cell: (row) =>
+        row.assigned_vendor_name ? (
+          <span className="text-green-700 font-medium text-sm">{row.assigned_vendor_name}</span>
+        ) : (
+          <span className="text-red-500 text-xs font-bold bg-red-50 px-2 py-1 rounded-full">
+            טרם שובץ
+          </span>
+        ),
     },
   ];
 
@@ -384,10 +426,13 @@ export default function Dashboard() {
       header: 'קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link to={createPageUrl('CallDetails') + '?id=' + row.id} className="font-bold text-blue-600 hover:text-blue-800">
+        <Link
+          to={createPageUrl('CallDetails') + '?id=' + row.id}
+          className="font-bold text-blue-600 hover:text-blue-800"
+        >
           {row.call_number || `#${row.id?.slice(-6)}`}
         </Link>
-      )
+      ),
     },
     {
       header: 'לקוח',
@@ -395,19 +440,22 @@ export default function Dashboard() {
       cell: (row) => (
         <div>
           <div className="font-medium text-gray-800">{row.customer_name}</div>
-          <a href={`tel:${row.customer_phone}`} className="text-gray-500 text-xs flex items-center gap-1 hover:text-blue-600">
+          <a
+            href={`tel:${row.customer_phone}`}
+            className="text-gray-500 text-xs flex items-center gap-1 hover:text-blue-600"
+          >
             <Phone className="w-3 h-3" />
             {row.customer_phone}
           </a>
         </div>
-      )
+      ),
     },
     {
       header: 'סוג תקלה',
       accessor: 'issue_type',
       cell: (row) => (
         <span className="text-gray-600">{issueTypeLabels[row.issue_type] || row.issue_type}</span>
-      )
+      ),
     },
     {
       header: 'מיקום',
@@ -415,23 +463,33 @@ export default function Dashboard() {
       cell: (row) => (
         <div className="flex items-center gap-1 text-gray-600">
           <MapPin className="w-3 h-3" />
-          <span>{row.pickup_location_city || row.pickup_location_address?.substring(0, 20) + '...'}</span>
+          <span>
+            {row.pickup_location_city ||
+              (row.pickup_location_address
+                ? row.pickup_location_address.substring(0, 20) + '...'
+                : '-')}
+          </span>
         </div>
-      )
+      ),
     },
     {
       header: 'סטטוס',
       accessor: 'call_status',
-      cell: (row) => <StatusBadge status={row.call_status} size="sm" />
+      cell: (row) => <StatusBadge status={row.call_status} size="sm" />,
     },
     {
       header: 'ספק',
       accessor: 'assigned_vendor_name',
-      cell: (row) => row.assigned_vendor_name ? (
-        <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full font-medium">{row.assigned_vendor_name}</span>
-      ) : (
-        <span className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-full font-medium">לא שובץ</span>
-      )
+      cell: (row) =>
+        row.assigned_vendor_name ? (
+          <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full font-medium">
+            {row.assigned_vendor_name}
+          </span>
+        ) : (
+          <span className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-full font-medium">
+            לא שובץ
+          </span>
+        ),
     },
     {
       header: '',
@@ -441,7 +499,7 @@ export default function Dashboard() {
             <Eye className="w-4 h-4" />
           </Button>
         </Link>
-      )
+      ),
     },
   ];
 
@@ -451,23 +509,29 @@ export default function Dashboard() {
       header: 'ספק',
       accessor: 'vendor_name',
       cell: (row) => (
-        <Link to={createPageUrl('VendorProfile') + '?id=' + row.id} className="font-medium text-gray-800 hover:text-blue-600 flex items-center gap-2">
+        <Link
+          to={createPageUrl('ServiceProviders') + '?id=' + row.id}
+          className="font-medium text-gray-800 hover:text-blue-600 flex items-center gap-2"
+        >
           <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
             <Truck className="w-4 h-4" />
           </div>
           {row.vendor_name}
         </Link>
-      )
+      ),
     },
     {
       header: 'טלפון',
       accessor: 'phone',
       cell: (row) => (
-        <a href={`tel:${row.phone}`} className="text-gray-600 flex items-center gap-1 hover:text-blue-600">
+        <a
+          href={`tel:${row.phone}`}
+          className="text-gray-600 flex items-center gap-1 hover:text-blue-600"
+        >
           <Phone className="w-3 h-3" />
           {row.phone}
         </a>
-      )
+      ),
     },
     {
       header: 'אזורים',
@@ -475,12 +539,15 @@ export default function Dashboard() {
       cell: (row) => (
         <div className="flex flex-wrap gap-1">
           {(row.coverage_areas || []).slice(0, 2).map((area, idx) => (
-            <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200">
+            <span
+              key={idx}
+              className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200"
+            >
               {area}
             </span>
           ))}
         </div>
-      )
+      ),
     },
     {
       header: 'דירוג',
@@ -490,7 +557,7 @@ export default function Dashboard() {
           <span>{row.average_rating ? row.average_rating.toFixed(1) : '-'}</span>
           <span className="text-xs">⭐</span>
         </div>
-      )
+      ),
     },
   ];
 
@@ -504,9 +571,7 @@ export default function Dashboard() {
           </h1>
           <div className="flex items-center gap-2 text-gray-500 mt-1">
             <Calendar className="w-4 h-4" />
-            <p className="text-sm">
-              {format(today, 'EEEE, d בMMMM yyyy', { locale: he })}
-            </p>
+            <p className="text-sm">{format(today, 'EEEE, d בMMMM yyyy', { locale: he })}</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -524,17 +589,26 @@ export default function Dashboard() {
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
         <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-gray-200 w-full md:w-auto grid grid-cols-3 md:inline-flex h-auto">
-          <TabsTrigger value="dashboard" className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2">
+          <TabsTrigger
+            value="dashboard"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"
+          >
             <LayoutDashboard className="w-4 h-4" />
             <span className="hidden md:inline">סקירה כללית</span>
             <span className="md:hidden">כללי</span>
           </TabsTrigger>
-          <TabsTrigger value="operator" className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2">
+          <TabsTrigger
+            value="operator"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"
+          >
             <Headphones className="w-4 h-4" />
             <span className="hidden md:inline">תפריט מוקדן</span>
             <span className="md:hidden">מוקדן</span>
           </TabsTrigger>
-          <TabsTrigger value="cases" className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2">
+          <TabsTrigger
+            value="cases"
+            className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"
+          >
             <List className="w-4 h-4" />
             <span className="hidden md:inline">קריאות שירות</span>
             <span className="md:hidden">קריאות</span>
@@ -545,36 +619,36 @@ export default function Dashboard() {
         <TabsContent value="dashboard" className="space-y-6 mt-6 focus-visible:outline-none">
           {/* Main Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <StatCard 
-              title="קריאות פעילות" 
-              value={openCalls.length} 
+            <StatCard
+              title="קריאות פעילות"
+              value={openCalls.length}
               subtitle="ממתינות לטיפול וסיום"
               icon={AlertCircle}
               variant="warning"
               to={createPageUrl('Calls') + '?status=active'}
               className="hover:border-orange-300 hover:shadow-md cursor-pointer"
             />
-            <StatCard 
-              title="ממתינות לשיוך" 
-              value={waitingCalls.length} 
+            <StatCard
+              title="ממתינות לשיוך"
+              value={waitingCalls.length}
               subtitle="נדרשת פעולה מיידית"
               icon={Users}
               variant="danger"
               to={createPageUrl('Calls') + '?status=waiting_treatment'}
               className="hover:border-red-300 hover:shadow-md cursor-pointer"
             />
-            <StatCard 
-              title="הושלמו היום" 
-              value={completedToday.length} 
+            <StatCard
+              title="הושלמו היום"
+              value={completedToday.length}
               subtitle="ביצוע יומי"
               icon={CheckCircle2}
               variant="success"
               to={createPageUrl('Reports')}
               className="hover:border-green-300 hover:shadow-md cursor-pointer"
             />
-            <StatCard 
-              title="ספקים זמינים" 
-              value={availableVendors.length} 
+            <StatCard
+              title="ספקים זמינים"
+              value={availableVendors.length}
               subtitle="מוכנים לקבלת קריאה"
               icon={Truck}
               variant="info"
@@ -588,7 +662,7 @@ export default function Dashboard() {
             <div className="xl:col-span-2">
               <WorkQueueOverview calls={calls} isLoading={isLoading} />
             </div>
-            
+
             {/* KPI Column - Takes up 1/3 */}
             <div className="space-y-4">
               <Card className="hover:shadow-md transition-shadow">
@@ -601,14 +675,14 @@ export default function Dashboard() {
                     <span className="text-lg text-gray-500 mb-1">/ 5.0</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
-                    <div 
-                      className="bg-yellow-400 h-full rounded-full" 
+                    <div
+                      className="bg-yellow-400 h-full rounded-full"
                       style={{ width: `${(parseFloat(avgRating) / 5) * 100}%` }}
                     />
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base text-gray-600">זמן הגעה ממוצע (ETA)</CardTitle>
@@ -622,7 +696,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   {recentCallsWithEta.length > 0 && (
-                    <p className="text-xs text-gray-400 mt-2">מבוסס על {recentCallsWithEta.length} קריאות ב-7 ימים</p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      מבוסס על {recentCallsWithEta.length} קריאות ב-7 ימים
+                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -635,12 +711,16 @@ export default function Dashboard() {
                   <div className="flex items-center gap-3">
                     <TrendingUp className="w-8 h-8 text-green-500 opacity-80" />
                     <div>
-                      <span className="text-3xl font-bold text-gray-900">{fieldResolutionRate || '—'}%</span>
+                      <span className="text-3xl font-bold text-gray-900">
+                        {fieldResolutionRate || '—'}%
+                      </span>
                       <span className="text-sm text-gray-500 mr-1">ללא גרירה</span>
                     </div>
                   </div>
                   {recentCompleted.length > 0 && (
-                    <p className="text-xs text-gray-400 mt-2">מבוסס על {recentCompleted.length} קריאות ב-7 ימים</p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      מבוסס על {recentCompleted.length} קריאות ב-7 ימים
+                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -667,18 +747,39 @@ export default function Dashboard() {
                     <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                      <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fill: '#6b7280', fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fill: '#6b7280', fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#fff',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        }}
                         labelStyle={{ color: '#111827', fontWeight: 600 }}
                       />
-                      <Area type="monotone" dataKey="value" stroke="#ef4444" fillOpacity={1} fill="url(#colorValue)" strokeWidth={2} />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#ef4444"
+                        fillOpacity={1}
+                        fill="url(#colorValue)"
+                        strokeWidth={2}
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 )}
@@ -695,11 +796,25 @@ export default function Dashboard() {
                   <Skeleton className="h-full w-full" />
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <BarChart
+                      data={statusData}
+                      layout="vertical"
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                       <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" width={100} tick={{ fill: '#374151', fontSize: 13, fontWeight: 500 }} axisLine={false} tickLine={false} />
-                      <Tooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '8px' }} />
+                      <YAxis
+                        dataKey="name"
+                        type="category"
+                        width={100}
+                        tick={{ fill: '#374151', fontSize: 13, fontWeight: 500 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        cursor={{ fill: '#f9fafb' }}
+                        contentStyle={{ borderRadius: '8px' }}
+                      />
                       <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24}>
                         {statusData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -727,7 +842,9 @@ export default function Dashboard() {
                 columns={columns}
                 data={calls.slice(0, 10)}
                 isLoading={isLoading}
-                onRowClick={(row) => window.location.href = createPageUrl(`CallDetails?id=${row.id}`)}
+                onRowClick={(row) =>
+                  (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
+                }
                 emptyMessage="אין קריאות להצגה"
               />
             </CardContent>
@@ -800,7 +917,11 @@ export default function Dashboard() {
                     </div>
                   </Link>
                 </PermissionGuard>
-                <Button variant="ghost" onClick={() => setActiveTab('cases')} className="h-auto p-0 group">
+                <Button
+                  variant="ghost"
+                  onClick={() => setActiveTab('cases')}
+                  className="h-auto p-0 group"
+                >
                   <div className="w-full flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl border border-gray-100 group-hover:border-gray-300 group-hover:shadow-md transition-all cursor-pointer h-full">
                     <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
                       <List className="w-6 h-6 text-gray-600" />
@@ -844,13 +965,21 @@ export default function Dashboard() {
               <CardContent>
                 <div className="space-y-3">
                   {urgentCalls.slice(0, 5).map((call) => (
-                    <div key={call.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div
+                      key={call.id}
+                      className="flex items-center justify-between p-4 bg-white rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-shadow"
+                    >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <Link to={createPageUrl('CallDetails') + '?id=' + call.id} className="font-bold text-gray-900 hover:text-blue-600 hover:underline">
+                          <Link
+                            to={createPageUrl('CallDetails') + '?id=' + call.id}
+                            className="font-bold text-gray-900 hover:text-blue-600 hover:underline"
+                          >
                             {call.call_number || `#${call.id?.slice(-6)}`}
                           </Link>
-                          <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">דחוף</span>
+                          <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                            דחוף
+                          </span>
                         </div>
                         <p className="text-sm text-gray-600 flex items-center gap-2">
                           <span className="font-medium">{call.customer_name}</span>
@@ -861,7 +990,11 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3">
                         <StatusBadge status={call.call_status} size="sm" />
                         <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
-                          <Button size="sm" variant="outline" className="border-gray-200 hover:bg-gray-50">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-200 hover:bg-gray-50"
+                          >
                             <Eye className="w-4 h-4 ml-1" />
                             צפה
                           </Button>
@@ -886,7 +1019,9 @@ export default function Dashboard() {
                   columns={operatorCallColumns}
                   data={myOpenCalls}
                   isLoading={callsLoading}
-                  onRowClick={(row) => window.location.href = createPageUrl('CallDetails') + '?id=' + row.id}
+                  onRowClick={(row) =>
+                    (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
+                  }
                   emptyMessage="אין קריאות משויכות אליך כרגע"
                 />
               </CardContent>
@@ -903,7 +1038,9 @@ export default function Dashboard() {
                   columns={vendorColumns}
                   data={availableVendors}
                   isLoading={vendorsLoading}
-                  onRowClick={(row) => window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id}
+                  onRowClick={(row) =>
+                    (window.location.href = createPageUrl('ServiceProviders') + '?id=' + row.id)
+                  }
                   emptyMessage="אין ספקים זמינים כרגע"
                 />
               </CardContent>
@@ -952,15 +1089,21 @@ export default function Dashboard() {
                   <div className="text-xs text-gray-500 uppercase tracking-wide">סה״כ רשומות</div>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
-                  <div className="text-2xl font-bold text-blue-600">{filteredCalls.filter(c => openStatuses.includes(c.call_status)).length}</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {filteredCalls.filter((c) => openStatuses.includes(c.call_status)).length}
+                  </div>
                   <div className="text-xs text-blue-500 uppercase tracking-wide">פתוחות</div>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
-                  <div className="text-2xl font-bold text-green-600">{filteredCalls.filter(c => c.call_status === 'completed').length}</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {filteredCalls.filter((c) => c.call_status === 'completed').length}
+                  </div>
                   <div className="text-xs text-green-500 uppercase tracking-wide">הושלמו</div>
                 </div>
                 <div className="bg-red-50 p-4 rounded-lg text-center border border-red-100">
-                  <div className="text-2xl font-bold text-red-600">{filteredCalls.filter(c => c.call_status === 'cancelled').length}</div>
+                  <div className="text-2xl font-bold text-red-600">
+                    {filteredCalls.filter((c) => c.call_status === 'cancelled').length}
+                  </div>
                   <div className="text-xs text-red-500 uppercase tracking-wide">בוטלו</div>
                 </div>
               </div>
@@ -969,7 +1112,9 @@ export default function Dashboard() {
                 columns={columns}
                 data={filteredCalls}
                 isLoading={callsLoading}
-                onRowClick={(row) => window.location.href = createPageUrl('CallDetails') + '?id=' + row.id}
+                onRowClick={(row) =>
+                  (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
+                }
                 emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
               />
             </CardContent>

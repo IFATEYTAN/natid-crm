@@ -53,7 +53,7 @@ export const useAvailableVendors = () => {
     queryKey: ['vendors', 'available'],
     queryFn: async () => {
       const vendors = await getVendors();
-      return vendors.filter(v => v.is_active && v.is_available_now);
+      return vendors.filter((v) => v.is_active && v.is_available_now);
     },
     staleTime: 1000 * 60 * 1, // 1 minute - more frequent for availability
   });
@@ -109,11 +109,13 @@ export const useUpdateVendorAvailability = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, isAvailable }) => 
-      base44.entities.Vendor.update(id, { 
-        is_available_now: isAvailable,
-        availability_status: isAvailable ? 'available' : 'offline'
-      }),
+    mutationFn: ({ id, isAvailable, is_available_now, availability_status }) => {
+      const available = isAvailable !== undefined ? isAvailable : is_available_now;
+      return base44.entities.Vendor.update(id, {
+        is_available_now: available,
+        availability_status: availability_status || (available ? 'available' : 'offline'),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
       toast.success('זמינות הספק עודכנה');

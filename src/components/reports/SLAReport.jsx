@@ -1,8 +1,17 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import DataTable from '@/components/ui/DataTable';
-import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 const areaLabels = {
   center: 'מרכז',
@@ -10,19 +19,19 @@ const areaLabels = {
   south: 'דרום',
   jerusalem: 'ירושלים',
   sharon: 'שרון',
-  lowlands: 'שפלה'
+  lowlands: 'שפלה',
 };
 
 const issueLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'רכב עצר',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אזל דלק',
   dead_battery: 'מצבר ריק',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 export default function SLAReport({ calls }) {
@@ -30,10 +39,10 @@ export default function SLAReport({ calls }) {
   const byArea = {};
   const byIssueType = {};
 
-  calls.forEach(call => {
+  calls.forEach((call) => {
     const area = call.pickup_location_area || 'unknown';
     const issueType = call.issue_type || 'other';
-    
+
     if (!byArea[area]) {
       byArea[area] = { total: 0, onTime: 0, breached: 0, avgResponseTime: [] };
     }
@@ -64,27 +73,37 @@ export default function SLAReport({ calls }) {
   });
 
   // Calculate stats
-  const areaStats = Object.entries(byArea).map(([area, data]) => ({
-    area: areaLabels[area] || area,
-    total: data.total,
-    onTime: data.onTime,
-    breached: data.breached,
-    slaRate: data.total > 0 ? ((data.onTime / data.total) * 100).toFixed(1) : 0,
-    avgResponseTime: data.avgResponseTime.length > 0
-      ? Math.round(data.avgResponseTime.reduce((a, b) => a + b, 0) / data.avgResponseTime.length)
-      : 0
-  })).sort((a, b) => b.total - a.total);
+  const areaStats = Object.entries(byArea)
+    .map(([area, data]) => ({
+      area: areaLabels[area] || area,
+      total: data.total,
+      onTime: data.onTime,
+      breached: data.breached,
+      slaRate: data.total > 0 ? ((data.onTime / data.total) * 100).toFixed(1) : 0,
+      avgResponseTime:
+        data.avgResponseTime.length > 0
+          ? Math.round(
+              data.avgResponseTime.reduce((a, b) => a + b, 0) / data.avgResponseTime.length
+            )
+          : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
 
-  const issueStats = Object.entries(byIssueType).map(([issue, data]) => ({
-    issueType: issueLabels[issue] || issue,
-    total: data.total,
-    onTime: data.onTime,
-    breached: data.breached,
-    slaRate: data.total > 0 ? ((data.onTime / data.total) * 100).toFixed(1) : 0,
-    avgResponseTime: data.avgResponseTime.length > 0
-      ? Math.round(data.avgResponseTime.reduce((a, b) => a + b, 0) / data.avgResponseTime.length)
-      : 0
-  })).sort((a, b) => b.total - a.total);
+  const issueStats = Object.entries(byIssueType)
+    .map(([issue, data]) => ({
+      issueType: issueLabels[issue] || issue,
+      total: data.total,
+      onTime: data.onTime,
+      breached: data.breached,
+      slaRate: data.total > 0 ? ((data.onTime / data.total) * 100).toFixed(1) : 0,
+      avgResponseTime:
+        data.avgResponseTime.length > 0
+          ? Math.round(
+              data.avgResponseTime.reduce((a, b) => a + b, 0) / data.avgResponseTime.length
+            )
+          : 0,
+    }))
+    .sort((a, b) => b.total - a.total);
 
   const areaColumns = [
     { header: 'אזור', accessor: 'area' },
@@ -94,27 +113,25 @@ export default function SLAReport({ calls }) {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-[#E0E0E0] rounded-full h-2">
-            <div
-              className="bg-[#22C55E] h-2 rounded-full"
-              style={{ width: `${row.slaRate}%` }}
-            />
+            <div className="bg-[#22C55E] h-2 rounded-full" style={{ width: `${row.slaRate}%` }} />
           </div>
           <span className="text-sm font-medium">{row.slaRate}%</span>
         </div>
-      )
+      ),
     },
     {
       header: 'חריגות',
-      cell: (row) => row.breached > 0 ? (
-        <span className="text-[#FF6B6B] font-medium">{row.breached}</span>
-      ) : (
-        <span className="text-[#616161]">0</span>
-      )
+      cell: (row) =>
+        row.breached > 0 ? (
+          <span className="text-[#FF6B6B] font-medium">{row.breached}</span>
+        ) : (
+          <span className="text-[#616161]">0</span>
+        ),
     },
     {
       header: 'זמן תגובה ממוצע',
-      cell: (row) => `${row.avgResponseTime} דק'`
-    }
+      cell: (row) => `${row.avgResponseTime} דק'`,
+    },
   ];
 
   const issueColumns = [
@@ -125,26 +142,23 @@ export default function SLAReport({ calls }) {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-[#E0E0E0] rounded-full h-2">
-            <div
-              className="bg-[#22C55E] h-2 rounded-full"
-              style={{ width: `${row.slaRate}%` }}
-            />
+            <div className="bg-[#22C55E] h-2 rounded-full" style={{ width: `${row.slaRate}%` }} />
           </div>
           <span className="text-sm font-medium">{row.slaRate}%</span>
         </div>
-      )
+      ),
     },
     {
       header: 'זמן תגובה ממוצע',
-      cell: (row) => `${row.avgResponseTime} דק'`
-    }
+      cell: (row) => `${row.avgResponseTime} דק'`,
+    },
   ];
 
   // Prepare chart data
-  const chartData = areaStats.map(stat => ({
+  const chartData = areaStats.map((stat) => ({
     name: stat.area,
     'עמידה ב-SLA': parseFloat(stat.slaRate),
-    'זמן תגובה': stat.avgResponseTime
+    'זמן תגובה': stat.avgResponseTime,
   }));
 
   const totalCalls = calls.length;
@@ -184,7 +198,9 @@ export default function SLAReport({ calls }) {
           <CardContent className="pt-6 text-right" dir="rtl">
             <div className="text-sm text-[#616161]">אזור עם הכי הרבה חריגות</div>
             <div className="text-xl font-bold text-[#212121] mt-1">
-              {areaStats.length > 0 ? areaStats.sort((a, b) => b.breached - a.breached)[0].area : '-'}
+              {areaStats.length > 0
+                ? areaStats.sort((a, b) => b.breached - a.breached)[0].area
+                : '-'}
             </div>
           </CardContent>
         </Card>
@@ -193,31 +209,33 @@ export default function SLAReport({ calls }) {
       {/* Chart */}
       <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <CardHeader>
-          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">עמידה ב-SLA וזמני תגובה לפי אזור</CardTitle>
+          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">
+            עמידה ב-SLA וזמני תגובה לפי אזור
+          </CardTitle>
         </CardHeader>
         <CardContent dir="rtl">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData} margin={{ right: 30, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E0E0E0" />
-              <XAxis 
-                dataKey="name" 
+              <XAxis
+                dataKey="name"
                 tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
                 stroke="#E0E0E0"
                 reversed={true}
               />
-              <YAxis 
-                yAxisId="left" 
+              <YAxis
+                yAxisId="left"
                 tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
                 stroke="#E0E0E0"
                 orientation="right"
               />
-              <YAxis 
-                yAxisId="right" 
-                orientation="left" 
+              <YAxis
+                yAxisId="right"
+                orientation="left"
                 tick={{ fill: '#616161', fontFamily: 'Heebo', fontSize: 12 }}
                 stroke="#E0E0E0"
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
                   backgroundColor: '#FFFFFF',
                   border: '1px solid #E0E0E0',
@@ -226,7 +244,7 @@ export default function SLAReport({ calls }) {
                   fontFamily: 'Heebo',
                   fontSize: 14,
                   direction: 'rtl',
-                  textAlign: 'right'
+                  textAlign: 'right',
                 }}
               />
               <Legend wrapperStyle={{ fontFamily: 'Heebo', fontSize: 12 }} />
@@ -241,19 +259,11 @@ export default function SLAReport({ calls }) {
       <div className="grid lg:grid-cols-2 gap-6" dir="rtl">
         <div>
           <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">לפי אזור</h3>
-          <DataTable
-            columns={areaColumns}
-            data={areaStats}
-            emptyMessage="אין נתונים"
-          />
+          <DataTable columns={areaColumns} data={areaStats} emptyMessage="אין נתונים" />
         </div>
         <div>
           <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">לפי סוג תקלה</h3>
-          <DataTable
-            columns={issueColumns}
-            data={issueStats}
-            emptyMessage="אין נתונים"
-          />
+          <DataTable columns={issueColumns} data={issueStats} emptyMessage="אין נתונים" />
         </div>
       </div>
     </div>

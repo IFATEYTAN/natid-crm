@@ -2,17 +2,22 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
 import { Circle } from 'react-leaflet';
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { 
+import {
   MapPin,
-  Navigation,
   Phone,
   Eye,
   RefreshCw,
@@ -21,7 +26,7 @@ import {
   Users,
   Truck,
   AlertCircle,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -43,12 +48,12 @@ const createVendorMarker = (status, hasActiveCalls) => {
     available: '#2E7D32',
     busy: '#ED6C02',
     offline: '#616161',
-    inactive: '#9E9E9E'
+    inactive: '#9E9E9E',
   };
-  
+
   const color = colors[status] || '#616161';
   const pulseClass = hasActiveCalls ? 'animate-pulse' : '';
-  
+
   return L.divIcon({
     className: 'custom-vendor-marker',
     html: `
@@ -81,11 +86,11 @@ const createCallMarker = (status) => {
     awaiting_assignment: '#ED6C02',
     assigning: '#0288D1',
     vendor_enroute: '#2E7D32',
-    in_progress: '#FDD835'
+    in_progress: '#FDD835',
   };
-  
+
   const color = colors[status] || '#616161';
-  
+
   return L.divIcon({
     className: 'custom-call-marker',
     html: `
@@ -116,7 +121,7 @@ const createCallMarker = (status) => {
 export default function AllVendorsMap() {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [selectedTab, setSelectedTab] = useState('vendors'); // 'vendors' or 'calls'
-  
+
   // Filters
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [showRadius, setShowRadius] = useState(false);
@@ -153,31 +158,39 @@ export default function AllVendorsMap() {
   // Fetch all active calls
   const { data: allCalls = [], refetch: refetchCalls } = useQuery({
     queryKey: ['mapCalls'],
-    queryFn: () => base44.entities.Call.filter({ 
-      call_status: { $in: ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress'] }
-    }),
+    queryFn: () =>
+      base44.entities.Call.filter({
+        call_status: {
+          $in: [
+            'waiting_treatment',
+            'awaiting_assignment',
+            'assigning',
+            'vendor_enroute',
+            'in_progress',
+          ],
+        },
+      }),
     refetchInterval: 30000,
   });
 
-  const activeCalls = allCalls.filter(c => 
-    c.pickup_location_lat && 
-    c.pickup_location_lon
-  );
+  const activeCalls = allCalls.filter((c) => c.pickup_location_lat && c.pickup_location_lon);
 
   // Match vendors with their latest locations
   const vendorsWithLocations = useMemo(() => {
-    const mapped = vendors.map(vendor => {
-      const location = vendorLocations.find(loc => loc.vendor_id === vendor.id);
-      const vendorCalls = activeCalls.filter(call => call.assigned_vendor_id === vendor.id);
-      return {
-        ...vendor,
-        location,
-        activeCalls: vendorCalls.length,
-        hasLocation: !!location
-      };
-    }).filter(v => v.hasLocation);
+    const mapped = vendors
+      .map((vendor) => {
+        const location = vendorLocations.find((loc) => loc.vendor_id === vendor.id);
+        const vendorCalls = activeCalls.filter((call) => call.assigned_vendor_id === vendor.id);
+        return {
+          ...vendor,
+          location,
+          activeCalls: vendorCalls.length,
+          hasLocation: !!location,
+        };
+      })
+      .filter((v) => v.hasLocation);
 
-    return mapped.filter(v => {
+    return mapped.filter((v) => {
       // Availability filter
       if (showAvailableOnly && v.availability_status !== 'available') {
         return false;
@@ -185,9 +198,9 @@ export default function AllVendorsMap() {
 
       // Service Type filter
       if (serviceTypeFilter !== 'all') {
-         // Assuming service_type is an array or string. Handling both safely.
-         const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type];
-         if (!types.includes(serviceTypeFilter)) return false;
+        // Assuming service_type is an array or string. Handling both safely.
+        const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type];
+        if (!types.includes(serviceTypeFilter)) return false;
       }
 
       return true;
@@ -202,16 +215,16 @@ export default function AllVendorsMap() {
 
   const stats = {
     totalVendors: vendors.length,
-    availableVendors: vendors.filter(v => v.availability_status === 'available').length,
+    availableVendors: vendors.filter((v) => v.availability_status === 'available').length,
     activeVendors: vendorsWithLocations.length,
     activeCalls: activeCalls.length,
-    unassignedCalls: activeCalls.filter(c => !c.assigned_vendor_id).length
+    unassignedCalls: activeCalls.filter((c) => !c.assigned_vendor_id).length,
   };
 
   return (
     <div className="h-[calc(100vh-4rem)] relative" dir="rtl">
       {/* Sidebar */}
-      <div 
+      <div
         className={`
           absolute right-0 top-0 bottom-0 w-full sm:w-96 bg-white border-l border-[#E0E0E0] 
           shadow-lg z-[1000] transition-transform duration-300
@@ -223,8 +236,8 @@ export default function AllVendorsMap() {
           <div className="p-4 border-b border-[#E0E0E0]">
             <div className="flex items-center justify-between mb-4">
               <h1>מעקב ספקים</h1>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 onClick={() => setSidebarOpen(false)}
                 className="lg:hidden"
@@ -240,55 +253,63 @@ export default function AllVendorsMap() {
                   <Truck className="w-4 h-4 text-[var(--color-text-secondary)]" />
                   <span className="text-xs text-[var(--color-text-secondary)]">ספקים</span>
                 </div>
-                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.activeVendors}</div>
-                <div className="text-xs text-[var(--color-text-disabled)]">מתוך {stats.totalVendors}</div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {stats.activeVendors}
+                </div>
+                <div className="text-xs text-[var(--color-text-disabled)]">
+                  מתוך {stats.totalVendors}
+                </div>
               </div>
               <div className="card-base p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <AlertCircle className="w-4 h-4 text-[var(--color-status-urgent)]" />
                   <span className="text-xs text-[var(--color-text-secondary)]">קריאות</span>
                 </div>
-                <div className="text-2xl font-bold text-[var(--color-text-primary)]">{stats.activeCalls}</div>
-                <div className="text-xs text-[var(--color-text-disabled)]">{stats.unassignedCalls} לא משובצות</div>
+                <div className="text-2xl font-bold text-[var(--color-text-primary)]">
+                  {stats.activeCalls}
+                </div>
+                <div className="text-xs text-[var(--color-text-disabled)]">
+                  {stats.unassignedCalls} לא משובצות
+                </div>
               </div>
             </div>
 
             {/* Filters */}
             <div className="space-y-3 card-base p-4 mb-4">
-               <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="showAvailable" 
-                    checked={showAvailableOnly} 
-                    onCheckedChange={setShowAvailableOnly} 
-                  />
-                  <Label htmlFor="showAvailable" className="text-sm cursor-pointer">הצג זמינים בלבד</Label>
-               </div>
-               <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="showRadius" 
-                    checked={showRadius} 
-                    onCheckedChange={setShowRadius} 
-                  />
-                  <Label htmlFor="showRadius" className="text-sm cursor-pointer">הצג רדיוס כיסוי</Label>
-               </div>
-               <div>
-                 <Select value={serviceTypeFilter} onValueChange={setServiceTypeFilter}>
-                   <SelectTrigger className="h-8 text-sm bg-white border-[#E0E0E0]">
-                     <SelectValue placeholder="סוג שירות" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">כל השירותים</SelectItem>
-                     <SelectItem value="towing">גרירה</SelectItem>
-                     <SelectItem value="mechanic">ניידת שירות</SelectItem>
-                     <SelectItem value="tire_service">פנצ'ריה ניידת</SelectItem>
-                   </SelectContent>
-                 </Select>
-               </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="showAvailable"
+                  checked={showAvailableOnly}
+                  onCheckedChange={setShowAvailableOnly}
+                />
+                <Label htmlFor="showAvailable" className="text-sm cursor-pointer">
+                  הצג זמינים בלבד
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="showRadius" checked={showRadius} onCheckedChange={setShowRadius} />
+                <Label htmlFor="showRadius" className="text-sm cursor-pointer">
+                  הצג רדיוס כיסוי
+                </Label>
+              </div>
+              <div>
+                <Select value={serviceTypeFilter} onValueChange={setServiceTypeFilter}>
+                  <SelectTrigger className="h-8 text-sm bg-white border-[#E0E0E0]">
+                    <SelectValue placeholder="סוג שירות" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל השירותים</SelectItem>
+                    <SelectItem value="towing">גרירה</SelectItem>
+                    <SelectItem value="mechanic">ניידת שירות</SelectItem>
+                    <SelectItem value="tire_service">פנצ'ריה ניידת</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Tabs */}
             <div className="flex gap-2 mb-3">
-              <Button 
+              <Button
                 variant={selectedTab === 'vendors' ? 'default' : 'outline'}
                 size="sm"
                 className="flex-1"
@@ -297,7 +318,7 @@ export default function AllVendorsMap() {
                 <Users className="w-4 h-4 ml-1" />
                 ספקים ({vendorsWithLocations.length})
               </Button>
-              <Button 
+              <Button
                 variant={selectedTab === 'calls' ? 'default' : 'outline'}
                 size="sm"
                 className="flex-1"
@@ -308,12 +329,7 @@ export default function AllVendorsMap() {
               </Button>
             </div>
 
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full gap-2"
-              onClick={handleRefresh}
-            >
+            <Button variant="outline" size="sm" className="w-full gap-2" onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4" />
               רענן
             </Button>
@@ -328,21 +344,24 @@ export default function AllVendorsMap() {
                   <p>אין ספקים עם מיקום זמין</p>
                 </div>
               ) : (
-                vendorsWithLocations.map(vendor => (
+                vendorsWithLocations.map((vendor) => (
                   <Card key={vendor.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
-                          <Link 
+                          <Link
                             to={createPageUrl(`VendorProfile?id=${vendor.id}`)}
                             className="font-bold text-[#212121] hover:underline block mb-1"
                           >
                             {vendor.vendor_name}
                           </Link>
-                          <StatusBadge status={vendor.availability_status || 'available'} size="sm" />
+                          <StatusBadge
+                            status={vendor.availability_status || 'available'}
+                            size="sm"
+                          />
                         </div>
                       </div>
-                      
+
                       <div className="space-y-1 text-sm">
                         {vendor.activeCalls > 0 && (
                           <div className="flex items-center gap-1 text-[#ED6C02]">
@@ -354,11 +373,17 @@ export default function AllVendorsMap() {
                           <div className="flex items-center gap-1 text-[#616161]">
                             <Clock className="w-3 h-3" />
                             <span className="text-xs">
-                              עדכון: {format(parseISO(vendor.location.created_date), 'HH:mm', { locale: he })}
+                              עדכון:{' '}
+                              {format(parseISO(vendor.location.created_date), 'HH:mm', {
+                                locale: he,
+                              })}
                             </span>
                           </div>
                         )}
-                        <a href={`tel:${vendor.phone}`} className="flex items-center gap-1 text-[#212121]">
+                        <a
+                          href={`tel:${vendor.phone}`}
+                          className="flex items-center gap-1 text-[#212121]"
+                        >
                           <Phone className="w-3 h-3" />
                           <span className="text-xs">{vendor.phone}</span>
                         </a>
@@ -367,58 +392,58 @@ export default function AllVendorsMap() {
                   </Card>
                 ))
               )
+            ) : activeCalls.length === 0 ? (
+              <div className="text-center text-[#616161] mt-8">
+                <MapPin className="w-12 h-12 mx-auto mb-2 text-[#9E9E9E]" />
+                <p>אין קריאות פעילות</p>
+              </div>
             ) : (
-              activeCalls.length === 0 ? (
-                <div className="text-center text-[#616161] mt-8">
-                  <MapPin className="w-12 h-12 mx-auto mb-2 text-[#9E9E9E]" />
-                  <p>אין קריאות פעילות</p>
-                </div>
-              ) : (
-                activeCalls.map(call => (
-                  <Card key={call.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <Link 
+              activeCalls.map((call) => (
+                <Card key={call.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <Link
                         to={createPageUrl(`CaseDetails?id=${call.id}`)}
                         className="font-bold text-[#212121] hover:underline"
-                        >
-                          {call.call_number || `#${call.id?.slice(-6)}`}
-                        </Link>
-                        <StatusBadge status={call.call_status} size="sm" />
-                      </div>
-                      
-                      <div className="space-y-1 text-sm">
-                        <p className="font-medium">{call.customer_name}</p>
-                        <p className="text-[#616161] text-xs">{call.pickup_location_city}</p>
-                        {call.assigned_vendor_name && (
-                          <div className="flex items-center gap-1 text-[#2E7D32]">
-                            <Truck className="w-3 h-3" />
-                            <span className="text-xs">{call.assigned_vendor_name}</span>
-                          </div>
-                        )}
-                      </div>
+                      >
+                        {call.call_number || `#${call.id?.slice(-6)}`}
+                      </Link>
+                      <StatusBadge status={call.call_status} size="sm" />
+                    </div>
 
-                      <div className="flex gap-2 mt-2">
-                        <Link to={createPageUrl(`CaseDetails?id=${call.id}`)} className="flex-1">
-                          <Button variant="outline" size="sm" className="w-full gap-1">
-                            <Eye className="w-3 h-3" />
-                            פרטים
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )
+                    <div className="space-y-1 text-sm">
+                      <p className="font-medium">{call.customer_name}</p>
+                      <p className="text-[#616161] text-xs">{call.pickup_location_city}</p>
+                      {call.assigned_vendor_name && (
+                        <div className="flex items-center gap-1 text-[#2E7D32]">
+                          <Truck className="w-3 h-3" />
+                          <span className="text-xs">{call.assigned_vendor_name}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 mt-2">
+                      <Link to={createPageUrl(`CaseDetails?id=${call.id}`)} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full gap-1">
+                          <Eye className="w-3 h-3" />
+                          פרטים
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
             )}
           </div>
         </div>
       </div>
 
       {/* Map */}
-      <div className={`absolute top-0 bottom-0 left-0 transition-all duration-300 ${sidebarOpen ? 'right-0 sm:right-96' : 'right-0'}`}>
+      <div
+        className={`absolute top-0 bottom-0 left-0 transition-all duration-300 ${sidebarOpen ? 'right-0 sm:right-96' : 'right-0'}`}
+      >
         {!sidebarOpen && (
-          <Button 
+          <Button
             className="absolute top-4 right-4 z-[1001] bg-white shadow-lg"
             variant="outline"
             size="icon"
@@ -438,65 +463,82 @@ export default function AllVendorsMap() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
-          
+
           {/* Vendor Markers */}
-          {vendorsWithLocations.map(vendor => (
-            vendor.location && (
-              <Marker
-                key={`vendor-${vendor.id}`}
-                position={[vendor.location.latitude, vendor.location.longitude]}
-                icon={createVendorMarker(vendor.availability_status, vendor.activeCalls > 0)}
-              >
-                <Popup>
-                  <div className="text-right" dir="rtl">
-                    <h3 className="font-bold mb-2 text-[var(--color-text-primary)]">
-                      {vendor.vendor_name}
-                    </h3>
-                    <div className="space-y-1 text-sm mb-3">
-                      <div className="flex items-center gap-2">
-                        <StatusBadge status={vendor.availability_status || 'available'} size="sm" />
+          {vendorsWithLocations.map(
+            (vendor) =>
+              vendor.location && (
+                <Marker
+                  key={`vendor-${vendor.id}`}
+                  position={[vendor.location.latitude, vendor.location.longitude]}
+                  icon={createVendorMarker(vendor.availability_status, vendor.activeCalls > 0)}
+                >
+                  <Popup>
+                    <div className="text-right" dir="rtl">
+                      <h3 className="font-bold mb-2 text-[var(--color-text-primary)]">
+                        {vendor.vendor_name}
+                      </h3>
+                      <div className="space-y-1 text-sm mb-3">
+                        <div className="flex items-center gap-2">
+                          <StatusBadge
+                            status={vendor.availability_status || 'available'}
+                            size="sm"
+                          />
+                        </div>
+                        {vendor.activeCalls > 0 && (
+                          <p className="text-[var(--color-status-urgent)] font-medium">
+                            {vendor.activeCalls} קריאות פעילות
+                          </p>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
+                          <a
+                            href={`tel:${vendor.phone}`}
+                            className="text-[var(--color-status-normal)] hover:underline"
+                          >
+                            {vendor.phone}
+                          </a>
+                        </div>
+                        {vendor.location.created_date && (
+                          <p className="text-xs text-[var(--color-text-disabled)]">
+                            עדכון:{' '}
+                            {format(parseISO(vendor.location.created_date), 'HH:mm dd/MM', {
+                              locale: he,
+                            })}
+                          </p>
+                        )}
                       </div>
-                      {vendor.activeCalls > 0 && (
-                        <p className="text-[var(--color-status-urgent)] font-medium">
-                          {vendor.activeCalls} קריאות פעילות
-                        </p>
-                      )}
-                      <div className="flex items-center gap-1">
-                        <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
-                        <a href={`tel:${vendor.phone}`} className="text-[var(--color-status-normal)] hover:underline">
-                          {vendor.phone}
-                        </a>
-                      </div>
-                      {vendor.location.created_date && (
-                        <p className="text-xs text-[var(--color-text-disabled)]">
-                          עדכון: {format(parseISO(vendor.location.created_date), 'HH:mm dd/MM', { locale: he })}
-                        </p>
-                      )}
+                      <Link to={createPageUrl(`VendorProfile?id=${vendor.id}`)}>
+                        <Button size="sm" className="w-full btn-secondary h-8">
+                          פרטים מלאים
+                        </Button>
+                      </Link>
                     </div>
-                    <Link to={createPageUrl(`VendorProfile?id=${vendor.id}`)}>
-                      <Button size="sm" className="w-full btn-secondary h-8">
-                        פרטים מלאים
-                      </Button>
-                    </Link>
-                  </div>
-                    </Popup>
-                    </Marker>
-                    )
-                    ))}
-                    {/* Coverage Radius Circle */}
-                    {showRadius && vendorsWithLocations.map(vendor => (
-                    vendor.location && (
-                    <Circle 
+                  </Popup>
+                </Marker>
+              )
+          )}
+          {/* Coverage Radius Circle */}
+          {showRadius &&
+            vendorsWithLocations.map(
+              (vendor) =>
+                vendor.location && (
+                  <Circle
                     key={`circle-${vendor.id}`}
-                    center={[vendor.location.latitude, vendor.location.longitude]} 
+                    center={[vendor.location.latitude, vendor.location.longitude]}
                     radius={20000} // Default 20km radius for visualization
-                    pathOptions={{ color: '#2196F3', fillColor: '#2196F3', fillOpacity: 0.1, weight: 1 }} 
-                    />
-                    )
-                    ))}
+                    pathOptions={{
+                      color: '#2196F3',
+                      fillColor: '#2196F3',
+                      fillOpacity: 0.1,
+                      weight: 1,
+                    }}
+                  />
+                )
+            )}
 
           {/* Call Markers */}
-          {activeCalls.map(call => (
+          {activeCalls.map((call) => (
             <Marker
               key={`call-${call.id}`}
               position={[call.pickup_location_lat, call.pickup_location_lon]}
@@ -515,7 +557,10 @@ export default function AllVendorsMap() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Phone className="w-3 h-3 text-[var(--color-text-secondary)]" />
-                      <a href={`tel:${call.customer_phone}`} className="text-[var(--color-status-normal)] hover:underline">
+                      <a
+                        href={`tel:${call.customer_phone}`}
+                        className="text-[var(--color-status-normal)] hover:underline"
+                      >
                         {call.customer_phone}
                       </a>
                     </div>

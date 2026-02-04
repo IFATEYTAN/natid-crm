@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Bell, Plus, Trash2, Save, AlertTriangle, MessageSquare, Mail, Smartphone } from 'lucide-react';
+} from '@/components/ui/dialog';
+import { Bell, Plus, Trash2, AlertTriangle, MessageSquare, Mail, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 
 const eventTemplates = [
@@ -31,8 +31,8 @@ const eventTemplates = [
     description: 'התראה כאשר קריאה לא שובצה תוך זמן מוגדר',
     defaultConditions: {
       timeThreshold: 10,
-      priority: 'all'
-    }
+      priority: 'all',
+    },
   },
   {
     id: 'sla_breach',
@@ -41,8 +41,8 @@ const eventTemplates = [
     description: 'התראה לפני חריגת SLA',
     defaultConditions: {
       minutesBefore: 5,
-      priority: 'all'
-    }
+      priority: 'all',
+    },
   },
   {
     id: 'low_rating',
@@ -50,15 +50,15 @@ const eventTemplates = [
     event: 'low_rating',
     description: 'התראה על דירוג נמוך מלקוח',
     defaultConditions: {
-      ratingThreshold: 3
-    }
+      ratingThreshold: 3,
+    },
   },
   {
     id: 'call_cancelled',
     name: 'קריאה בוטלה',
     event: 'call_cancelled',
     description: 'התראה כאשר קריאה מבוטלת',
-    defaultConditions: {}
+    defaultConditions: {},
   },
   {
     id: 'vendor_delayed',
@@ -66,9 +66,9 @@ const eventTemplates = [
     event: 'vendor_delayed',
     description: 'התראה כאשר ספק מאחר מעבר לזמן משוער',
     defaultConditions: {
-      delayMinutes: 15
-    }
-  }
+      delayMinutes: 15,
+    },
+  },
 ];
 
 const defaultNotification = {
@@ -79,7 +79,7 @@ const defaultNotification = {
   channels: {
     sms: false,
     email: true,
-    inApp: true
+    inApp: true,
   },
   recipients: ['manager'],
   conditions: {
@@ -88,12 +88,12 @@ const defaultNotification = {
     area: 'all',
     radius: null,
     lat: null,
-    lon: null
+    lon: null,
   },
   message: {
     title: 'התראה',
-    body: 'אירוע חדש במערכת'
-  }
+    body: 'אירוע חדש במערכת',
+  },
 };
 
 export default function NotificationSettings() {
@@ -101,8 +101,7 @@ export default function NotificationSettings() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingNotification, setEditingNotification] = useState(null);
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   // Fetch settings from DB
   const { data: dbSettings, isLoading } = useQuery({
@@ -118,7 +117,8 @@ export default function NotificationSettings() {
 
   const saveMutation = useMutation({
     mutationFn: (setting) => {
-      if (setting.id && typeof setting.id === 'string' && setting.id.length > 10) { // Check if it's a real ID
+      if (setting.id && typeof setting.id === 'string' && setting.id.length > 10) {
+        // Check if it's a real ID
         return base44.entities.NotificationSetting.update(setting.id, setting);
       } else {
         // Remove temp ID
@@ -131,7 +131,7 @@ export default function NotificationSettings() {
       toast.success('ההתראה נשמרה');
       setIsDialogOpen(false);
       setEditingNotification(null);
-    }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -139,7 +139,7 @@ export default function NotificationSettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
       toast.success('ההתראה נמחקה');
-    }
+    },
   });
 
   const handleSave = () => {
@@ -148,7 +148,7 @@ export default function NotificationSettings() {
   };
 
   const handleAddNotification = (template = null) => {
-    const newNotification = template 
+    const newNotification = template
       ? {
           ...defaultNotification,
           id: Date.now(),
@@ -157,11 +157,11 @@ export default function NotificationSettings() {
           conditions: { ...defaultNotification.conditions, ...template.defaultConditions },
           message: {
             title: template.name,
-            body: template.description
-          }
+            body: template.description,
+          },
         }
       : { ...defaultNotification, id: Date.now() };
-    
+
     setEditingNotification(newNotification);
     setIsDialogOpen(true);
   };
@@ -176,13 +176,13 @@ export default function NotificationSettings() {
       toast.error('נא למלא שם להתראה');
       return;
     }
-    
+
     // Map to entity structure
     const settingData = {
       ...editingNotification,
-      message_template: editingNotification.message // Map UI 'message' to DB 'message_template'
+      message_template: editingNotification.message, // Map UI 'message' to DB 'message_template'
     };
-    
+
     saveMutation.mutate(settingData);
   };
 
@@ -193,9 +193,7 @@ export default function NotificationSettings() {
   };
 
   const toggleNotification = (id) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, enabled: !n.enabled } : n
-    ));
+    setNotifications(notifications.map((n) => (n.id === id ? { ...n, enabled: !n.enabled } : n)));
   };
 
   return (
@@ -207,10 +205,7 @@ export default function NotificationSettings() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
-              className="btn-primary gap-2"
-              onClick={() => handleAddNotification()}
-            >
+            <Button className="btn-primary gap-2" onClick={() => handleAddNotification()}>
               <Plus className="w-4 h-4" />
               התראה חדשה
             </Button>
@@ -219,7 +214,7 @@ export default function NotificationSettings() {
             <DialogHeader>
               <DialogTitle>הגדרת התראה</DialogTitle>
             </DialogHeader>
-            
+
             {editingNotification && (
               <div className="space-y-6">
                 {/* Basic Info */}
@@ -228,10 +223,12 @@ export default function NotificationSettings() {
                     <Label>שם ההתראה</Label>
                     <Input
                       value={editingNotification.name}
-                      onChange={(e) => setEditingNotification({
-                        ...editingNotification,
-                        name: e.target.value
-                      })}
+                      onChange={(e) =>
+                        setEditingNotification({
+                          ...editingNotification,
+                          name: e.target.value,
+                        })
+                      }
                       placeholder="קריאה לא שובצה"
                       className="mt-1"
                     />
@@ -241,10 +238,12 @@ export default function NotificationSettings() {
                     <Label>סוג אירוע</Label>
                     <Select
                       value={editingNotification.event}
-                      onValueChange={(value) => setEditingNotification({
-                        ...editingNotification,
-                        event: value
-                      })}
+                      onValueChange={(value) =>
+                        setEditingNotification({
+                          ...editingNotification,
+                          event: value,
+                        })
+                      }
                     >
                       <SelectTrigger className="mt-1">
                         <SelectValue />
@@ -271,10 +270,12 @@ export default function NotificationSettings() {
                       </div>
                       <Switch
                         checked={editingNotification.channels.sms}
-                        onCheckedChange={(checked) => setEditingNotification({
-                          ...editingNotification,
-                          channels: { ...editingNotification.channels, sms: checked }
-                        })}
+                        onCheckedChange={(checked) =>
+                          setEditingNotification({
+                            ...editingNotification,
+                            channels: { ...editingNotification.channels, sms: checked },
+                          })
+                        }
                       />
                     </div>
                     <div className="flex items-center justify-between">
@@ -284,10 +285,12 @@ export default function NotificationSettings() {
                       </div>
                       <Switch
                         checked={editingNotification.channels.email}
-                        onCheckedChange={(checked) => setEditingNotification({
-                          ...editingNotification,
-                          channels: { ...editingNotification.channels, email: checked }
-                        })}
+                        onCheckedChange={(checked) =>
+                          setEditingNotification({
+                            ...editingNotification,
+                            channels: { ...editingNotification.channels, email: checked },
+                          })
+                        }
                       />
                     </div>
                     <div className="flex items-center justify-between">
@@ -297,10 +300,12 @@ export default function NotificationSettings() {
                       </div>
                       <Switch
                         checked={editingNotification.channels.inApp}
-                        onCheckedChange={(checked) => setEditingNotification({
-                          ...editingNotification,
-                          channels: { ...editingNotification.channels, inApp: checked }
-                        })}
+                        onCheckedChange={(checked) =>
+                          setEditingNotification({
+                            ...editingNotification,
+                            channels: { ...editingNotification.channels, inApp: checked },
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -314,10 +319,12 @@ export default function NotificationSettings() {
                       <Label>עדיפות קריאה</Label>
                       <Select
                         value={editingNotification.conditions.priority}
-                        onValueChange={(value) => setEditingNotification({
-                          ...editingNotification,
-                          conditions: { ...editingNotification.conditions, priority: value }
-                        })}
+                        onValueChange={(value) =>
+                          setEditingNotification({
+                            ...editingNotification,
+                            conditions: { ...editingNotification.conditions, priority: value },
+                          })
+                        }
                       >
                         <SelectTrigger className="mt-1">
                           <SelectValue />
@@ -337,13 +344,15 @@ export default function NotificationSettings() {
                         <Input
                           type="number"
                           value={editingNotification.conditions.timeThreshold}
-                          onChange={(e) => setEditingNotification({
-                            ...editingNotification,
-                            conditions: { 
-                              ...editingNotification.conditions, 
-                              timeThreshold: parseInt(e.target.value) 
-                            }
-                          })}
+                          onChange={(e) =>
+                            setEditingNotification({
+                              ...editingNotification,
+                              conditions: {
+                                ...editingNotification.conditions,
+                                timeThreshold: parseInt(e.target.value),
+                              },
+                            })
+                          }
                           className="mt-1"
                         />
                       </div>
@@ -355,13 +364,15 @@ export default function NotificationSettings() {
                         <Input
                           type="number"
                           value={editingNotification.conditions.minutesBefore || 5}
-                          onChange={(e) => setEditingNotification({
-                            ...editingNotification,
-                            conditions: { 
-                              ...editingNotification.conditions, 
-                              minutesBefore: parseInt(e.target.value) 
-                            }
-                          })}
+                          onChange={(e) =>
+                            setEditingNotification({
+                              ...editingNotification,
+                              conditions: {
+                                ...editingNotification.conditions,
+                                minutesBefore: parseInt(e.target.value),
+                              },
+                            })
+                          }
                           className="mt-1"
                         />
                       </div>
@@ -371,10 +382,12 @@ export default function NotificationSettings() {
                       <Label>אזור</Label>
                       <Select
                         value={editingNotification.conditions.area}
-                        onValueChange={(value) => setEditingNotification({
-                          ...editingNotification,
-                          conditions: { ...editingNotification.conditions, area: value }
-                        })}
+                        onValueChange={(value) =>
+                          setEditingNotification({
+                            ...editingNotification,
+                            conditions: { ...editingNotification.conditions, area: value },
+                          })
+                        }
                       >
                         <SelectTrigger className="mt-1">
                           <SelectValue />
@@ -390,45 +403,49 @@ export default function NotificationSettings() {
                     </div>
 
                     <div className="pt-2 border-t">
-                      <Label className="text-sm text-[#616161]">
-                        מיקום ספציפי (אופציונלי)
-                      </Label>
+                      <Label className="text-sm text-[#616161]">מיקום ספציפי (אופציונלי)</Label>
                       <div className="grid grid-cols-3 gap-2 mt-2">
                         <Input
                           type="number"
                           placeholder="Lat"
                           value={editingNotification.conditions.lat || ''}
-                          onChange={(e) => setEditingNotification({
-                            ...editingNotification,
-                            conditions: { 
-                              ...editingNotification.conditions, 
-                              lat: e.target.value ? parseFloat(e.target.value) : null
-                            }
-                          })}
+                          onChange={(e) =>
+                            setEditingNotification({
+                              ...editingNotification,
+                              conditions: {
+                                ...editingNotification.conditions,
+                                lat: e.target.value ? parseFloat(e.target.value) : null,
+                              },
+                            })
+                          }
                         />
                         <Input
                           type="number"
                           placeholder="Lon"
                           value={editingNotification.conditions.lon || ''}
-                          onChange={(e) => setEditingNotification({
-                            ...editingNotification,
-                            conditions: { 
-                              ...editingNotification.conditions, 
-                              lon: e.target.value ? parseFloat(e.target.value) : null
-                            }
-                          })}
+                          onChange={(e) =>
+                            setEditingNotification({
+                              ...editingNotification,
+                              conditions: {
+                                ...editingNotification.conditions,
+                                lon: e.target.value ? parseFloat(e.target.value) : null,
+                              },
+                            })
+                          }
                         />
                         <Input
                           type="number"
                           placeholder="רדיוס (קמ)"
                           value={editingNotification.conditions.radius || ''}
-                          onChange={(e) => setEditingNotification({
-                            ...editingNotification,
-                            conditions: { 
-                              ...editingNotification.conditions, 
-                              radius: e.target.value ? parseInt(e.target.value) : null
-                            }
-                          })}
+                          onChange={(e) =>
+                            setEditingNotification({
+                              ...editingNotification,
+                              conditions: {
+                                ...editingNotification.conditions,
+                                radius: e.target.value ? parseInt(e.target.value) : null,
+                              },
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -443,10 +460,12 @@ export default function NotificationSettings() {
                       <Label>כותרת</Label>
                       <Input
                         value={editingNotification.message.title}
-                        onChange={(e) => setEditingNotification({
-                          ...editingNotification,
-                          message: { ...editingNotification.message, title: e.target.value }
-                        })}
+                        onChange={(e) =>
+                          setEditingNotification({
+                            ...editingNotification,
+                            message: { ...editingNotification.message, title: e.target.value },
+                          })
+                        }
                         className="mt-1"
                       />
                     </div>
@@ -454,10 +473,12 @@ export default function NotificationSettings() {
                       <Label>תוכן</Label>
                       <Textarea
                         value={editingNotification.message.body}
-                        onChange={(e) => setEditingNotification({
-                          ...editingNotification,
-                          message: { ...editingNotification.message, body: e.target.value }
-                        })}
+                        onChange={(e) =>
+                          setEditingNotification({
+                            ...editingNotification,
+                            message: { ...editingNotification.message, body: e.target.value },
+                          })
+                        }
                         rows={3}
                         className="mt-1"
                       />
@@ -486,7 +507,7 @@ export default function NotificationSettings() {
       <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
         <h3 className="mb-4">תבניות מהירות</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {eventTemplates.map(template => (
+          {eventTemplates.map((template) => (
             <div
               key={template.id}
               className="p-4 border border-[#E5E7EB] rounded-lg hover:border-[#D1D5DB] hover:bg-[#F9FAFB] cursor-pointer transition-colors"
@@ -501,7 +522,7 @@ export default function NotificationSettings() {
 
       {/* Active Notifications */}
       <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
-        <h3 className="mb-4">התראות פעילות ({notifications.filter(n => n.enabled).length})</h3>
+        <h3 className="mb-4">התראות פעילות ({notifications.filter((n) => n.enabled).length})</h3>
         {notifications.length === 0 ? (
           <div className="text-center py-8 text-[#6B7280]">
             <Bell className="w-12 h-12 mx-auto mb-3 text-[#9CA3AF]" />
@@ -510,7 +531,7 @@ export default function NotificationSettings() {
           </div>
         ) : (
           <div className="space-y-3">
-            {notifications.map(notification => (
+            {notifications.map((notification) => (
               <div
                 key={notification.id}
                 className="flex items-center justify-between p-4 border border-[#E5E7EB] rounded-lg"
@@ -524,13 +545,19 @@ export default function NotificationSettings() {
                     <h4 className="font-medium text-sm text-[#111827]">{notification.name}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       {notification.channels.sms && (
-                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">SMS</span>
+                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">
+                          SMS
+                        </span>
                       )}
                       {notification.channels.email && (
-                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">Email</span>
+                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">
+                          Email
+                        </span>
                       )}
                       {notification.channels.inApp && (
-                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">App</span>
+                        <span className="text-xs bg-[#F3F4F6] text-[#374151] px-2 py-0.5 rounded">
+                          App
+                        </span>
                       )}
                       {notification.conditions.priority !== 'all' && (
                         <span className="text-xs bg-[#FEF3C7] text-[#92400E] px-2 py-0.5 rounded">
@@ -561,8 +588,6 @@ export default function NotificationSettings() {
           </div>
         )}
       </div>
-
-
 
       {/* Info */}
       <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5">

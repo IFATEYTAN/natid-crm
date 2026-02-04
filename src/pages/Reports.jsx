@@ -1,16 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   BarChart,
   Bar,
@@ -23,7 +23,7 @@ import {
   Line,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from 'recharts';
 import {
   BarChart3,
@@ -34,7 +34,7 @@ import {
   Truck,
   Calendar,
   Download,
-  Lock
+  Lock,
 } from 'lucide-react';
 import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -48,7 +48,7 @@ export default function ReportsPage() {
   const [dateRange, setDateRange] = useState('30');
   const { hasPermission, canAccessReport } = usePermissions();
   const { logExport, logSensitiveAccess } = useAuditLog();
-  
+
   const canViewFinancial = hasPermission('reports', 'financial');
   const canExport = hasPermission('reports', 'export');
 
@@ -71,31 +71,34 @@ export default function ReportsPage() {
   const filteredCalls = useMemo(() => {
     const days = parseInt(dateRange);
     const cutoffDate = subDays(new Date(), days);
-    return calls.filter(call => new Date(call.created_date) >= cutoffDate);
+    return calls.filter((call) => new Date(call.created_date) >= cutoffDate);
   }, [calls, dateRange]);
 
   // Stats
   const stats = useMemo(() => {
-    const completed = filteredCalls.filter(c => c.call_status === 'completed').length;
-    const cancelled = filteredCalls.filter(c => c.call_status === 'cancelled').length;
-    const avgTime = filteredCalls
-      .filter(c => c.time_to_completion)
-      .reduce((sum, c) => sum + c.time_to_completion, 0) / 
-      (filteredCalls.filter(c => c.time_to_completion).length || 1);
+    const completed = filteredCalls.filter((c) => c.call_status === 'completed').length;
+    const cancelled = filteredCalls.filter((c) => c.call_status === 'cancelled').length;
+    const avgTime =
+      filteredCalls
+        .filter((c) => c.time_to_completion)
+        .reduce((sum, c) => sum + c.time_to_completion, 0) /
+      (filteredCalls.filter((c) => c.time_to_completion).length || 1);
 
     return {
       total: filteredCalls.length,
       completed,
       cancelled,
-      completionRate: filteredCalls.length ? Math.round((completed / filteredCalls.length) * 100) : 0,
-      avgCompletionTime: Math.round(avgTime)
+      completionRate: filteredCalls.length
+        ? Math.round((completed / filteredCalls.length) * 100)
+        : 0,
+      avgCompletionTime: Math.round(avgTime),
     };
   }, [filteredCalls]);
 
   // Calls by status chart data
   const statusChartData = useMemo(() => {
     const statusCounts = {};
-    filteredCalls.forEach(call => {
+    filteredCalls.forEach((call) => {
       const status = call.call_status || 'unknown';
       statusCounts[status] = (statusCounts[status] || 0) + 1;
     });
@@ -106,12 +109,12 @@ export default function ReportsPage() {
       vendor_enroute: 'בדרך',
       in_progress: 'בטיפול',
       completed: 'הושלם',
-      cancelled: 'בוטל'
+      cancelled: 'בוטל',
     };
 
     return Object.entries(statusCounts).map(([status, count]) => ({
       name: statusLabels[status] || status,
-      value: count
+      value: count,
     }));
   }, [filteredCalls]);
 
@@ -120,18 +123,18 @@ export default function ReportsPage() {
     const days = parseInt(dateRange);
     const interval = eachDayOfInterval({
       start: subDays(new Date(), days),
-      end: new Date()
+      end: new Date(),
     });
 
-    return interval.map(day => {
+    return interval.map((day) => {
       const dayStr = format(day, 'yyyy-MM-dd');
-      const dayCount = filteredCalls.filter(call => 
-        format(new Date(call.created_date), 'yyyy-MM-dd') === dayStr
+      const dayCount = filteredCalls.filter(
+        (call) => format(new Date(call.created_date), 'yyyy-MM-dd') === dayStr
       ).length;
 
       return {
         date: format(day, 'dd/MM'),
-        קריאות: dayCount
+        קריאות: dayCount,
       };
     });
   }, [filteredCalls, dateRange]);
@@ -139,14 +142,14 @@ export default function ReportsPage() {
   // Vendor performance
   const vendorPerformance = useMemo(() => {
     const vendorStats = {};
-    
-    filteredCalls.forEach(call => {
+
+    filteredCalls.forEach((call) => {
       if (call.assigned_vendor_id) {
         if (!vendorStats[call.assigned_vendor_id]) {
           vendorStats[call.assigned_vendor_id] = {
             name: call.assigned_vendor_name || 'לא ידוע',
             total: 0,
-            completed: 0
+            completed: 0,
           };
         }
         vendorStats[call.assigned_vendor_id].total++;
@@ -167,15 +170,15 @@ export default function ReportsPage() {
     const typeLabels = {
       mechanical: 'תקלה מכנית',
       stopped_driving: 'רכב לא נוסע',
-      flat_tire: 'פנצ\'ר',
+      flat_tire: "פנצ'ר",
       accident: 'תאונה',
       no_fuel: 'אין דלק',
       dead_battery: 'מצבר',
       locked_keys: 'מפתחות',
-      other: 'אחר'
+      other: 'אחר',
     };
 
-    filteredCalls.forEach(call => {
+    filteredCalls.forEach((call) => {
       const type = call.issue_type || 'other';
       typeCounts[type] = (typeCounts[type] || 0) + 1;
     });
@@ -183,7 +186,7 @@ export default function ReportsPage() {
     return Object.entries(typeCounts)
       .map(([type, count]) => ({
         name: typeLabels[type] || type,
-        value: count
+        value: count,
       }))
       .sort((a, b) => b.value - a.value);
   }, [filteredCalls]);
@@ -210,8 +213,8 @@ export default function ReportsPage() {
             </SelectContent>
           </Select>
           <PermissionGuard category="reports" permission="export">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="gap-2"
               onClick={() => {
                 logExport('Reports', `ייצוא דוח - ${dateRange} ימים`);
@@ -296,10 +299,10 @@ export default function ReportsPage() {
                   <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="קריאות" 
-                    stroke="#3b82f6" 
+                  <Line
+                    type="monotone"
+                    dataKey="קריאות"
+                    stroke="#3b82f6"
                     strokeWidth={2}
                     dot={{ fill: '#3b82f6' }}
                   />
@@ -370,7 +373,13 @@ export default function ReportsPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={vendorPerformance}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 10 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
                     <Bar dataKey="total" name="סה״כ" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -393,25 +402,30 @@ export default function ReportsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-[#6b7280] mb-4">
-              מידע פיננסי רגיש - נגיש למורשים בלבד
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg text-center">
-                <div className="text-2xl font-bold text-[#111827]">₪{(stats.total * 150).toLocaleString()}</div>
-                <div className="text-xs text-[#6b7280]">הכנסות משוערות</div>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg text-center">
-                <div className="text-2xl font-bold text-[#111827]">₪{(stats.completed * 80).toLocaleString()}</div>
-                <div className="text-xs text-[#6b7280]">עלויות ספקים</div>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg text-center">
-                <div className="text-2xl font-bold text-[#111827]">₪{((stats.total * 150) - (stats.completed * 80)).toLocaleString()}</div>
-                <div className="text-xs text-[#6b7280]">רווח גולמי</div>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-lg text-center">
-                <div className="text-2xl font-bold text-[#111827]">{Math.round(((stats.total * 150 - stats.completed * 80) / (stats.total * 150)) * 100) || 0}%</div>
-                <div className="text-xs text-[#6b7280]">מרווח רווחיות</div>
+            <p className="text-sm text-[#6b7280] mb-4">מידע פיננסי רגיש - נגיש למורשים בלבד</p>
+            <div className="p-6 bg-gray-50 rounded-lg text-center">
+              <p className="text-sm text-[#6b7280]">
+                נתונים פיננסיים יוצגו כאן לאחר הגדרת תעריפי שירות בהגדרות המערכת.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div className="p-4 bg-white rounded-lg text-center">
+                  <div className="text-2xl font-bold text-[#111827]">{stats.total}</div>
+                  <div className="text-xs text-[#6b7280]">סה"כ קריאות</div>
+                </div>
+                <div className="p-4 bg-white rounded-lg text-center">
+                  <div className="text-2xl font-bold text-[#111827]">{stats.completed}</div>
+                  <div className="text-xs text-[#6b7280]">קריאות שהושלמו</div>
+                </div>
+                <div className="p-4 bg-white rounded-lg text-center">
+                  <div className="text-2xl font-bold text-[#111827]">{stats.active}</div>
+                  <div className="text-xs text-[#6b7280]">קריאות פעילות</div>
+                </div>
+                <div className="p-4 bg-white rounded-lg text-center">
+                  <div className="text-2xl font-bold text-[#111827]">
+                    {stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}%
+                  </div>
+                  <div className="text-xs text-[#6b7280]">שיעור השלמה</div>
+                </div>
               </div>
             </div>
           </CardContent>

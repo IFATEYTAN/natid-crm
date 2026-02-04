@@ -35,7 +35,7 @@ export const useUpdateProfile = () => {
 
 export const useLogout = () => {
   return useMutation({
-    mutationFn: (redirectUrl = '/AuthLogin') => base44.auth.logout(redirectUrl),
+    mutationFn: (redirectUrl = window.location.origin) => base44.auth.logout(redirectUrl),
     onSuccess: () => {
       toast.success('התנתקת בהצלחה');
     },

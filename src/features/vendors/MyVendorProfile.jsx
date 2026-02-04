@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatCard from '@/components/ui/StatCard';
@@ -18,17 +23,16 @@ import {
   Phone,
   Mail,
   Star,
-  FileText,
   Activity,
   DollarSign,
   Edit2,
   CheckCircle2,
-  User
+  User,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 export default function MyVendorProfile() {
   const queryClient = useQueryClient();
@@ -47,7 +51,11 @@ export default function MyVendorProfile() {
     queryFn: async () => {
       if (!user?.email) return null;
       // Assuming vendor email matches user email
-      const vendors = await base44.entities.Vendor.filter({ email: user.email }, '-created_date', 1);
+      const vendors = await base44.entities.Vendor.filter(
+        { email: user.email },
+        '-created_date',
+        1
+      );
       return vendors[0] || null;
     },
     enabled: !!user?.email,
@@ -58,26 +66,33 @@ export default function MyVendorProfile() {
   // 3. Data Queries
   const { data: calls = [], isLoading: callsLoading } = useQuery({
     queryKey: ['my-vendor-calls', vendorId],
-    queryFn: () => base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50),
+    queryFn: () =>
+      base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50),
     enabled: !!vendorId,
   });
 
   const { data: ratings = [] } = useQuery({
     queryKey: ['my-vendor-ratings', vendorId],
-    queryFn: () => base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20),
+    queryFn: () =>
+      base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
   const { data: payments = [] } = useQuery({
     queryKey: ['my-vendor-payments', vendorId],
-    queryFn: () => base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20),
+    queryFn: () =>
+      base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
   const { data: location } = useQuery({
     queryKey: ['my-vendor-location', vendorId],
     queryFn: async () => {
-      const locations = await base44.entities.VendorLocation.filter({ vendor_id: vendorId }, '-created_date', 1);
+      const locations = await base44.entities.VendorLocation.filter(
+        { vendor_id: vendorId },
+        '-created_date',
+        1
+      );
       return locations[0];
     },
     enabled: !!vendorId,
@@ -88,20 +103,21 @@ export default function MyVendorProfile() {
     mutationFn: (data) => base44.entities.Vendor.update(vendorId, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['my-vendor-profile']);
-      toast.success("הפרופיל עודכן בהצלחה");
+      toast.success('הפרופיל עודכן בהצלחה');
       setIsEditOpen(false);
     },
-    onError: () => toast.error("שגיאה בעדכון הפרופיל")
+    onError: () => toast.error('שגיאה בעדכון הפרופיל'),
   });
 
   const toggleAvailabilityMutation = useMutation({
-    mutationFn: (newStatus) => base44.entities.Vendor.update(vendorId, { 
-      is_available_now: newStatus,
-      availability_status: newStatus ? 'available' : 'offline'
-    }),
+    mutationFn: (newStatus) =>
+      base44.entities.Vendor.update(vendorId, {
+        is_available_now: newStatus,
+        availability_status: newStatus ? 'available' : 'offline',
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries(['my-vendor-profile']);
-      toast.success("סטטוס זמינות עודכן");
+      toast.success('סטטוס זמינות עודכן');
     },
   });
 
@@ -113,7 +129,7 @@ export default function MyVendorProfile() {
         contact_person: vendor.contact_person,
         phone: vendor.phone,
         phone_2: vendor.phone_2,
-        email: vendor.email
+        email: vendor.email,
       });
     }
   }, [vendor]);
@@ -125,7 +141,11 @@ export default function MyVendorProfile() {
   };
 
   if (vendorLoading) {
-    return <div className="p-8"><Skeleton className="h-64 w-full" /></div>;
+    return (
+      <div className="p-8">
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
   if (!vendor && !vendorLoading && user) {
@@ -136,8 +156,8 @@ export default function MyVendorProfile() {
         </div>
         <h2 className="text-xl font-bold mb-2">לא נמצא פרופיל ספק</h2>
         <p className="text-gray-500 max-w-md">
-          לא מצאנו פרופיל ספק המקושר לכתובת האימייל שלך ({user.email}).
-          אנא פנה למנהל המערכת לחיבור המשתמש שלך.
+          לא מצאנו פרופיל ספק המקושר לכתובת האימייל שלך ({user.email}). אנא פנה למנהל המערכת לחיבור
+          המשתמש שלך.
         </p>
       </div>
     );
@@ -146,10 +166,11 @@ export default function MyVendorProfile() {
   if (!user) return null;
 
   // Calculations
-  const completedCalls = calls.filter(c => c.call_status === 'completed').length;
-  const avgRating = ratings.length > 0 
-    ? (ratings.reduce((acc, r) => acc + r.overall_rating, 0) / ratings.length).toFixed(1)
-    : vendor.average_rating || 0;
+  const completedCalls = calls.filter((c) => c.call_status === 'completed').length;
+  const avgRating =
+    ratings.length > 0
+      ? (ratings.reduce((acc, r) => acc + r.overall_rating, 0) / ratings.length).toFixed(1)
+      : vendor.average_rating || 0;
 
   // Columns Definitions
   const callColumns = [
@@ -160,39 +181,56 @@ export default function MyVendorProfile() {
         <span className="font-semibold text-[#0078D4]">
           {row.call_number || row.id.substring(0, 8)}
         </span>
-      )
+      ),
     },
     { header: 'לקוח', accessor: 'customer_name' },
     { header: 'סטטוס', cell: (row) => <StatusBadge status={row.call_status} size="sm" /> },
-    { header: 'תאריך', cell: (row) => row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-' }
+    {
+      header: 'תאריך',
+      cell: (row) =>
+        row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-',
+    },
   ];
 
   const ratingColumns = [
     { header: 'קריאה', accessor: 'call_number' },
-    { 
-      header: 'דירוג', 
+    {
+      header: 'דירוג',
       cell: (row) => (
         <div className="flex items-center gap-1">
           <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
           <span className="font-medium">{row.overall_rating}</span>
         </div>
-      )
+      ),
     },
     { header: 'משוב', accessor: 'feedback', cell: (row) => row.feedback || '-' },
-    { header: 'תאריך', cell: (row) => row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-' }
+    {
+      header: 'תאריך',
+      cell: (row) =>
+        row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-',
+    },
   ];
 
   const paymentColumns = [
-    { 
-      header: 'סוג', 
+    {
+      header: 'סוג',
       cell: (row) => {
-        const types = { call_payment: 'תשלום קריאה', monthly_fee: 'דמי חודש', bonus: 'בונוס', adjustment: 'התאמה' };
+        const types = {
+          call_payment: 'תשלום קריאה',
+          monthly_fee: 'דמי חודש',
+          bonus: 'בונוס',
+          adjustment: 'התאמה',
+        };
         return types[row.payment_type] || row.payment_type;
-      }
+      },
     },
     { header: 'סכום', cell: (row) => `₪${row.amount.toLocaleString()}` },
     { header: 'סטטוס', cell: (row) => <StatusBadge status={row.status} size="sm" /> },
-    { header: 'תאריך', cell: (row) => row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-' }
+    {
+      header: 'תאריך',
+      cell: (row) =>
+        row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-',
+    },
   ];
 
   return (
@@ -216,10 +254,12 @@ export default function MyVendorProfile() {
 
             <div className="flex flex-col items-end gap-3">
               <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border shadow-sm">
-                <span className={`text-sm font-medium ${vendor.is_available_now ? 'text-green-600' : 'text-gray-500'}`}>
+                <span
+                  className={`text-sm font-medium ${vendor.is_available_now ? 'text-green-600' : 'text-gray-500'}`}
+                >
                   {vendor.is_available_now ? 'זמין לקריאות' : 'לא זמין'}
                 </span>
-                <Switch 
+                <Switch
                   checked={vendor.is_available_now}
                   onCheckedChange={(checked) => toggleAvailabilityMutation.mutate(checked)}
                 />
@@ -238,46 +278,50 @@ export default function MyVendorProfile() {
                   <form onSubmit={handleEditSubmit} className="space-y-4 py-4">
                     <div className="space-y-2">
                       <Label>שם ספק/חברה</Label>
-                      <Input 
-                        value={editForm.vendor_name || ''} 
-                        onChange={e => setEditForm({...editForm, vendor_name: e.target.value})}
+                      <Input
+                        value={editForm.vendor_name || ''}
+                        onChange={(e) => setEditForm({ ...editForm, vendor_name: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>איש קשר</Label>
-                      <Input 
-                        value={editForm.contact_person || ''} 
-                        onChange={e => setEditForm({...editForm, contact_person: e.target.value})}
+                      <Input
+                        value={editForm.contact_person || ''}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, contact_person: e.target.value })
+                        }
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>טלפון</Label>
-                        <Input 
-                          value={editForm.phone || ''} 
-                          onChange={e => setEditForm({...editForm, phone: e.target.value})}
+                        <Input
+                          value={editForm.phone || ''}
+                          onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>טלפון נוסף</Label>
-                        <Input 
-                          value={editForm.phone_2 || ''} 
-                          onChange={e => setEditForm({...editForm, phone_2: e.target.value})}
+                        <Input
+                          value={editForm.phone_2 || ''}
+                          onChange={(e) => setEditForm({ ...editForm, phone_2: e.target.value })}
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label>אימייל</Label>
-                      <Input 
-                        value={editForm.email || ''} 
-                        onChange={e => setEditForm({...editForm, email: e.target.value})}
+                      <Input
+                        value={editForm.email || ''}
+                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                         disabled
                         className="bg-gray-50"
                       />
                       <p className="text-xs text-gray-500">לא ניתן לשנות אימייל באופן עצמאי</p>
                     </div>
                     <DialogFooter>
-                      <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>ביטול</Button>
+                      <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                        ביטול
+                      </Button>
                       <Button type="submit" disabled={updateVendorMutation.isPending}>
                         {updateVendorMutation.isPending ? 'שומר...' : 'שמור שינויים'}
                       </Button>
@@ -298,12 +342,7 @@ export default function MyVendorProfile() {
           icon={CheckCircle2}
           variant="success"
         />
-        <StatCard
-          title="דירוג ממוצע"
-          value={avgRating}
-          icon={Star}
-          variant="warning"
-        />
+        <StatCard title="דירוג ממוצע" value={avgRating} icon={Star} variant="warning" />
         <StatCard
           title="תשלומים ממתינים"
           value={`₪${vendor.pending_payments?.toLocaleString() || 0}`}
@@ -312,7 +351,9 @@ export default function MyVendorProfile() {
         />
         <StatCard
           title="זמן תגובה ממוצע"
-          value={vendor.average_response_time ? `${Math.round(vendor.average_response_time)} דק'` : '-'}
+          value={
+            vendor.average_response_time ? `${Math.round(vendor.average_response_time)} דק'` : '-'
+          }
           icon={Activity}
           variant="primary"
         />
@@ -321,16 +362,26 @@ export default function MyVendorProfile() {
       {/* Main Content Tabs */}
       <Tabs defaultValue="details" className="space-y-4">
         <TabsList className="bg-white border w-full justify-start h-12 p-1">
-          <TabsTrigger value="details" className="data-[state=active]:bg-gray-100">פרטים נוספים</TabsTrigger>
-          <TabsTrigger value="calls" className="data-[state=active]:bg-gray-100">היסטוריית קריאות</TabsTrigger>
-          <TabsTrigger value="payments" className="data-[state=active]:bg-gray-100">תשלומים</TabsTrigger>
-          <TabsTrigger value="ratings" className="data-[state=active]:bg-gray-100">דירוגים ומשוב</TabsTrigger>
+          <TabsTrigger value="details" className="data-[state=active]:bg-gray-100">
+            פרטים נוספים
+          </TabsTrigger>
+          <TabsTrigger value="calls" className="data-[state=active]:bg-gray-100">
+            היסטוריית קריאות
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="data-[state=active]:bg-gray-100">
+            תשלומים
+          </TabsTrigger>
+          <TabsTrigger value="ratings" className="data-[state=active]:bg-gray-100">
+            דירוגים ומשוב
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="details">
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle className="text-lg">פרטי התקשרות</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-lg">פרטי התקשרות</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-gray-400" />
@@ -366,7 +417,9 @@ export default function MyVendorProfile() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-lg">מידע מערכתי</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-lg">מידע מערכתי</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between border-b pb-2">
                   <span className="text-gray-500">סטטוס במערכת</span>
@@ -378,7 +431,11 @@ export default function MyVendorProfile() {
                 </div>
                 <div className="flex justify-between border-b pb-2">
                   <span className="text-gray-500">תאריך הצטרפות</span>
-                  <span>{vendor.created_date ? format(parseISO(vendor.created_date), 'dd/MM/yyyy') : '-'}</span>
+                  <span>
+                    {vendor.created_date
+                      ? format(parseISO(vendor.created_date), 'dd/MM/yyyy')
+                      : '-'}
+                  </span>
                 </div>
                 {location && (
                   <div className="flex justify-between">
@@ -397,7 +454,12 @@ export default function MyVendorProfile() {
         <TabsContent value="calls">
           <Card>
             <CardContent className="p-0">
-              <DataTable columns={callColumns} data={calls} isLoading={callsLoading} emptyMessage="לא נמצאו קריאות" />
+              <DataTable
+                columns={callColumns}
+                data={calls}
+                isLoading={callsLoading}
+                emptyMessage="לא נמצאו קריאות"
+              />
             </CardContent>
           </Card>
         </TabsContent>

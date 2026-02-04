@@ -4,11 +4,9 @@ import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatusBadge from '@/components/ui/StatusBadge';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import confetti from 'canvas-confetti';
 import {
   Select,
@@ -16,30 +14,23 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  ArrowRight, 
-  User, 
-  Car, 
-  MapPin, 
+  ArrowRight,
+  User,
+  Car,
+  MapPin,
   Wrench,
   Clock,
   Phone,
   Truck,
   CheckCircle2,
   AlertTriangle,
-  MessageSquare,
   Edit,
-  Save,
   Loader2,
-  Navigation
+  Navigation,
 } from 'lucide-react';
 import NavigationMap from '@/components/maps/NavigationMap';
 import VendorRecommendation from '@/components/ai/VendorRecommendation';
@@ -51,13 +42,13 @@ import CallChat from '@/components/chat/CallChat';
 
 const serviceTypeLabels = {
   towing: 'גרירה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   battery: 'מצבר',
   lockout: 'פתיחת רכב',
   fuel: 'דלק',
   accident: 'תאונה',
   mechanical: 'תקלה מכנית',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const vehicleTypeLabels = {
@@ -66,7 +57,7 @@ const vehicleTypeLabels = {
   truck: 'משאית',
   bus: 'אוטובוס',
   van: 'ואן',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const statusOptions = [
@@ -82,7 +73,7 @@ const statusOptions = [
 export default function CaseDetails() {
   const urlParams = new URLSearchParams(window.location.search);
   const caseId = urlParams.get('id');
-  
+
   const queryClient = useQueryClient();
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -122,7 +113,7 @@ export default function CaseDetails() {
       return locations[0];
     },
     enabled: !!caseData?.assigned_provider_id,
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Calculate distance when vendor is assigned
@@ -132,7 +123,7 @@ export default function CaseDetails() {
         try {
           const result = await base44.functions.invoke('calculateDistanceAndETA', {
             callId: caseData.id,
-            vendorId: caseData.assigned_provider_id
+            vendorId: caseData.assigned_provider_id,
           });
           setDistanceData(result.data);
         } catch (error) {
@@ -162,11 +153,11 @@ export default function CaseDetails() {
   const handleStatusChange = async (newStatus) => {
     const previousStatus = caseData.status;
     const updates = { status: newStatus };
-    
+
     if (newStatus === 'completed' && !caseData.completed_at) {
       updates.completed_at = new Date().toISOString();
     }
-    
+
     if (newStatus === 'on_site' && !caseData.arrived_at) {
       updates.arrived_at = new Date().toISOString();
       // Check SLA
@@ -176,27 +167,31 @@ export default function CaseDetails() {
     }
 
     await updateMutation.mutateAsync({ id: caseId, data: updates });
-    
+
     await addActivityMutation.mutateAsync({
       case_id: caseId,
       case_number: caseData.case_number,
       activity_type: 'status_change',
       description: `סטטוס שונה מ-${previousStatus} ל-${newStatus}`,
       previous_value: previousStatus,
-      new_value: newStatus
+      new_value: newStatus,
     });
 
     // Trigger Notification
     const user = await base44.auth.me();
-    await triggerNotification('call_status_change', {
-      call_number: caseData.case_number || caseId.substring(0,8),
-      customer_name: caseData.customer_name,
-      status: newStatus,
-      old_status: previousStatus,
-      link: `/CaseDetails?id=${caseId}`,
-      id: caseId,
-      entityType: 'case'
-    }, user);
+    await triggerNotification(
+      'call_status_change',
+      {
+        call_number: caseData.case_number || caseId.substring(0, 8),
+        customer_name: caseData.customer_name,
+        status: newStatus,
+        old_status: previousStatus,
+        link: `/CaseDetails?id=${caseId}`,
+        id: caseId,
+        entityType: 'case',
+      },
+      user
+    );
 
     // Send SMS notification to customer
     try {
@@ -204,14 +199,14 @@ export default function CaseDetails() {
         assigned: 'הקריאה שלך שובצה לטיפול. הספק בדרך אליך.',
         en_route: 'הספק בדרך למיקומך. זמן הגעה משוער: 20-30 דקות.',
         on_site: 'הספק הגיע למיקום.',
-        completed: 'הטיפול הושלם. תודה שבחרת בנתי שירותי דרך!'
+        completed: 'הטיפול הושלם. תודה שבחרת בנתי שירותי דרך!',
       };
-      
+
       if (smsMessages[newStatus] && caseData?.caller_phone) {
         await base44.functions.invoke('sendSMS', {
           phone: caseData.caller_phone,
           message: smsMessages[newStatus],
-          callId: caseId
+          callId: caseId,
         });
       }
     } catch (smsError) {
@@ -220,14 +215,14 @@ export default function CaseDetails() {
   };
 
   const handleAssignProvider = async (providerId) => {
-    const provider = providers.find(p => p.id === providerId);
+    const provider = providers.find((p) => p.id === providerId);
     if (!provider) return;
 
     const updates = {
       assigned_provider_id: providerId,
       assigned_provider_name: provider.name,
       assigned_at: new Date().toISOString(),
-      status: 'assigned'
+      status: 'assigned',
     };
 
     // Check response SLA
@@ -236,66 +231,70 @@ export default function CaseDetails() {
     }
 
     await updateMutation.mutateAsync({ id: caseId, data: updates });
-    
+
     await addActivityMutation.mutateAsync({
       case_id: caseId,
       case_number: caseData.case_number,
       activity_type: 'assigned',
-      description: `שובץ לנותן שירות: ${provider.name}`
+      description: `שובץ לנותן שירות: ${provider.name}`,
     });
 
     // Trigger Notification
     const user = await base44.auth.me();
-    await triggerNotification('call_assigned', {
-      call_number: caseData.case_number || caseId.substring(0,8),
-      customer_name: caseData.customer_name,
-      provider_name: provider.name,
-      link: `/CaseDetails?id=${caseId}`,
-      id: caseId,
-      entityType: 'case'
-    }, user);
+    await triggerNotification(
+      'call_assigned',
+      {
+        call_number: caseData.case_number || caseId.substring(0, 8),
+        customer_name: caseData.customer_name,
+        provider_name: provider.name,
+        link: `/CaseDetails?id=${caseId}`,
+        id: caseId,
+        entityType: 'case',
+      },
+      user
+    );
 
     // Update provider status
     await base44.entities.ServiceProvider.update(providerId, { status: 'busy' });
-    
+
     // Celebration confetti!
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#FF0000', '#FFD700', '#00FF00']
+      colors: ['#FF0000', '#FFD700', '#00FF00'],
     });
-    
+
     setTimeout(() => {
       confetti({
         particleCount: 50,
         angle: 60,
         spread: 55,
         origin: { x: 0 },
-        colors: ['#FF0000', '#FFD700']
+        colors: ['#FF0000', '#FFD700'],
       });
       confetti({
         particleCount: 50,
         angle: 120,
         spread: 55,
         origin: { x: 1 },
-        colors: ['#FF0000', '#FFD700']
+        colors: ['#FF0000', '#FFD700'],
       });
     }, 250);
-    
+
     setIsAssignDialogOpen(false);
   };
 
   const handleAddNote = async () => {
     if (!noteText.trim()) return;
-    
+
     await addActivityMutation.mutateAsync({
       case_id: caseId,
       case_number: caseData.case_number,
       activity_type: 'note',
-      description: noteText
+      description: noteText,
     });
-    
+
     setNoteText('');
   };
 
@@ -324,7 +323,9 @@ export default function CaseDetails() {
         <AlertTriangle className="w-12 h-12 mx-auto text-[#ED6C02] mb-4" />
         <p className="text-[#616161]">קריאה לא נמצאה</p>
         <Link to={createPageUrl('Cases')}>
-          <Button variant="outline" className="mt-4">חזרה לקריאות</Button>
+          <Button variant="outline" className="mt-4">
+            חזרה לקריאות
+          </Button>
         </Link>
       </div>
     );
@@ -355,29 +356,33 @@ export default function CaseDetails() {
             </p>
           </div>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Select value={caseData.status} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-full sm:w-36">
               <SelectValue placeholder="שנה סטטוס" />
             </SelectTrigger>
             <SelectContent>
-              {statusOptions.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              {statusOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          
-          {!caseData.assigned_provider_id && caseData.status !== 'completed' && caseData.status !== 'cancelled' && (
-            <Button 
-              className="bg-[#0D47A1] hover:bg-[#1565C0] w-full sm:w-auto"
-              onClick={() => setIsAssignDialogOpen(true)}
-            >
-              <Truck className="w-4 h-4 ml-2" />
-              <span className="hidden sm:inline">שבץ נותן שירות</span>
-              <span className="sm:hidden">שבץ ספק</span>
-            </Button>
-          )}
+
+          {!caseData.assigned_provider_id &&
+            caseData.status !== 'completed' &&
+            caseData.status !== 'cancelled' && (
+              <Button
+                className="bg-[#0D47A1] hover:bg-[#1565C0] w-full sm:w-auto"
+                onClick={() => setIsAssignDialogOpen(true)}
+              >
+                <Truck className="w-4 h-4 ml-2" />
+                <span className="hidden sm:inline">שבץ נותן שירות</span>
+                <span className="sm:hidden">שבץ ספק</span>
+              </Button>
+            )}
         </div>
       </div>
 
@@ -404,7 +409,10 @@ export default function CaseDetails() {
                 </div>
                 <div>
                   <p className="text-xs text-[#9E9E9E]">טלפון</p>
-                  <a href={`tel:${caseData.caller_phone}`} className="font-medium text-[#0D47A1] flex items-center gap-1">
+                  <a
+                    href={`tel:${caseData.caller_phone}`}
+                    className="font-medium text-[#0D47A1] flex items-center gap-1"
+                  >
                     <Phone className="w-3 h-3" />
                     {caseData.caller_phone}
                   </a>
@@ -487,11 +495,7 @@ export default function CaseDetails() {
           {/* Chat with Vendor */}
           {caseData.assigned_provider_id && (
             <div className="mb-6">
-               <CallChat 
-                 callId={caseId} 
-                 currentUserRole="operator" 
-                 currentUserName="מוקד" 
-               />
+              <CallChat callId={caseId} currentUserRole="operator" currentUserName="מוקד" />
             </div>
           )}
 
@@ -512,7 +516,7 @@ export default function CaseDetails() {
                   rows={2}
                   className="flex-1"
                 />
-                <Button 
+                <Button
                   onClick={handleAddNote}
                   disabled={!noteText.trim() || addActivityMutation.isPending}
                   className="bg-gray-600 hover:bg-gray-700 sm:self-start"
@@ -546,33 +550,37 @@ export default function CaseDetails() {
                 <div>
                   <p className="text-xs text-[#9E9E9E]">תגובה</p>
                   <p className="text-sm font-medium">
-                    {caseData.sla_response_deadline 
-                      ? format(parseISO(caseData.sla_response_deadline), 'HH:mm dd/MM', { locale: he })
-                      : '-'
-                    }
+                    {caseData.sla_response_deadline
+                      ? format(parseISO(caseData.sla_response_deadline), 'HH:mm dd/MM', {
+                          locale: he,
+                        })
+                      : '-'}
                   </p>
                 </div>
-                {caseData.sla_response_met !== undefined && (
-                  caseData.sla_response_met 
-                    ? <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
-                    : <AlertTriangle className="w-5 h-5 text-[#D32F2F]" />
-                )}
+                {caseData.sla_response_met !== undefined &&
+                  (caseData.sla_response_met ? (
+                    <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
+                  ) : (
+                    <AlertTriangle className="w-5 h-5 text-[#D32F2F]" />
+                  ))}
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-[#FAFAFA]">
                 <div>
                   <p className="text-xs text-[#9E9E9E]">הגעה</p>
                   <p className="text-sm font-medium">
-                    {caseData.sla_arrival_deadline 
-                      ? format(parseISO(caseData.sla_arrival_deadline), 'HH:mm dd/MM', { locale: he })
-                      : '-'
-                    }
+                    {caseData.sla_arrival_deadline
+                      ? format(parseISO(caseData.sla_arrival_deadline), 'HH:mm dd/MM', {
+                          locale: he,
+                        })
+                      : '-'}
                   </p>
                 </div>
-                {caseData.sla_arrival_met !== undefined && (
-                  caseData.sla_arrival_met 
-                    ? <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
-                    : <AlertTriangle className="w-5 h-5 text-[#D32F2F]" />
-                )}
+                {caseData.sla_arrival_met !== undefined &&
+                  (caseData.sla_arrival_met ? (
+                    <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
+                  ) : (
+                    <AlertTriangle className="w-5 h-5 text-[#D32F2F]" />
+                  ))}
               </div>
             </CardContent>
           </Card>
@@ -628,26 +636,29 @@ export default function CaseDetails() {
           </Card>
 
           {/* Navigation Map for Operator */}
-          {caseData?.assigned_provider_id && vendorLocation && caseData?.location_lat && caseData?.location_lng && (
-            <NavigationMap
-              vendorLocation={{
-                lat: vendorLocation.latitude,
-                lon: vendorLocation.longitude
-              }}
-              callLocation={{
-                lat: caseData.location_lat,
-                lon: caseData.location_lng,
-                address: caseData.location_address
-              }}
-              distance={distanceData?.roadDistance}
-              duration={distanceData?.duration}
-              onNavigate={() => {
-                if (distanceData?.navigationUrl) {
-                  window.open(distanceData.navigationUrl, '_blank');
-                }
-              }}
-            />
-          )}
+          {caseData?.assigned_provider_id &&
+            vendorLocation &&
+            caseData?.location_lat &&
+            caseData?.location_lng && (
+              <NavigationMap
+                vendorLocation={{
+                  lat: vendorLocation.latitude,
+                  lon: vendorLocation.longitude,
+                }}
+                callLocation={{
+                  lat: caseData.location_lat,
+                  lon: caseData.location_lng,
+                  address: caseData.location_address,
+                }}
+                distance={distanceData?.roadDistance}
+                duration={distanceData?.duration}
+                onNavigate={() => {
+                  if (distanceData?.navigationUrl) {
+                    window.open(distanceData.navigationUrl, '_blank');
+                  }
+                }}
+              />
+            )}
 
           {/* Activity Log */}
           <Card>
@@ -659,11 +670,15 @@ export default function CaseDetails() {
                 {activities.length === 0 ? (
                   <p className="text-[#9E9E9E] text-sm text-center py-4">אין פעילות</p>
                 ) : (
-                  activities.map(activity => (
-                    <div key={activity.id} className="text-sm border-r-2 border-[#0D47A1] pr-3 py-1">
+                  activities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="text-sm border-r-2 border-[#0D47A1] pr-3 py-1"
+                    >
                       <p className="text-[#212121]">{activity.description}</p>
                       <p className="text-xs text-[#9E9E9E]">
-                        {activity.created_date && format(parseISO(activity.created_date), 'HH:mm dd/MM', { locale: he })}
+                        {activity.created_date &&
+                          format(parseISO(activity.created_date), 'HH:mm dd/MM', { locale: he })}
                       </p>
                     </div>
                   ))
@@ -680,11 +695,11 @@ export default function CaseDetails() {
           <DialogHeader>
             <DialogTitle>שיבוץ נותן שירות</DialogTitle>
           </DialogHeader>
-          
+
           <div className="px-1 mb-4">
-            <VendorRecommendation 
-              callDetails={caseData} 
-              onSelectVendor={(vendor) => handleAssignProvider(vendor.id)} 
+            <VendorRecommendation
+              callDetails={caseData}
+              onSelectVendor={(vendor) => handleAssignProvider(vendor.id)}
             />
           </div>
 
@@ -701,8 +716,8 @@ export default function CaseDetails() {
             {providers.length === 0 ? (
               <p className="text-center py-8 text-[#616161]">אין נותני שירות זמינים</p>
             ) : (
-              providers.map(provider => (
-                <div 
+              providers.map((provider) => (
+                <div
                   key={provider.id}
                   className="p-3 border border-[#E0E0E0] rounded-lg hover:border-[#0D47A1] hover:bg-[#FAFAFA] cursor-pointer transition-colors"
                   onClick={() => handleAssignProvider(provider.id)}

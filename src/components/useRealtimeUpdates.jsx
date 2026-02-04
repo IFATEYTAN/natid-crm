@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { WifiOff } from 'lucide-react';
 
 /**
  * Hook to handle realtime updates (placeholder for now)

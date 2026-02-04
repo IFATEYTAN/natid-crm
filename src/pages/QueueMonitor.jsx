@@ -4,22 +4,28 @@ import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/util
 import { useWorkQueue } from '@/components/hooks/useWorkQueue';
 import { useCalls } from '@/components/hooks/useCalls';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
-import { 
-  ArrowRight, 
-  Search, 
+import {
+  ArrowRight,
+  Search,
   Filter,
   User,
   Clock,
   MapPin,
   AlertCircle,
   CheckCircle2,
-  MoreVertical
+  MoreVertical,
 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +33,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 
@@ -45,22 +51,23 @@ export default function QueueMonitor() {
 
   const workQueueQuery = useWorkQueue();
   const callsQuery = useCalls();
-  
+
   const queueItems = workQueueQuery.data || [];
   const calls = callsQuery.data || [];
   const isLoading = workQueueQuery.isLoading;
 
   // Enrich queue items with call details
-  const enrichedItems = queueItems.map(item => {
-    const call = calls.find(c => c.id === item.call_id);
+  const enrichedItems = queueItems.map((item) => {
+    const call = calls.find((c) => c.id === item.call_id);
     return { ...item, call };
   });
 
-  const filteredItems = enrichedItems.filter(item => {
+  const filteredItems = enrichedItems.filter((item) => {
     const matchesStatus = filterStatus === 'all' || item.queue_status === filterStatus;
-    const matchesSearch = !searchQuery || 
-      (item.call?.customer_name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.call?.call_number?.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch =
+      !searchQuery ||
+      item.call?.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.call?.call_number?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -69,10 +76,13 @@ export default function QueueMonitor() {
       header: 'קריאה',
       accessor: 'call.call_number',
       cell: (item) => (
-        <Link to={createPageUrl(`CaseDetails?id=${item.call_id}`)} className="font-medium text-blue-600 hover:underline">
+        <Link
+          to={createPageUrl(`CallDetails?id=${item.call_id}`)}
+          className="font-medium text-blue-600 hover:underline"
+        >
           {item.call?.call_number || `#${item.call_id?.slice(-6)}`}
         </Link>
-      )
+      ),
     },
     {
       header: 'לקוח',
@@ -82,7 +92,7 @@ export default function QueueMonitor() {
           <div className="font-medium">{item.call?.customer_name}</div>
           <div className="text-xs text-gray-500">{item.call?.customer_phone}</div>
         </div>
-      )
+      ),
     },
     {
       header: 'סטטוס בתור',
@@ -94,13 +104,16 @@ export default function QueueMonitor() {
           in_progress: { label: 'בטיפול', color: 'bg-indigo-100 text-indigo-800' },
           completed: { label: 'הושלם', color: 'bg-green-100 text-green-800' },
         };
-        const conf = statusMap[item.queue_status] || { label: item.queue_status, color: 'bg-gray-100 text-gray-800' };
+        const conf = statusMap[item.queue_status] || {
+          label: item.queue_status,
+          color: 'bg-gray-100 text-gray-800',
+        };
         return (
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${conf.color}`}>
             {conf.label}
           </span>
         );
-      }
+      },
     },
     {
       header: 'עדיפות',
@@ -109,17 +122,17 @@ export default function QueueMonitor() {
         <Badge variant={item.priority_score > 80 ? 'destructive' : 'secondary'}>
           {item.priority_score}
         </Badge>
-      )
+      ),
     },
     {
       header: 'נציג מטפל',
       accessor: 'assigned_to_agent',
-      cell: (item) => item.assigned_to_agent || '-'
+      cell: (item) => item.assigned_to_agent || '-',
     },
     {
       header: 'זמן בתור',
       accessor: 'added_to_queue_at',
-      cell: (item) => formatDateTime(item.added_to_queue_at)
+      cell: (item) => formatDateTime(item.added_to_queue_at),
     },
     {
       header: '',
@@ -132,7 +145,11 @@ export default function QueueMonitor() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>פעולות</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => window.location.href = createPageUrl(`CaseDetails?id=${item.call_id}`)}>
+            <DropdownMenuItem
+              onClick={() =>
+                (window.location.href = createPageUrl(`CallDetails?id=${item.call_id}`))
+              }
+            >
               צפה בפרטים
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -140,8 +157,8 @@ export default function QueueMonitor() {
             <DropdownMenuItem className="text-red-600">הסר מהתור</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -151,9 +168,7 @@ export default function QueueMonitor() {
           <h1 className="text-3xl font-bold text-gray-900">ניטור תורים</h1>
           <p className="text-gray-500">ניהול ובקרה על תור המשימות בזמן אמת</p>
         </div>
-        <div className="flex gap-2">
-          {/* Quick stats or actions could go here */}
-        </div>
+        <div className="flex gap-2">{/* Quick stats or actions could go here */}</div>
       </div>
 
       <Card>
@@ -176,16 +191,18 @@ export default function QueueMonitor() {
                 <SelectValue placeholder="סטטוס" />
               </SelectTrigger>
               <SelectContent>
-                {statusOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <DataTable 
-            columns={columns} 
-            data={filteredItems} 
+          <DataTable
+            columns={columns}
+            data={filteredItems}
             isLoading={isLoading}
             emptyMessage="אין קריאות בתור כרגע"
           />
