@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GripVertical, Save, Undo2 } from "lucide-react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { Save, Undo2, MoveUp, MoveDown } from "lucide-react";
+
 
 const PAGES = [
   { value: "HistoricalDataAnalysis", label: "ניתוח נתונים היסטוריים" },
@@ -84,12 +84,11 @@ export default function AdminDisplaySettings() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["userDisplayPref", user?.id, selectedPage] }),
   });
 
-  const onDragEnd = (result) => {
-    const { destination, source } = result;
-    if (!destination || destination.index === source.index) return;
-    const newArr = Array.from(cards);
-    const [removed] = newArr.splice(source.index, 1);
-    newArr.splice(destination.index, 0, removed);
+  const handleReorder = (index, direction) => {
+    const newArr = [...cards];
+    const swapWith = direction === 'up' ? index - 1 : index + 1;
+    if (swapWith < 0 || swapWith >= newArr.length) return;
+    [newArr[index], newArr[swapWith]] = [newArr[swapWith], newArr[index]];
     setCards(newArr.map((c, i) => ({ ...c, order: i })));
   };
 
@@ -165,36 +164,32 @@ export default function AdminDisplaySettings() {
           <CardTitle>כרטיסיות</CardTitle>
         </CardHeader>
         <CardContent>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="cards">
-              {(provided) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-3">
-                  {cards.map((c, idx) => (
-                    <Draggable draggableId={c.card_key} index={idx} key={c.card_key}>
-                      {(drag) => (
-                        <div ref={drag.innerRef} {...drag.draggableProps} {...drag.dragHandleProps} className="flex items-center gap-3 p-3 border rounded-lg bg-white">
-                          <GripVertical className="text-gray-400" />
-                          <div className="w-40">
-                            <div className="text-xs text-gray-500">מפתח</div>
-                            <div className="text-sm font-mono">{c.card_key}</div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-xs text-gray-500 mb-1">שם תצוגה</div>
-                            <Input value={c.label} onChange={(e)=>handleChange(idx, { label: e.target.value })} />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox id={`vis-${c.card_key}`} checked={!!c.visible} onCheckedChange={(v)=>handleChange(idx, { visible: !!v })} />
-                            <label htmlFor={`vis-${c.card_key}`} className="text-sm">מוצג</label>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+          <div className="space-y-3">
+            {cards.map((c, idx) => (
+              <div key={c.card_key} className="flex items-center gap-3 p-3 border rounded-lg bg-white">
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => handleReorder(idx, 'up')} disabled={idx === 0}>
+                    <MoveUp className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleReorder(idx, 'down')} disabled={idx === cards.length - 1}>
+                    <MoveDown className="w-4 h-4" />
+                  </Button>
                 </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+                <div className="w-40">
+                  <div className="text-xs text-gray-500">מפתח</div>
+                  <div className="text-sm font-mono">{c.card_key}</div>
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-gray-500 mb-1">שם תצוגה</div>
+                  <Input value={c.label} onChange={(e)=>handleChange(idx, { label: e.target.value })} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox id={`vis-${c.card_key}`} checked={!!c.visible} onCheckedChange={(v)=>handleChange(idx, { visible: !!v })} />
+                  <label htmlFor={`vis-${c.card_key}`} className="text-sm">מוצג</label>
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="flex justify-end gap-2 mt-4">
             <Button variant="secondary" onClick={handleReset}><Undo2 className="w-4 h-4"/> שחזור ברירת מחדל</Button>
             <Button onClick={handleSave} isLoading={saveMutation.isPending}><Save className="w-4 h-4"/> שמירה</Button>

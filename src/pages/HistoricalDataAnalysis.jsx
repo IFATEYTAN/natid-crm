@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,18 +23,9 @@ import {
   Download,
   FileSpreadsheet,
 } from 'lucide-react';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+const ServeTypePie = lazy(() => import('../components/analysis/ServeTypePie'));
+const CarTypeBar = lazy(() => import('../components/analysis/CarTypeBar'));
+const BotAccuracyBar = lazy(() => import('../components/analysis/BotAccuracyBar'));
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -469,33 +460,9 @@ export default function HistoricalDataAnalysisPage() {
           <CardContent>
             <div className="h-[380px] flex flex-col md:flex-row items-center gap-6">
               <div className="w-full md:w-1/2 h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={serveTypeDistribution.slice(0, 6)}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      innerRadius={40}
-                      label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                      labelLine={false}
-                    >
-                      {serveTypeDistribution.slice(0, 6).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value, name) => {
-                        const total = serveTypeDistribution.slice(0, 6).reduce((sum, i) => sum + i.value, 0);
-                        const pct = total ? Math.round((value / total) * 100) : 0;
-                        return [`${value.toLocaleString()} (${pct}%)`, name];
-                      }}
-                      contentStyle={{ direction: 'rtl', textAlign: 'right' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <Suspense fallback={<div className="h-full flex items-center justify-center text-gray-400">טוען…</div>}>
+                  <ServeTypePie data={serveTypeDistribution.slice(0, 6)} colors={COLORS} />
+                </Suspense>
               </div>
               <div className="w-full md:w-1/2 space-y-3">
                 {(() => {
@@ -530,33 +497,9 @@ export default function HistoricalDataAnalysisPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={carTypeDistribution}
-                  layout="vertical"
-                  margin={{ right: 20, left: 10, top: 10, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                  <XAxis type="number" tickFormatter={(v) => v.toLocaleString()} />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    width={120}
-                    tick={{ fontSize: 12, fill: '#374151' }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    formatter={(value) => {
-                      const total = carTypeDistribution.reduce((sum, i) => sum + i.value, 0);
-                      const pct = total ? Math.round((value / total) * 100) : 0;
-                      return [`${value.toLocaleString()} (${pct}%)`, 'קריאות'];
-                    }}
-                    contentStyle={{ direction: 'rtl', textAlign: 'right' }}
-                  />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={24} />
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<div className="h-full flex items-center justify-center text-gray-400">טוען…</div>}>
+                <CarTypeBar data={carTypeDistribution} />
+              </Suspense>
             </div>
           </CardContent>
         </Card>
@@ -568,23 +511,9 @@ export default function HistoricalDataAnalysisPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[350px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={botAccuracyByServeType} margin={{ bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 11, angle: -45, textAnchor: 'end' }}
-                    height={70}
-                    interval={0}
-                  />
-                  <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip
-                    formatter={(value, name, props) => [`${value}%`, 'דיוק']}
-                    labelFormatter={(label) => `${label}`}
-                  />
-                  <Bar dataKey="accuracy" fill="#10b981" radius={[4, 4, 0, 0]} name="דיוק (%)" />
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<div className="h-full flex items-center justify-center text-gray-400">טוען…</div>}>
+                <BotAccuracyBar data={botAccuracyByServeType} />
+              </Suspense>
             </div>
           </CardContent>
         </Card>
