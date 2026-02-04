@@ -12,7 +12,7 @@ export const getCases = (sort = '-created_date', limit = 200) => {
 
 // Get a single case by ID
 export const getCaseById = (id) => {
-  return base44.entities.Case.filter({ id }).then(cases => cases[0]);
+  return base44.entities.Case.filter({ id }).then((cases) => cases[0]);
 };
 
 // Filter cases with custom criteria

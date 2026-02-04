@@ -1,24 +1,24 @@
-import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
-export function LoadingSpinner({ className, size = "default", text }) {
+export function LoadingSpinner({ className, size = 'default', text }) {
   const sizeClasses = {
-    sm: "w-4 h-4",
-    default: "w-6 h-6",
-    lg: "w-8 h-8",
-    xl: "w-12 h-12"
+    sm: 'w-4 h-4',
+    default: 'w-6 h-6',
+    lg: 'w-8 h-8',
+    xl: 'w-12 h-12',
   };
 
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
-      <Loader2 className={cn("animate-spin text-[#3b82f6]", sizeClasses[size])} />
+    <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
+      <Loader2 className={cn('animate-spin text-[#3b82f6]', sizeClasses[size])} />
       {text && <span className="text-sm text-[#6b7280] animate-pulse">{text}</span>}
     </div>
   );
 }
 
 // Full page loading state
-export function PageLoader({ text = "טוען..." }) {
+export function PageLoader({ text = 'טוען...' }) {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
       <LoadingSpinner size="lg" text={text} />
@@ -28,13 +28,15 @@ export function PageLoader({ text = "טוען..." }) {
 
 // Inline loading for buttons/small areas
 export function InlineLoader({ className }) {
-  return <Loader2 className={cn("w-4 h-4 animate-spin", className)} />;
+  return <Loader2 className={cn('w-4 h-4 animate-spin', className)} />;
 }
 
 // Skeleton loader for cards
 export function CardSkeleton({ className }) {
   return (
-    <div className={cn("bg-white border border-[#e5e7eb] rounded-[8px] p-4 animate-pulse", className)}>
+    <div
+      className={cn('bg-white border border-[#e5e7eb] rounded-[8px] p-4 animate-pulse', className)}
+    >
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-[#f3f4f6] rounded-[8px]" />
         <div className="flex-1 space-y-2">

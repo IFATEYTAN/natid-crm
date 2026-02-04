@@ -28,3 +28,8 @@ dist-ssr
 *.sw?
 
 .env
+
+# Claude Code - keep skills and settings in git
+# but ignore local session files
+.claude/local/
+.claude/*.log

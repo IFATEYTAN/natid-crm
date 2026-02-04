@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import {
-  Link2,
-  Settings,
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  RefreshCw
-} from 'lucide-react';
+import { Link2, Settings, CheckCircle, XCircle, ExternalLink, RefreshCw } from 'lucide-react';
 
 const integrations = [
   {
@@ -21,43 +14,43 @@ const integrations = [
     name: 'Salesforce',
     description: 'סנכרון לקוחות וקריאות עם Salesforce CRM',
     icon: '☁️',
-    status: 'disconnected'
+    status: 'disconnected',
   },
   {
     id: 'hubspot',
     name: 'HubSpot',
     description: 'חיבור ל-HubSpot לניהול לידים ולקוחות',
     icon: '🟠',
-    status: 'disconnected'
+    status: 'disconnected',
   },
   {
     id: 'zapier',
     name: 'Zapier',
     description: 'אוטומציות וחיבור לאלפי אפליקציות',
     icon: '⚡',
-    status: 'disconnected'
+    status: 'disconnected',
   },
   {
     id: 'google_sheets',
     name: 'Google Sheets',
     description: 'ייצוא נתונים אוטומטי לגיליונות',
     icon: '📊',
-    status: 'disconnected'
+    status: 'disconnected',
   },
   {
     id: 'whatsapp',
     name: 'WhatsApp Business',
     description: 'שליחת עדכונים ללקוחות בוואטסאפ',
     icon: '💬',
-    status: 'disconnected'
+    status: 'disconnected',
   },
   {
     id: 'sms',
     name: 'SMS Gateway',
     description: 'שליחת הודעות SMS ללקוחות וספקים',
     icon: '📱',
-    status: 'disconnected'
-  }
+    status: 'disconnected',
+  },
 ];
 
 export default function IntegrationSettingsPage() {
@@ -66,9 +59,9 @@ export default function IntegrationSettingsPage() {
   );
 
   const handleToggle = (id) => {
-    setIntegrationStates(prev => ({
+    setIntegrationStates((prev) => ({
       ...prev,
-      [id]: { ...prev[id], enabled: !prev[id].enabled }
+      [id]: { ...prev[id], enabled: !prev[id].enabled },
     }));
     toast.success('הגדרות נשמרו');
   };
@@ -103,7 +96,7 @@ export default function IntegrationSettingsPage() {
 
       {/* Integrations List */}
       <div className="grid gap-4">
-        {integrations.map(integration => (
+        {integrations.map((integration) => (
           <Card key={integration.id} className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -138,15 +131,17 @@ export default function IntegrationSettingsPage() {
                         type="password"
                         placeholder="הזן מפתח API..."
                         value={integrationStates[integration.id]?.apiKey}
-                        onChange={(e) => setIntegrationStates(prev => ({
-                          ...prev,
-                          [integration.id]: { ...prev[integration.id], apiKey: e.target.value }
-                        }))}
+                        onChange={(e) =>
+                          setIntegrationStates((prev) => ({
+                            ...prev,
+                            [integration.id]: { ...prev[integration.id], apiKey: e.target.value },
+                          }))
+                        }
                         className="mt-1"
                       />
                     </div>
                     <div className="flex items-end gap-2">
-                      <Button 
+                      <Button
                         onClick={() => handleSaveApiKey(integration.id)}
                         className="bg-[#3b82f6] hover:bg-[#2563eb]"
                       >

@@ -3,38 +3,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  ArrowRight, 
-  User, 
-  Car, 
-  MapPin, 
-  Wrench,
-  AlertTriangle,
-  Save,
-  Loader2
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowRight, User, Car, MapPin, Wrench, Save, Loader2 } from 'lucide-react';
 
 const serviceTypeLabels = {
   towing: 'גרירה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   battery: 'מצבר',
   lockout: 'פתיחת רכב',
   fuel: 'דלק',
   accident: 'תאונה',
   mechanical: 'תקלה מכנית',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const vehicleTypeLabels = {
@@ -43,7 +34,7 @@ const vehicleTypeLabels = {
   truck: 'משאית',
   bus: 'אוטובוס',
   van: 'ואן',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 export default function NewCase() {
@@ -65,7 +56,7 @@ export default function NewCase() {
     destination_city: '',
     priority: 'normal',
     problem_description: '',
-    internal_notes: ''
+    internal_notes: '',
   });
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
@@ -77,14 +68,14 @@ export default function NewCase() {
     mutationFn: async (data) => {
       // Generate case number
       const caseNumber = `C-${Date.now().toString().slice(-8)}`;
-      
+
       // Calculate SLA deadlines based on customer
-      const customer = customers.find(c => c.id === data.customer_id);
+      const customer = customers.find((c) => c.id === data.customer_id);
       const now = new Date();
-      
+
       const slaResponseMinutes = customer?.sla_response_minutes || 30;
       const slaArrivalMinutes = customer?.sla_arrival_minutes || 60;
-      
+
       const slaResponseDeadline = new Date(now.getTime() + slaResponseMinutes * 60000);
       const slaArrivalDeadline = new Date(now.getTime() + slaArrivalMinutes * 60000);
 
@@ -103,12 +94,12 @@ export default function NewCase() {
   });
 
   const handleCustomerChange = (customerId) => {
-    const customer = customers.find(c => c.id === customerId);
+    const customer = customers.find((c) => c.id === customerId);
     if (customer) {
       setFormData({
         ...formData,
         customer_id: customerId,
-        customer_name: customer.name
+        customer_name: customer.name,
       });
     }
   };
@@ -122,11 +113,7 @@ export default function NewCase() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div>
@@ -148,15 +135,12 @@ export default function NewCase() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>לקוח</Label>
-                <Select
-                  value={formData.customer_id}
-                  onValueChange={handleCustomerChange}
-                >
+                <Select value={formData.customer_id} onValueChange={handleCustomerChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="בחר לקוח" />
                   </SelectTrigger>
                   <SelectContent>
-                    {customers.map(customer => (
+                    {customers.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id}>
                         {customer.name}
                       </SelectItem>
@@ -168,7 +152,9 @@ export default function NewCase() {
                 <Label>או שם לקוח חדש</Label>
                 <Input
                   value={formData.customer_name}
-                  onChange={(e) => setFormData({ ...formData, customer_name: e.target.value, customer_id: '' })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, customer_name: e.target.value, customer_id: '' })
+                  }
                   placeholder="שם הלקוח"
                 />
               </div>
@@ -224,7 +210,9 @@ export default function NewCase() {
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(vehicleTypeLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -277,7 +265,9 @@ export default function NewCase() {
                 <Label>כתובת יעד</Label>
                 <Input
                   value={formData.destination_address}
-                  onChange={(e) => setFormData({ ...formData, destination_address: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, destination_address: e.target.value })
+                  }
                   placeholder="כתובת יעד (לגרירה)"
                 />
               </div>
@@ -306,7 +296,9 @@ export default function NewCase() {
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(serviceTypeLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -332,7 +324,9 @@ export default function NewCase() {
                 <Label>תיאור התקלה</Label>
                 <Textarea
                   value={formData.problem_description}
-                  onChange={(e) => setFormData({ ...formData, problem_description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, problem_description: e.target.value })
+                  }
                   rows={3}
                   placeholder="תאר את התקלה..."
                 />
@@ -352,15 +346,11 @@ export default function NewCase() {
 
         {/* Actions */}
         <div className="flex justify-end gap-3">
-          <Button 
-            type="button" 
-            variant="outline"
-            onClick={() => navigate(-1)}
-          >
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
             ביטול
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="bg-[#0D47A1] hover:bg-[#1565C0] gap-2"
             disabled={createMutation.isPending}
           >

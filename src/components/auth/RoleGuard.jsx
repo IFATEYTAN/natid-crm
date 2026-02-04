@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { ShieldAlert, Home } from 'lucide-react';
 
 /**
@@ -12,11 +12,11 @@ import { ShieldAlert, Home } from 'lucide-react';
  * @param {React.ReactNode} children - Content to render if authorized
  * @param {React.ReactNode} fallback - Optional fallback content
  */
-export default function RoleGuard({ 
-  allowedRoles = [], 
-  children, 
+export default function RoleGuard({
+  allowedRoles = [],
+  children,
   fallback = null,
-  showAccessDenied = true 
+  showAccessDenied = true,
 }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,11 +27,10 @@ export default function RoleGuard({
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
+
         // Check if user's role is in allowed roles
         // Admin always has access
-        const hasAccess = currentUser?.role === 'admin' || 
-                         allowedRoles.includes(currentUser?.role);
+        const hasAccess = currentUser?.role === 'admin' || allowedRoles.includes(currentUser?.role);
         setAuthorized(hasAccess);
       } catch (error) {
         setAuthorized(false);
@@ -39,7 +38,7 @@ export default function RoleGuard({
         setLoading(false);
       }
     };
-    
+
     checkAuth();
   }, [allowedRoles]);
 
@@ -53,7 +52,7 @@ export default function RoleGuard({
 
   if (!authorized) {
     if (fallback) return fallback;
-    
+
     if (showAccessDenied) {
       return (
         <Card className="max-w-md mx-auto mt-12">
@@ -61,7 +60,7 @@ export default function RoleGuard({
             <ShieldAlert className="w-16 h-16 mx-auto text-red-500 mb-4" />
             <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין הרשאה</h2>
             <p className="text-[#6B778C] mb-6">
-              אין לך הרשאה לצפות בתוכן זה. 
+              אין לך הרשאה לצפות בתוכן זה.
               {user?.role && <span className="block mt-1">התפקיד שלך: {user.role}</span>}
             </p>
             <Link to={createPageUrl('Dashboard')}>
@@ -74,7 +73,7 @@ export default function RoleGuard({
         </Card>
       );
     }
-    
+
     return null;
   }
 
@@ -126,12 +125,12 @@ export function useCurrentUserRole() {
     fetch();
   }, []);
 
-  return { 
-    user, 
-    loading, 
+  return {
+    user,
+    loading,
     isAdmin: user?.role === 'admin',
     isOperator: user?.role === 'operator' || user?.role === 'admin',
     isVendor: user?.role === 'vendor',
-    role: user?.role
+    role: user?.role,
   };
 }

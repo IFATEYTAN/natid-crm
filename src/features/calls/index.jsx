@@ -7,24 +7,24 @@ import { createPageUrl } from '@/utils';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ExportMenu from '@/components/ui/ExportMenu';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Plus,
   Search,
@@ -39,22 +39,22 @@ import {
   XCircle,
   MoreVertical,
   Navigation,
-  Ban
+  Ban,
 } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { AnimatedCard, AnimatedList, PageTransition } from '@/components/animations/AnimatedComponents';
+import { PageTransition } from '@/components/animations/AnimatedComponents';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'סוללה ריקה',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const statusOptions = [
@@ -90,13 +90,14 @@ export default function Calls() {
   });
 
   // Get unique cities
-  const cities = [...new Set(calls.map(c => c.pickup_location_city).filter(Boolean))];
+  const cities = [...new Set(calls.map((c) => c.pickup_location_city).filter(Boolean))];
 
   // Filter calls
-  const filteredCalls = calls.filter(call => {
+  const filteredCalls = calls.filter((call) => {
     // Search filter
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm || 
+    const matchesSearch =
+      !searchTerm ||
       call.call_number?.toLowerCase().includes(searchLower) ||
       call.customer_name?.toLowerCase().includes(searchLower) ||
       call.customer_phone?.includes(searchTerm) ||
@@ -119,8 +120,15 @@ export default function Calls() {
     // VIP filter
     const matchesVip = !vipOnly || call.is_vip === true;
 
-    return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo && 
-           matchesCity && matchesVendor && matchesVip;
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesDateFrom &&
+      matchesDateTo &&
+      matchesCity &&
+      matchesVendor &&
+      matchesVip
+    );
   });
 
   // Pagination
@@ -136,11 +144,11 @@ export default function Calls() {
     const now = new Date();
     const created = parseISO(call.created_date);
     const minutes = differenceInMinutes(now, created);
-    
+
     if (call.call_status === 'completed' || call.call_status === 'cancelled') {
       return call.time_to_completion ? `${call.time_to_completion} דק'` : '-';
     }
-    
+
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}:${mins.toString().padStart(2, '0')}` : `${mins} דק'`;
@@ -163,7 +171,7 @@ export default function Calls() {
       accessor: 'call_number',
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <Link 
+          <Link
             to={createPageUrl(`CallDetails?id=${row.id}`)}
             className="font-semibold text-[#0D47A1] hover:underline"
           >
@@ -175,46 +183,47 @@ export default function Calls() {
             </span>
           )}
         </div>
-      )
+      ),
     },
     {
       header: 'תאריך ושעה',
       accessor: 'created_date',
-      cell: (row) => row.created_date ? (
-        <span className="text-[#616161] caption whitespace-nowrap">
-          {format(parseISO(row.created_date), 'dd/MM/yy HH:mm', { locale: he })}
-        </span>
-      ) : '-'
+      cell: (row) =>
+        row.created_date ? (
+          <span className="text-[#616161] caption whitespace-nowrap">
+            {format(parseISO(row.created_date), 'dd/MM/yy HH:mm', { locale: he })}
+          </span>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'שם לקוח',
       accessor: 'customer_name',
-      cell: (row) => (
-        <span className="font-medium text-[#212121]">{row.customer_name}</span>
-      )
+      cell: (row) => <span className="font-medium text-[#212121]">{row.customer_name}</span>,
     },
     {
       header: 'טלפון',
       accessor: 'customer_phone',
       cell: (row) => (
-        <a 
+        <a
           href={`tel:${row.customer_phone}`}
           className="flex items-center gap-1 text-[#0D47A1] hover:underline"
         >
           <Phone className="w-3 h-3" strokeWidth={2} />
           {row.customer_phone}
         </a>
-      )
+      ),
     },
     {
       header: 'מספר רכב',
       accessor: 'vehicle_plate',
-      cell: (row) => row.vehicle_plate || '-'
+      cell: (row) => row.vehicle_plate || '-',
     },
     {
       header: 'סוג תקלה',
       accessor: 'issue_type',
-      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-'
+      cell: (row) => issueTypeLabels[row.issue_type] || row.issue_type || '-',
     },
     {
       header: 'עיר',
@@ -224,19 +233,18 @@ export default function Calls() {
           <MapPin className="w-3 h-3" strokeWidth={2} />
           {row.pickup_location_city || '-'}
         </span>
-      )
+      ),
     },
     {
       header: 'סטטוס',
       accessor: 'call_status',
-      cell: (row) => <StatusBadge status={row.call_status} />
+      cell: (row) => <StatusBadge status={row.call_status} />,
     },
     {
       header: 'ספק',
       accessor: 'assigned_vendor_name',
-      cell: (row) => row.assigned_vendor_name || (
-        <span className="text-[#9E9E9E] text-sm">טרם שובץ</span>
-      )
+      cell: (row) =>
+        row.assigned_vendor_name || <span className="text-[#9E9E9E] text-sm">טרם שובץ</span>,
     },
     {
       header: 'זמן המתנה',
@@ -246,12 +254,12 @@ export default function Calls() {
           <Clock className="w-3 h-3" strokeWidth={2} />
           {calculateWaitingTime(row)}
         </span>
-      )
+      ),
     },
     {
       header: 'SLA',
       accessor: 'sla_status',
-      cell: (row) => getSlaIcon(row)
+      cell: (row) => getSlaIcon(row),
     },
     {
       header: 'פעולות',
@@ -271,7 +279,8 @@ export default function Calls() {
               </Link>
             </DropdownMenuItem>
 
-            {(row.call_status === 'waiting_treatment' || row.call_status === 'awaiting_assignment') && (
+            {(row.call_status === 'waiting_treatment' ||
+              row.call_status === 'awaiting_assignment') && (
               <DropdownMenuItem asChild className="gap-2 cursor-pointer">
                 <Link to={createPageUrl(`AssignVendor?id=${row.id}`)}>
                   <Truck className="w-4 h-4" />
@@ -301,7 +310,12 @@ export default function Calls() {
             {row.pickup_location_address && (
               <DropdownMenuItem
                 className="gap-2 cursor-pointer"
-                onClick={() => window.open(`https://waze.com/ul?q=${encodeURIComponent(row.pickup_location_address)}`, '_blank')}
+                onClick={() =>
+                  window.open(
+                    `https://waze.com/ul?q=${encodeURIComponent(row.pickup_location_address)}`,
+                    '_blank'
+                  )
+                }
               >
                 <Navigation className="w-4 h-4" />
                 ניווט למיקום
@@ -311,7 +325,10 @@ export default function Calls() {
             {row.call_status !== 'completed' && row.call_status !== 'cancelled' && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild className="gap-2 cursor-pointer text-red-600 focus:text-red-600">
+                <DropdownMenuItem
+                  asChild
+                  className="gap-2 cursor-pointer text-red-600 focus:text-red-600"
+                >
                   <Link to={createPageUrl(`CallDetails?id=${row.id}&action=cancel`)}>
                     <Ban className="w-4 h-4" />
                     ביטול קריאה
@@ -321,7 +338,7 @@ export default function Calls() {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      ),
     },
   ];
 
@@ -339,13 +356,13 @@ export default function Calls() {
   ];
 
   // Prepare export data with formatted values
-  const exportData = filteredCalls.map(call => ({
+  const exportData = filteredCalls.map((call) => ({
     ...call,
     created_date: call.created_date
       ? format(parseISO(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he })
       : '',
     issue_type: issueTypeLabels[call.issue_type] || call.issue_type || '',
-    call_status: statusOptions.find(s => s.value === call.call_status)?.label || call.call_status,
+    call_status: statusOptions.find((s) => s.value === call.call_status)?.label || call.call_status,
     assigned_vendor_name: call.assigned_vendor_name || 'טרם שובץ',
   }));
 
@@ -361,9 +378,7 @@ export default function Calls() {
         >
           <div>
             <h1 className="text-[32px] font-bold text-[#0D47A1] leading-tight">רשימת קריאות</h1>
-            <p className="text-[#616161] text-sm body-2 mt-1">
-              {filteredCalls.length} קריאות
-            </p>
+            <p className="text-[#616161] text-sm body-2 mt-1">{filteredCalls.length} קריאות</p>
           </div>
           <div className="flex gap-2">
             <ExportMenu
@@ -389,105 +404,98 @@ export default function Calls() {
           transition={{ duration: 0.3, delay: 0.1 }}
           className="bg-white rounded-[8px] border border-[#E0E0E0] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
         >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {/* Search */}
-          <div className="lg:col-span-2">
-            <Label className="text-[#616161] text-sm mb-2 block">חיפוש</Label>
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" strokeWidth={2} />
-              <Input
-                placeholder="מספר קריאה, שם לקוח, טלפון, מספר רכב..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="lg:col-span-2">
+              <Label className="text-[#616161] text-sm mb-2 block">חיפוש</Label>
+              <div className="relative">
+                <Search
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9E9E9E]"
+                  strokeWidth={2}
+                />
+                <Input
+                  placeholder="מספר קריאה, שם לקוח, טלפון, מספר רכב..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pr-10"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Status Filter */}
-          <div>
-            <Label className="text-[#616161] text-sm mb-2 block">סטטוס</Label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* City Filter */}
-          <div>
-            <Label className="text-[#616161] text-sm mb-2 block">עיר</Label>
-            <Select value={cityFilter} onValueChange={setCityFilter}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הערים</SelectItem>
-                {cities.map(city => (
-                  <SelectItem key={city} value={city}>{city}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date From */}
-          <div>
-            <Label className="text-[#616161] text-sm mb-2 block">מתאריך</Label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-            />
-          </div>
-
-          {/* Date To */}
-          <div>
-            <Label className="text-[#616161] text-sm mb-2 block">עד תאריך</Label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-            />
-          </div>
-
-          {/* Vendor Filter */}
-          <div>
-            <Label className="text-[#616161] text-sm mb-2 block">ספק</Label>
-            <Select value={vendorFilter} onValueChange={setVendorFilter}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הספקים</SelectItem>
-                {vendors.map(vendor => (
-                  <SelectItem key={vendor.id} value={vendor.id}>
-                    {vendor.vendor_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* VIP Checkbox */}
-          <div className="flex items-end pb-2">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="vip"
-                checked={vipOnly}
-                onCheckedChange={setVipOnly}
-              />
-              <Label htmlFor="vip" className="text-[#212121] text-sm cursor-pointer">
-                VIP בלבד
-              </Label>
+            {/* Status Filter */}
+            <div>
+              <Label className="text-[#616161] text-sm mb-2 block">סטטוס</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
+
+            {/* City Filter */}
+            <div>
+              <Label className="text-[#616161] text-sm mb-2 block">עיר</Label>
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הערים</SelectItem>
+                  {cities.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date From */}
+            <div>
+              <Label className="text-[#616161] text-sm mb-2 block">מתאריך</Label>
+              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+            </div>
+
+            {/* Date To */}
+            <div>
+              <Label className="text-[#616161] text-sm mb-2 block">עד תאריך</Label>
+              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+            </div>
+
+            {/* Vendor Filter */}
+            <div>
+              <Label className="text-[#616161] text-sm mb-2 block">ספק</Label>
+              <Select value={vendorFilter} onValueChange={setVendorFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הספקים</SelectItem>
+                  {vendors.map((vendor) => (
+                    <SelectItem key={vendor.id} value={vendor.id}>
+                      {vendor.vendor_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* VIP Checkbox */}
+            <div className="flex items-end pb-2">
+              <div className="flex items-center gap-2">
+                <Checkbox id="vip" checked={vipOnly} onCheckedChange={setVipOnly} />
+                <Label htmlFor="vip" className="text-[#212121] text-sm cursor-pointer">
+                  VIP בלבד
+                </Label>
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -517,7 +525,7 @@ export default function Calls() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               הקודם
@@ -525,11 +533,9 @@ export default function Calls() {
 
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(page => {
+                .filter((page) => {
                   // Show first, last, current, and pages around current
-                  return page === 1 ||
-                         page === totalPages ||
-                         Math.abs(page - currentPage) <= 1;
+                  return page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
                 })
                 .map((page, idx, arr) => {
                   // Add ellipsis
@@ -538,14 +544,12 @@ export default function Calls() {
 
                   return (
                     <React.Fragment key={page}>
-                      {showEllipsis && (
-                        <span className="px-2 text-[#9E9E9E]">...</span>
-                      )}
+                      {showEllipsis && <span className="px-2 text-[#9E9E9E]">...</span>}
                       <Button
-                        variant={currentPage === page ? "default" : "outline"}
+                        variant={currentPage === page ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setCurrentPage(page)}
-                        className={currentPage === page ? "bg-[#0D47A1]" : ""}
+                        className={currentPage === page ? 'bg-[#0D47A1]' : ''}
                       >
                         {page}
                       </Button>
@@ -557,7 +561,7 @@ export default function Calls() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
               הבא

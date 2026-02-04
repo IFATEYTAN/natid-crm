@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 import {
   BookOpen,
   Phone,
@@ -18,7 +18,7 @@ import {
   AlertCircle,
   HelpCircle,
   Download,
-  Play
+  Play,
 } from 'lucide-react';
 
 export default function UserGuidePage() {
@@ -49,28 +49,40 @@ export default function UserGuidePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">1</div>
+                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">
+                    1
+                  </div>
                   <div>
                     <h4 className="font-medium">לחץ על "קריאה חדשה"</h4>
-                    <p className="text-sm text-[#6B778C]">הכפתור האדום בתפריט הצד או בראש הדשבורד</p>
+                    <p className="text-sm text-[#6B778C]">
+                      הכפתור האדום בתפריט הצד או בראש הדשבורד
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">2</div>
+                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">
+                    2
+                  </div>
                   <div>
                     <h4 className="font-medium">מלא את פרטי הלקוח</h4>
-                    <p className="text-sm text-[#6B778C]">שם, טלפון, ומידע על חברת הביטוח אם רלוונטי</p>
+                    <p className="text-sm text-[#6B778C]">
+                      שם, טלפון, ומידע על חברת הביטוח אם רלוונטי
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">3</div>
+                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">
+                    3
+                  </div>
                   <div>
                     <h4 className="font-medium">הזן את פרטי הרכב והמיקום</h4>
                     <p className="text-sm text-[#6B778C]">מספר רכב, סוג התקלה, וכתובת מדויקת</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">4</div>
+                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold shrink-0">
+                    4
+                  </div>
                   <div>
                     <h4 className="font-medium">שמור ושבץ ספק</h4>
                     <p className="text-sm text-[#6B778C]">המערכת תציע ספקים זמינים באזור</p>
@@ -131,15 +143,15 @@ export default function UserGuidePage() {
                   <AccordionItem value="dashboard">
                     <AccordionTrigger>איך לראות סטטוס קריאות?</AccordionTrigger>
                     <AccordionContent>
-                      בדשבורד הראשי תראה את כל הקריאות הפעילות מסודרות לפי סטטוס. 
-                      קריאות דחופות מסומנות באדום. לחץ על קריאה כדי לראות פרטים מלאים.
+                      בדשבורד הראשי תראה את כל הקריאות הפעילות מסודרות לפי סטטוס. קריאות דחופות
+                      מסומנות באדום. לחץ על קריאה כדי לראות פרטים מלאים.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="map">
                     <AccordionTrigger>איך לעקוב אחר ספקים במפה?</AccordionTrigger>
                     <AccordionContent>
-                      עבור ל"מעקב GPS" בתפריט. תראה את כל הספקים המחוברים על המפה בזמן אמת.
-                      לחץ על סמן ספק כדי לראות פרטים ולהתקשר אליו.
+                      עבור ל"מעקב GPS" בתפריט. תראה את כל הספקים המחוברים על המפה בזמן אמת. לחץ על
+                      סמן ספק כדי לראות פרטים ולהתקשר אליו.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="sla">
@@ -167,24 +179,32 @@ export default function UserGuidePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold shrink-0">1</div>
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold shrink-0">
+                    1
+                  </div>
                   <div>
                     <h4 className="font-medium">התחבר למערכת</h4>
                     <p className="text-sm text-[#6B778C]">השתמש בפרטים שקיבלת מהמוקד</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold shrink-0">2</div>
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold shrink-0">
+                    2
+                  </div>
                   <div>
                     <h4 className="font-medium">סמן את עצמך כזמין</h4>
                     <p className="text-sm text-[#6B778C]">הפעל את מתג הזמינות בפרופיל שלך</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold shrink-0">3</div>
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold shrink-0">
+                    3
+                  </div>
                   <div>
                     <h4 className="font-medium">אפשר שיתוף מיקום</h4>
-                    <p className="text-sm text-[#6B778C]">המוקד יוכל לראות את מיקומך ולשבץ אותך לקריאות קרובות</p>
+                    <p className="text-sm text-[#6B778C]">
+                      המוקד יוכל לראות את מיקומך ולשבץ אותך לקריאות קרובות
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -209,7 +229,7 @@ export default function UserGuidePage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <h4 className="font-medium">תהליך הטיפול:</h4>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
@@ -248,22 +268,22 @@ export default function UserGuidePage() {
                   <AccordionItem value="cancel">
                     <AccordionTrigger>מה עושים אם הלקוח מבטל?</AccordionTrigger>
                     <AccordionContent>
-                      עדכן את סטטוס הקריאה ל"בוטל" והוסף הערה עם סיבת הביטול.
-                      התקשר למוקד אם יש בעיה.
+                      עדכן את סטטוס הקריאה ל"בוטל" והוסף הערה עם סיבת הביטול. התקשר למוקד אם יש
+                      בעיה.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="problem">
                     <AccordionTrigger>מה אם אני לא יכול לטפל בתקלה?</AccordionTrigger>
                     <AccordionContent>
-                      צור קשר מיידי עם המוקד. הם יסייעו למצוא פתרון או ישלחו ספק נוסף.
-                      אל תעזוב את הלקוח לבד.
+                      צור קשר מיידי עם המוקד. הם יסייעו למצוא פתרון או ישלחו ספק נוסף. אל תעזוב את
+                      הלקוח לבד.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="payment">
                     <AccordionTrigger>איך מקבלים תשלום?</AccordionTrigger>
                     <AccordionContent>
-                      התשלומים מעובדים אוטומטית בסוף כל חודש. 
-                      ניתן לראות את הפירוט בדף "התחשבנות" בפורטל הספקים.
+                      התשלומים מעובדים אוטומטית בסוף כל חודש. ניתן לראות את הפירוט בדף "התחשבנות"
+                      בפורטל הספקים.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>

@@ -1,22 +1,30 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/lib/api';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Upload, Download, FileSpreadsheet, CheckCircle2, AlertTriangle, FileCode, FileType } from 'lucide-react';
+} from '@/components/ui/dropdown-menu';
+import {
+  Upload,
+  Download,
+  FileSpreadsheet,
+  CheckCircle2,
+  AlertTriangle,
+  FileCode,
+  FileType,
+} from 'lucide-react';
 import { toast } from 'sonner';
 // html2canvas and jsPDF are loaded dynamically to reduce bundle size
 import { format } from 'date-fns';
@@ -28,7 +36,8 @@ export default function ImportExport({ entityName, data, columns, title }) {
   const [importResult, setImportResult] = useState(null);
   const printRef = useRef(null);
 
-  const getFilename = (ext) => `${entityName || 'export'}_${format(new Date(), 'dd-MM-yyyy')}.${ext}`;
+  const getFilename = (ext) =>
+    `${entityName || 'export'}_${format(new Date(), 'dd-MM-yyyy')}.${ext}`;
 
   const exportToCSV = () => {
     if (!data || data.length === 0) {
@@ -42,7 +51,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
     link.href = URL.createObjectURL(blob);
     link.download = getFilename('csv');
     link.click();
-    
+
     toast.success('קובץ CSV יוצא בהצלחה');
   };
 
@@ -87,7 +96,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
       const canvas = await html2canvas(container, {
         scale: 2, // Higher resolution
         useCORS: true,
-        logging: false
+        logging: false,
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -159,25 +168,30 @@ export default function ImportExport({ entityName, data, columns, title }) {
 
   const generateHTMLTableOnly = (data, columns, pageTitle) => {
     const today = format(new Date(), 'dd/MM/yyyy HH:mm');
-    
-    // Process headers and rows
-    const effectiveColumns = columns && columns.length > 0 
-      ? columns 
-      : Object.keys(data[0] || {}).map(key => ({ header: key, accessor: key }));
 
-    const headers = effectiveColumns.map(col => `<th>${col.header}</th>`).join('');
-    
-    const rows = data.map(row => {
-      const cells = effectiveColumns.map(col => {
-        // Handle custom cell renderers if they return strings/numbers, otherwise use accessor
-        let value = row[col.accessor];
-        if (value === undefined || value === null) value = '';
-        // Note: Complex React components in 'cell' prop won't render here. We rely on accessor or simple values.
-        // For formatted exports, columns should ideally map to string values or we fallback to accessor.
-        return `<td>${value}</td>`;
-      }).join('');
-      return `<tr>${cells}</tr>`;
-    }).join('');
+    // Process headers and rows
+    const effectiveColumns =
+      columns && columns.length > 0
+        ? columns
+        : Object.keys(data[0] || {}).map((key) => ({ header: key, accessor: key }));
+
+    const headers = effectiveColumns.map((col) => `<th>${col.header}</th>`).join('');
+
+    const rows = data
+      .map((row) => {
+        const cells = effectiveColumns
+          .map((col) => {
+            // Handle custom cell renderers if they return strings/numbers, otherwise use accessor
+            let value = row[col.accessor];
+            if (value === undefined || value === null) value = '';
+            // Note: Complex React components in 'cell' prop won't render here. We rely on accessor or simple values.
+            // For formatted exports, columns should ideally map to string values or we fallback to accessor.
+            return `<td>${value}</td>`;
+          })
+          .join('');
+        return `<tr>${cells}</tr>`;
+      })
+      .join('');
 
     return `
       <div class="header">
@@ -202,16 +216,22 @@ export default function ImportExport({ entityName, data, columns, title }) {
   const convertToCSV = (data, columns) => {
     if (!columns || columns.length === 0) {
       const headers = Object.keys(data[0] || {}).join(',');
-      const rows = data.map(row => Object.values(row).map(v => `"${v || ''}"`).join(','));
+      const rows = data.map((row) =>
+        Object.values(row)
+          .map((v) => `"${v || ''}"`)
+          .join(',')
+      );
       return [headers, ...rows].join('\n');
     }
 
-    const headers = columns.map(col => col.header).join(',');
-    const rows = data.map(row => 
-      columns.map(col => {
-        const value = row[col.accessor] || '';
-        return `"${value}"`;
-      }).join(',')
+    const headers = columns.map((col) => col.header).join(',');
+    const rows = data.map((row) =>
+      columns
+        .map((col) => {
+          const value = row[col.accessor] || '';
+          return `"${value}"`;
+        })
+        .join(',')
     );
     return [headers, ...rows].join('\n');
   };
@@ -238,21 +258,21 @@ export default function ImportExport({ entityName, data, columns, title }) {
 
     try {
       const text = await file.text();
-      const lines = text.split('\n').filter(line => line.trim());
-      
+      const lines = text.split('\n').filter((line) => line.trim());
+
       if (lines.length < 2) {
         throw new Error('הקובץ ריק או לא תקין');
       }
 
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));
       const records = [];
       const errors = [];
 
       for (let i = 1; i < lines.length; i++) {
         try {
-          const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+          const values = lines[i].split(',').map((v) => v.trim().replace(/"/g, ''));
           const record = {};
-          
+
           headers.forEach((header, idx) => {
             if (values[idx]) {
               record[header] = values[idx];
@@ -286,24 +306,23 @@ export default function ImportExport({ entityName, data, columns, title }) {
       setImportResult({
         success: successCount,
         failed: failCount,
-        errors: errors.slice(0, 10)
+        errors: errors.slice(0, 10),
       });
 
       if (successCount > 0) {
         toast.success(`${successCount} רשומות יובאו בהצלחה`);
       }
-      
+
       if (failCount > 0) {
         toast.error(`${failCount} רשומות נכשלו`);
       }
-
     } catch (error) {
       console.error('Import error:', error);
       toast.error(`שגיאה בייבוא: ${error.message}`);
       setImportResult({
         success: 0,
         failed: 0,
-        errors: [error.message]
+        errors: [error.message],
       });
     } finally {
       setImporting(false);
@@ -351,12 +370,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>בחר קובץ CSV/Excel</Label>
-              <Input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                disabled={importing}
-              />
+              <Input type="file" accept=".csv" onChange={handleFileChange} disabled={importing} />
               {file && (
                 <div className="flex items-center gap-2 text-sm text-[#616161]">
                   <FileSpreadsheet className="w-4 h-4" />
@@ -385,7 +399,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
                     </span>
                   </div>
                 )}
-                
+
                 {importResult.failed > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 p-3 bg-[#FFEBEE] rounded-lg">
@@ -397,7 +411,9 @@ export default function ImportExport({ entityName, data, columns, title }) {
                     {importResult.errors.length > 0 && (
                       <div className="text-xs text-[#616161] max-h-32 overflow-y-auto">
                         {importResult.errors.map((err, idx) => (
-                          <div key={idx} className="py-1">{err}</div>
+                          <div key={idx} className="py-1">
+                            {err}
+                          </div>
                         ))}
                       </div>
                     )}

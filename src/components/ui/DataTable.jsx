@@ -6,9 +6,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { Inbox, ChevronRight } from 'lucide-react';
 import EmptyState from './EmptyState';
 
@@ -84,11 +84,7 @@ export default function DataTable({
   if (!data || data.length === 0) {
     if (emptyPreset) {
       return (
-        <EmptyState
-          preset={emptyPreset}
-          description={emptyMessage}
-          onAction={onEmptyAction}
-        />
+        <EmptyState preset={emptyPreset} description={emptyMessage} onAction={onEmptyAction} />
       );
     }
     return (
@@ -100,14 +96,15 @@ export default function DataTable({
   }
 
   // Get display columns for mobile (either specified or first 3)
-  const mobileColumns = mobileCardConfig.showFields.length > 0
-    ? columns.filter(col => mobileCardConfig.showFields.includes(col.accessor))
-    : columns.slice(0, 3);
+  const mobileColumns =
+    mobileCardConfig.showFields.length > 0
+      ? columns.filter((col) => mobileCardConfig.showFields.includes(col.accessor))
+      : columns.slice(0, 3);
 
   // Find title, subtitle, and badge columns
-  const titleColumn = columns.find(col => col.accessor === mobileCardConfig.titleAccessor);
-  const subtitleColumn = columns.find(col => col.accessor === mobileCardConfig.subtitleAccessor);
-  const badgeColumn = columns.find(col => col.accessor === mobileCardConfig.badgeAccessor);
+  const titleColumn = columns.find((col) => col.accessor === mobileCardConfig.titleAccessor);
+  const subtitleColumn = columns.find((col) => col.accessor === mobileCardConfig.subtitleAccessor);
+  const badgeColumn = columns.find((col) => col.accessor === mobileCardConfig.badgeAccessor);
 
   return (
     <>
@@ -118,8 +115,9 @@ export default function DataTable({
             key={row.id || rowIdx}
             onClick={() => onRowClick?.(row)}
             className={cn(
-              "card-base card-body transition-all",
-              onRowClick && "cursor-pointer hover:border-neutral-soft-300 hover:shadow-md active:bg-neutral-soft-50"
+              'card-base card-body transition-all',
+              onRowClick &&
+                'cursor-pointer hover:border-neutral-soft-300 hover:shadow-md active:bg-neutral-soft-50'
             )}
           >
             {/* Card Header - Title & Badge */}
@@ -150,10 +148,11 @@ export default function DataTable({
             {/* Card Body - Additional Fields */}
             <div className="space-y-1.5 mt-3 pt-3 border-t border-neutral-soft-100">
               {mobileColumns
-                .filter(col =>
-                  col.accessor !== mobileCardConfig.titleAccessor &&
-                  col.accessor !== mobileCardConfig.subtitleAccessor &&
-                  col.accessor !== mobileCardConfig.badgeAccessor
+                .filter(
+                  (col) =>
+                    col.accessor !== mobileCardConfig.titleAccessor &&
+                    col.accessor !== mobileCardConfig.subtitleAccessor &&
+                    col.accessor !== mobileCardConfig.badgeAccessor
                 )
                 .map((col, colIdx) => (
                   <div key={colIdx} className="flex justify-between items-center text-sm">
@@ -181,13 +180,7 @@ export default function DataTable({
           <TableHeader className="table-header">
             <TableRow>
               {columns.map((col, idx) => (
-                <TableHead
-                  key={idx}
-                  className={cn(
-                    "table-header-cell",
-                    col.className
-                  )}
-                >
+                <TableHead key={idx} className={cn('table-header-cell', col.className)}>
                   {col.header}
                 </TableHead>
               ))}
@@ -198,19 +191,10 @@ export default function DataTable({
               <TableRow
                 key={row.id || rowIdx}
                 onClick={() => onRowClick?.(row)}
-                className={cn(
-                  "table-row",
-                  onRowClick && "cursor-pointer"
-                )}
+                className={cn('table-row', onRowClick && 'cursor-pointer')}
               >
                 {columns.map((col, colIdx) => (
-                  <TableCell
-                    key={colIdx}
-                    className={cn(
-                      "table-cell",
-                      col.cellClassName
-                    )}
-                  >
+                  <TableCell key={colIdx} className={cn('table-cell', col.cellClassName)}>
                     {col.cell ? col.cell(row) : row[col.accessor]}
                   </TableCell>
                 ))}

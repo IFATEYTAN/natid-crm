@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useCalls } from '@/components/hooks/useCalls';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   ChevronRight,
   ChevronLeft,
@@ -22,11 +22,24 @@ import {
   Truck,
   Calendar as CalendarIcon,
   List,
-  LayoutGrid
+  LayoutGrid,
 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, parseISO, isToday } from 'date-fns';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  startOfWeek,
+  endOfWeek,
+  parseISO,
+  isToday,
+} from 'date-fns';
 import { he } from 'date-fns/locale';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const statusColors = {
   waiting_treatment: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -62,12 +75,12 @@ export default function CalendarPage() {
   // Filter calls by status
   const filteredCalls = useMemo(() => {
     if (statusFilter === 'all') return calls;
-    return calls.filter(call => call.call_status === statusFilter);
+    return calls.filter((call) => call.call_status === statusFilter);
   }, [calls, statusFilter]);
 
   // Get calls for a specific date
   const getCallsForDate = (date) => {
-    return filteredCalls.filter(call => {
+    return filteredCalls.filter((call) => {
       const callDate = call.created_date ? parseISO(call.created_date) : null;
       return callDate && isSameDay(callDate, date);
     });
@@ -86,21 +99,21 @@ export default function CalendarPage() {
   const monthStats = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
-    const monthCalls = filteredCalls.filter(call => {
+    const monthCalls = filteredCalls.filter((call) => {
       const callDate = call.created_date ? parseISO(call.created_date) : null;
       return callDate && callDate >= monthStart && callDate <= monthEnd;
     });
-    
+
     return {
       total: monthCalls.length,
-      completed: monthCalls.filter(c => c.call_status === 'completed').length,
-      pending: monthCalls.filter(c => !['completed', 'cancelled'].includes(c.call_status)).length,
-      cancelled: monthCalls.filter(c => c.call_status === 'cancelled').length,
+      completed: monthCalls.filter((c) => c.call_status === 'completed').length,
+      pending: monthCalls.filter((c) => !['completed', 'cancelled'].includes(c.call_status)).length,
+      cancelled: monthCalls.filter((c) => c.call_status === 'cancelled').length,
     };
   }, [filteredCalls, currentDate]);
 
   const navigateMonth = (direction) => {
-    setCurrentDate(prev => direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1));
+    setCurrentDate((prev) => (direction === 'next' ? addMonths(prev, 1) : subMonths(prev, 1)));
   };
 
   const goToToday = () => {
@@ -124,7 +137,9 @@ export default function CalendarPage() {
             <SelectContent>
               <SelectItem value="all">כל הסטטוסים</SelectItem>
               {Object.entries(statusLabels).map(([key, label]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -210,31 +225,35 @@ export default function CalendarPage() {
                       key={i}
                       onClick={() => setSelectedDate(day)}
                       className={cn(
-                        "min-h-[100px] p-2 border rounded-lg cursor-pointer transition-all",
-                        isCurrentMonth ? "bg-white" : "bg-gray-50",
-                        isSelected ? "border-red-500 ring-1 ring-red-500" : "border-[#DFE1E6]",
-                        isTodayDate && "bg-red-50",
-                        "hover:border-red-300"
+                        'min-h-[100px] p-2 border rounded-lg cursor-pointer transition-all',
+                        isCurrentMonth ? 'bg-white' : 'bg-gray-50',
+                        isSelected ? 'border-red-500 ring-1 ring-red-500' : 'border-[#DFE1E6]',
+                        isTodayDate && 'bg-red-50',
+                        'hover:border-red-300'
                       )}
                     >
-                      <div className={cn(
-                        "text-sm font-medium mb-1",
-                        isCurrentMonth ? "text-[#172B4D]" : "text-[#9CA3AF]",
-                        isTodayDate && "text-red-600"
-                      )}>
+                      <div
+                        className={cn(
+                          'text-sm font-medium mb-1',
+                          isCurrentMonth ? 'text-[#172B4D]' : 'text-[#9CA3AF]',
+                          isTodayDate && 'text-red-600'
+                        )}
+                      >
                         {format(day, 'd')}
                       </div>
                       <div className="space-y-1">
                         {dayCalls.slice(0, 3).map((call, idx) => (
-                          <Link 
-                            key={call.id} 
+                          <Link
+                            key={call.id}
                             to={createPageUrl(`CallDetails?id=${call.id}`)}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className={cn(
-                              "text-xs px-1.5 py-0.5 rounded truncate border",
-                              statusColors[call.call_status] || 'bg-gray-100 text-gray-800'
-                            )}>
+                            <div
+                              className={cn(
+                                'text-xs px-1.5 py-0.5 rounded truncate border',
+                                statusColors[call.call_status] || 'bg-gray-100 text-gray-800'
+                              )}
+                            >
                               {call.call_number || call.customer_name}
                             </div>
                           </Link>
@@ -258,10 +277,7 @@ export default function CalendarPage() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <CalendarIcon className="w-4 h-4 text-[#6B778C]" />
-              {selectedDate 
-                ? format(selectedDate, 'EEEE, d בMMMM', { locale: he })
-                : 'בחר תאריך'
-              }
+              {selectedDate ? format(selectedDate, 'EEEE, d בMMMM', { locale: he }) : 'בחר תאריך'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -273,9 +289,9 @@ export default function CalendarPage() {
                     <p className="text-sm">אין קריאות בתאריך זה</p>
                   </div>
                 ) : (
-                  getCallsForDate(selectedDate).map(call => (
-                    <Link 
-                      key={call.id} 
+                  getCallsForDate(selectedDate).map((call) => (
+                    <Link
+                      key={call.id}
                       to={createPageUrl(`CallDetails?id=${call.id}`)}
                       className="block"
                     >
@@ -284,7 +300,7 @@ export default function CalendarPage() {
                           <span className="font-medium text-sm text-[#172B4D]">
                             {call.call_number || `#${call.id?.slice(-6)}`}
                           </span>
-                          <Badge className={cn("text-xs", statusColors[call.call_status])}>
+                          <Badge className={cn('text-xs', statusColors[call.call_status])}>
                             {statusLabels[call.call_status]}
                           </Badge>
                         </div>

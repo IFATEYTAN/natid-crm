@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import StatCard from '@/components/ui/StatCard';
@@ -18,12 +18,12 @@ import {
   FileText,
   Activity,
   Truck,
-  DollarSign
+  DollarSign,
 } from 'lucide-react';
 import VendorAIInsights from '@/components/ai/VendorAIInsights';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function VendorProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -40,19 +40,22 @@ export default function VendorProfile() {
 
   const { data: calls = [], isLoading: callsLoading } = useQuery({
     queryKey: ['vendor-calls', vendorId],
-    queryFn: () => base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50),
+    queryFn: () =>
+      base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50),
     enabled: !!vendorId,
   });
 
   const { data: ratings = [] } = useQuery({
     queryKey: ['vendor-ratings', vendorId],
-    queryFn: () => base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20),
+    queryFn: () =>
+      base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
   const { data: payments = [] } = useQuery({
     queryKey: ['vendor-payments', vendorId],
-    queryFn: () => base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20),
+    queryFn: () =>
+      base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
@@ -65,7 +68,11 @@ export default function VendorProfile() {
   const { data: location } = useQuery({
     queryKey: ['vendor-location', vendorId],
     queryFn: async () => {
-      const locations = await base44.entities.VendorLocation.filter({ vendor_id: vendorId }, '-created_date', 1);
+      const locations = await base44.entities.VendorLocation.filter(
+        { vendor_id: vendorId },
+        '-created_date',
+        1
+      );
       return locations[0];
     },
     enabled: !!vendorId,
@@ -91,40 +98,49 @@ export default function VendorProfile() {
       <div className="text-center py-12">
         <p className="text-[#616161]">ספק לא נמצא</p>
         <Link to={createPageUrl('ServiceProviders')}>
-          <Button variant="outline" className="mt-4">חזרה לספקים</Button>
+          <Button variant="outline" className="mt-4">
+            חזרה לספקים
+          </Button>
         </Link>
       </div>
     );
   }
 
-  const activeContract = contracts.find(c => c.status === 'active');
-  const completedCalls = calls.filter(c => c.call_status === 'completed').length;
-  const avgRating = ratings.length > 0 
-    ? (ratings.reduce((acc, r) => acc + r.overall_rating, 0) / ratings.length).toFixed(1)
-    : vendor.average_rating || 0;
+  const activeContract = contracts.find((c) => c.status === 'active');
+  const completedCalls = calls.filter((c) => c.call_status === 'completed').length;
+  const avgRating =
+    ratings.length > 0
+      ? (ratings.reduce((acc, r) => acc + r.overall_rating, 0) / ratings.length).toFixed(1)
+      : vendor.average_rating || 0;
 
   const callColumns = [
     {
       header: 'מספר קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link to={createPageUrl('CallDetails') + '?id=' + row.id} className="text-[#0078D4] hover:underline">
+        <Link
+          to={createPageUrl('CallDetails') + '?id=' + row.id}
+          className="text-[#0078D4] hover:underline"
+        >
           {row.call_number}
         </Link>
-      )
+      ),
     },
     {
       header: 'לקוח',
-      accessor: 'customer_name'
+      accessor: 'customer_name',
     },
     {
       header: 'סטטוס',
-      cell: (row) => <StatusBadge status={row.call_status} size="sm" />
+      cell: (row) => <StatusBadge status={row.call_status} size="sm" />,
     },
     {
       header: 'תאריך',
-      cell: (row) => row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy HH:mm', { locale: he }) : '-'
-    }
+      cell: (row) =>
+        row.created_date
+          ? format(parseISO(row.created_date), 'dd/MM/yyyy HH:mm', { locale: he })
+          : '-',
+    },
   ];
 
   const ratingColumns = [
@@ -132,10 +148,13 @@ export default function VendorProfile() {
       header: 'קריאה',
       accessor: 'call_number',
       cell: (row) => (
-        <Link to={createPageUrl('CallDetails') + '?id=' + row.call_id} className="text-[#0078D4] hover:underline">
+        <Link
+          to={createPageUrl('CallDetails') + '?id=' + row.call_id}
+          className="text-[#0078D4] hover:underline"
+        >
           {row.call_number}
         </Link>
-      )
+      ),
     },
     {
       header: 'דירוג',
@@ -144,17 +163,18 @@ export default function VendorProfile() {
           <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
           <span className="font-medium">{row.overall_rating}</span>
         </div>
-      )
+      ),
     },
     {
       header: 'משוב',
       accessor: 'feedback',
-      cell: (row) => row.feedback ? row.feedback.substring(0, 50) + '...' : '-'
+      cell: (row) => (row.feedback ? row.feedback.substring(0, 50) + '...' : '-'),
     },
     {
       header: 'תאריך',
-      cell: (row) => row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-'
-    }
+      cell: (row) =>
+        row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-',
+    },
   ];
 
   const paymentColumns = [
@@ -165,23 +185,24 @@ export default function VendorProfile() {
           call_payment: 'תשלום קריאה',
           monthly_fee: 'דמי חודש',
           bonus: 'בונוס',
-          adjustment: 'התאמה'
+          adjustment: 'התאמה',
         };
         return types[row.payment_type] || row.payment_type;
-      }
+      },
     },
     {
       header: 'סכום',
-      cell: (row) => `₪${row.amount.toLocaleString()}`
+      cell: (row) => `₪${row.amount.toLocaleString()}`,
     },
     {
       header: 'סטטוס',
-      cell: (row) => <StatusBadge status={row.status} size="sm" />
+      cell: (row) => <StatusBadge status={row.status} size="sm" />,
     },
     {
       header: 'תאריך',
-      cell: (row) => row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-'
-    }
+      cell: (row) =>
+        row.created_date ? format(parseISO(row.created_date), 'dd/MM/yyyy', { locale: he }) : '-',
+    },
   ];
 
   return (
@@ -208,7 +229,11 @@ export default function VendorProfile() {
           <div>
             <h1 className="text-[32px] font-bold text-[#212121]">{vendor.vendor_name}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <StatusBadge status={vendor.availability_status || (vendor.is_available_now ? 'available' : 'offline')} />
+              <StatusBadge
+                status={
+                  vendor.availability_status || (vendor.is_available_now ? 'available' : 'offline')
+                }
+              />
               {location && (
                 <span className="text-sm text-[#616161] flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
@@ -238,18 +263,28 @@ export default function VendorProfile() {
         <StatCard
           title="קריאות הושלמו"
           value={completedCalls}
+          variant="success"
+          to={createPageUrl('Calls') + `?vendor=${vendorId}`}
         />
         <StatCard
           title="דירוג ממוצע"
           value={avgRating}
+          variant="warning"
+          to={createPageUrl('CustomerFeedback')}
         />
         <StatCard
           title="זמן תגובה ממוצע"
-          value={vendor.average_response_time ? `${Math.round(vendor.average_response_time)} דק'` : '-'}
+          value={
+            vendor.average_response_time ? `${Math.round(vendor.average_response_time)} דק'` : '-'
+          }
+          variant="primary"
+          to={createPageUrl('Reports')}
         />
         <StatCard
           title="תשלומים ממתינים"
           value={`₪${vendor.pending_payments?.toLocaleString() || 0}`}
+          variant="info"
+          to={createPageUrl('VendorContracts')}
         />
       </div>
 
@@ -319,13 +354,17 @@ export default function VendorProfile() {
                   <div>
                     <p className="text-sm text-[#616161]">תאריך סיום</p>
                     <p className="font-medium">
-                      {activeContract.end_date ? format(parseISO(activeContract.end_date), 'dd/MM/yyyy', { locale: he }) : '-'}
+                      {activeContract.end_date
+                        ? format(parseISO(activeContract.end_date), 'dd/MM/yyyy', { locale: he })
+                        : '-'}
                     </p>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm text-[#616161]">תעריף לקריאה</p>
-                  <p className="font-medium">₪{activeContract.rate_per_call?.toLocaleString() || '-'}</p>
+                  <p className="font-medium">
+                    ₪{activeContract.rate_per_call?.toLocaleString() || '-'}
+                  </p>
                 </div>
               </div>
             ) : (
@@ -362,19 +401,11 @@ export default function VendorProfile() {
         </TabsContent>
 
         <TabsContent value="ratings">
-          <DataTable
-            columns={ratingColumns}
-            data={ratings}
-            emptyMessage="אין דירוגים"
-          />
+          <DataTable columns={ratingColumns} data={ratings} emptyMessage="אין דירוגים" />
         </TabsContent>
 
         <TabsContent value="payments">
-          <DataTable
-            columns={paymentColumns}
-            data={payments}
-            emptyMessage="אין תשלומים"
-          />
+          <DataTable columns={paymentColumns} data={payments} emptyMessage="אין תשלומים" />
         </TabsContent>
       </Tabs>
     </div>

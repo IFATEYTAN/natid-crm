@@ -1,6 +1,6 @@
 /**
  * Custom Hook for Calls
- * 
+ *
  * This hook encapsulates all React Query logic for the calls feature.
  * Components use this hook instead of directly using useQuery.
  */
@@ -127,7 +127,7 @@ export const useAssignVendor = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ callId, vendorId, vendorName }) => 
+    mutationFn: ({ callId, vendorId, vendorName }) =>
       base44.entities.Call.update(callId, {
         assigned_vendor_id: vendorId,
         assigned_vendor_name: vendorName,

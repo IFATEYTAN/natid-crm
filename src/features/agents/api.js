@@ -13,12 +13,12 @@ export const getUsers = (sort = '-created_date') => {
 // Get agents only (users with role 'user')
 export const getAgents = async () => {
   const users = await base44.entities.User.list();
-  return users.filter(u => u.role === 'user');
+  return users.filter((u) => u.role === 'user');
 };
 
 // Get a single user by ID
 export const getUserById = (id) => {
-  return base44.entities.User.filter({ id }).then(users => users[0]);
+  return base44.entities.User.filter({ id }).then((users) => users[0]);
 };
 
 // Filter users with custom criteria

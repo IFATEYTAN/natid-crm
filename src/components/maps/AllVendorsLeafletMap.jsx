@@ -21,31 +21,32 @@ const availabilityColors = {
   available: 'green',
   busy: 'orange',
   offline: 'grey',
-  on_break: 'yellow'
+  on_break: 'yellow',
 };
 
 const availabilityLabels = {
   available: 'זמין',
   busy: 'עסוק',
   offline: 'לא מחובר',
-  on_break: 'בהפסקה'
+  on_break: 'בהפסקה',
 };
 
 const availabilityBadgeColors = {
   available: 'bg-green-100 text-green-800',
   busy: 'bg-orange-100 text-orange-800',
   offline: 'bg-gray-100 text-gray-800',
-  on_break: 'bg-yellow-100 text-yellow-800'
+  on_break: 'bg-yellow-100 text-yellow-800',
 };
 
-const createIcon = (color) => new L.Icon({
-  iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+const createIcon = (color) =>
+  new L.Icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
 
 const serviceTypeLabels = {
   tow_truck: 'גרר',
@@ -53,10 +54,13 @@ const serviceTypeLabels = {
   tire_service: 'צמיגים',
   locksmith: 'מנעולן',
   fuel_delivery: 'דלק',
-  multi_service: 'שירות מולט'
+  multi_service: 'שירות מולט',
 };
 
-export default function AllVendorsLeafletMap({ vendorsWithLocation = [], mapCenter = [31.7683, 35.2137] }) {
+export default function AllVendorsLeafletMap({
+  vendorsWithLocation = [],
+  mapCenter = [31.7683, 35.2137],
+}) {
   useEffect(() => {
     return () => {
       if (window._allVendorsMap) {
@@ -72,13 +76,15 @@ export default function AllVendorsLeafletMap({ vendorsWithLocation = [], mapCent
       center={mapCenter}
       zoom={8}
       style={{ height: '100%', width: '100%' }}
-      whenCreated={(map) => { window._allVendorsMap = map; }}
+      whenCreated={(map) => {
+        window._allVendorsMap = map;
+      }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {vendorsWithLocation.map(vendor => (
+      {vendorsWithLocation.map((vendor) => (
         <Marker
           key={vendor.id}
           position={[vendor.current_latitude, vendor.current_longitude]}
@@ -92,7 +98,9 @@ export default function AllVendorsLeafletMap({ vendorsWithLocation = [], mapCent
                 </div>
                 <div>
                   <div className="font-semibold text-[#111827]">{vendor.vendor_name}</div>
-                  <Badge className={cn('text-xs', availabilityBadgeColors[vendor.availability_status])}>
+                  <Badge
+                    className={cn('text-xs', availabilityBadgeColors[vendor.availability_status])}
+                  >
                     {availabilityLabels[vendor.availability_status]}
                   </Badge>
                 </div>
@@ -110,7 +118,7 @@ export default function AllVendorsLeafletMap({ vendorsWithLocation = [], mapCent
                 )}
                 {vendor.service_type?.length > 0 && (
                   <div className="text-xs text-[#6b7280]">
-                    {vendor.service_type.map(t => serviceTypeLabels[t] || t).join(', ')}
+                    {vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')}
                   </div>
                 )}
               </div>

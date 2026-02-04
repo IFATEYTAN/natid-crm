@@ -2,26 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatusBadge from '@/components/ui/StatusBadge';
 import NavigationMap from '@/components/maps/NavigationMap';
 import LiveLocationTracker from '@/components/maps/LiveLocationTracker';
-import { 
+import {
   ArrowRight,
   Phone,
   MapPin,
   Navigation,
   CheckCircle2,
-  Clock,
   User,
   Car,
   AlertTriangle,
-  MessageSquare,
   PlayCircle,
   StopCircle,
-  Camera
+  Camera,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -29,13 +26,13 @@ import { he } from 'date-fns/locale';
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'סוללה ריקה',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 export default function CallDetailsVendor() {
@@ -63,7 +60,7 @@ export default function CallDetailsVendor() {
     queryFn: () => base44.entities.Vendor.list(),
   });
 
-  const currentVendor = vendors.find(v => v.email === user?.email);
+  const currentVendor = vendors.find((v) => v.email === user?.email);
 
   // Import Chat
   const CallChat = React.lazy(() => import('@/components/chat/CallChat'));
@@ -75,7 +72,7 @@ export default function CallDetailsVendor() {
         try {
           const result = await base44.functions.invoke('calculateDistanceAndETA', {
             callId: call.id,
-            vendorId: currentVendor.id
+            vendorId: currentVendor.id,
           });
           setDistanceData(result.data);
         } catch (error) {
@@ -88,13 +85,13 @@ export default function CallDetailsVendor() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ status, additionalData = {} }) => {
-      const updates = { 
+      const updates = {
         call_status: status,
-        ...additionalData
+        ...additionalData,
       };
-      
+
       await base44.entities.Call.update(callId, updates);
-      
+
       // Log history
       await base44.entities.CallHistory.create({
         call_id: callId,
@@ -103,7 +100,7 @@ export default function CallDetailsVendor() {
         old_value: call.call_status,
         new_value: status,
         notes: note || `הספק עדכן סטטוס ל-${status}`,
-        changed_by: currentVendor?.vendor_name || user?.email
+        changed_by: currentVendor?.vendor_name || user?.email,
       });
     },
     onSuccess: () => {
@@ -119,7 +116,7 @@ export default function CallDetailsVendor() {
         call_number: call.call_number,
         change_type: 'note',
         notes: note,
-        changed_by: currentVendor?.vendor_name || user?.email
+        changed_by: currentVendor?.vendor_name || user?.email,
       });
     },
     onSuccess: () => {
@@ -156,21 +153,25 @@ export default function CallDetailsVendor() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Live Location Tracker - Only when active */}
-      {currentVendor && (call.call_status === 'vendor_enroute' || call.call_status === 'in_progress') && (
-        <LiveLocationTracker 
-          vendorId={currentVendor.id}
-          autoStart={true}
-          onLocationUpdate={() => {
-            // Recalculate distance when location updates
-            if (call?.id && currentVendor?.id) {
-              base44.functions.invoke('calculateDistanceAndETA', {
-                callId: call.id,
-                vendorId: currentVendor.id
-              }).then(result => setDistanceData(result.data)).catch(console.error);
-            }
-          }}
-        />
-      )}
+      {currentVendor &&
+        (call.call_status === 'vendor_enroute' || call.call_status === 'in_progress') && (
+          <LiveLocationTracker
+            vendorId={currentVendor.id}
+            autoStart={true}
+            onLocationUpdate={() => {
+              // Recalculate distance when location updates
+              if (call?.id && currentVendor?.id) {
+                base44.functions
+                  .invoke('calculateDistanceAndETA', {
+                    callId: call.id,
+                    vendorId: currentVendor.id,
+                  })
+                  .then((result) => setDistanceData(result.data))
+                  .catch(console.error);
+              }
+            }}
+          />
+        )}
 
       {/* Navigation Map */}
       {call?.pickup_location_lat && call?.pickup_location_lon && distanceData && (
@@ -179,7 +180,7 @@ export default function CallDetailsVendor() {
           callLocation={{
             lat: call.pickup_location_lat,
             lon: call.pickup_location_lon,
-            address: call.pickup_location_address
+            address: call.pickup_location_address,
           }}
           distance={distanceData.roadDistance}
           duration={distanceData.duration}
@@ -191,11 +192,7 @@ export default function CallDetailsVendor() {
 
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div className="flex-1">
@@ -203,7 +200,8 @@ export default function CallDetailsVendor() {
             קריאה {call.call_number || `#${call.id?.slice(-6)}`}
           </h2>
           <p className="text-sm text-[#616161]">
-            {call.created_date && format(parseISO(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he })}
+            {call.created_date &&
+              format(parseISO(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he })}
           </p>
         </div>
         <StatusBadge status={call.call_status} />
@@ -222,10 +220,12 @@ export default function CallDetailsVendor() {
         {canAccept && (
           <Button
             className="bg-[#2E7D32] hover:bg-[#388E3C] text-white gap-2"
-            onClick={() => updateStatusMutation.mutate({ 
-              status: 'vendor_enroute',
-              additionalData: { assigned_at: new Date().toISOString() }
-            })}
+            onClick={() =>
+              updateStatusMutation.mutate({
+                status: 'vendor_enroute',
+                additionalData: { assigned_at: new Date().toISOString() },
+              })
+            }
             disabled={updateStatusMutation.isPending}
           >
             <CheckCircle2 className="w-4 h-4" />
@@ -236,10 +236,12 @@ export default function CallDetailsVendor() {
         {canStart && (
           <Button
             className="bg-[#0288D1] hover:bg-[#0277BD] text-white gap-2"
-            onClick={() => updateStatusMutation.mutate({ 
-              status: 'in_progress',
-              additionalData: { vendor_arrival_time_actual: new Date().toISOString() }
-            })}
+            onClick={() =>
+              updateStatusMutation.mutate({
+                status: 'in_progress',
+                additionalData: { vendor_arrival_time_actual: new Date().toISOString() },
+              })
+            }
             disabled={updateStatusMutation.isPending}
           >
             <PlayCircle className="w-4 h-4" />
@@ -250,10 +252,12 @@ export default function CallDetailsVendor() {
         {canComplete && (
           <Button
             className="bg-[#388E3C] hover:bg-[#2E7D32] text-white gap-2"
-            onClick={() => updateStatusMutation.mutate({ 
-              status: 'completed',
-              additionalData: { closed_at: new Date().toISOString() }
-            })}
+            onClick={() =>
+              updateStatusMutation.mutate({
+                status: 'completed',
+                additionalData: { closed_at: new Date().toISOString() },
+              })
+            }
             disabled={updateStatusMutation.isPending}
           >
             <StopCircle className="w-4 h-4" />
@@ -400,10 +404,10 @@ export default function CallDetailsVendor() {
 
       {/* Chat / Messages */}
       <React.Suspense fallback={<div>טוען צ'אט...</div>}>
-        <CallChat 
-          callId={callId} 
-          currentUserRole="vendor" 
-          currentUserName={currentVendor?.vendor_name || 'ספק'} 
+        <CallChat
+          callId={callId}
+          currentUserRole="vendor"
+          currentUserName={currentVendor?.vendor_name || 'ספק'}
         />
       </React.Suspense>
     </div>
@@ -430,7 +434,7 @@ function PhotoGallery({ callId, vendorId }) {
     damage: 'תקלה/נזק',
     customer_document: 'מסמך לקוח',
     customer_signature: 'חתימת לקוח',
-    other: 'אחר'
+    other: 'אחר',
   };
 
   const handleFileUpload = async (e) => {
@@ -444,28 +448,28 @@ function PhotoGallery({ callId, vendorId }) {
 
     try {
       setUploading(true);
-      
+
       // Upload file
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      
+
       // Prompt for category
       const category = prompt(
         'בחר קטגוריה:\n1. לפני טיפול\n2. אחרי טיפול\n3. תקלה/נזק\n4. מסמך לקוח\n5. חתימת לקוח\n6. אחר',
         '1'
       );
-      
+
       const categoryMap = {
-        '1': 'before_treatment',
-        '2': 'after_treatment',
-        '3': 'damage',
-        '4': 'customer_document',
-        '5': 'customer_signature',
-        '6': 'other'
+        1: 'before_treatment',
+        2: 'after_treatment',
+        3: 'damage',
+        4: 'customer_document',
+        5: 'customer_signature',
+        6: 'other',
       };
-      
+
       const selectedCategory = categoryMap[category] || 'other';
       const note = prompt('הערה (אופציונלי):');
-      
+
       // Create photo record
       await base44.entities.CallPhoto.create({
         call_id: callId,
@@ -474,17 +478,17 @@ function PhotoGallery({ callId, vendorId }) {
         file_name: file.name,
         file_size: Math.round(file.size / 1024),
         category: selectedCategory,
-        note: note || ''
+        note: note || '',
       });
-      
+
       // Log to history
       await base44.entities.CallHistory.create({
         call_id: callId,
         change_type: 'other',
         notes: `הועלתה תמונה: ${categoryLabels[selectedCategory]}`,
-        changed_by: vendorId
+        changed_by: vendorId,
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
       alert('התמונה הועלתה בהצלחה');
     } catch (error) {
@@ -508,12 +512,7 @@ function PhotoGallery({ callId, vendorId }) {
           disabled={uploading}
         />
         <label htmlFor="photo-upload">
-          <Button 
-            variant="outline" 
-            className="gap-2 cursor-pointer"
-            disabled={uploading}
-            asChild
-          >
+          <Button variant="outline" className="gap-2 cursor-pointer" disabled={uploading} asChild>
             <span>
               <Camera className="w-4 h-4" />
               {uploading ? 'מעלה...' : 'הוסף תמונה'}
@@ -525,21 +524,19 @@ function PhotoGallery({ callId, vendorId }) {
       {/* Photo Grid */}
       {photos.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {photos.map(photo => (
-            <div 
+          {photos.map((photo) => (
+            <div
               key={photo.id}
               className="relative aspect-square rounded-lg overflow-hidden border border-[#E0E0E0] cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => setSelectedImage(photo)}
             >
-              <img 
-                src={photo.file_url} 
-                alt={photo.note || 'תמונה'} 
+              <img
+                src={photo.file_url}
+                alt={photo.note || 'תמונה'}
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
-                <p className="text-white text-xs font-medium">
-                  {categoryLabels[photo.category]}
-                </p>
+                <p className="text-white text-xs font-medium">{categoryLabels[photo.category]}</p>
               </div>
             </div>
           ))}
@@ -552,13 +549,13 @@ function PhotoGallery({ callId, vendorId }) {
 
       {/* Image Modal */}
       {selectedImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedImage(null)}
         >
           <div className="max-w-4xl w-full bg-white rounded-lg overflow-hidden">
-            <img 
-              src={selectedImage.file_url} 
+            <img
+              src={selectedImage.file_url}
               alt={selectedImage.note || 'תמונה'}
               className="w-full max-h-[70vh] object-contain"
             />
@@ -568,7 +565,8 @@ function PhotoGallery({ callId, vendorId }) {
                 <p className="text-sm text-[#616161] mb-2">{selectedImage.note}</p>
               )}
               <p className="text-xs text-[#9E9E9E]">
-                {selectedImage.created_date && format(parseISO(selectedImage.created_date), 'dd/MM/yy HH:mm', { locale: he })}
+                {selectedImage.created_date &&
+                  format(parseISO(selectedImage.created_date), 'dd/MM/yy HH:mm', { locale: he })}
               </p>
             </div>
           </div>

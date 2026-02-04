@@ -5,32 +5,21 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatCard from '@/components/ui/StatCard';
 import DataTable from '@/components/ui/DataTable';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ListTodo,
-  Clock,
-  CheckCircle2,
-  Timer,
-  Phone,
-  Play,
-  X,
-  Star
-} from 'lucide-react';
-import { format, parseISO, differenceInMinutes } from 'date-fns';
-import { he } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ListTodo, Clock, CheckCircle2, Timer, Phone, Play, X } from 'lucide-react';
+import { parseISO, differenceInMinutes } from 'date-fns';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'כבה בנסיעה',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אין דלק',
   dead_battery: 'סוללה ריקה',
   locked_keys: 'מפתחות ננעלו',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 export default function MyQueue() {
@@ -55,27 +44,26 @@ export default function MyQueue() {
   });
 
   // Filter queues
-  const myQueue = queueItems.filter(q => 
-    q.assigned_to_agent === user?.email && 
-    q.queue_status === 'assigned_to_agent'
+  const myQueue = queueItems.filter(
+    (q) => q.assigned_to_agent === user?.email && q.queue_status === 'assigned_to_agent'
   );
 
-  const inProgress = queueItems.filter(q => 
-    q.assigned_to_agent === user?.email && 
-    q.queue_status === 'in_progress'
+  const inProgress = queueItems.filter(
+    (q) => q.assigned_to_agent === user?.email && q.queue_status === 'in_progress'
   );
 
-  const completed = queueItems.filter(q => 
-    q.assigned_to_agent === user?.email && 
-    q.queue_status === 'completed'
+  const completed = queueItems.filter(
+    (q) => q.assigned_to_agent === user?.email && q.queue_status === 'completed'
   );
 
   // Join with calls data
   const enrichQueue = (queue) => {
-    return queue.map(q => {
-      const call = calls.find(c => c.id === q.call_id);
-      return { ...q, call };
-    }).filter(q => q.call);
+    return queue
+      .map((q) => {
+        const call = calls.find((c) => c.id === q.call_id);
+        return { ...q, call };
+      })
+      .filter((q) => q.call);
   };
 
   const myQueueEnriched = enrichQueue(myQueue);
@@ -83,21 +71,24 @@ export default function MyQueue() {
   const completedEnriched = enrichQueue(completed);
 
   // Calculate stats
-  const avgCompleteTime = completed.length > 0
-    ? Math.round(completed.reduce((sum, q) => sum + (q.time_to_complete || 0), 0) / completed.length)
-    : 0;
+  const avgCompleteTime =
+    completed.length > 0
+      ? Math.round(
+          completed.reduce((sum, q) => sum + (q.time_to_complete || 0), 0) / completed.length
+        )
+      : 0;
 
   const startWorkMutation = useMutation({
     mutationFn: async (queueId) => {
       const now = new Date().toISOString();
       await base44.entities.WorkQueue.update(queueId, {
         queue_status: 'in_progress',
-        started_work_at: now
+        started_work_at: now,
       });
     },
     onSuccess: (_, queueId) => {
       queryClient.invalidateQueries({ queryKey: ['myQueue'] });
-      const queue = queueItems.find(q => q.id === queueId);
+      const queue = queueItems.find((q) => q.id === queueId);
       if (queue?.call_id) {
         navigate(createPageUrl(`CaseDetails?id=${queue.call_id}`));
       }
@@ -108,7 +99,7 @@ export default function MyQueue() {
     mutationFn: async (queueId) => {
       await base44.entities.WorkQueue.update(queueId, {
         queue_status: 'rejected',
-        assigned_to_agent: null
+        assigned_to_agent: null,
       });
     },
     onSuccess: () => {
@@ -118,20 +109,20 @@ export default function MyQueue() {
 
   const completeMutation = useMutation({
     mutationFn: async (queueId) => {
-      const queue = queueItems.find(q => q.id === queueId);
+      const queue = queueItems.find((q) => q.id === queueId);
       const now = new Date();
-      const timeInQueue = queue.added_to_queue_at 
+      const timeInQueue = queue.added_to_queue_at
         ? differenceInMinutes(now, parseISO(queue.added_to_queue_at))
         : 0;
       const timeToComplete = queue.started_work_at
         ? differenceInMinutes(now, parseISO(queue.started_work_at))
         : 0;
-      
+
       await base44.entities.WorkQueue.update(queueId, {
         queue_status: 'completed',
         completed_at: now.toISOString(),
         time_in_queue: timeInQueue,
-        time_to_complete: timeToComplete
+        time_to_complete: timeToComplete,
       });
     },
     onSuccess: () => {
@@ -161,7 +152,7 @@ export default function MyQueue() {
         <span className="text-xl" title={`${row.priority_score} נקודות`}>
           {getPriorityStars(row.priority_score)}
         </span>
-      )
+      ),
     },
     {
       header: 'מספר קריאה',
@@ -170,61 +161,65 @@ export default function MyQueue() {
         <span className="font-semibold text-[#0078D4]">
           {row.call?.call_number || `#${row.call_id?.slice(-6)}`}
         </span>
-      )
+      ),
     },
     {
       header: 'זמן בתור',
       accessor: 'added_to_queue_at',
       cell: (row) => {
-        const minutes = row.added_to_queue_at 
+        const minutes = row.added_to_queue_at
           ? differenceInMinutes(new Date(), parseISO(row.added_to_queue_at))
           : 0;
         const isWarning = minutes > 10;
         const isDanger = minutes > 20;
-        
+
         return (
-          <span className={
-            isDanger ? 'text-[#D32F2F] font-bold' : 
-            isWarning ? 'text-[#ED6C02] font-semibold' : 
-            'text-[#616161]'
-          }>
+          <span
+            className={
+              isDanger
+                ? 'text-[#D32F2F] font-bold'
+                : isWarning
+                  ? 'text-[#ED6C02] font-semibold'
+                  : 'text-[#616161]'
+            }
+          >
             {getTimeInQueue(row.added_to_queue_at)}
           </span>
         );
-      }
+      },
     },
     {
       header: 'לקוח',
       accessor: 'call.customer_name',
-      cell: (row) => <span className="font-medium">{row.call?.customer_name}</span>
+      cell: (row) => <span className="font-medium">{row.call?.customer_name}</span>,
     },
     {
       header: 'טלפון',
       accessor: 'call.customer_phone',
       cell: (row) => (
-        <a 
+        <a
           href={`tel:${row.call?.customer_phone}`}
           className="flex items-center gap-1 text-[#0078D4] hover:underline"
         >
           <Phone className="w-3 h-3" />
           {row.call?.customer_phone}
         </a>
-      )
+      ),
     },
     {
       header: 'רכב',
       accessor: 'call.vehicle_plate',
-      cell: (row) => row.call?.vehicle_plate || '-'
+      cell: (row) => row.call?.vehicle_plate || '-',
     },
     {
       header: 'תקלה',
       accessor: 'call.issue_type',
-      cell: (row) => issueTypeLabels[row.call?.issue_type] || row.call?.issue_type || '-'
+      cell: (row) => issueTypeLabels[row.call?.issue_type] || row.call?.issue_type || '-',
     },
     {
       header: 'עיר',
       accessor: 'call.pickup_location_city',
-      cell: (row) => row.call?.pickup_location_city || '-'
+      cell: (row) => row.call?.pickup_location_city || '-',
     },
     {
       header: 'פעולות',
@@ -249,7 +244,7 @@ export default function MyQueue() {
             <X className="w-3 h-3" />
           </Button>
         </div>
-      )
+      ),
     },
   ];
 
@@ -261,21 +256,19 @@ export default function MyQueue() {
         <span className="font-semibold text-[#0078D4]">
           {row.call?.call_number || `#${row.call_id?.slice(-6)}`}
         </span>
-      )
+      ),
     },
     {
       header: 'זמן טיפול',
       accessor: 'started_work_at',
       cell: (row) => (
-        <span className="text-[#0288D1] font-medium">
-          {getTimeInQueue(row.started_work_at)}
-        </span>
-      )
+        <span className="text-[#0288D1] font-medium">{getTimeInQueue(row.started_work_at)}</span>
+      ),
     },
     {
       header: 'לקוח',
       accessor: 'call.customer_name',
-      cell: (row) => row.call?.customer_name
+      cell: (row) => row.call?.customer_name,
     },
     {
       header: 'טלפון',
@@ -284,12 +277,12 @@ export default function MyQueue() {
         <a href={`tel:${row.call?.customer_phone}`} className="text-[#0078D4]">
           {row.call?.customer_phone}
         </a>
-      )
+      ),
     },
     {
       header: 'תקלה',
       accessor: 'call.issue_type',
-      cell: (row) => issueTypeLabels[row.call?.issue_type] || '-'
+      cell: (row) => issueTypeLabels[row.call?.issue_type] || '-',
     },
     {
       header: 'פעולות',
@@ -311,7 +304,7 @@ export default function MyQueue() {
             סיימתי
           </Button>
         </div>
-      )
+      ),
     },
   ];
 
@@ -364,15 +357,9 @@ export default function MyQueue() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="my-queue">
-            התור שלי ({myQueue.length})
-          </TabsTrigger>
-          <TabsTrigger value="in-progress">
-            בטיפול ({inProgress.length})
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            הושלמו ({completed.length})
-          </TabsTrigger>
+          <TabsTrigger value="my-queue">התור שלי ({myQueue.length})</TabsTrigger>
+          <TabsTrigger value="in-progress">בטיפול ({inProgress.length})</TabsTrigger>
+          <TabsTrigger value="completed">הושלמו ({completed.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-queue">
@@ -395,7 +382,7 @@ export default function MyQueue() {
 
         <TabsContent value="completed">
           <DataTable
-            columns={inProgressColumns.filter(c => c.accessor !== 'actions')}
+            columns={inProgressColumns.filter((c) => c.accessor !== 'actions')}
             data={completedEnriched}
             isLoading={isLoading}
             emptyMessage="עדיין לא השלמת קריאות היום"

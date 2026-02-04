@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,8 +14,9 @@ export default function ImportHistoricalDataPage() {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       const fileName = selectedFile.name.toLowerCase();
-      const isValidExtension = fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv');
-      
+      const isValidExtension =
+        fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv');
+
       if (isValidExtension) {
         setFile(selectedFile);
         setImportResult(null);
@@ -37,29 +38,29 @@ export default function ImportHistoricalDataPage() {
     try {
       // Upload file first
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      
+
       // Check file extension
       const fileName = file.name.toLowerCase();
       let data;
-      
+
       if (fileName.endsWith('.csv')) {
         // For CSV files, fetch and parse manually
         const response = await fetch(file_url);
         const csvText = await response.text();
-        
+
         // Parse CSV
-        const lines = csvText.split('\n').filter(line => line.trim());
+        const lines = csvText.split('\n').filter((line) => line.trim());
         if (lines.length < 2) {
           throw new Error('הקובץ ריק או לא מכיל נתונים');
         }
-        
+
         // Get headers from first line
-        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-        
+        const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+
         // Parse data rows
         data = [];
         for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+          const values = lines[i].split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
           if (values.length >= headers.length) {
             const row = {};
             headers.forEach((header, idx) => {
@@ -73,28 +74,28 @@ export default function ImportHistoricalDataPage() {
         const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
           file_url,
           json_schema: {
-            type: "object",
+            type: 'object',
             properties: {
               records: {
-                type: "array",
+                type: 'array',
                 items: {
-                  type: "object",
+                  type: 'object',
                   properties: {
-                    id: { type: "string" },
-                    serve_type: { type: "string" },
-                    car_type: { type: "string" },
-                    car_name: { type: "string" },
-                    car_year: { type: "number" },
-                    description: { type: "string" },
-                    bot_recommendation: { type: "string" },
-                    bot_match: { type: "string" },
-                    nayedet_fixed: { type: "string" },
-                    diagnose: { type: "string" }
-                  }
-                }
-              }
-            }
-          }
+                    id: { type: 'string' },
+                    serve_type: { type: 'string' },
+                    car_type: { type: 'string' },
+                    car_name: { type: 'string' },
+                    car_year: { type: 'number' },
+                    description: { type: 'string' },
+                    bot_recommendation: { type: 'string' },
+                    bot_match: { type: 'string' },
+                    nayedet_fixed: { type: 'string' },
+                    diagnose: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
         });
 
         if (extractResult.status === 'error') {
@@ -103,13 +104,13 @@ export default function ImportHistoricalDataPage() {
 
         data = extractResult.output?.records || extractResult.output;
       }
-      
+
       if (!data || data.length === 0) {
         throw new Error('לא נמצאו נתונים בקובץ');
       }
 
       // Transform and insert data
-      const recordsToInsert = data.map(row => ({
+      const recordsToInsert = data.map((row) => ({
         external_id: row.id?.toString() || '',
         serve_type: row.serve_type || '',
         car_type: row.car_type || '',
@@ -117,9 +118,21 @@ export default function ImportHistoricalDataPage() {
         car_year: row.car_year ? Number(row.car_year) : null,
         description: row.description || '',
         bot_recommendation: row.bot_recommendation || '',
-        bot_match: row.bot_match === true || row.bot_match === 'true' || row.bot_match === 'כן' || row.bot_match === 'yes' || row.bot_match === '1' || row.bot_match === 1,
-        nayedet_fixed: row.nayedet_fixed === true || row.nayedet_fixed === 'true' || row.nayedet_fixed === 'כן' || row.nayedet_fixed === 'yes' || row.nayedet_fixed === '1' || row.nayedet_fixed === 1,
-        diagnose: row.diagnose || ''
+        bot_match:
+          row.bot_match === true ||
+          row.bot_match === 'true' ||
+          row.bot_match === 'כן' ||
+          row.bot_match === 'yes' ||
+          row.bot_match === '1' ||
+          row.bot_match === 1,
+        nayedet_fixed:
+          row.nayedet_fixed === true ||
+          row.nayedet_fixed === 'true' ||
+          row.nayedet_fixed === 'כן' ||
+          row.nayedet_fixed === 'yes' ||
+          row.nayedet_fixed === '1' ||
+          row.nayedet_fixed === 1,
+        diagnose: row.diagnose || '',
       }));
 
       // Bulk create records
@@ -127,17 +140,16 @@ export default function ImportHistoricalDataPage() {
 
       setImportResult({
         success: true,
-        count: recordsToInsert.length
+        count: recordsToInsert.length,
       });
 
       toast.success(`יובאו ${recordsToInsert.length} רשומות בהצלחה`);
       setFile(null);
-
     } catch (error) {
       console.error('Import error:', error);
       setImportResult({
         success: false,
-        error: error.message || 'שגיאה בייבוא הנתונים'
+        error: error.message || 'שגיאה בייבוא הנתונים',
       });
       toast.error(error.message || 'שגיאה בייבוא הנתונים');
     } finally {
@@ -156,12 +168,12 @@ export default function ImportHistoricalDataPage() {
             העלאת קובץ אקסל
           </CardTitle>
           <CardDescription>
-            העלה קובץ אקסל עם נתוני הקריאות. הקובץ צריך לכלול את העמודות:
-            id, serve_type, car_type, car_name, car_year, description, bot_recommendation, bot_match, nayedet_fixed, diagnose
+            העלה קובץ אקסל עם נתוני הקריאות. הקובץ צריך לכלול את העמודות: id, serve_type, car_type,
+            car_name, car_year, description, bot_recommendation, bot_match, nayedet_fixed, diagnose
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div 
+          <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               file ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-blue-400'
             }`}
@@ -210,7 +222,9 @@ export default function ImportHistoricalDataPage() {
           </Button>
 
           {importResult && (
-            <div className={`p-4 rounded-lg ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+            <div
+              className={`p-4 rounded-lg ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
+            >
               {importResult.success ? (
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle className="w-5 h-5" />

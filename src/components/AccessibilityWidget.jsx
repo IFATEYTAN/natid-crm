@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { 
-  Eye, 
-  Type, 
-  Sun, 
-  Moon, 
-  Activity, 
-  X,
-  Accessibility
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Eye, Type, Sun, Activity, X, Accessibility } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AccessibilityWidget() {
@@ -18,13 +10,13 @@ export default function AccessibilityWidget() {
     highContrast: false,
     grayscale: false,
     readableFont: false,
-    highlightLinks: false
+    highlightLinks: false,
   });
 
   useEffect(() => {
     // Apply settings to document
     const root = document.documentElement;
-    
+
     // Font Size
     const sizeMap = { 0: '100%', 1: '110%', 2: '125%' };
     root.style.fontSize = sizeMap[settings.fontSize];
@@ -56,7 +48,6 @@ export default function AccessibilityWidget() {
     } else {
       document.body.classList.remove('highlight-links');
     }
-
   }, [settings]);
 
   // Inject styles for high contrast and links
@@ -96,9 +87,9 @@ export default function AccessibilityWidget() {
 
   const toggleSetting = (key) => {
     if (key === 'fontSize') {
-      setSettings(prev => ({ ...prev, fontSize: (prev.fontSize + 1) % 3 }));
+      setSettings((prev) => ({ ...prev, fontSize: (prev.fontSize + 1) % 3 }));
     } else {
-      setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+      setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
     }
   };
 
@@ -108,7 +99,7 @@ export default function AccessibilityWidget() {
       highContrast: false,
       grayscale: false,
       readableFont: false,
-      highlightLinks: false
+      highlightLinks: false,
     });
   };
 
@@ -127,14 +118,17 @@ export default function AccessibilityWidget() {
                 <Accessibility className="w-5 h-5" />
                 כלי נגישות
               </h3>
-              <button onClick={() => resetSettings()} className="text-xs hover:underline text-blue-100">
+              <button
+                onClick={() => resetSettings()}
+                className="text-xs hover:underline text-blue-100"
+              >
                 איפוס
               </button>
             </div>
-            
+
             <div className="p-4 space-y-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className={`w-full justify-between ${settings.fontSize > 0 ? 'border-blue-500 bg-blue-50' : ''}`}
                 onClick={() => toggleSetting('fontSize')}
               >
@@ -147,8 +141,8 @@ export default function AccessibilityWidget() {
                 </span>
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className={`w-full justify-between ${settings.highContrast ? 'border-blue-500 bg-blue-50' : ''}`}
                 onClick={() => toggleSetting('highContrast')}
               >
@@ -159,8 +153,8 @@ export default function AccessibilityWidget() {
                 {settings.highContrast && <Activity className="w-3 h-3 text-blue-600" />}
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className={`w-full justify-between ${settings.grayscale ? 'border-blue-500 bg-blue-50' : ''}`}
                 onClick={() => toggleSetting('grayscale')}
               >
@@ -171,8 +165,8 @@ export default function AccessibilityWidget() {
                 {settings.grayscale && <Activity className="w-3 h-3 text-blue-600" />}
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className={`w-full justify-between ${settings.readableFont ? 'border-blue-500 bg-blue-50' : ''}`}
                 onClick={() => toggleSetting('readableFont')}
               >

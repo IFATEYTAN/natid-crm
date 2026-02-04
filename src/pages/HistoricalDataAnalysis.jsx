@@ -1,23 +1,40 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Search, 
-  BarChart3, 
-  CheckCircle, 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Search,
+  BarChart3,
+  CheckCircle,
   XCircle,
   Wrench,
   Bot,
   Users,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
 } from 'lucide-react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -37,34 +54,40 @@ export default function HistoricalDataAnalysisPage() {
       const allRecords = [];
       let skip = 0;
       const batchSize = 1000;
-      
+
       while (true) {
-        const batch = await base44.entities.HistoricalCallData.filter({}, '-created_date', batchSize, skip);
+        const batch = await base44.entities.HistoricalCallData.filter(
+          {},
+          '-created_date',
+          batchSize,
+          skip
+        );
         allRecords.push(...batch);
-        
+
         if (batch.length < batchSize) break;
         skip += batchSize;
       }
-      
+
       return allRecords;
-    }
+    },
   });
 
   // Get unique values for filters
   const carTypes = useMemo(() => {
-    const types = [...new Set(historicalData.map(d => d.car_type).filter(Boolean))];
+    const types = [...new Set(historicalData.map((d) => d.car_type).filter(Boolean))];
     return types.sort();
   }, [historicalData]);
 
   const serveTypes = useMemo(() => {
-    const types = [...new Set(historicalData.map(d => d.serve_type).filter(Boolean))];
+    const types = [...new Set(historicalData.map((d) => d.serve_type).filter(Boolean))];
     return types.sort();
   }, [historicalData]);
 
   // Filter data
   const filteredData = useMemo(() => {
-    return historicalData.filter(item => {
-      const matchesSearch = !searchQuery || 
+    return historicalData.filter((item) => {
+      const matchesSearch =
+        !searchQuery ||
         item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.car_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.diagnose?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -77,26 +100,26 @@ export default function HistoricalDataAnalysisPage() {
   // Calculate statistics
   const stats = useMemo(() => {
     const total = filteredData.length;
-    const botMatches = filteredData.filter(d => d.bot_match).length;
-    const nayedetFixed = filteredData.filter(d => d.nayedet_fixed).length;
-    
+    const botMatches = filteredData.filter((d) => d.bot_match).length;
+    const nayedetFixed = filteredData.filter((d) => d.nayedet_fixed).length;
+
     return {
       total,
       botMatchRate: total > 0 ? ((botMatches / total) * 100).toFixed(1) : 0,
       nayedetFixedRate: total > 0 ? ((nayedetFixed / total) * 100).toFixed(1) : 0,
       botMatches,
-      nayedetFixed
+      nayedetFixed,
     };
   }, [filteredData]);
 
   // Map abbreviations to full names
   const serveTypeLabels = {
-    'ג': 'גרירה',
-    'נ': 'ניידת',
-    'א': 'אבחון',
+    ג: 'גרירה',
+    נ: 'ניידת',
+    א: 'אבחון',
     'א+ג': 'אבחון + גרירה',
     'ג+נ': 'גרירה + ניידת',
-    'לא ידוע': 'לא ידוע'
+    'לא ידוע': 'לא ידוע',
   };
 
   // Get full label for serve type
@@ -106,8 +129,18 @@ export default function HistoricalDataAnalysisPage() {
 
   // Export data to CSV
   const exportToCSV = () => {
-    const headers = ['סוג שירות', 'סוג רכב', 'שם רכב', 'שנת ייצור', 'תיאור', 'המלצת בוט', 'התאמת בוט', 'תיקון תפעול', 'אבחון'];
-    const rows = filteredData.map(item => [
+    const headers = [
+      'סוג שירות',
+      'סוג רכב',
+      'שם רכב',
+      'שנת ייצור',
+      'תיאור',
+      'המלצת בוט',
+      'התאמת בוט',
+      'תיקון תפעול',
+      'אבחון',
+    ];
+    const rows = filteredData.map((item) => [
       getServeTypeLabel(item.serve_type),
       item.car_type || '',
       item.car_name || '',
@@ -116,10 +149,14 @@ export default function HistoricalDataAnalysisPage() {
       item.bot_recommendation || '',
       item.bot_match ? 'כן' : 'לא',
       item.nayedet_fixed ? 'כן' : 'לא',
-      item.diagnose || ''
+      item.diagnose || '',
     ]);
-    
-    const csvContent = '\uFEFF' + [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+
+    const csvContent =
+      '\uFEFF' +
+      [headers, ...rows]
+        .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -133,27 +170,32 @@ export default function HistoricalDataAnalysisPage() {
   // Serve type distribution with full names
   const serveTypeDistribution = useMemo(() => {
     const counts = {};
-    filteredData.forEach(d => {
+    filteredData.forEach((d) => {
       const label = getServeTypeLabel(d.serve_type);
       counts[label] = (counts[label] || 0) + 1;
     });
-    return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
   }, [filteredData]);
 
   // Car type distribution
   const carTypeDistribution = useMemo(() => {
     const counts = {};
-    filteredData.forEach(d => {
+    filteredData.forEach((d) => {
       const type = d.car_type || 'לא ידוע';
       counts[type] = (counts[type] || 0) + 1;
     });
-    return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
   }, [filteredData]);
 
   // Bot accuracy by serve type with full names
   const botAccuracyByServeType = useMemo(() => {
     const byType = {};
-    filteredData.forEach(d => {
+    filteredData.forEach((d) => {
       const label = getServeTypeLabel(d.serve_type);
       if (!byType[label]) {
         byType[label] = { total: 0, matches: 0 };
@@ -161,14 +203,14 @@ export default function HistoricalDataAnalysisPage() {
       byType[label].total++;
       if (d.bot_match) byType[label].matches++;
     });
-    
+
     return Object.entries(byType)
       .map(([name, data]) => ({
         name,
         accuracy: data.total > 0 ? Math.round((data.matches / data.total) * 100) : 0,
-        total: data.total
+        total: data.total,
       }))
-      .filter(d => d.total >= 5)
+      .filter((d) => d.total >= 5)
       .sort((a, b) => b.accuracy - a.accuracy);
   }, [filteredData]);
 
@@ -211,7 +253,7 @@ export default function HistoricalDataAnalysisPage() {
 
       {/* Stats Cards - Clickable */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all border-2 border-transparent"
           onClick={() => {
             setServeTypeFilter('all');
@@ -232,7 +274,7 @@ export default function HistoricalDataAnalysisPage() {
           </CardContent>
         </Card>
 
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg hover:border-green-300 transition-all border-2 border-transparent"
           onClick={() => {
             setServeTypeFilter('all');
@@ -245,7 +287,9 @@ export default function HistoricalDataAnalysisPage() {
               <div>
                 <p className="text-sm text-gray-500">דיוק הבוט</p>
                 <p className="text-2xl font-bold text-green-600">{stats.botMatchRate}%</p>
-                <p className="text-xs text-gray-400">{stats.botMatches.toLocaleString()} מתוך {stats.total.toLocaleString()}</p>
+                <p className="text-xs text-gray-400">
+                  {stats.botMatches.toLocaleString()} מתוך {stats.total.toLocaleString()}
+                </p>
               </div>
               <Bot className="w-8 h-8 text-green-500" />
             </div>
@@ -253,7 +297,7 @@ export default function HistoricalDataAnalysisPage() {
           </CardContent>
         </Card>
 
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg hover:border-orange-300 transition-all border-2 border-transparent"
           onClick={() => {
             setServeTypeFilter('all');
@@ -274,7 +318,7 @@ export default function HistoricalDataAnalysisPage() {
           </CardContent>
         </Card>
 
-        <Card 
+        <Card
           className="cursor-pointer hover:shadow-lg hover:border-purple-300 transition-all border-2 border-transparent"
           onClick={() => {
             document.getElementById('serve-type-chart')?.scrollIntoView({ behavior: 'smooth' });
@@ -314,8 +358,10 @@ export default function HistoricalDataAnalysisPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">כל סוגי הרכב</SelectItem>
-                {carTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                {carTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -325,8 +371,10 @@ export default function HistoricalDataAnalysisPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">כל סוגי השירות</SelectItem>
-                {serveTypes.map(type => (
-                  <SelectItem key={type} value={type}>{getServeTypeLabel(type)}</SelectItem>
+                {serveTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {getServeTypeLabel(type)}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -361,8 +409,8 @@ export default function HistoricalDataAnalysisPage() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      formatter={(value, name) => [`${value.toLocaleString()} קריאות`, name]} 
+                    <Tooltip
+                      formatter={(value, name) => [`${value.toLocaleString()} קריאות`, name]}
                       contentStyle={{ direction: 'rtl', textAlign: 'right' }}
                     />
                   </PieChart>
@@ -370,10 +418,13 @@ export default function HistoricalDataAnalysisPage() {
               </div>
               <div className="w-full md:w-1/2 space-y-3">
                 {serveTypeDistribution.slice(0, 6).map((item, index) => (
-                  <div key={item.name} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2">
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2"
+                  >
                     <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full flex-shrink-0" 
+                      <div
+                        className="w-4 h-4 rounded-full flex-shrink-0"
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       />
                       <span className="font-medium">{item.name}</span>
@@ -394,18 +445,22 @@ export default function HistoricalDataAnalysisPage() {
           <CardContent>
             <div className="h-[400px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={carTypeDistribution} layout="vertical" margin={{ right: 20, left: 10, top: 10, bottom: 10 }}>
+                <BarChart
+                  data={carTypeDistribution}
+                  layout="vertical"
+                  margin={{ right: 20, left: 10, top: 10, bottom: 10 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={(v) => v.toLocaleString()} />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    width={120} 
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={120}
                     tick={{ fontSize: 12, fill: '#374151' }}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value) => [value.toLocaleString(), 'קריאות']}
                     contentStyle={{ direction: 'rtl', textAlign: 'right' }}
                   />
@@ -426,14 +481,14 @@ export default function HistoricalDataAnalysisPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={botAccuracyByServeType} margin={{ bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis
+                    dataKey="name"
                     tick={{ fontSize: 11, angle: -45, textAnchor: 'end' }}
                     height={70}
                     interval={0}
                   />
                   <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value, name, props) => [`${value}%`, 'דיוק']}
                     labelFormatter={(label) => `${label}`}
                   />
@@ -448,7 +503,9 @@ export default function HistoricalDataAnalysisPage() {
       {/* Data Table */}
       <Card id="data-table">
         <CardHeader>
-          <CardTitle className="text-lg">נתונים מפורטים ({filteredData.length.toLocaleString()})</CardTitle>
+          <CardTitle className="text-lg">
+            נתונים מפורטים ({filteredData.length.toLocaleString()})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 /**
  * Form validation utilities and components
@@ -38,16 +38,16 @@ export const validators = {
     if (!value) return null;
     const id = value.toString().trim();
     if (id.length > 9 || isNaN(id)) return 'תעודת זהות לא תקינה';
-    
+
     const paddedId = id.padStart(9, '0');
     let counter = 0;
-    
+
     for (let i = 0; i < 9; i++) {
       let digit = Number(paddedId[i]) * ((i % 2) + 1);
       if (digit > 9) digit -= 9;
       counter += digit;
     }
-    
+
     if (counter % 10 !== 0) {
       return 'תעודת זהות לא תקינה';
     }
@@ -64,21 +64,25 @@ export const validators = {
     return null;
   },
 
-  minLength: (min) => (value, fieldName = 'שדה זה') => {
-    if (!value) return null;
-    if (value.length < min) {
-      return `${fieldName} חייב להכיל לפחות ${min} תווים`;
-    }
-    return null;
-  },
+  minLength:
+    (min) =>
+    (value, fieldName = 'שדה זה') => {
+      if (!value) return null;
+      if (value.length < min) {
+        return `${fieldName} חייב להכיל לפחות ${min} תווים`;
+      }
+      return null;
+    },
 
-  maxLength: (max) => (value, fieldName = 'שדה זה') => {
-    if (!value) return null;
-    if (value.length > max) {
-      return `${fieldName} לא יכול להכיל יותר מ-${max} תווים`;
-    }
-    return null;
-  },
+  maxLength:
+    (max) =>
+    (value, fieldName = 'שדה זה') => {
+      if (!value) return null;
+      if (value.length > max) {
+        return `${fieldName} לא יכול להכיל יותר מ-${max} תווים`;
+      }
+      return null;
+    },
 
   number: (value, fieldName = 'שדה זה') => {
     if (!value) return null;
@@ -125,7 +129,7 @@ export const validators = {
       return 'התאריך חייב להיות בעתיד';
     }
     return null;
-  }
+  },
 };
 
 // Validate a single field
@@ -156,7 +160,7 @@ export const validateForm = (data, schema) => {
 // Field error component
 export function FieldError({ error }) {
   if (!error) return null;
-  
+
   return (
     <div className="flex items-center gap-1 text-red-600 text-xs mt-1">
       <AlertCircle className="w-3 h-3" />
@@ -168,21 +172,16 @@ export function FieldError({ error }) {
 // Field success indicator
 export function FieldSuccess({ show }) {
   if (!show) return null;
-  
+
   return (
     <CheckCircle className="w-4 h-4 text-green-500 absolute left-3 top-1/2 -translate-y-1/2" />
   );
 }
 
 // Validated input wrapper
-export function ValidatedInput({ 
-  children, 
-  error, 
-  touched,
-  className 
-}) {
+export function ValidatedInput({ children, error, touched, className }) {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn('relative', className)}>
       {children}
       {touched && <FieldError error={error} />}
     </div>
@@ -192,14 +191,14 @@ export function ValidatedInput({
 // Form validation schema builder
 export function createValidationSchema(fields) {
   const schema = {};
-  
+
   for (const [name, config] of Object.entries(fields)) {
     schema[name] = {
       label: config.label || name,
-      validators: config.validators || []
+      validators: config.validators || [],
     };
   }
-  
+
   return schema;
 }
 

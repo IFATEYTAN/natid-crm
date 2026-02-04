@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Power,
   MapPin,
@@ -9,9 +9,9 @@ import {
   CheckCircle2,
   Loader2,
   Coffee,
-  Timer
+  Timer,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { formatDistanceToNow } from 'date-fns';
@@ -28,7 +28,7 @@ export default function VendorAvailabilityToggle({
   isAvailable,
   onToggle,
   lastLocationUpdate,
-  locationError
+  locationError,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOnBreak, setIsOnBreak] = useState(vendor?.availability_status === 'on_break');
@@ -97,7 +97,7 @@ export default function VendorAvailabilityToggle({
     setShowBreakOptions(false);
     try {
       await base44.entities.Vendor.update(vendor.id, {
-        availability_status: 'on_break'
+        availability_status: 'on_break',
       });
       setIsOnBreak(true);
       setBreakEndTime(Date.now() + minutes * 60 * 1000);
@@ -114,7 +114,7 @@ export default function VendorAvailabilityToggle({
     setIsLoading(true);
     try {
       await base44.entities.Vendor.update(vendor.id, {
-        availability_status: 'available'
+        availability_status: 'available',
       });
       setIsOnBreak(false);
       setBreakEndTime(null);
@@ -136,19 +136,25 @@ export default function VendorAvailabilityToggle({
   };
 
   return (
-    <Card className={cn(
-      "border-2 transition-colors",
-      isOnBreak ? "border-yellow-500 bg-yellow-50" :
-      isAvailable ? "border-green-500 bg-green-50" : "border-gray-300 bg-gray-50"
-    )}>
+    <Card
+      className={cn(
+        'border-2 transition-colors',
+        isOnBreak
+          ? 'border-yellow-500 bg-yellow-50'
+          : isAvailable
+            ? 'border-green-500 bg-green-50'
+            : 'border-gray-300 bg-gray-50'
+      )}
+    >
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "w-12 h-12 rounded-full flex items-center justify-center",
-              isOnBreak ? "bg-yellow-500" :
-              isAvailable ? "bg-green-500" : "bg-gray-400"
-            )}>
+            <div
+              className={cn(
+                'w-12 h-12 rounded-full flex items-center justify-center',
+                isOnBreak ? 'bg-yellow-500' : isAvailable ? 'bg-green-500' : 'bg-gray-400'
+              )}
+            >
               {isOnBreak ? (
                 <Coffee className="w-6 h-6 text-white" />
               ) : (
@@ -197,21 +203,15 @@ export default function VendorAvailabilityToggle({
                 disabled={isLoading}
                 className="min-w-[140px] h-12 text-base font-bold bg-green-500 hover:bg-green-600"
               >
-                {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  'חזור מהפסקה'
-                )}
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'חזור מהפסקה'}
               </Button>
             ) : (
               <Button
                 onClick={handleToggle}
                 disabled={isLoading}
                 className={cn(
-                  "min-w-[140px] h-12 text-base font-bold",
-                  isAvailable
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-green-500 hover:bg-green-600"
+                  'min-w-[140px] h-12 text-base font-bold',
+                  isAvailable ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
                 )}
               >
                 {isLoading ? (
@@ -232,7 +232,7 @@ export default function VendorAvailabilityToggle({
             {showBreakOptions ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-gray-600 ml-1">בחר משך הפסקה:</span>
-                {BREAK_DURATIONS.map(opt => (
+                {BREAK_DURATIONS.map((opt) => (
                   <Button
                     key={opt.minutes}
                     variant="outline"
@@ -264,7 +264,10 @@ export default function VendorAvailabilityToggle({
                   {lastLocationUpdate && (
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      <span>עדכון אחרון: {formatDistanceToNow(lastLocationUpdate, { addSuffix: true, locale: he })}</span>
+                      <span>
+                        עדכון אחרון:{' '}
+                        {formatDistanceToNow(lastLocationUpdate, { addSuffix: true, locale: he })}
+                      </span>
                     </div>
                   )}
                 </div>

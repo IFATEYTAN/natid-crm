@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Star, CheckCircle, XCircle, Clock, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ export default function CustomerFeedbackPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
@@ -35,14 +35,14 @@ export default function CustomerFeedbackPage() {
   const validateToken = async () => {
     try {
       const response = await base44.functions.invoke('getFeedbackTokenInfo', { token });
-      
+
       if (response.data.valid) {
         setTokenInfo(response.data);
       } else {
-        setError({ 
-          type: response.data.error, 
+        setError({
+          type: response.data.error,
           message: response.data.message,
-          rating: response.data.rating 
+          rating: response.data.rating,
         });
       }
     } catch (e) {
@@ -54,14 +54,14 @@ export default function CustomerFeedbackPage() {
 
   const handleSubmit = async () => {
     if (rating === 0) return;
-    
+
     setSubmitting(true);
     try {
       const response = await base44.functions.invoke('validateAndSubmitFeedback', {
         token,
         rating,
         feedback_text: feedbackText,
-        would_recommend: wouldRecommend
+        would_recommend: wouldRecommend,
       });
 
       if (response.data.success) {
@@ -79,7 +79,10 @@ export default function CustomerFeedbackPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4" dir="rtl">
+      <div
+        className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4"
+        dir="rtl"
+      >
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
             <Loader2 className="w-12 h-12 mx-auto mb-4 text-blue-500 animate-spin" />
@@ -93,7 +96,10 @@ export default function CustomerFeedbackPage() {
   // Error states
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4" dir="rtl">
+      <div
+        className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4"
+        dir="rtl"
+      >
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
             {error.type === 'used' ? (
@@ -107,8 +113,8 @@ export default function CustomerFeedbackPage() {
                       <Star
                         key={star}
                         className={cn(
-                          "w-8 h-8",
-                          star <= error.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                          'w-8 h-8',
+                          star <= error.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
                         )}
                       />
                     ))}
@@ -137,7 +143,10 @@ export default function CustomerFeedbackPage() {
   // Success state
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4" dir="rtl">
+      <div
+        className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-4"
+        dir="rtl"
+      >
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
             <CheckCircle className="w-20 h-20 mx-auto mb-4 text-green-500" />
@@ -148,8 +157,8 @@ export default function CustomerFeedbackPage() {
                 <Star
                   key={star}
                   className={cn(
-                    "w-8 h-8",
-                    star <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                    'w-8 h-8',
+                    star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
                   )}
                 />
               ))}
@@ -163,14 +172,17 @@ export default function CustomerFeedbackPage() {
 
   // Feedback form
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4" dir="rtl">
+    <div
+      className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4"
+      dir="rtl"
+    >
       <Card className="w-full max-w-md shadow-lg">
         <CardContent className="p-6">
           {/* Header */}
           <div className="text-center mb-6">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-              alt="נתי" 
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
+              alt="נתי"
               className="h-12 mx-auto mb-4"
             />
             <h1 className="text-xl font-bold text-gray-800">איך היה השירות?</h1>
@@ -201,10 +213,10 @@ export default function CustomerFeedbackPage() {
                 >
                   <Star
                     className={cn(
-                      "w-10 h-10 transition-colors",
+                      'w-10 h-10 transition-colors',
                       star <= (hoverRating || rating)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
+                        ? 'text-yellow-400 fill-yellow-400'
+                        : 'text-gray-300'
                     )}
                   />
                 </button>
@@ -212,11 +224,11 @@ export default function CustomerFeedbackPage() {
             </div>
             {rating > 0 && (
               <p className="text-center text-sm text-gray-500 mt-2">
-                {rating === 5 && "מעולה! 🎉"}
-                {rating === 4 && "טוב מאוד 👍"}
-                {rating === 3 && "בסדר"}
-                {rating === 2 && "צריך שיפור"}
-                {rating === 1 && "לא טוב 😞"}
+                {rating === 5 && 'מעולה! 🎉'}
+                {rating === 4 && 'טוב מאוד 👍'}
+                {rating === 3 && 'בסדר'}
+                {rating === 2 && 'צריך שיפור'}
+                {rating === 1 && 'לא טוב 😞'}
               </p>
             )}
           </div>
@@ -231,10 +243,10 @@ export default function CustomerFeedbackPage() {
                 type="button"
                 onClick={() => setWouldRecommend(true)}
                 className={cn(
-                  "flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all",
+                  'flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all',
                   wouldRecommend === true
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-gray-200 hover:border-green-300"
+                    ? 'border-green-500 bg-green-50 text-green-700'
+                    : 'border-gray-200 hover:border-green-300'
                 )}
               >
                 <ThumbsUp className="w-5 h-5" />
@@ -244,10 +256,10 @@ export default function CustomerFeedbackPage() {
                 type="button"
                 onClick={() => setWouldRecommend(false)}
                 className={cn(
-                  "flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all",
+                  'flex items-center gap-2 px-6 py-3 rounded-lg border-2 transition-all',
                   wouldRecommend === false
-                    ? "border-red-500 bg-red-50 text-red-700"
-                    : "border-gray-200 hover:border-red-300"
+                    ? 'border-red-500 bg-red-50 text-red-700'
+                    : 'border-gray-200 hover:border-red-300'
                 )}
               >
                 <ThumbsDown className="w-5 h-5" />

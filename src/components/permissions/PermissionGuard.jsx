@@ -7,20 +7,20 @@ import { createPageUrl } from '@/components/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // קומפוננטה להגנה על תוכן לפי הרשאה
-export function PermissionGuard({ 
-  category, 
-  permission, 
-  children, 
+export function PermissionGuard({
+  category,
+  permission,
+  children,
   fallback = null,
   showMessage = false,
-  loadingFallback = null
+  loadingFallback = null,
 }) {
   const { hasPermission, isLoading } = usePermissions();
-  
+
   if (isLoading) {
     return loadingFallback || null;
   }
-  
+
   if (!hasPermission(category, permission)) {
     if (fallback) return fallback;
     if (showMessage) {
@@ -33,14 +33,14 @@ export function PermissionGuard({
     }
     return null;
   }
-  
+
   return children;
 }
 
 // קומפוננטה להגנה על דף שלם
 export function PagePermissionGuard({ pageName, children }) {
   const { canAccessPage, isLoading, currentUser } = usePermissions();
-  
+
   if (isLoading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -52,7 +52,7 @@ export function PagePermissionGuard({ pageName, children }) {
       </div>
     );
   }
-  
+
   if (!canAccessPage(pageName)) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -62,50 +62,47 @@ export function PagePermissionGuard({ pageName, children }) {
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">אין גישה לדף זה</h2>
           <p className="text-gray-500 mb-6">
-            אין לך את ההרשאות הנדרשות לצפות בדף זה. 
-            פנה למנהל המערכת אם אתה צריך גישה.
+            אין לך את ההרשאות הנדרשות לצפות בדף זה. פנה למנהל המערכת אם אתה צריך גישה.
           </p>
           <div className="space-y-2">
             <Link to={createPageUrl('Dashboard')}>
               <Button className="w-full">חזרה לדף הבית</Button>
             </Link>
             {currentUser && (
-              <p className="text-xs text-gray-400 mt-4">
-                מחובר כ: {currentUser.email}
-              </p>
+              <p className="text-xs text-gray-400 mt-4">מחובר כ: {currentUser.email}</p>
             )}
           </div>
         </div>
       </div>
     );
   }
-  
+
   return children;
 }
 
 // קומפוננטה לכפתור מוגן בהרשאה
-export function PermissionButton({ 
-  category, 
-  permission, 
-  children, 
+export function PermissionButton({
+  category,
+  permission,
+  children,
   disabled,
   tooltip = 'אין לך הרשאה לפעולה זו',
   hideWhenNoAccess = false,
-  ...props 
+  ...props
 }) {
   const { hasPermission, isLoading } = usePermissions();
-  
+
   if (isLoading) return null;
-  
+
   const hasAccess = hasPermission(category, permission);
-  
+
   if (!hasAccess && hideWhenNoAccess) {
     return null;
   }
-  
+
   return (
-    <Button 
-      {...props} 
+    <Button
+      {...props}
       disabled={disabled || !hasAccess}
       title={!hasAccess ? tooltip : props.title}
       className={`${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''} ${props.className || ''}`}
@@ -122,14 +119,14 @@ export function PermissionLink({
   to,
   children,
   hideWhenNoAccess = false,
-  className = ''
+  className = '',
 }) {
   const { hasPermission, isLoading } = usePermissions();
-  
+
   if (isLoading) return null;
-  
+
   const hasAccess = hasPermission(category, permission);
-  
+
   if (!hasAccess) {
     if (hideWhenNoAccess) return null;
     return (
@@ -138,7 +135,7 @@ export function PermissionLink({
       </span>
     );
   }
-  
+
   return (
     <Link to={to} className={className}>
       {children}
@@ -149,11 +146,11 @@ export function PermissionLink({
 // קומפוננטה להצגת הודעת אזהרה על הרשאה חסרה
 export function PermissionWarning({ category, permission, message }) {
   const { hasPermission, isLoading } = usePermissions();
-  
+
   if (isLoading || hasPermission(category, permission)) {
     return null;
   }
-  
+
   return (
     <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
@@ -165,15 +162,15 @@ export function PermissionWarning({ category, permission, message }) {
 // Hook לבדיקת הרשאות מרובות
 export function useMultiplePermissions(permissions) {
   const { hasPermission, isLoading } = usePermissions();
-  
+
   if (isLoading) {
-    return permissions.map(p => ({ ...p, hasAccess: false, isLoading: true }));
+    return permissions.map((p) => ({ ...p, hasAccess: false, isLoading: true }));
   }
-  
+
   return permissions.map(({ category, permission }) => ({
     category,
     permission,
     hasAccess: hasPermission(category, permission),
-    isLoading: false
+    isLoading: false,
   }));
 }

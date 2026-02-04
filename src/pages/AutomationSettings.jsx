@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import RoleGuard from '@/components/auth/RoleGuard';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import {
   Zap,
@@ -26,9 +26,9 @@ import {
   Save,
   RotateCcw,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const defaultSettings = {
   auto_assign_enabled: true,
@@ -42,11 +42,11 @@ const defaultSettings = {
     service_match: 20,
     rating: 20,
     response_time: 10,
-    completion_rate: 10
+    completion_rate: 10,
   },
   auto_escalate_on_sla_breach: true,
   notify_admin_on_no_vendors: true,
-  prefer_vendors_with_location: true
+  prefer_vendors_with_location: true,
 };
 
 export default function AutomationSettingsPage() {
@@ -72,7 +72,7 @@ export default function AutomationSettingsPage() {
 
   useEffect(() => {
     if (settingsQuery.data) {
-      setSettings(prev => ({ ...prev, ...settingsQuery.data }));
+      setSettings((prev) => ({ ...prev, ...settingsQuery.data }));
     }
   }, [settingsQuery.data]);
 
@@ -81,12 +81,12 @@ export default function AutomationSettingsPage() {
       const existing = await base44.entities.Setting.filter({ key: 'auto_assign_settings' });
       if (existing?.[0]) {
         return base44.entities.Setting.update(existing[0].id, {
-          value: JSON.stringify(newSettings)
+          value: JSON.stringify(newSettings),
         });
       } else {
         return base44.entities.Setting.create({
           key: 'auto_assign_settings',
-          value: JSON.stringify(newSettings)
+          value: JSON.stringify(newSettings),
         });
       }
     },
@@ -97,7 +97,7 @@ export default function AutomationSettingsPage() {
     },
     onError: (error) => {
       toast.error(`שגיאה בשמירת הגדרות: ${error.message || 'שגיאה לא ידועה'}`);
-    }
+    },
   });
 
   const handleSave = () => {
@@ -110,14 +110,14 @@ export default function AutomationSettingsPage() {
   };
 
   const updateSetting = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
     setHasChanges(true);
   };
 
   const updateWeight = (key, value) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      priority_weights: { ...prev.priority_weights, [key]: value }
+      priority_weights: { ...prev.priority_weights, [key]: value },
     }));
     setHasChanges(true);
   };
@@ -161,20 +161,24 @@ export default function AutomationSettingsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center",
-                  settings.auto_assign_enabled ? "bg-green-100" : "bg-gray-100"
-                )}>
-                  <Zap className={cn(
-                    "w-6 h-6",
-                    settings.auto_assign_enabled ? "text-green-600" : "text-gray-400"
-                  )} />
+                <div
+                  className={cn(
+                    'w-12 h-12 rounded-full flex items-center justify-center',
+                    settings.auto_assign_enabled ? 'bg-green-100' : 'bg-gray-100'
+                  )}
+                >
+                  <Zap
+                    className={cn(
+                      'w-6 h-6',
+                      settings.auto_assign_enabled ? 'text-green-600' : 'text-gray-400'
+                    )}
+                  />
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">שיבוץ אוטומטי</h3>
                   <p className="text-sm text-[#6B778C]">
-                    {settings.auto_assign_enabled 
-                      ? 'המערכת תשבץ ספקים אוטומטית לקריאות חדשות' 
+                    {settings.auto_assign_enabled
+                      ? 'המערכת תשבץ ספקים אוטומטית לקריאות חדשות'
                       : 'שיבוץ ידני בלבד'}
                   </p>
                 </div>
@@ -214,7 +218,9 @@ export default function AutomationSettingsPage() {
             <div>
               <div className="flex justify-between mb-2">
                 <Label>זמן תגובה מקסימלי לאישור</Label>
-                <span className="text-sm font-medium">{settings.assignment_expiry_minutes} דקות</span>
+                <span className="text-sm font-medium">
+                  {settings.assignment_expiry_minutes} דקות
+                </span>
               </div>
               <Slider
                 value={[settings.assignment_expiry_minutes]}
@@ -263,13 +269,17 @@ export default function AutomationSettingsPage() {
                 max={5}
                 step={0.5}
               />
-              <p className="text-xs text-[#6B778C] mt-1">ספקים עם דירוג נמוך יותר לא יוצעו אוטומטית</p>
+              <p className="text-xs text-[#6B778C] mt-1">
+                ספקים עם דירוג נמוך יותר לא יוצעו אוטומטית
+              </p>
             </div>
 
             <div>
               <div className="flex justify-between mb-2">
                 <Label>זמן תגובה מקסימלי ממוצע</Label>
-                <span className="text-sm font-medium">{settings.max_response_time_minutes} דקות</span>
+                <span className="text-sm font-medium">
+                  {settings.max_response_time_minutes} דקות
+                </span>
               </div>
               <Slider
                 value={[settings.max_response_time_minutes]}
@@ -299,13 +309,28 @@ export default function AutomationSettingsPage() {
           <CardContent className="space-y-4">
             {[
               { key: 'distance', label: 'מרחק גאוגרפי', icon: MapPin, color: 'text-blue-600' },
-              { key: 'service_match', label: 'התאמת סוג שירות', icon: Truck, color: 'text-green-600' },
+              {
+                key: 'service_match',
+                label: 'התאמת סוג שירות',
+                icon: Truck,
+                color: 'text-green-600',
+              },
               { key: 'rating', label: 'דירוג ממוצע', icon: Star, color: 'text-yellow-500' },
-              { key: 'response_time', label: 'זמן תגובה ממוצע', icon: Clock, color: 'text-orange-600' },
-              { key: 'completion_rate', label: 'אחוז השלמה', icon: CheckCircle, color: 'text-purple-600' },
+              {
+                key: 'response_time',
+                label: 'זמן תגובה ממוצע',
+                icon: Clock,
+                color: 'text-orange-600',
+              },
+              {
+                key: 'completion_rate',
+                label: 'אחוז השלמה',
+                icon: CheckCircle,
+                color: 'text-purple-600',
+              },
             ].map(({ key, label, icon: Icon, color }) => (
               <div key={key} className="flex items-center gap-4">
-                <Icon className={cn("w-5 h-5 shrink-0", color)} />
+                <Icon className={cn('w-5 h-5 shrink-0', color)} />
                 <div className="flex-1">
                   <div className="flex justify-between mb-1">
                     <Label className="text-sm">{label}</Label>
@@ -362,7 +387,9 @@ export default function AutomationSettingsPage() {
               </div>
               <Switch
                 checked={settings.prefer_vendors_with_location}
-                onCheckedChange={(checked) => updateSetting('prefer_vendors_with_location', checked)}
+                onCheckedChange={(checked) =>
+                  updateSetting('prefer_vendors_with_location', checked)
+                }
               />
             </div>
           </CardContent>

@@ -84,7 +84,8 @@ export const useCompleteQueueItem = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ queueId, timeToComplete }) => queueApi.completeQueueItem(queueId, timeToComplete),
+    mutationFn: ({ queueId, timeToComplete }) =>
+      queueApi.completeQueueItem(queueId, timeToComplete),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
     },

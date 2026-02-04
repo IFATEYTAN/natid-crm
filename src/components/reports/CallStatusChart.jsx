@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const statusLabels = {
@@ -9,7 +9,7 @@ const statusLabels = {
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
   completed: 'הושלם',
-  cancelled: 'בוטל'
+  cancelled: 'בוטל',
 };
 
 const statusColors = {
@@ -19,7 +19,7 @@ const statusColors = {
   vendor_enroute: '#FFA07A',
   in_progress: '#0EA5E9',
   completed: '#4ECDC4',
-  cancelled: '#A3A3A3'
+  cancelled: '#A3A3A3',
 };
 
 export default function CallStatusChart({ calls }) {
@@ -34,14 +34,16 @@ export default function CallStatusChart({ calls }) {
       name: statusLabels[status] || status,
       value: count,
       color: statusColors[status] || '#9E9E9E',
-      status // keep original status key for color mapping
+      status, // keep original status key for color mapping
     }));
   }, [calls]);
 
   return (
     <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <CardHeader>
-        <CardTitle className="text-[20px] font-medium text-[#212121] text-right">התפלגות קריאות לפי סטטוס</CardTitle>
+        <CardTitle className="text-[20px] font-medium text-[#212121] text-right">
+          התפלגות קריאות לפי סטטוס
+        </CardTitle>
       </CardHeader>
       <CardContent dir="rtl">
         <div className="relative" style={{ height: '280px' }}>
@@ -60,13 +62,13 @@ export default function CallStatusChart({ calls }) {
                   <Cell key={`cell-${index}`} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#FFFFFF', 
-                  border: '1px solid #E5E7EB', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E5E7EB',
                   borderRadius: '8px',
                   fontFamily: 'Heebo, sans-serif',
-                  textAlign: 'right'
+                  textAlign: 'right',
                 }}
                 formatter={(value, name, props) => {
                   const total = data.reduce((a, b) => a + b.value, 0);
@@ -74,8 +76,8 @@ export default function CallStatusChart({ calls }) {
                   return [`${value} (${percent}%)`, name];
                 }}
               />
-              <Legend 
-                verticalAlign="bottom" 
+              <Legend
+                verticalAlign="bottom"
                 height={36}
                 iconType="circle"
                 wrapperStyle={{ fontFamily: 'Heebo, sans-serif' }}

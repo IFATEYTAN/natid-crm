@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import ContractFormDialog from './ContractFormDialog';
 import {
   FileText,
@@ -36,9 +31,8 @@ import {
   History,
   RefreshCw,
   Ban,
-  Loader2
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
 
@@ -48,14 +42,14 @@ const statusConfig = {
   active: { label: 'פעיל', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   expired: { label: 'פג תוקף', color: 'bg-red-100 text-red-700', icon: XCircle },
   suspended: { label: 'מושהה', color: 'bg-orange-100 text-orange-700', icon: AlertTriangle },
-  terminated: { label: 'בוטל', color: 'bg-gray-100 text-gray-700', icon: XCircle }
+  terminated: { label: 'בוטל', color: 'bg-gray-100 text-gray-700', icon: XCircle },
 };
 
 const contractTypeLabels = {
   per_call: 'לפי קריאה',
   monthly: 'חודשי',
   yearly: 'שנתי',
-  hourly: 'שעתי'
+  hourly: 'שעתי',
 };
 
 const paymentTermsLabels = {
@@ -63,7 +57,7 @@ const paymentTermsLabels = {
   net_15: 'שוטף + 15',
   net_30: 'שוטף + 30',
   net_45: 'שוטף + 45',
-  net_60: 'שוטף + 60'
+  net_60: 'שוטף + 60',
 };
 
 const areaLabels = {
@@ -72,7 +66,7 @@ const areaLabels = {
   north: 'צפון',
   south: 'דרום',
   jerusalem: 'ירושלים',
-  lowlands: 'שפלה'
+  lowlands: 'שפלה',
 };
 
 const serviceLabels = {
@@ -81,7 +75,7 @@ const serviceLabels = {
   battery_jump: 'הנעה ממצבר',
   fuel_delivery: 'הבאת דלק',
   locksmith: 'מנעולן',
-  mechanic: 'מכונאי'
+  mechanic: 'מכונאי',
 };
 
 export default function ContractDetailsDialog({ open, onOpenChange, contract, onUpdate }) {
@@ -91,14 +85,15 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
 
   const vendorsQuery = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list()
+    queryFn: () => base44.entities.Vendor.list(),
   });
 
   // Get contract history (all contracts for this vendor)
   const historyQuery = useQuery({
     queryKey: ['vendorContractHistory', contract?.vendor_id],
-    queryFn: () => base44.entities.VendorContract.filter({ vendor_id: contract.vendor_id }, '-created_date'),
-    enabled: !!contract?.vendor_id
+    queryFn: () =>
+      base44.entities.VendorContract.filter({ vendor_id: contract.vendor_id }, '-created_date'),
+    enabled: !!contract?.vendor_id,
   });
 
   const updateMutation = useMutation({
@@ -106,7 +101,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendorContracts'] });
       onUpdate?.();
-    }
+    },
   });
 
   const handleActivate = () => {
@@ -128,10 +123,10 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   const handleRenew = async () => {
     const newEndDate = new Date(contract.end_date);
     newEndDate.setMonth(newEndDate.getMonth() + (contract.renewal_period_months || 12));
-    
+
     updateMutation.mutate({
       end_date: newEndDate.toISOString().split('T')[0],
-      status: 'active'
+      status: 'active',
     });
     showToast.success('החוזה חודש');
   };
@@ -155,7 +150,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                   חוזה {contract.contract_number || `#${contract.id?.slice(-6)}`}
                 </DialogTitle>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge className={cn("gap-1", config?.color)}>
+                  <Badge className={cn('gap-1', config?.color)}>
                     <StatusIcon className="w-3 h-3" />
                     {config?.label}
                   </Badge>
@@ -168,11 +163,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowEditDialog(true)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)}>
                   <Pencil className="w-4 h-4 ml-1" />
                   ערוך
                 </Button>
@@ -211,7 +202,9 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                     <Calendar className="w-4 h-4" />
                     <span className="text-sm">תאריך התחלה</span>
                   </div>
-                  <p className="font-medium">{format(new Date(contract.start_date), 'dd/MM/yyyy')}</p>
+                  <p className="font-medium">
+                    {format(new Date(contract.start_date), 'dd/MM/yyyy')}
+                  </p>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center gap-2 text-gray-600 mb-1">
@@ -236,7 +229,9 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               {contract.special_terms && (
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-medium mb-2">תנאים מיוחדים</h4>
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{contract.special_terms}</p>
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                    {contract.special_terms}
+                  </p>
                 </div>
               )}
 
@@ -260,8 +255,8 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                       <Clock className="w-4 h-4 ml-1" />
                       השהה
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="text-red-600 hover:text-red-700"
                       onClick={() => setShowTerminateDialog(true)}
                     >
@@ -276,7 +271,8 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                     הפעל מחדש
                   </Button>
                 )}
-                {(contract.status === 'expired' || (contract.status === 'active' && daysToExpiry <= 30)) && (
+                {(contract.status === 'expired' ||
+                  (contract.status === 'active' && daysToExpiry <= 30)) && (
                   <Button onClick={handleRenew} className="bg-blue-600 hover:bg-blue-700">
                     <RefreshCw className="w-4 h-4 ml-1" />
                     חדש חוזה
@@ -293,10 +289,14 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                   <h4 className="font-medium">תעריף עיקרי</h4>
                 </div>
                 <div className="text-3xl font-bold text-blue-900">
-                  {contract.contract_type === 'monthly' && `₪${contract.monthly_fee?.toLocaleString() || 0}/חודש`}
-                  {contract.contract_type === 'hourly' && `₪${contract.hourly_rate?.toLocaleString() || 0}/שעה`}
-                  {contract.contract_type === 'per_call' && `₪${contract.rate_per_call?.toLocaleString() || 0}/קריאה`}
-                  {contract.contract_type === 'yearly' && `₪${contract.monthly_fee?.toLocaleString() || 0}/שנה`}
+                  {contract.contract_type === 'monthly' &&
+                    `₪${contract.monthly_fee?.toLocaleString() || 0}/חודש`}
+                  {contract.contract_type === 'hourly' &&
+                    `₪${contract.hourly_rate?.toLocaleString() || 0}/שעה`}
+                  {contract.contract_type === 'per_call' &&
+                    `₪${contract.rate_per_call?.toLocaleString() || 0}/קריאה`}
+                  {contract.contract_type === 'yearly' &&
+                    `₪${contract.monthly_fee?.toLocaleString() || 0}/שנה`}
                 </div>
               </div>
 
@@ -340,7 +340,9 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               {/* Payment Terms */}
               <div className="p-4 border rounded-lg">
                 <p className="text-sm text-gray-600">תנאי תשלום</p>
-                <p className="font-medium">{paymentTermsLabels[contract.payment_terms] || contract.payment_terms}</p>
+                <p className="font-medium">
+                  {paymentTermsLabels[contract.payment_terms] || contract.payment_terms}
+                </p>
               </div>
             </TabsContent>
 
@@ -352,7 +354,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                   <h4 className="font-medium">אזורי כיסוי</h4>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {contract.coverage_areas?.map(area => (
+                  {contract.coverage_areas?.map((area) => (
                     <Badge key={area} variant="secondary">
                       {areaLabels[area] || area}
                     </Badge>
@@ -367,7 +369,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium mb-3">סוגי שירות</h4>
                 <div className="flex flex-wrap gap-2">
-                  {contract.service_types?.map(service => (
+                  {contract.service_types?.map((service) => (
                     <Badge key={service} variant="outline">
                       {serviceLabels[service] || service}
                     </Badge>
@@ -405,7 +407,8 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                 </div>
                 {contract.insurance_required ? (
                   <p className="text-sm">
-                    נדרש ביטוח בסכום מינימלי של ₪{contract.insurance_minimum_amount?.toLocaleString()}
+                    נדרש ביטוח בסכום מינימלי של ₪
+                    {contract.insurance_minimum_amount?.toLocaleString()}
                   </p>
                 ) : (
                   <p className="text-sm text-gray-500">לא נדרש ביטוח</p>
@@ -416,11 +419,11 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
             <TabsContent value="history" className="mt-4">
               <div className="space-y-3">
                 {history.map((item, idx) => (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     className={cn(
-                      "p-4 border rounded-lg",
-                      item.id === contract.id && "border-blue-500 bg-blue-50"
+                      'p-4 border rounded-lg',
+                      item.id === contract.id && 'border-blue-500 bg-blue-50'
                     )}
                   >
                     <div className="flex items-start justify-between">
@@ -429,15 +432,14 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                           <span className="font-medium">
                             {item.contract_number || `#${item.id?.slice(-6)}`}
                           </span>
-                          {item.id === contract.id && (
-                            <Badge className="bg-blue-500">נוכחי</Badge>
-                          )}
+                          {item.id === contract.id && <Badge className="bg-blue-500">נוכחי</Badge>}
                           <Badge className={statusConfig[item.status]?.color}>
                             {statusConfig[item.status]?.label}
                           </Badge>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {format(new Date(item.start_date), 'dd/MM/yyyy')} - {format(new Date(item.end_date), 'dd/MM/yyyy')}
+                          {format(new Date(item.start_date), 'dd/MM/yyyy')} -{' '}
+                          {format(new Date(item.end_date), 'dd/MM/yyyy')}
                         </p>
                       </div>
                       <div className="text-left">
@@ -445,8 +447,10 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                           {contractTypeLabels[item.contract_type]}
                         </p>
                         <p className="font-medium">
-                          {item.contract_type === 'monthly' && `₪${item.monthly_fee?.toLocaleString() || 0}/חודש`}
-                          {item.contract_type === 'per_call' && `₪${item.rate_per_call?.toLocaleString() || 0}/קריאה`}
+                          {item.contract_type === 'monthly' &&
+                            `₪${item.monthly_fee?.toLocaleString() || 0}/חודש`}
+                          {item.contract_type === 'per_call' &&
+                            `₪${item.rate_per_call?.toLocaleString() || 0}/קריאה`}
                         </p>
                       </div>
                     </div>
@@ -483,8 +487,8 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
           <AlertDialogHeader>
             <AlertDialogTitle>ביטול חוזה</AlertDialogTitle>
             <AlertDialogDescription>
-              האם אתה בטוח שברצונך לבטל את החוזה עם {contract.vendor_name}?
-              פעולה זו לא ניתנת לביטול.
+              האם אתה בטוח שברצונך לבטל את החוזה עם {contract.vendor_name}? פעולה זו לא ניתנת
+              לביטול.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

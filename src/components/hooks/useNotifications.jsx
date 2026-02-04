@@ -19,8 +19,13 @@ const markAsRead = async (id) => {
 };
 
 const markAllAsRead = async (userId) => {
-  const notifications = await base44.entities.Notification.filter({ user_id: userId, is_read: false });
-  await Promise.all(notifications.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
+  const notifications = await base44.entities.Notification.filter({
+    user_id: userId,
+    is_read: false,
+  });
+  await Promise.all(
+    notifications.map((n) => base44.entities.Notification.update(n.id, { is_read: true }))
+  );
   return notifications;
 };
 
@@ -38,7 +43,7 @@ export const useNotifications = (userId, limit = 20) => {
 
 export const useUnreadNotifications = (userId) => {
   const { data: notifications = [] } = useNotifications(userId);
-  return notifications.filter(n => !n.is_read);
+  return notifications.filter((n) => !n.is_read);
 };
 
 export const useMarkAsRead = () => {

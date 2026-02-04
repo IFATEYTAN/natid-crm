@@ -5,31 +5,19 @@ import { base44 } from '@/lib/api';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ExportMenu from '@/components/ui/ExportMenu';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Plus,
-  Search,
-  Phone,
-  Building2,
-  Edit,
-  Trash2
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Plus, Search, Phone, Building2, Edit, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { PageTransition } from '@/components/animations/AnimatedComponents';
@@ -39,14 +27,14 @@ const customerTypeLabels = {
   fleet: 'צי רכב',
   individual: 'פרטי',
   garage: 'מוסך',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const contractTypeLabels = {
   monthly: 'חודשי',
   yearly: 'שנתי',
   per_case: 'לפי קריאה',
-  none: 'ללא'
+  none: 'ללא',
 };
 
 export default function Customers() {
@@ -66,7 +54,7 @@ export default function Customers() {
     sla_arrival_minutes: 60,
     status: 'active',
     notes: '',
-    monthly_budget: ''
+    monthly_budget: '',
   });
 
   const queryClient = useQueryClient();
@@ -115,7 +103,7 @@ export default function Customers() {
       sla_arrival_minutes: 60,
       status: 'active',
       notes: '',
-      monthly_budget: ''
+      monthly_budget: '',
     });
   };
 
@@ -134,7 +122,7 @@ export default function Customers() {
       sla_arrival_minutes: customer.sla_arrival_minutes || 60,
       status: customer.status || 'active',
       notes: customer.notes || '',
-      monthly_budget: customer.monthly_budget || ''
+      monthly_budget: customer.monthly_budget || '',
     });
     setIsDialogOpen(true);
   };
@@ -143,7 +131,7 @@ export default function Customers() {
     e.preventDefault();
     const data = {
       ...formData,
-      monthly_budget: formData.monthly_budget ? Number(formData.monthly_budget) : null
+      monthly_budget: formData.monthly_budget ? Number(formData.monthly_budget) : null,
     };
 
     if (editingCustomer) {
@@ -153,11 +141,12 @@ export default function Customers() {
     }
   };
 
-  const filteredCustomers = customers.filter(c =>
-    !search ||
-    c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone?.includes(search) ||
-    c.contact_person?.toLowerCase().includes(search.toLowerCase())
+  const filteredCustomers = customers.filter(
+    (c) =>
+      !search ||
+      c.name?.toLowerCase().includes(search.toLowerCase()) ||
+      c.phone?.includes(search) ||
+      c.contact_person?.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
@@ -171,12 +160,12 @@ export default function Customers() {
           </div>
           <span className="font-medium text-neutral-soft-900">{row.name}</span>
         </div>
-      )
+      ),
     },
     {
       header: 'סוג',
       accessor: 'customer_type',
-      cell: (row) => customerTypeLabels[row.customer_type] || row.customer_type
+      cell: (row) => customerTypeLabels[row.customer_type] || row.customer_type,
     },
     {
       header: 'איש קשר',
@@ -190,17 +179,17 @@ export default function Customers() {
           <Phone className="w-3 h-3" />
           {row.phone}
         </span>
-      )
+      ),
     },
     {
       header: 'חוזה',
       accessor: 'contract_type',
-      cell: (row) => contractTypeLabels[row.contract_type] || '-'
+      cell: (row) => contractTypeLabels[row.contract_type] || '-',
     },
     {
       header: 'סטטוס',
       accessor: 'status',
-      cell: (row) => <StatusBadge status={row.status || 'active'} size="sm" />
+      cell: (row) => <StatusBadge status={row.status || 'active'} size="sm" />,
     },
     {
       header: 'פעולות',
@@ -214,7 +203,10 @@ export default function Customers() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(row);
+            }}
             title="ערוך"
           >
             <Edit className="w-4 h-4 text-neutral-soft-600" />
@@ -233,7 +225,7 @@ export default function Customers() {
             <Trash2 className="w-4 h-4 text-error-soft-600" />
           </Button>
         </div>
-      )
+      ),
     },
   ];
 
@@ -250,11 +242,12 @@ export default function Customers() {
   ];
 
   // Prepare export data with formatted values
-  const exportData = filteredCustomers.map(customer => ({
+  const exportData = filteredCustomers.map((customer) => ({
     ...customer,
     customer_type: customerTypeLabels[customer.customer_type] || customer.customer_type || '',
     contract_type: contractTypeLabels[customer.contract_type] || '',
-    status: customer.status === 'active' ? 'פעיל' : customer.status === 'inactive' ? 'לא פעיל' : 'מושהה',
+    status:
+      customer.status === 'active' ? 'פעיל' : customer.status === 'inactive' ? 'לא פעיל' : 'מושהה',
   }));
 
   return (
@@ -279,10 +272,7 @@ export default function Customers() {
               title="רשימת לקוחות"
               subtitle={`סה"כ ${filteredCustomers.length} לקוחות`}
             />
-            <Button
-              className="btn-primary"
-              onClick={() => setIsDialogOpen(true)}
-            >
+            <Button className="btn-primary" onClick={() => setIsDialogOpen(true)}>
               <Plus className="w-4 h-4" />
               לקוח חדש
             </Button>
@@ -326,9 +316,7 @@ export default function Customers() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {editingCustomer ? 'עריכת לקוח' : 'לקוח חדש'}
-              </DialogTitle>
+              <DialogTitle>{editingCustomer ? 'עריכת לקוח' : 'לקוח חדש'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -352,7 +340,9 @@ export default function Customers() {
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(customerTypeLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -410,7 +400,9 @@ export default function Customers() {
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(contractTypeLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -437,7 +429,9 @@ export default function Customers() {
                     className="form-input"
                     type="number"
                     value={formData.sla_response_minutes}
-                    onChange={(e) => setFormData({ ...formData, sla_response_minutes: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sla_response_minutes: Number(e.target.value) })
+                    }
                   />
                 </div>
                 <div className="form-group">
@@ -446,7 +440,9 @@ export default function Customers() {
                     className="form-input"
                     type="number"
                     value={formData.sla_arrival_minutes}
-                    onChange={(e) => setFormData({ ...formData, sla_arrival_minutes: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sla_arrival_minutes: Number(e.target.value) })
+                    }
                   />
                 </div>
                 <div className="col-span-2 form-group">

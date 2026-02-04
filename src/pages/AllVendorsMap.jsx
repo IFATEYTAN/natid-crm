@@ -4,55 +4,41 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  Truck, 
-  Phone, 
-  Star, 
-  MapPin, 
-  Search,
-  Eye,
-  RefreshCw
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Truck, Phone, Star, MapPin, Search, Eye, RefreshCw } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
-import { cn } from "@/lib/utils";
-
-
-
-
-
-
+import { cn } from '@/lib/utils';
 
 const availabilityColors = {
   available: 'green',
   busy: 'orange',
   offline: 'grey',
-  on_break: 'yellow'
+  on_break: 'yellow',
 };
 
 const availabilityLabels = {
   available: 'זמין',
   busy: 'עסוק',
   offline: 'לא מחובר',
-  on_break: 'בהפסקה'
+  on_break: 'בהפסקה',
 };
 
 const availabilityBadgeColors = {
   available: 'bg-green-100 text-green-800',
   busy: 'bg-orange-100 text-orange-800',
   offline: 'bg-gray-100 text-gray-800',
-  on_break: 'bg-yellow-100 text-yellow-800'
+  on_break: 'bg-yellow-100 text-yellow-800',
 };
 
 const serviceTypeLabels = {
@@ -61,7 +47,7 @@ const serviceTypeLabels = {
   tire_service: 'צמיגים',
   locksmith: 'מנעולן',
   fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב'
+  multi_service: 'שירות משולב',
 };
 
 export default function AllVendorsMapPage() {
@@ -78,20 +64,26 @@ export default function AllVendorsMapPage() {
     };
   }, []);
 
-  const { data: vendors = [], isLoading, refetch } = useQuery({
+  const {
+    data: vendors = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['vendors-map'],
     queryFn: () => base44.entities.Vendor.list('-updated_date', 500),
-    refetchInterval: 30000 // Auto refresh every 30 seconds
+    refetchInterval: 30000, // Auto refresh every 30 seconds
   });
 
   // Filter vendors with location data
   const vendorsWithLocation = useMemo(() => {
-    return vendors.filter(v => {
+    return vendors.filter((v) => {
       const hasLocation = v.current_latitude && v.current_longitude;
-      const matchesSearch = !searchQuery || 
+      const matchesSearch =
+        !searchQuery ||
         v.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         v.coverage_cities?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesAvailability = availabilityFilter === 'all' || v.availability_status === availabilityFilter;
+      const matchesAvailability =
+        availabilityFilter === 'all' || v.availability_status === availabilityFilter;
       return hasLocation && matchesSearch && matchesAvailability;
     });
   }, [vendors, searchQuery, availabilityFilter]);
@@ -99,19 +91,26 @@ export default function AllVendorsMapPage() {
   // Calculate map center based on vendors or default to Israel center
   const mapCenter = useMemo(() => {
     if (vendorsWithLocation.length > 0) {
-      const avgLat = vendorsWithLocation.reduce((sum, v) => sum + v.current_latitude, 0) / vendorsWithLocation.length;
-      const avgLng = vendorsWithLocation.reduce((sum, v) => sum + v.current_longitude, 0) / vendorsWithLocation.length;
+      const avgLat =
+        vendorsWithLocation.reduce((sum, v) => sum + v.current_latitude, 0) /
+        vendorsWithLocation.length;
+      const avgLng =
+        vendorsWithLocation.reduce((sum, v) => sum + v.current_longitude, 0) /
+        vendorsWithLocation.length;
       return [avgLat, avgLng];
     }
     return [31.7683, 35.2137]; // Jerusalem
   }, [vendorsWithLocation]);
 
-  const stats = useMemo(() => ({
-    total: vendors.length,
-    withLocation: vendorsWithLocation.length,
-    available: vendorsWithLocation.filter(v => v.availability_status === 'available').length,
-    busy: vendorsWithLocation.filter(v => v.availability_status === 'busy').length,
-  }), [vendors, vendorsWithLocation]);
+  const stats = useMemo(
+    () => ({
+      total: vendors.length,
+      withLocation: vendorsWithLocation.length,
+      available: vendorsWithLocation.filter((v) => v.availability_status === 'available').length,
+      busy: vendorsWithLocation.filter((v) => v.availability_status === 'busy').length,
+    }),
+    [vendors, vendorsWithLocation]
+  );
 
   if (isLoading) {
     return <PageLoader text="טוען מפת ספקים..." />;
@@ -126,11 +125,7 @@ export default function AllVendorsMapPage() {
             <h1 className="text-2xl font-bold text-[#111827]">מפת ספקים</h1>
             <p className="text-[#6b7280] text-sm">צפייה במיקום כל נותני השירות בזמן אמת</p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => refetch()}
-            className="gap-2"
-          >
+          <Button variant="outline" onClick={() => refetch()} className="gap-2">
             <RefreshCw className="w-4 h-4" />
             רענן מפה
           </Button>
@@ -184,7 +179,9 @@ export default function AllVendorsMapPage() {
                 <SelectContent>
                   <SelectItem value="all">כל הספקים</SelectItem>
                   {Object.entries(availabilityLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -218,7 +215,7 @@ export default function AllVendorsMapPage() {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {vendorsWithLocation.map(vendor => (
+                {vendorsWithLocation.map((vendor) => (
                   <Marker
                     key={vendor.id}
                     position={[vendor.current_latitude, vendor.current_longitude]}
@@ -232,12 +229,17 @@ export default function AllVendorsMapPage() {
                           </div>
                           <div>
                             <div className="font-semibold text-[#111827]">{vendor.vendor_name}</div>
-                            <Badge className={cn("text-xs", availabilityBadgeColors[vendor.availability_status])}>
+                            <Badge
+                              className={cn(
+                                'text-xs',
+                                availabilityBadgeColors[vendor.availability_status]
+                              )}
+                            >
                               {availabilityLabels[vendor.availability_status]}
                             </Badge>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-1 text-sm mb-3">
                           <div className="flex items-center gap-2 text-[#6b7280]">
                             <Phone className="w-3 h-3" />
@@ -251,13 +253,16 @@ export default function AllVendorsMapPage() {
                           )}
                           {vendor.service_type?.length > 0 && (
                             <div className="text-xs text-[#6b7280]">
-                              {vendor.service_type.map(t => serviceTypeLabels[t] || t).join(', ')}
+                              {vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')}
                             </div>
                           )}
                         </div>
-                        
+
                         <Link to={createPageUrl(`VendorDetails?id=${vendor.id}`)}>
-                          <Button size="sm" className="w-full gap-2 bg-[#3b82f6] hover:bg-[#2563eb]">
+                          <Button
+                            size="sm"
+                            className="w-full gap-2 bg-[#3b82f6] hover:bg-[#2563eb]"
+                          >
                             <Eye className="w-3 h-3" />
                             צפה בפרטים
                           </Button>
@@ -278,12 +283,17 @@ export default function AllVendorsMapPage() {
               <span className="font-medium text-[#111827]">מקרא:</span>
               {Object.entries(availabilityLabels).map(([key, label]) => (
                 <div key={key} className="flex items-center gap-2">
-                  <div 
+                  <div
                     className="w-3 h-3 rounded-full"
-                    style={{ 
-                      backgroundColor: key === 'available' ? '#22c55e' : 
-                                       key === 'busy' ? '#f97316' : 
-                                       key === 'offline' ? '#9ca3af' : '#eab308'
+                    style={{
+                      backgroundColor:
+                        key === 'available'
+                          ? '#22c55e'
+                          : key === 'busy'
+                            ? '#f97316'
+                            : key === 'offline'
+                              ? '#9ca3af'
+                              : '#eab308',
                     }}
                   />
                   <span className="text-[#6b7280]">{label}</span>

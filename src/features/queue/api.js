@@ -12,7 +12,7 @@ export const getWorkQueue = (sort = '-priority_score') => {
 
 // Get a single queue item by ID
 export const getQueueItemById = (id) => {
-  return base44.entities.WorkQueue.filter({ id }).then(items => items[0]);
+  return base44.entities.WorkQueue.filter({ id }).then((items) => items[0]);
 };
 
 // Filter queue items with custom criteria
@@ -30,7 +30,7 @@ export const assignToAgent = (queueId, agentEmail) => {
   return base44.entities.WorkQueue.update(queueId, {
     assigned_to_agent: agentEmail,
     queue_status: 'assigned_to_agent',
-    assigned_at: new Date().toISOString()
+    assigned_at: new Date().toISOString(),
   });
 };
 
@@ -38,7 +38,7 @@ export const assignToAgent = (queueId, agentEmail) => {
 export const startQueueItem = (queueId) => {
   return base44.entities.WorkQueue.update(queueId, {
     queue_status: 'in_progress',
-    started_at: new Date().toISOString()
+    started_at: new Date().toISOString(),
   });
 };
 
@@ -47,7 +47,7 @@ export const completeQueueItem = (queueId, timeToComplete) => {
   return base44.entities.WorkQueue.update(queueId, {
     queue_status: 'completed',
     completed_at: new Date().toISOString(),
-    time_to_complete: timeToComplete
+    time_to_complete: timeToComplete,
   });
 };
 

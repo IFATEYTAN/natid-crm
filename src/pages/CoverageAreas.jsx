@@ -1,41 +1,69 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  MapPin, 
-  Users, 
-  Truck,
-  CheckCircle,
-  Clock
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { MapPin, Users, Truck, CheckCircle, Clock } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
-import { SlideUp, StaggeredList, StaggeredItem, AnimatedCard } from '@/components/animations/AnimatedComponents';
-import { cn } from "@/lib/utils";
+import {
+  SlideUp,
+  StaggeredList,
+  StaggeredItem,
+  AnimatedCard,
+} from '@/components/animations/AnimatedComponents';
+import { cn } from '@/lib/utils';
 
 const coverageAreas = [
-  { key: 'center', label: 'מרכז', cities: ['תל אביב', 'רמת גן', 'גבעתיים', 'בני ברק', 'פתח תקווה', 'ראשון לציון', 'חולון', 'בת ים'] },
-  { key: 'sharon', label: 'שרון', cities: ['נתניה', 'הרצליה', 'רעננה', 'כפר סבא', 'הוד השרון', 'רמת השרון'] },
-  { key: 'north', label: 'צפון', cities: ['חיפה', 'עכו', 'נהריה', 'קריות', 'טבריה', 'צפת', 'נצרת'] },
-  { key: 'south', label: 'דרום', cities: ['באר שבע', 'אשדוד', 'אשקלון', 'אילת', 'דימונה', 'קריית גת'] },
-  { key: 'jerusalem', label: 'ירושלים והסביבה', cities: ['ירושלים', 'בית שמש', 'מודיעין', 'מעלה אדומים'] },
-  { key: 'lowlands', label: 'שפלה', cities: ['רחובות', 'נס ציונה', 'לוד', 'רמלה', 'יבנה', 'גדרה'] }
+  {
+    key: 'center',
+    label: 'מרכז',
+    cities: [
+      'תל אביב',
+      'רמת גן',
+      'גבעתיים',
+      'בני ברק',
+      'פתח תקווה',
+      'ראשון לציון',
+      'חולון',
+      'בת ים',
+    ],
+  },
+  {
+    key: 'sharon',
+    label: 'שרון',
+    cities: ['נתניה', 'הרצליה', 'רעננה', 'כפר סבא', 'הוד השרון', 'רמת השרון'],
+  },
+  {
+    key: 'north',
+    label: 'צפון',
+    cities: ['חיפה', 'עכו', 'נהריה', 'קריות', 'טבריה', 'צפת', 'נצרת'],
+  },
+  {
+    key: 'south',
+    label: 'דרום',
+    cities: ['באר שבע', 'אשדוד', 'אשקלון', 'אילת', 'דימונה', 'קריית גת'],
+  },
+  {
+    key: 'jerusalem',
+    label: 'ירושלים והסביבה',
+    cities: ['ירושלים', 'בית שמש', 'מודיעין', 'מעלה אדומים'],
+  },
+  { key: 'lowlands', label: 'שפלה', cities: ['רחובות', 'נס ציונה', 'לוד', 'רמלה', 'יבנה', 'גדרה'] },
 ];
 
 const availabilityLabels = {
   available: 'זמין',
   busy: 'עסוק',
   offline: 'לא מחובר',
-  on_break: 'בהפסקה'
+  on_break: 'בהפסקה',
 };
 
 const serviceTypeLabels = {
@@ -44,7 +72,7 @@ const serviceTypeLabels = {
   tire_service: 'צמיגים',
   locksmith: 'מנעולן',
   fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב'
+  multi_service: 'שירות משולב',
 };
 
 export default function CoverageAreasPage() {
@@ -58,20 +86,18 @@ export default function CoverageAreasPage() {
   // Calculate coverage stats per area
   const areaStats = useMemo(() => {
     const stats = {};
-    
-    coverageAreas.forEach(area => {
-      const areaVendors = vendors.filter(v => 
-        v.coverage_areas?.includes(area.key)
-      );
-      
+
+    coverageAreas.forEach((area) => {
+      const areaVendors = vendors.filter((v) => v.coverage_areas?.includes(area.key));
+
       stats[area.key] = {
         total: areaVendors.length,
-        available: areaVendors.filter(v => v.availability_status === 'available').length,
-        busy: areaVendors.filter(v => v.availability_status === 'busy').length,
-        vendors: areaVendors
+        available: areaVendors.filter((v) => v.availability_status === 'available').length,
+        busy: areaVendors.filter((v) => v.availability_status === 'busy').length,
+        vendors: areaVendors,
       };
     });
-    
+
     return stats;
   }, [vendors]);
 
@@ -84,11 +110,14 @@ export default function CoverageAreasPage() {
   }, [selectedArea, vendors, areaStats]);
 
   // Overall stats
-  const totalStats = useMemo(() => ({
-    totalVendors: vendors.length,
-    totalAvailable: vendors.filter(v => v.availability_status === 'available').length,
-    areasWithCoverage: Object.values(areaStats).filter(s => s.total > 0).length
-  }), [vendors, areaStats]);
+  const totalStats = useMemo(
+    () => ({
+      totalVendors: vendors.length,
+      totalAvailable: vendors.filter((v) => v.availability_status === 'available').length,
+      areasWithCoverage: Object.values(areaStats).filter((s) => s.total > 0).length,
+    }),
+    [vendors, areaStats]
+  );
 
   if (isLoading) {
     return <PageLoader text="טוען אזורי כיסוי..." />;
@@ -125,7 +154,9 @@ export default function CoverageAreasPage() {
                   <CheckCircle className="w-5 h-5 text-[#111827]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{totalStats.totalAvailable}</div>
+                  <div className="text-2xl font-bold text-[#111827]">
+                    {totalStats.totalAvailable}
+                  </div>
                   <div className="text-sm text-[#6b7280]">זמינים כעת</div>
                 </div>
               </div>
@@ -138,7 +169,9 @@ export default function CoverageAreasPage() {
                   <MapPin className="w-5 h-5 text-[#3b82f6]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{totalStats.areasWithCoverage}</div>
+                  <div className="text-2xl font-bold text-[#111827]">
+                    {totalStats.areasWithCoverage}
+                  </div>
                   <div className="text-sm text-[#6b7280]">אזורים פעילים</div>
                 </div>
               </div>
@@ -148,26 +181,32 @@ export default function CoverageAreasPage() {
 
         {/* Area Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {coverageAreas.map(area => {
+          {coverageAreas.map((area) => {
             const stats = areaStats[area.key] || { total: 0, available: 0, busy: 0 };
             const isSelected = selectedArea === area.key;
-            
+
             return (
-              <Card 
+              <Card
                 key={area.key}
                 className={cn(
-                  "cursor-pointer transition-all hover:shadow-md",
-                  isSelected ? "border-[#3b82f6] bg-[#eff6ff]" : "bg-white border-[#e5e7eb]"
+                  'cursor-pointer transition-all hover:shadow-md',
+                  isSelected ? 'border-[#3b82f6] bg-[#eff6ff]' : 'bg-white border-[#e5e7eb]'
                 )}
                 onClick={() => setSelectedArea(isSelected ? 'all' : area.key)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <MapPin className={cn("w-5 h-5", isSelected ? "text-[#3b82f6]" : "text-[#6b7280]")} />
+                      <MapPin
+                        className={cn('w-5 h-5', isSelected ? 'text-[#3b82f6]' : 'text-[#6b7280]')}
+                      />
                       {area.label}
                     </CardTitle>
-                    <Badge className={stats.total > 0 ? "bg-[#111827] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}>
+                    <Badge
+                      className={
+                        stats.total > 0 ? 'bg-[#111827] text-white' : 'bg-[#f3f4f6] text-[#6b7280]'
+                      }
+                    >
                       {stats.total} ספקים
                     </Badge>
                   </div>
@@ -184,7 +223,8 @@ export default function CoverageAreasPage() {
                     </div>
                   </div>
                   <div className="text-xs text-[#6b7280]">
-                    {area.cities.slice(0, 4).join(', ')}{area.cities.length > 4 ? '...' : ''}
+                    {area.cities.slice(0, 4).join(', ')}
+                    {area.cities.length > 4 ? '...' : ''}
                   </div>
                 </CardContent>
               </Card>
@@ -197,7 +237,9 @@ export default function CoverageAreasPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
-                {selectedArea === 'all' ? 'כל הספקים' : `ספקים באזור ${coverageAreas.find(a => a.key === selectedArea)?.label}`}
+                {selectedArea === 'all'
+                  ? 'כל הספקים'
+                  : `ספקים באזור ${coverageAreas.find((a) => a.key === selectedArea)?.label}`}
               </CardTitle>
               <Select value={selectedArea} onValueChange={setSelectedArea}>
                 <SelectTrigger className="w-40">
@@ -205,8 +247,10 @@ export default function CoverageAreasPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">כל האזורים</SelectItem>
-                  {coverageAreas.map(area => (
-                    <SelectItem key={area.key} value={area.key}>{area.label}</SelectItem>
+                  {coverageAreas.map((area) => (
+                    <SelectItem key={area.key} value={area.key}>
+                      {area.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -220,8 +264,8 @@ export default function CoverageAreasPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {displayedVendors.slice(0, 10).map(vendor => (
-                  <div 
+                {displayedVendors.slice(0, 10).map((vendor) => (
+                  <div
                     key={vendor.id}
                     className="flex items-center gap-3 p-3 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
                   >
@@ -229,17 +273,24 @@ export default function CoverageAreasPage() {
                       <Truck className="w-5 h-5 text-[#6b7280]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-[#111827] truncate">{vendor.vendor_name}</div>
+                      <div className="font-medium text-[#111827] truncate">
+                        {vendor.vendor_name}
+                      </div>
                       <div className="text-xs text-[#6b7280]">
-                        {vendor.service_type?.map(t => serviceTypeLabels[t] || t).join(', ') || 'לא צוין'}
+                        {vendor.service_type?.map((t) => serviceTypeLabels[t] || t).join(', ') ||
+                          'לא צוין'}
                       </div>
                     </div>
-                    <Badge className={cn(
-                      "text-xs",
-                      vendor.availability_status === 'available' ? "bg-green-100 text-green-800" :
-                      vendor.availability_status === 'busy' ? "bg-orange-100 text-orange-800" :
-                      "bg-gray-100 text-gray-800"
-                    )}>
+                    <Badge
+                      className={cn(
+                        'text-xs',
+                        vendor.availability_status === 'available'
+                          ? 'bg-green-100 text-green-800'
+                          : vendor.availability_status === 'busy'
+                            ? 'bg-orange-100 text-orange-800'
+                            : 'bg-gray-100 text-gray-800'
+                      )}
+                    >
                       {availabilityLabels[vendor.availability_status] || 'לא ידוע'}
                     </Badge>
                   </div>

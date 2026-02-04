@@ -48,7 +48,7 @@ export const useAssignToAgent = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ queueItemId, agentEmail }) => 
+    mutationFn: ({ queueItemId, agentEmail }) =>
       base44.entities.WorkQueue.update(queueItemId, {
         assigned_to_agent: agentEmail,
         queue_status: 'assigned_to_agent',

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
 import DataTable from '@/components/ui/DataTable';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -11,25 +11,25 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { 
-  UserPlus, 
-  Search, 
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import {
+  UserPlus,
+  Search,
   Mail,
   Shield,
   User,
   Edit,
   AlertCircle,
   Upload,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarStack from '@/components/ui/AvatarStack';
@@ -72,11 +72,12 @@ export default function UserManagement() {
     onError: (error) => {
       console.error('Invite error:', error);
       let message = error?.response?.data?.message || error?.message || 'שגיאה לא ידועה';
-      
-      if (typeof message === 'string' && message.includes("Only paid users or users with a seat")) {
-        message = "לא ניתן להזמין מנהלים (Admins) בחבילה הנוכחית או למשתמשים מחוץ לארגון. נא לנסות להזמין כ'מוקדן' (User).";
+
+      if (typeof message === 'string' && message.includes('Only paid users or users with a seat')) {
+        message =
+          "לא ניתן להזמין מנהלים (Admins) בחבילה הנוכחית או למשתמשים מחוץ לארגון. נא לנסות להזמין כ'מוקדן' (User).";
       }
-      
+
       toast.error('שגיאה בשליחת הזמנה: ' + message);
     },
   });
@@ -101,9 +102,9 @@ export default function UserManagement() {
     try {
       setIsUploading(true);
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      
+
       await base44.entities.User.update(uploadUser.id, {
-        profile_image: file_url
+        profile_image: file_url,
       });
 
       toast.success('תמונת פרופיל עודכנה בהצלחה');
@@ -142,8 +143,9 @@ export default function UserManagement() {
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = !search || 
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      !search ||
       user.full_name?.toLowerCase().includes(search.toLowerCase()) ||
       user.email?.toLowerCase().includes(search.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
@@ -160,7 +162,11 @@ export default function UserManagement() {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
             {row.profile_image ? (
-              <img src={row.profile_image} alt={row.full_name} className="w-full h-full object-cover" />
+              <img
+                src={row.profile_image}
+                alt={row.full_name}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <User className="w-5 h-5 text-gray-500" />
             )}
@@ -170,38 +176,44 @@ export default function UserManagement() {
             <div className="text-sm text-[#616161]">{row.email}</div>
           </div>
         </div>
-      )
+      ),
     },
     {
       header: 'תפקיד',
       accessor: 'role',
       cell: (row) => (
         <div className="flex items-center gap-2">
-          <Shield className={`w-4 h-4 ${row.role === 'admin' ? 'text-[#D32F2F]' : 'text-[#616161]'}`} />
-          <span className={`px-3 py-1 rounded-full text-sm ${
-            row.role === 'admin' 
-              ? 'bg-[#FFEBEE] text-[#D32F2F]' 
-              : 'bg-[#E3F2FD] text-[#0078D4]'
-          }`}>
+          <Shield
+            className={`w-4 h-4 ${row.role === 'admin' ? 'text-[#D32F2F]' : 'text-[#616161]'}`}
+          />
+          <span
+            className={`px-3 py-1 rounded-full text-sm ${
+              row.role === 'admin' ? 'bg-[#FFEBEE] text-[#D32F2F]' : 'bg-[#E3F2FD] text-[#0078D4]'
+            }`}
+          >
             {row.role === 'admin' ? 'מנהל' : 'מוקדן'}
           </span>
         </div>
-      )
+      ),
     },
     {
       header: 'תאריך הצטרפות',
       accessor: 'created_date',
-      cell: (row) => row.created_date ? new Date(row.created_date).toLocaleDateString('he-IL') : '-'
+      cell: (row) =>
+        row.created_date ? new Date(row.created_date).toLocaleDateString('he-IL') : '-',
     },
     {
       header: 'פעולות',
       cell: (row) => (
         <div className="flex items-center gap-2">
           {isAdmin && (
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
-              onClick={(e) => { e.stopPropagation(); handleEditUser(row); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditUser(row);
+              }}
               title="עריכת משתמש"
             >
               <Edit className="w-4 h-4 text-[#616161]" />
@@ -211,8 +223,8 @@ export default function UserManagement() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={(e) => { 
-                e.stopPropagation(); 
+              onClick={(e) => {
+                e.stopPropagation();
                 setUploadUser(row);
                 setIsUploadOpen(true);
               }}
@@ -222,7 +234,7 @@ export default function UserManagement() {
             </Button>
           )}
         </div>
-      )
+      ),
     },
   ];
 
@@ -247,12 +259,14 @@ export default function UserManagement() {
         <div>
           <h1>ניהול משתמשים</h1>
           <div className="flex items-center gap-3 mt-1">
-            <p className="text-[var(--color-text-secondary)]">{filteredUsers.length} משתמשים במערכת</p>
+            <p className="text-[var(--color-text-secondary)]">
+              {filteredUsers.length} משתמשים במערכת
+            </p>
             <div className="h-4 w-px bg-gray-300 mx-2"></div>
             <AvatarStack users={users} size="sm" max={8} />
           </div>
         </div>
-        
+
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
           <DialogTrigger asChild>
             <Button className="btn-primary gap-2">
@@ -297,15 +311,15 @@ export default function UserManagement() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-[#616161] mt-1">
-                  {inviteRole === 'admin' 
-                    ? 'מנהל - גישה מלאה (שים לב: ייתכן ומוגבל בחשבונות מסוימים)' 
+                  {inviteRole === 'admin'
+                    ? 'מנהל - גישה מלאה (שים לב: ייתכן ומוגבל בחשבונות מסוימים)'
                     : 'מוקדן - גישה לניהול קריאות בלבד (מומלץ)'}
                 </p>
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => {
                     setIsInviteDialogOpen(false);
                     setInviteEmail('');
@@ -313,12 +327,12 @@ export default function UserManagement() {
                 >
                   ביטול
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="btn-primary"
-                  disabled={inviteMutation.isPending}
-                >
-                  {inviteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'שלח הזמנה'}
+                <Button type="submit" className="btn-primary" disabled={inviteMutation.isPending}>
+                  {inviteMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'שלח הזמנה'
+                  )}
                 </Button>
               </div>
             </form>
@@ -373,13 +387,13 @@ export default function UserManagement() {
         <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
           <p className="text-[13px] font-medium text-[#6B7280] mb-2">מנהלים</p>
           <p className="text-[28px] font-bold text-[#111827]">
-            {users.filter(u => u.role === 'admin').length}
+            {users.filter((u) => u.role === 'admin').length}
           </p>
         </div>
         <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
           <p className="text-[13px] font-medium text-[#6B7280] mb-2">מוקדנים</p>
           <p className="text-[28px] font-bold text-[#111827]">
-            {users.filter(u => u.role === 'user').length}
+            {users.filter((u) => u.role === 'user').length}
           </p>
         </div>
       </div>
@@ -399,16 +413,18 @@ export default function UserManagement() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>עדכון תמונת פרופיל</DialogTitle>
-            <DialogDescription>
-              בחר תמונה חדשה למשתמש זה.
-            </DialogDescription>
+            <DialogDescription>בחר תמונה חדשה למשתמש זה.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {uploadUser && (
               <div className="text-center mb-4">
                 <div className="w-20 h-20 mx-auto rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200 mb-2">
                   {uploadUser.profile_image ? (
-                    <img src={uploadUser.profile_image} alt={uploadUser.full_name} className="w-full h-full object-cover" />
+                    <img
+                      src={uploadUser.profile_image}
+                      alt={uploadUser.full_name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <User className="w-10 h-10 text-gray-400" />
                   )}
@@ -417,9 +433,12 @@ export default function UserManagement() {
                 <p className="text-sm text-gray-500">{uploadUser.email}</p>
               </div>
             )}
-            
+
             <div className="flex flex-col gap-4">
-              <Label htmlFor="picture" className="text-center cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 hover:bg-gray-50 transition-colors">
+              <Label
+                htmlFor="picture"
+                className="text-center cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-8 hover:bg-gray-50 transition-colors"
+              >
                 {isUploading ? (
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -432,19 +451,23 @@ export default function UserManagement() {
                     <span className="text-xs text-gray-400">PNG, JPG עד 5MB</span>
                   </div>
                 )}
-                <Input 
-                  id="picture" 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
+                <Input
+                  id="picture"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
                   onChange={handleFileUpload}
                   disabled={isUploading}
                 />
               </Label>
             </div>
-            
+
             <div className="flex justify-end pt-2">
-              <Button variant="outline" onClick={() => setIsUploadOpen(false)} disabled={isUploading}>
+              <Button
+                variant="outline"
+                onClick={() => setIsUploadOpen(false)}
+                disabled={isUploading}
+              >
                 ביטול
               </Button>
             </div>
@@ -457,9 +480,7 @@ export default function UserManagement() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>עריכת פרטי משתמש</DialogTitle>
-            <DialogDescription>
-              עדכון פרטים אישיים והרשאות משתמש.
-            </DialogDescription>
+            <DialogDescription>עדכון פרטים אישיים והרשאות משתמש.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateUser} className="space-y-4">
             {editingUser && (
@@ -480,8 +501,8 @@ export default function UserManagement() {
 
                 <div>
                   <Label>תפקיד במערכת</Label>
-                  <Select 
-                    value={editRole} 
+                  <Select
+                    value={editRole}
                     onValueChange={setEditRole}
                     disabled={editingUser.id === currentUser?.id}
                   >
@@ -494,16 +515,14 @@ export default function UserManagement() {
                     </SelectContent>
                   </Select>
                   {editingUser.id === currentUser?.id && (
-                    <p className="text-xs text-[#616161] mt-1">
-                      לא ניתן לשנות את התפקיד של עצמך
-                    </p>
+                    <p className="text-xs text-[#616161] mt-1">לא ניתן לשנות את התפקיד של עצמך</p>
                   )}
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => {
                       setIsEditDialogOpen(false);
                       setEditingUser(null);
@@ -511,8 +530,8 @@ export default function UserManagement() {
                   >
                     ביטול
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="btn-primary"
                     disabled={updateUserMutation.isPending}
                   >

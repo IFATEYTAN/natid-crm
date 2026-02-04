@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { 
-  Settings as SettingsIcon,
-  Building2,
-  Clock,
-  Save
-} from 'lucide-react';
+} from '@/components/ui/select';
+import { Settings as SettingsIcon, Building2, Clock, Save } from 'lucide-react';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 
@@ -25,7 +20,7 @@ export default function SettingsPage() {
     defaultSlaMinutes: 30,
     timezone: 'Asia/Jerusalem',
     workingHoursStart: '08:00',
-    workingHoursEnd: '22:00'
+    workingHoursEnd: '22:00',
   });
 
   const handleSave = () => {
@@ -63,7 +58,7 @@ export default function SettingsPage() {
               <Label>שם החברה</Label>
               <Input
                 value={settings.companyName}
-                onChange={(e) => setSettings({...settings, companyName: e.target.value})}
+                onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
               />
             </div>
           </CardContent>
@@ -83,7 +78,9 @@ export default function SettingsPage() {
               <Input
                 type="number"
                 value={settings.defaultSlaMinutes}
-                onChange={(e) => setSettings({...settings, defaultSlaMinutes: parseInt(e.target.value) || 30})}
+                onChange={(e) =>
+                  setSettings({ ...settings, defaultSlaMinutes: parseInt(e.target.value) || 30 })
+                }
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -92,7 +89,7 @@ export default function SettingsPage() {
                 <Input
                   type="time"
                   value={settings.workingHoursStart}
-                  onChange={(e) => setSettings({...settings, workingHoursStart: e.target.value})}
+                  onChange={(e) => setSettings({ ...settings, workingHoursStart: e.target.value })}
                 />
               </div>
               <div>
@@ -100,7 +97,7 @@ export default function SettingsPage() {
                 <Input
                   type="time"
                   value={settings.workingHoursEnd}
-                  onChange={(e) => setSettings({...settings, workingHoursEnd: e.target.value})}
+                  onChange={(e) => setSettings({ ...settings, workingHoursEnd: e.target.value })}
                 />
               </div>
             </div>
@@ -118,9 +115,9 @@ export default function SettingsPage() {
           <CardContent>
             <div>
               <Label>אזור זמן</Label>
-              <Select 
-                value={settings.timezone} 
-                onValueChange={(val) => setSettings({...settings, timezone: val})}
+              <Select
+                value={settings.timezone}
+                onValueChange={(val) => setSettings({ ...settings, timezone: val })}
               >
                 <SelectTrigger>
                   <SelectValue />

@@ -1,25 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import {
-  Menu,
-  X,
-  Plus,
-  LogOut,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Bell
-} from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Menu, X, Plus, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import AccessibilityWidget from '@/components/AccessibilityWidget';
 import InstallPrompt from '@/components/pwa/InstallPrompt';
@@ -39,18 +26,19 @@ export default function Layout({ children, currentPageName }) {
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', currentUser?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_at', 20),
+    queryFn: () =>
+      base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_at', 20),
     enabled: !!currentUser?.id,
-    refetchInterval: 30000
+    refetchInterval: 30000,
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const markAsReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    }
+    },
   });
 
   const handleNotificationClick = (notification) => {
@@ -94,11 +82,10 @@ export default function Layout({ children, currentPageName }) {
         opacity: [0, 1],
         translateY: [10, 0],
         duration: 600,
-        easing: 'easeOutQuad'
+        easing: 'easeOutQuad',
       });
     }
   }, [currentPageName]);
-
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -110,9 +97,9 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const toggleGroup = (title) => {
-    setExpandedGroups(prev => ({
+    setExpandedGroups((prev) => ({
       ...prev,
-      [title]: !prev[title]
+      [title]: !prev[title],
     }));
   };
 
@@ -124,7 +111,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'ניטור תורים', href: 'QueueMonitor' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
-      ]
+      ],
     },
     {
       title: 'ניהול ונתונים',
@@ -134,13 +121,11 @@ export default function Layout({ children, currentPageName }) {
         { name: 'נותני שירות', href: 'ServiceProviders' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
         { name: 'הפרופיל שלי', href: 'MyVendorProfile' },
-        ]
-        },
+      ],
+    },
     {
       title: 'כלים',
-      items: [
-        { name: 'סוכנים', href: 'Agents' },
-      ]
+      items: [{ name: 'סוכנים', href: 'Agents' }],
     },
     {
       title: 'מערכת',
@@ -150,8 +135,8 @@ export default function Layout({ children, currentPageName }) {
         { name: 'אינטגרציות CRM', href: 'IntegrationSettings' },
         { name: 'הגדרות התראות', href: 'NotificationSettings' },
         { name: 'הגדרות מערכת', href: 'Settings' },
-      ]
-    }
+      ],
+    },
   ];
 
   const handleLogout = async () => {
@@ -244,30 +229,32 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={cn(
-        "fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out",
-        "lg:translate-x-0",
-        sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
-      )}>
+      <aside
+        className={cn(
+          'fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out',
+          'lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+        )}
+      >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#E0E0E0]">
           <div className="flex items-center gap-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-              alt="נתי" 
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
+              alt="נתי"
               className="h-12 w-auto object-contain"
             />
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="lg:hidden"
             onClick={() => setSidebarOpen(false)}
           >
@@ -290,7 +277,7 @@ export default function Layout({ children, currentPageName }) {
                   <ChevronRight className="w-4 h-4" />
                 )}
               </button>
-              
+
               {expandedGroups[group.title] && (
                 <div className="space-y-1 mt-1">
                   {group.items.map((item) => {
@@ -301,10 +288,10 @@ export default function Layout({ children, currentPageName }) {
                         to={createPageUrl(item.href)}
                         onClick={() => setSidebarOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200",
-                          isActive 
-                            ? "bg-[#F5F5F5] text-[#212121] shadow-sm border border-[#E0E0E0]" 
-                            : "text-[#424242] hover:bg-[#FAFAFA] hover:text-[#212121]"
+                          'flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200',
+                          isActive
+                            ? 'bg-[#F5F5F5] text-[#212121] shadow-sm border border-[#E0E0E0]'
+                            : 'text-[#424242] hover:bg-[#FAFAFA] hover:text-[#212121]'
                         )}
                       >
                         {item.name}
@@ -320,9 +307,7 @@ export default function Layout({ children, currentPageName }) {
         {/* Quick Actions */}
         <div className="absolute bottom-20 left-4 right-4">
           <Link to={createPageUrl('NewCase')}>
-            <Button 
-              className="w-full bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold"
-            >
+            <Button className="w-full bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold">
               <Plus className="w-5 h-5" />
               קריאה חדשה
             </Button>
@@ -331,8 +316,8 @@ export default function Layout({ children, currentPageName }) {
 
         {/* User Section */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#E0E0E0]">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full justify-start gap-3 text-[#616161] hover:text-[#D32F2F] hover:bg-red-50"
             onClick={handleLogout}
           >
@@ -347,18 +332,18 @@ export default function Layout({ children, currentPageName }) {
         {/* Top Bar */}
         <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="lg:hidden w-10 h-10 hover:bg-[rgba(0,0,0,0.04)] active:bg-[rgba(0,0,0,0.08)] transition-colors rounded-full"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="w-6 h-6 text-[#616161]" strokeWidth={2} />
             </Button>
             <div className="flex items-center gap-3">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-                alt="נתי" 
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
+                alt="נתי"
                 className="h-8 w-auto object-contain lg:hidden"
               />
             </div>
@@ -382,18 +367,20 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500 text-sm">
-                      אין התראות חדשות
-                    </div>
+                    <div className="p-8 text-center text-gray-500 text-sm">אין התראות חדשות</div>
                   ) : (
-                    notifications.map(notification => (
-                      <Link 
-                        key={notification.id} 
-                        to={notification.link ? createPageUrl(notification.link.replace(/^\//, '')) : '#'}
+                    notifications.map((notification) => (
+                      <Link
+                        key={notification.id}
+                        to={
+                          notification.link
+                            ? createPageUrl(notification.link.replace(/^\//, ''))
+                            : '#'
+                        }
                         onClick={() => handleNotificationClick(notification)}
                         className={cn(
-                          "block p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors text-right",
-                          !notification.is_read && "bg-blue-50/50"
+                          'block p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors text-right',
+                          !notification.is_read && 'bg-blue-50/50'
                         )}
                       >
                         <div className="flex justify-between items-start mb-1">
@@ -404,12 +391,15 @@ export default function Layout({ children, currentPageName }) {
                             <span className="w-2 h-2 bg-blue-500 rounded-full mt-1" />
                           )}
                         </div>
-                        <h5 className={cn("text-sm font-medium mb-1", !notification.is_read ? "text-blue-700" : "text-gray-900")}>
+                        <h5
+                          className={cn(
+                            'text-sm font-medium mb-1',
+                            !notification.is_read ? 'text-blue-700' : 'text-gray-900'
+                          )}
+                        >
                           {notification.title}
                         </h5>
-                        <p className="text-xs text-gray-500 line-clamp-2">
-                          {notification.message}
-                        </p>
+                        <p className="text-xs text-gray-500 line-clamp-2">{notification.message}</p>
                       </Link>
                     ))
                   )}
@@ -423,15 +413,13 @@ export default function Layout({ children, currentPageName }) {
                 <p className="text-sm font-medium text-[#212121] leading-none">
                   {currentUser?.full_name || 'משתמש'}
                 </p>
-                <p className="text-[11px] text-[#616161] mt-1 leading-none">
-                  {currentUser?.email}
-                </p>
+                <p className="text-[11px] text-[#616161] mt-1 leading-none">{currentUser?.email}</p>
               </div>
               <div className="w-8 h-8 rounded-full bg-[#F5F5F5] border border-[#E0E0E0] flex items-center justify-center overflow-hidden">
                 {currentUser?.profile_image ? (
-                  <img 
-                    src={currentUser.profile_image} 
-                    alt={currentUser.full_name} 
+                  <img
+                    src={currentUser.profile_image}
+                    alt={currentUser.full_name}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -464,7 +452,7 @@ export default function Layout({ children, currentPageName }) {
           <ConnectionStatusIndicator />
         </div>
         <Toaster position="top-center" richColors />
-        </div>
+      </div>
     </div>
   );
 }

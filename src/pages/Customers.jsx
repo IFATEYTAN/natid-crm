@@ -3,23 +3,23 @@ import { Link } from 'react-router-dom';
 import { createPageUrl, formatDate } from '@/components/utils';
 import { useCustomers, useDeleteCustomer } from '@/components/hooks/useCustomers';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import DataTable from '@/components/ui/DataTable';
 import {
   Plus,
@@ -32,28 +32,28 @@ import {
   Eye,
   Pencil,
   Trash2,
-  FileText
+  FileText,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const customerTypeLabels = {
   insurance_company: 'חברת ביטוח',
   fleet: 'ציי רכב',
   individual: 'פרטי',
   garage: 'מוסך',
-  other: 'אחר'
+  other: 'אחר',
 };
 
 const statusLabels = {
   active: 'פעיל',
   inactive: 'לא פעיל',
-  suspended: 'מושהה'
+  suspended: 'מושהה',
 };
 
 const statusColors = {
   active: 'bg-green-100 text-green-800',
   inactive: 'bg-gray-100 text-gray-800',
-  suspended: 'bg-red-100 text-red-800'
+  suspended: 'bg-red-100 text-red-800',
 };
 
 export default function CustomersPage() {
@@ -67,8 +67,9 @@ export default function CustomersPage() {
   const customers = customersQuery.data || [];
 
   const filteredCustomers = useMemo(() => {
-    return customers.filter(customer => {
-      const matchesSearch = !searchQuery || 
+    return customers.filter((customer) => {
+      const matchesSearch =
+        !searchQuery ||
         customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         customer.phone?.includes(searchQuery) ||
         customer.email?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -78,12 +79,15 @@ export default function CustomersPage() {
     });
   }, [customers, searchQuery, typeFilter, statusFilter]);
 
-  const stats = useMemo(() => ({
-    total: customers.length,
-    active: customers.filter(c => c.status === 'active').length,
-    insuranceCompanies: customers.filter(c => c.customer_type === 'insurance_company').length,
-    fleets: customers.filter(c => c.customer_type === 'fleet').length,
-  }), [customers]);
+  const stats = useMemo(
+    () => ({
+      total: customers.length,
+      active: customers.filter((c) => c.status === 'active').length,
+      insuranceCompanies: customers.filter((c) => c.customer_type === 'insurance_company').length,
+      fleets: customers.filter((c) => c.customer_type === 'fleet').length,
+    }),
+    [customers]
+  );
 
   const columns = [
     {
@@ -95,7 +99,7 @@ export default function CustomersPage() {
             <Building2 className="w-5 h-5 text-[#6B778C]" />
           </div>
           <div>
-            <Link 
+            <Link
               to={createPageUrl(`CustomerDetails?id=${customer.id}`)}
               className="font-medium text-[#172B4D] hover:text-red-600"
             >
@@ -106,7 +110,7 @@ export default function CustomersPage() {
             </div>
           </div>
         </div>
-      )
+      ),
     },
     {
       header: 'איש קשר',
@@ -122,28 +126,26 @@ export default function CustomersPage() {
             {customer.phone}
           </div>
         </div>
-      )
+      ),
     },
     {
       header: 'עיר',
       accessor: 'city',
-      cell: (customer) => customer.city || '-'
+      cell: (customer) => customer.city || '-',
     },
     {
       header: 'סה"כ קריאות',
       accessor: 'total_cases',
-      cell: (customer) => (
-        <span className="font-medium">{customer.total_cases || 0}</span>
-      )
+      cell: (customer) => <span className="font-medium">{customer.total_cases || 0}</span>,
     },
     {
       header: 'סטטוס',
       accessor: 'status',
       cell: (customer) => (
-        <Badge className={cn("text-xs", statusColors[customer.status])}>
+        <Badge className={cn('text-xs', statusColors[customer.status])}>
           {statusLabels[customer.status]}
         </Badge>
-      )
+      ),
     },
     {
       header: '',
@@ -167,7 +169,7 @@ export default function CustomersPage() {
                 עריכה
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="text-red-600"
               onClick={() => {
                 if (confirm('האם אתה בטוח שברצונך למחוק לקוח זה?')) {
@@ -180,8 +182,8 @@ export default function CustomersPage() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -248,7 +250,9 @@ export default function CustomersPage() {
               <SelectContent>
                 <SelectItem value="all">כל הסוגים</SelectItem>
                 {Object.entries(customerTypeLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -259,7 +263,9 @@ export default function CustomersPage() {
               <SelectContent>
                 <SelectItem value="all">כל הסטטוסים</SelectItem>
                 {Object.entries(statusLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -267,11 +273,7 @@ export default function CustomersPage() {
         </CardHeader>
         <CardContent>
           <QueryStateWrapper query={customersQuery}>
-            <DataTable
-              columns={columns}
-              data={filteredCustomers}
-              emptyMessage="לא נמצאו לקוחות"
-            />
+            <DataTable columns={columns} data={filteredCustomers} emptyMessage="לא נמצאו לקוחות" />
           </QueryStateWrapper>
         </CardContent>
       </Card>

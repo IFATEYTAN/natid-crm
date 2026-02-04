@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import DataTable from '@/components/ui/DataTable';
 import ContractFormDialog from '@/components/contracts/ContractFormDialog';
 import ContractDetailsDialog from '@/components/contracts/ContractDetailsDialog';
@@ -31,9 +31,9 @@ import {
   DollarSign,
   Truck,
   RefreshCw,
-  Bell
+  Bell,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { format, differenceInDays, addDays, isPast, isFuture } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -44,14 +44,14 @@ const statusConfig = {
   active: { label: 'פעיל', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   expired: { label: 'פג תוקף', color: 'bg-red-100 text-red-700', icon: XCircle },
   suspended: { label: 'מושהה', color: 'bg-orange-100 text-orange-700', icon: AlertTriangle },
-  terminated: { label: 'בוטל', color: 'bg-gray-100 text-gray-700', icon: XCircle }
+  terminated: { label: 'בוטל', color: 'bg-gray-100 text-gray-700', icon: XCircle },
 };
 
 const contractTypeLabels = {
   per_call: 'לפי קריאה',
   monthly: 'חודשי',
   yearly: 'שנתי',
-  hourly: 'שעתי'
+  hourly: 'שעתי',
 };
 
 export default function VendorContractsPage() {
@@ -64,12 +64,12 @@ export default function VendorContractsPage() {
 
   const contractsQuery = useQuery({
     queryKey: ['vendorContracts'],
-    queryFn: () => base44.entities.VendorContract.list('-created_date')
+    queryFn: () => base44.entities.VendorContract.list('-created_date'),
   });
 
   const vendorsQuery = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => base44.entities.Vendor.list()
+    queryFn: () => base44.entities.Vendor.list(),
   });
 
   const contracts = contractsQuery.data || [];
@@ -77,22 +77,23 @@ export default function VendorContractsPage() {
 
   // Stats
   const stats = useMemo(() => {
-    const active = contracts.filter(c => c.status === 'active');
-    const expiringSoon = contracts.filter(c => {
+    const active = contracts.filter((c) => c.status === 'active');
+    const expiringSoon = contracts.filter((c) => {
       if (c.status !== 'active') return false;
       const daysToExpiry = differenceInDays(new Date(c.end_date), new Date());
       return daysToExpiry <= 30 && daysToExpiry > 0;
     });
-    const expired = contracts.filter(c => c.status === 'expired');
-    const pending = contracts.filter(c => c.status === 'pending_approval');
+    const expired = contracts.filter((c) => c.status === 'expired');
+    const pending = contracts.filter((c) => c.status === 'pending_approval');
 
     return { active, expiringSoon, expired, pending };
   }, [contracts]);
 
   // Filtered contracts
   const filteredContracts = useMemo(() => {
-    return contracts.filter(contract => {
-      const matchesSearch = !searchTerm || 
+    return contracts.filter((contract) => {
+      const matchesSearch =
+        !searchTerm ||
         contract.vendor_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         contract.contract_number?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || contract.status === statusFilter;
@@ -116,13 +117,13 @@ export default function VendorContractsPage() {
       header: 'מספר חוזה',
       accessor: 'contract_number',
       cell: (contract) => (
-        <button 
+        <button
           onClick={() => handleViewContract(contract)}
           className="font-medium text-blue-600 hover:underline"
         >
           {contract.contract_number || `#${contract.id?.slice(-6)}`}
         </button>
-      )
+      ),
     },
     {
       header: 'ספק',
@@ -134,12 +135,12 @@ export default function VendorContractsPage() {
           </div>
           <span className="font-medium">{contract.vendor_name}</span>
         </div>
-      )
+      ),
     },
     {
       header: 'סוג',
       accessor: 'contract_type',
-      cell: (contract) => contractTypeLabels[contract.contract_type] || contract.contract_type
+      cell: (contract) => contractTypeLabels[contract.contract_type] || contract.contract_type,
     },
     {
       header: 'תקופה',
@@ -147,9 +148,11 @@ export default function VendorContractsPage() {
       cell: (contract) => (
         <div className="text-sm">
           <div>{format(new Date(contract.start_date), 'dd/MM/yyyy')}</div>
-          <div className="text-gray-500">עד {format(new Date(contract.end_date), 'dd/MM/yyyy')}</div>
+          <div className="text-gray-500">
+            עד {format(new Date(contract.end_date), 'dd/MM/yyyy')}
+          </div>
         </div>
-      )
+      ),
     },
     {
       header: 'סטטוס',
@@ -158,10 +161,10 @@ export default function VendorContractsPage() {
         const config = statusConfig[contract.status];
         const Icon = config?.icon || FileText;
         const daysToExpiry = differenceInDays(new Date(contract.end_date), new Date());
-        
+
         return (
           <div className="space-y-1">
-            <Badge className={cn("gap-1", config?.color)}>
+            <Badge className={cn('gap-1', config?.color)}>
               <Icon className="w-3 h-3" />
               {config?.label}
             </Badge>
@@ -173,7 +176,7 @@ export default function VendorContractsPage() {
             )}
           </div>
         );
-      }
+      },
     },
     {
       header: 'תעריף',
@@ -186,22 +189,18 @@ export default function VendorContractsPage() {
           return `₪${contract.hourly_rate?.toLocaleString() || 0}/שעה`;
         }
         return `₪${contract.rate_per_call?.toLocaleString() || 0}/קריאה`;
-      }
+      },
     },
     {
       header: 'פעולות',
       cell: (contract) => (
         <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => handleViewContract(contract)}
-          >
+          <Button size="sm" variant="outline" onClick={() => handleViewContract(contract)}>
             פרטים
           </Button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -213,14 +212,10 @@ export default function VendorContractsPage() {
           <p className="text-[#6b7280] text-sm">ניהול חוזים והסכמים עם ספקים</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => contractsQuery.refetch()}
-          >
-            <RefreshCw className={cn("w-4 h-4", contractsQuery.isFetching && "animate-spin")} />
+          <Button variant="outline" size="sm" onClick={() => contractsQuery.refetch()}>
+            <RefreshCw className={cn('w-4 h-4', contractsQuery.isFetching && 'animate-spin')} />
           </Button>
-          <Button 
+          <Button
             onClick={() => setShowCreateDialog(true)}
             className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2"
           >
@@ -298,13 +293,12 @@ export default function VendorContractsPage() {
               <div>
                 <h3 className="font-medium text-orange-800">חוזים שפג תוקפם בקרוב</h3>
                 <div className="mt-2 space-y-1">
-                  {stats.expiringSoon.slice(0, 3).map(contract => (
+                  {stats.expiringSoon.slice(0, 3).map((contract) => (
                     <div key={contract.id} className="text-sm text-orange-700">
                       <span className="font-medium">{contract.vendor_name}</span>
                       {' - '}
-                      פג תוקף ב-{format(new Date(contract.end_date), 'dd/MM/yyyy')}
-                      {' '}
-                      ({differenceInDays(new Date(contract.end_date), new Date())} ימים)
+                      פג תוקף ב-{format(new Date(contract.end_date), 'dd/MM/yyyy')} (
+                      {differenceInDays(new Date(contract.end_date), new Date())} ימים)
                     </div>
                   ))}
                 </div>
@@ -353,11 +347,7 @@ export default function VendorContractsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable
-            columns={columns}
-            data={filteredContracts}
-            emptyMessage="לא נמצאו חוזים"
-          />
+          <DataTable columns={columns} data={filteredContracts} emptyMessage="לא נמצאו חוזים" />
         </CardContent>
       </Card>
 

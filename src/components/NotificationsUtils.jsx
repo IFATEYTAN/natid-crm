@@ -2,9 +2,9 @@ import { base44 } from '@/lib/api';
 
 export const triggerNotification = async (event, data, currentUser) => {
   try {
-    const settings = await base44.entities.NotificationSetting.filter({ 
+    const settings = await base44.entities.NotificationSetting.filter({
       event: event,
-      enabled: true 
+      enabled: true,
     });
 
     if (!settings || settings.length === 0) return;
@@ -19,16 +19,16 @@ export const triggerNotification = async (event, data, currentUser) => {
       if (setting.channels?.inApp) {
         let recipients = [];
         if (setting.recipients && setting.recipients.length > 0) {
-           recipients.push(currentUser?.id);
+          recipients.push(currentUser?.id);
         } else {
-           recipients.push(currentUser?.id);
+          recipients.push(currentUser?.id);
         }
 
         let title = setting.message_template?.title || setting.name;
         let body = setting.message_template?.body || 'התראה חדשה';
-        
+
         if (data) {
-          Object.keys(data).forEach(key => {
+          Object.keys(data).forEach((key) => {
             title = title.replace(new RegExp(`{${key}}`, 'g'), data[key] || '');
             body = body.replace(new RegExp(`{${key}}`, 'g'), data[key] || '');
           });
@@ -45,7 +45,7 @@ export const triggerNotification = async (event, data, currentUser) => {
             link: data.link || null,
             related_entity_id: data.id,
             related_entity_type: data.entityType,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
           });
         }
       }

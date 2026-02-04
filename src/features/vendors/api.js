@@ -12,12 +12,12 @@ export const getVendors = (sort = '-created_date') => {
 
 // Get a single vendor by ID
 export const getVendorById = (id) => {
-  return base44.entities.Vendor.filter({ id }).then(vendors => vendors[0]);
+  return base44.entities.Vendor.filter({ id }).then((vendors) => vendors[0]);
 };
 
 // Get vendor by email
 export const getVendorByEmail = (email) => {
-  return base44.entities.Vendor.filter({ email }, '-created_date', 1).then(vendors => vendors[0]);
+  return base44.entities.Vendor.filter({ email }, '-created_date', 1).then((vendors) => vendors[0]);
 };
 
 // Filter vendors with custom criteria
@@ -29,7 +29,7 @@ export const filterVendors = (filters, sort = '-created_date', limit) => {
 export const getAvailableVendors = () => {
   return base44.entities.Vendor.filter({
     is_active: true,
-    availability_status: 'available'
+    availability_status: 'available',
   });
 };
 
@@ -97,6 +97,6 @@ export const updateServiceProvider = (id, data) => {
 export const getAssignmentAttempts = (vendorId, filters = {}) => {
   return base44.entities.CallAssignmentAttempt.filter({
     vendor_id: vendorId,
-    ...filters
+    ...filters,
   });
 };

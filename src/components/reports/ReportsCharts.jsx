@@ -11,7 +11,7 @@ import {
   Line,
   PieChart,
   Pie,
-  Cell
+  Cell,
 } from 'recharts';
 
 const COLORS = ['#3b82f6', '#111827', '#6b7280', '#ef4444'];
@@ -25,7 +25,13 @@ export function DailyCallsChart({ data }) {
           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
-          <Line type="monotone" dataKey="קריאות" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6' }} />
+          <Line
+            type="monotone"
+            dataKey="קריאות"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            dot={{ fill: '#3b82f6' }}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

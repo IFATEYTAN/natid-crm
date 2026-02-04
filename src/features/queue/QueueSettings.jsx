@@ -1,37 +1,32 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { 
-  Settings,
-  Users,
-  AlertCircle,
-  CheckCircle2
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Settings, Users, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function QueueSettings() {
   const [assignmentMethod, setAssignmentMethod] = useState('load_balancing');
   const [maxCallsPerAgent, setMaxCallsPerAgent] = useState(5);
   const [maxQueueTime, setMaxQueueTime] = useState(30);
   const [warningTime, setWarningTime] = useState(10);
-  
+
   const [priorityRules, setPriorityRules] = useState({
     vip: { enabled: true, points: 30 },
     urgent: { enabled: true, points: 25 },
     long_wait: { enabled: true, points: 15 },
     center_area: { enabled: true, points: 5 },
-    returning: { enabled: true, points: 10 }
+    returning: { enabled: true, points: 10 },
   });
 
   const { data: agents = [] } = useQuery({
     queryKey: ['agents'],
     queryFn: async () => {
       const users = await base44.entities.User.list();
-      return users.filter(u => u.role === 'user'); // Operators
+      return users.filter((u) => u.role === 'user'); // Operators
     },
   });
 
@@ -42,15 +37,16 @@ export default function QueueSettings() {
 
   // Count active calls per agent
   const getAgentStats = (agentEmail) => {
-    const active = queueItems.filter(q => 
-      q.assigned_to_agent === agentEmail &&
-      ['assigned_to_agent', 'in_progress'].includes(q.queue_status)
+    const active = queueItems.filter(
+      (q) =>
+        q.assigned_to_agent === agentEmail &&
+        ['assigned_to_agent', 'in_progress'].includes(q.queue_status)
     ).length;
-    
+
     return {
       active,
       available: active < maxCallsPerAgent,
-      overloaded: active >= maxCallsPerAgent
+      overloaded: active >= maxCallsPerAgent,
     };
   };
 
@@ -193,24 +189,22 @@ export default function QueueSettings() {
             urgent: 'דחיפות גבוהה',
             long_wait: 'זמן המתנה ארוך',
             center_area: 'אזור מרכז',
-            returning: 'לקוח חוזר'
+            returning: 'לקוח חוזר',
           }).map(([key, label]) => (
             <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-3">
                 <Switch
                   checked={priorityRules[key].enabled}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setPriorityRules({
                       ...priorityRules,
-                      [key]: { ...priorityRules[key], enabled: checked }
+                      [key]: { ...priorityRules[key], enabled: checked },
                     })
                   }
                 />
                 <span className="font-medium">{label}</span>
               </div>
-              <span className="text-[#0078D4] font-bold">
-                +{priorityRules[key].points} נקודות
-              </span>
+              <span className="text-[#0078D4] font-bold">+{priorityRules[key].points} נקודות</span>
             </div>
           ))}
         </CardContent>
@@ -226,10 +220,10 @@ export default function QueueSettings() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {agents.map(agent => {
+            {agents.map((agent) => {
               const stats = getAgentStats(agent.email);
               return (
-                <div 
+                <div
                   key={agent.email}
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
@@ -261,11 +255,7 @@ export default function QueueSettings() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button 
-          size="lg"
-          className="bg-[#0078D4] hover:bg-[#1976D2]"
-          onClick={handleSaveSettings}
-        >
+        <Button size="lg" className="bg-[#0078D4] hover:bg-[#1976D2]" onClick={handleSaveSettings}>
           שמור הגדרות
         </Button>
       </div>
