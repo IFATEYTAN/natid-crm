@@ -50,6 +50,7 @@
 import AdvancedExport from './pages/AdvancedExport';
 import Agents from './pages/Agents';
 import AllVendorsMap from './pages/AllVendorsMap';
+import AppLogin from './pages/AppLogin';
 import AuditLog from './pages/AuditLog';
 import AutomationSettings from './pages/AutomationSettings';
 import Calendar from './pages/Calendar';
@@ -79,7 +80,6 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import AppLogin from './pages/AppLogin';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +87,7 @@ export const PAGES = {
     "AdvancedExport": AdvancedExport,
     "Agents": Agents,
     "AllVendorsMap": AllVendorsMap,
+    "AppLogin": AppLogin,
     "AuditLog": AuditLog,
     "AutomationSettings": AutomationSettings,
     "Calendar": Calendar,
@@ -116,7 +117,6 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "AppLogin": AppLogin,
 }
 
 export const pagesConfig = {

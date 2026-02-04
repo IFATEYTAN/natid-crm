@@ -1,2 +1,3 @@
-import Layout from './Layout.js';
+
+import Layout from './components/layout/Layout';
 export default Layout;
