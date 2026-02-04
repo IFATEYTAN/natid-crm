@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminDisplaySettings from './pages/AdminDisplaySettings';
 import AdvancedExport from './pages/AdvancedExport';
 import Agents from './pages/Agents';
 import AllVendorsMap from './pages/AllVendorsMap';
@@ -80,11 +81,12 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import AdminDisplaySettings from './pages/AdminDisplaySettings';
+import LandingPage from './pages/LandingPage';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminDisplaySettings": AdminDisplaySettings,
     "AdvancedExport": AdvancedExport,
     "Agents": Agents,
     "AllVendorsMap": AllVendorsMap,
@@ -118,7 +120,7 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "AdminDisplaySettings": AdminDisplaySettings,
+    "LandingPage": LandingPage,
 }
 
 export const pagesConfig = {
