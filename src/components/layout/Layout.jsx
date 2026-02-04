@@ -75,6 +75,18 @@ export default function Layout({ children, currentPageName }) {
     fetchUser();
   }, []);
 
+  // Auto-redirect when visiting /login (builder preview link) to the official Base44 login flow
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/login' || path.endsWith('/login')) {
+        const params = new URLSearchParams(window.location.search);
+        const next = params.get('from_url') || params.get('next') || '/Dashboard';
+        base44.auth.redirectToLogin(next);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (mainContentRef.current) {
       anime({
