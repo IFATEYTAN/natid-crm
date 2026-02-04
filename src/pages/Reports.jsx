@@ -330,24 +330,9 @@ export default function ReportsPage() {
               <CardTitle className="text-lg text-[#111827]">ביצועי ספקים</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={vendorPerformance}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fontSize: 10 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="total" name="סה״כ" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="completed" name="הושלמו" fill="#111827" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                <VendorPerformanceChart data={vendorPerformance} />
+              </Suspense>
             </CardContent>
           </Card>
         </PermissionGuard>

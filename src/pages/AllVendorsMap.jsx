@@ -75,15 +75,8 @@ export default function AllVendorsMapPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
 
-  // Cleanup map on unmount
-  useEffect(() => {
-    return () => {
-      if (window._allVendorsMap) {
-        window._allVendorsMap.remove();
-        window._allVendorsMap = null;
-      }
-    };
-  }, []);
+  // Unique map key to avoid container reuse across mounts
+  const [mapKey] = useState(() => `all-vendors-${Date.now()}`);
 
   const {
     data: vendors = [],
@@ -223,15 +216,10 @@ export default function AllVendorsMapPage() {
               </div>
             ) : (
               <MapContainer
-                key="all-vendors-map"
+                key={mapKey}
                 center={mapCenter}
                 zoom={8}
                 style={{ height: '100%', width: '100%' }}
-                ref={(map) => {
-                  if (map) {
-                    window._allVendorsMap = map;
-                  }
-                }}
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
