@@ -25,17 +25,29 @@ const DEFAULT_CARDS_BY_PAGE = {
 export default function AdminDisplaySettings() {
   const qc = useQueryClient();
   const [selectedPage, setSelectedPage] = useState(PAGES[0].value);
+  const [selectedUserId, setSelectedUserId] = useState('');
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => setUser(null));
   }, []);
 
+  useEffect(() => {
+    if (user && !selectedUserId) setSelectedUserId(user.id);
+  }, [user]);
+
+  const { data: users = [] } = useQuery({
+    queryKey: ['users'],
+    enabled: !!user && user.role === 'admin',
+    queryFn: () => base44.entities.User.list(),
+    initialData: [],
+  });
+
   const { data: pref, isLoading } = useQuery({
-    queryKey: ["userDisplayPref", user?.id, selectedPage],
+    queryKey: ["userDisplayPref", selectedUserId, selectedPage],
     enabled: !!user && !!selectedPage,
     queryFn: async () => {
-      const list = await base44.entities.UserDisplayPreference.filter({ user_id: user.id, page_name: selectedPage });
+      const list = await base44.entities.UserDisplayPreference.filter({ user_id: selectedUserId, page_name: selectedPage });
       return list?.[0] || null;
     },
     initialData: null,
@@ -93,7 +105,7 @@ export default function AdminDisplaySettings() {
   const handleSave = async () => {
     if (!user) return;
     const payload = {
-      user_id: user.id,
+      user_id: selectedUserId,
       page_name: selectedPage,
       cards: cards.map((c, i) => ({
         card_key: c.card_key,
@@ -124,6 +136,17 @@ export default function AdminDisplaySettings() {
           <CardTitle>בחירת מסך</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="בחר משתמש" />
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((u) => (
+                <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={selectedPage} onValueChange={setSelectedPage}>
             <SelectTrigger className="w-64">
               <SelectValue placeholder="בחר מסך" />

@@ -142,6 +142,52 @@ export default function HistoricalDataAnalysisPage() {
     return serveTypeLabels[type] || type || 'לא ידוע';
   };
 
+  // User display preferences
+  const { data: currentUser } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: displayPref } = useQuery({
+    queryKey: ['userDisplayPref', currentUser?.id, 'HistoricalDataAnalysis'],
+    enabled: !!currentUser,
+    queryFn: async () => {
+      const list = await base44.entities.UserDisplayPreference.filter({
+        user_id: currentUser.id,
+        page_name: 'HistoricalDataAnalysis',
+      });
+      return list?.[0] || null;
+    },
+    initialData: null,
+  });
+
+  const displayCards = useMemo(() => {
+    const base = [
+      { card_key: 'onlyBot', label: 'בוט בלבד', color: 'text-green-600', value: stats.onlyBotRate, count: stats.onlyBot, order: 0, visible: true },
+      { card_key: 'onlyManual', label: 'ידני בלבד', color: 'text-blue-600', value: stats.onlyManualRate, count: stats.onlyManual, order: 1, visible: true },
+      { card_key: 'both', label: 'גם וגם', color: 'text-purple-600', value: stats.bothRate, count: stats.both, order: 2, visible: true },
+      { card_key: 'none', label: 'לא טופל', color: 'text-gray-700', value: stats.noneRate, count: stats.none, order: 3, visible: true },
+    ];
+    const prefCards = displayPref?.cards || [];
+    if (!prefCards.length) return base;
+    const prefMap = Object.fromEntries(prefCards.map(c => [c.card_key, c]));
+    const merged = base.map((b, idx) => {
+      const p = prefMap[b.card_key];
+      return {
+        ...b,
+        label: (p?.label?.trim?.() || b.label),
+        visible: typeof p?.visible === 'boolean' ? p.visible : b.visible,
+        order: typeof p?.order === 'number' ? p.order : idx,
+      };
+    });
+    const extras = prefCards
+      .filter(c => !merged.find(m => m.card_key === c.card_key))
+      .map(c => ({ card_key: c.card_key, label: c.label || c.card_key, color: 'text-gray-700', value: 0, count: 0, visible: !!c.visible, order: c.order ?? 99 }));
+    return [...merged, ...extras]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter(c => c.visible);
+  }, [displayPref, stats]);
+
   // Export data to CSV
   const exportToCSV = () => {
     const headers = [
@@ -358,22 +404,12 @@ export default function HistoricalDataAnalysisPage() {
             הבהרה: "דיוק הבוט" ו"תיקוני תפעול" הם מדדים חופפים ולכן אינם מסתכמים ל-100%. להלן חלוקה מלאה.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div className="p-3 bg-gray-50 rounded-lg text-center">
-              <div className="text-xl font-bold text-green-600">{stats.onlyBotRate}%</div>
-              <div className="text-xs text-gray-600">בוט בלבד ({stats.onlyBot.toLocaleString()})</div>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg text-center">
-              <div className="text-xl font-bold text-blue-600">{stats.onlyManualRate}%</div>
-              <div className="text-xs text-gray-600">ידני בלבד ({stats.onlyManual.toLocaleString()})</div>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg text-center">
-              <div className="text-xl font-bold text-purple-600">{stats.bothRate}%</div>
-              <div className="text-xs text-gray-600">גם וגם ({stats.both.toLocaleString()})</div>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg text-center">
-              <div className="text-xl font-bold text-gray-700">{stats.noneRate}%</div>
-              <div className="text-xs text-gray-600">לא טופל ({stats.none.toLocaleString()})</div>
-            </div>
+            {displayCards.map((c) => (
+              <div key={c.card_key} className="p-3 bg-gray-50 rounded-lg text-center">
+                <div className={`text-xl font-bold ${c.color}`}>{c.value}%</div>
+                <div className="text-xs text-gray-600">{c.label} ({c.count.toLocaleString()})</div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
