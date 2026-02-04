@@ -111,8 +111,6 @@ export default function CallDetailsPage() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackToken, setFeedbackToken] = useState(null);
   const [sendingSurvey, setSendingSurvey] = useState(false);
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [notesDraft, setNotesDraft] = useState('');
 
   // Permission & Audit
   const { currentUser, hasPermission } = usePermissions();
@@ -127,9 +125,6 @@ export default function CallDetailsPage() {
   const updateCall = useUpdateCall();
 
   const call = callQuery.data?.[0];
-  useEffect(() => {
-    setNotesDraft(call?.internal_notes || '');
-  }, [call?.internal_notes]);
   const vendors = vendorsQuery.data || [];
   const availableVendors = vendors.filter((v) => v.is_available_now && v.is_active);
 
@@ -146,24 +141,6 @@ export default function CallDetailsPage() {
     queryFn: () => base44.entities.CallHistory.filter({ call_id: callId }, '-created_date'),
     enabled: !!callId,
   });
-
-  // Fetch messages for this call
-  const { data: messages = [] } = useQuery({
-    queryKey: ['callMessages', callId],
-    queryFn: () => base44.entities.Message.filter({ call_id: callId }, '-created_date'),
-    enabled: !!callId,
-  });
-
-  // Combine history events and messages into one timeline
-  const combinedTimeline = useMemo(() => {
-    const h = (history || []).map((it) => ({ type: 'history', ...it }));
-    const m = (messages || []).map((it) => ({ type: 'message', ...it }));
-    return [...h, ...m].sort((a, b) => {
-      const da = new Date(a.created_date || a.timestamp || 0).getTime();
-      const db = new Date(b.created_date || b.timestamp || 0).getTime();
-      return db - da; // newest first
-    });
-  }, [history, messages]);
 
   const handleStatusChange = async (newStatus) => {
     if (!canEdit) return;
@@ -293,24 +270,6 @@ export default function CallDetailsPage() {
 
   const handleFilesUploaded = (files) => {
     queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
-  };
-
-  const handleSaveNotes = async () => {
-    updateCall.mutate({ id: callId, data: { internal_notes: notesDraft } });
-    await base44.entities.CallHistory.create({
-      call_id: callId,
-      call_number: call?.call_number,
-      change_type: 'note',
-      notes: notesDraft,
-      changed_by: currentUser?.full_name || 'operator',
-    });
-    setIsEditingNotes(false);
-    toast.success('הערות עודכנו');
-  };
-
-  const handleCancelNotes = () => {
-    setNotesDraft(call?.internal_notes || '');
-    setIsEditingNotes(false);
   };
 
   if (!callId) {
@@ -550,49 +509,7 @@ export default function CallDetailsPage() {
               </Card>
             </div>
 
-            {/* Operator Notes */}
-            <Card className="bg-white">
-              <CardHeader className="pb-3 flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#6B778C]" />
-                  הערות מוקדן
-                </CardTitle>
-                {canEdit && (
-                  <div className="flex gap-2">
-                    {!isEditingNotes ? (
-                      <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditingNotes(true)}>
-                        <Pencil className="w-4 h-4" /> עריכה
-                      </Button>
-                    ) : (
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={handleCancelNotes}>
-                          ביטול
-                        </Button>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveNotes}>
-                          <Save className="w-4 h-4 ml-1" /> שמירה
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardHeader>
-              <CardContent>
-                {isEditingNotes ? (
-                  <Textarea
-                    value={notesDraft}
-                    onChange={(e) => setNotesDraft(e.target.value)}
-                    placeholder="כתבו כאן הערות פנימיות למוקד..."
-                    className="min-h-[120px]"
-                  />
-                ) : (
-                  <div className="text-sm text-[#172B4D] whitespace-pre-wrap">
-                    {call?.internal_notes ? call.internal_notes : <span className="text-[#6B778C]">אין הערות</span>}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-             {/* Signature Section - Show for completed or near completion */}
+            {/* Signature Section - Show for completed or near completion */}
             {(call?.call_status === 'in_progress' || call?.call_status === 'completed') && (
               <Card className="bg-white">
                 <CardHeader className="pb-3">
@@ -798,65 +715,44 @@ export default function CallDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {combinedTimeline.length === 0 ? (
+                {history.length === 0 ? (
                   <div className="text-center py-8 text-[#6B778C]">
                     <History className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p>אין היסטוריה עדיין</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {combinedTimeline.map((item) => (
+                    {history.map((item, idx) => (
                       <div
-                        key={`${item.type}-${item.id}`}
+                        key={item.id}
                         className="flex gap-4 pb-4 border-b border-[#F4F5F7] last:border-0"
                       >
                         <div className="w-2 h-2 rounded-full bg-[#6B778C] mt-2" />
                         <div className="flex-1">
-                          {item.type === 'message' ? (
-                            <div>
-                              <p className="text-sm">
-                                <span className="font-medium">
-                                  הודעה מ-{item.sender_role === 'operator' ? 'מוקדן' : item.sender_role === 'vendor' ? 'ספק' : item.sender_role === 'customer' ? 'לקוח' : 'מערכת'}
-                                </span>
-                              </p>
-                              <p className="text-sm text-[#172B4D] mt-1 whitespace-pre-wrap">{item.message_text}</p>
-                              {item.file_url && (
-                                <a href={item.file_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline mt-1 inline-block">קובץ מצורף</a>
-                              )}
-                              <p className="text-xs text-[#6B778C] mt-1">
-                                {formatDateTime(item.created_date)} {item.sender_name ? `• ${item.sender_name}` : ''}
-                              </p>
-                            </div>
-                          ) : (
-                            <div>
-                              <p className="text-sm">
-                                <span className="font-medium">
-                                  {item.change_type === 'status'
-                                    ? 'שינוי סטטוס'
-                                    : item.change_type === 'vendor_assignment'
-                                      ? 'שיבוץ ספק'
-                                      : item.change_type === 'note'
-                                        ? 'הערה'
-                                        : item.change_type}
-                                </span>
-                                {item.old_value && item.new_value && (
-                                  <span className="text-[#6B778C]">
-                                    {' '}
-                                    מ-{statusLabels[item.old_value] || item.old_value} ל-
-                                    {statusLabels[item.new_value] || item.new_value}
-                                  </span>
-                                )}
-                                {!item.old_value && item.new_value && item.change_type !== 'note' && (
-                                  <span className="text-[#6B778C]">: {item.new_value}</span>
-                                )}
-                              </p>
-                              {item.change_type === 'note' && item.notes && (
-                                <p className="text-sm text-[#172B4D] mt-1 whitespace-pre-wrap">{item.notes}</p>
-                              )}
-                              <p className="text-xs text-[#6B778C] mt-1">
-                                {formatDateTime(item.created_date)} • {item.changed_by}
-                              </p>
-                            </div>
+                          <p className="text-sm">
+                            <span className="font-medium">
+                              {item.change_type === 'status'
+                                ? 'שינוי סטטוס'
+                                : item.change_type === 'vendor_assignment'
+                                  ? 'שיבוץ ספק'
+                                  : item.change_type}
+                            </span>
+                            {item.old_value && item.new_value && (
+                              <span className="text-[#6B778C]">
+                                {' '}
+                                מ-{statusLabels[item.old_value] || item.old_value} ל-
+                                {statusLabels[item.new_value] || item.new_value}
+                              </span>
+                            )}
+                            {!item.old_value && item.new_value && (
+                              <span className="text-[#6B778C]">: {item.new_value}</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-[#6B778C] mt-1">
+                            {formatDateTime(item.created_date)} • {item.changed_by}
+                          </p>
+                          {item.notes && (
+                            <p className="text-sm text-[#6B778C] mt-1">{item.notes}</p>
                           )}
                         </div>
                       </div>
