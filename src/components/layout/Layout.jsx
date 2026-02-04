@@ -126,6 +126,7 @@ export default function Layout({ children, currentPageName }) {
       title: 'ניהול ונתונים',
       items: [
         { name: 'דוחות', href: 'Reports' },
+        { name: 'ניתוח נתונים היסטוריים', href: 'HistoricalDataAnalysis' },
         { name: 'לקוחות', href: 'Customers' },
         { name: 'נותני שירות', href: 'ServiceProviders' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
