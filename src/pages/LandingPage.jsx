@@ -95,11 +95,7 @@ export default function LandingPage() {
   const handleLogin = async () => {
     setIsLoading(true);
     await unregisterServiceWorkers();
-    try {
-      base44.auth.redirectToLogin(window.location.origin);
-    } catch {
-      window.location.href = getLoginUrl();
-    }
+    base44.auth.redirectToLogin('/Dashboard');
   };
 
   return (
