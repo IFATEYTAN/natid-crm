@@ -245,6 +245,16 @@ export default function VendorPortalPage() {
     return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
   });
 
+  // Admin lists computed with hooks before any conditional returns (avoid hook-order issues)
+  const adminCalls = adminCallsQuery?.data || [];
+  const adminActiveCalls = useMemo(
+    () =>
+      adminCalls.filter((c) =>
+        ['vendor_enroute', 'in_progress', 'assigned', 'assigning'].includes(c.call_status)
+      ),
+    [adminCalls]
+  );
+
   const toggleAvailability = async () => {
     if (!vendorProfile) return;
     const newStatus = !isAvailable;
@@ -362,11 +372,6 @@ export default function VendorPortalPage() {
     },
   ];
 
-  const adminCalls = adminCallsQuery?.data || [];
-  const adminActiveCalls = useMemo(
-    () => adminCalls.filter((c) => ['vendor_enroute', 'in_progress', 'assigned', 'assigning'].includes(c.call_status)),
-    [adminCalls]
-  );
   const adminCompletedCalls = adminCalls.filter((c) => c.call_status === 'completed');
 
   const columns = [
