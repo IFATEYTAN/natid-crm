@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/providers/AuthProvider';
 import { base44 } from '@/lib/api';
 import { pagesConfig } from '@/pages.config';
 
