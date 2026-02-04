@@ -981,15 +981,17 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <DataTable
-                columns={columns}
-                data={filteredCalls}
-                isLoading={callsLoading}
-                onRowClick={(row) =>
-                  (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
-                }
-                emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
-              />
+              <Suspense fallback={<Skeleton className="h-40" />}>
+                <DataTableLazy
+                  columns={columns}
+                  data={filteredCalls}
+                  isLoading={callsLoading}
+                  onRowClick={(row) =>
+                    (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
+                  }
+                  emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
+                />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
