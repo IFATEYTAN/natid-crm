@@ -13,7 +13,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import RoleGuard from '@/components/auth/RoleGuard';
 import { getPageRoles } from '@/config/permissions';
 
-const LandingPage = lazy(() => import('@/components/landing/LandingPage'));
+const LandingPage = lazy(() => import('@/pages/LandingPage'));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -25,8 +25,10 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
+const noLayoutPages = ['Login', 'LandingPage'];
+
 const LayoutWrapper = ({ children, currentPageName }) => {
-  if (currentPageName === 'Login') {
+  if (noLayoutPages.includes(currentPageName)) {
     return <>{children}</>;
   }
 
