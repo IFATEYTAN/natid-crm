@@ -47,6 +47,7 @@ const COLORS = ['#3b82f6', '#111827', '#6b7280', '#ef4444'];
 
 export default function ReportsPage() {
   const [dateRange, setDateRange] = useState('30');
+  const [seeding, setSeeding] = useState(false);
   const { hasPermission, canAccessReport } = usePermissions();
   const { logExport, logSensitiveAccess } = useAuditLog();
 
@@ -67,6 +68,36 @@ export default function ReportsPage() {
 
   const calls = callsQuery.data || [];
   const vendors = vendorsQuery.data || [];
+
+  const seedDemoData = async () => {
+    try {
+      setSeeding(true);
+      // Vendors
+      const demoVendors = await base44.entities.Vendor.bulkCreate([
+        { vendor_name: 'גרר מהיר תל אביב', phone: '03-1111111', availability_status: 'available' },
+        { vendor_name: 'חשמלאי רכב המרכז', phone: '03-2222222', availability_status: 'busy' },
+        { vendor_name: 'מנעולן על הכביש', phone: '03-3333333', availability_status: 'available' },
+      ]);
+
+      const vA = demoVendors?.[0];
+      const vB = demoVendors?.[1];
+
+      // Calls
+      await base44.entities.Call.bulkCreate([
+        { call_number: 'R-2001', customer_name: 'רות כהן', customer_phone: '052-1234567', pickup_location_address: 'תל אביב', issue_type: 'flat_tire', call_status: 'completed', time_to_completion: 35, assigned_vendor_id: vA?.id, assigned_vendor_name: vA?.vendor_name },
+        { call_number: 'R-2002', customer_name: 'משה ישראלי', customer_phone: '052-7654321', pickup_location_address: 'הרצליה', issue_type: 'dead_battery', call_status: 'in_progress', assigned_vendor_id: vB?.id, assigned_vendor_name: vB?.vendor_name },
+        { call_number: 'R-2003', customer_name: 'נועה בר', customer_phone: '050-9999999', pickup_location_address: 'חולון', issue_type: 'mechanical', call_status: 'vendor_enroute', assigned_vendor_id: vA?.id, assigned_vendor_name: vA?.vendor_name },
+        { call_number: 'R-2004', customer_name: 'דוד לוי', customer_phone: '050-8888888', pickup_location_address: 'חיפה', issue_type: 'no_fuel', call_status: 'cancelled' },
+        { call_number: 'R-2005', customer_name: 'עדי שלו', customer_phone: '050-7777777', pickup_location_address: 'ירושלים', issue_type: 'locked_keys', call_status: 'completed', time_to_completion: 28, assigned_vendor_id: vB?.id, assigned_vendor_name: vB?.vendor_name },
+        { call_number: 'R-2006', customer_name: 'אופיר גיל', customer_phone: '050-6666666', pickup_location_address: 'פתח תקווה', issue_type: 'stopped_driving', call_status: 'awaiting_assignment' },
+      ]);
+
+      await callsQuery.refetch();
+      await vendorsQuery.refetch();
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   // Filter calls by date range
   const filteredCalls = useMemo(() => {
@@ -203,6 +234,9 @@ export default function ReportsPage() {
           <p className="text-[#6b7280] text-sm">ניתוח ביצועים ומגמות</p>
         </div>
         <div className="flex gap-3">
+          <Button variant="outline" onClick={seedDemoData} isLoading={seeding} className="gap-2">
+            טען נתוני הדגמה
+          </Button>
           <Select value={dateRange} onValueChange={setDateRange}>
             <SelectTrigger className="w-40">
               <SelectValue />
@@ -219,7 +253,6 @@ export default function ReportsPage() {
               className="gap-2"
               onClick={() => {
                 logExport('Reports', `ייצוא דוח - ${dateRange} ימים`);
-                // Export logic here
               }}
             >
               <Download className="w-4 h-4" />
