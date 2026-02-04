@@ -20,6 +20,7 @@ import {
   Wrench,
   Bot,
   Users,
+  Ban,
   Download,
   FileSpreadsheet,
 } from 'lucide-react';
@@ -94,6 +95,9 @@ export default function HistoricalDataAnalysisPage() {
     const botMatches = filteredData.filter((d) => d.bot_match).length;
     const nayedetFixed = filteredData.filter((d) => d.nayedet_fixed).length;
 
+    // KPI: calls not from bot (bot_recommendation empty)
+    const nonBot = filteredData.filter((d) => !d?.bot_recommendation || String(d.bot_recommendation).trim() === '').length;
+
     // Mutually exclusive breakdown (sums to 100%)
     const onlyBot = filteredData.filter((d) => d.bot_match && !d.nayedet_fixed).length;
     const onlyManual = filteredData.filter((d) => d.nayedet_fixed && !d.bot_match).length;
@@ -106,6 +110,8 @@ export default function HistoricalDataAnalysisPage() {
       nayedetFixedRate: total > 0 ? ((nayedetFixed / total) * 100).toFixed(1) : 0,
       botMatches,
       nayedetFixed,
+      nonBot,
+      nonBotRate: total > 0 ? ((nonBot / total) * 100).toFixed(1) : 0,
       // 100% breakdown
       onlyBot,
       onlyManual,
@@ -158,6 +164,7 @@ export default function HistoricalDataAnalysisPage() {
       { card_key: 'onlyManual', label: 'ידני בלבד', color: 'text-blue-600', value: stats.onlyManualRate, count: stats.onlyManual, order: 1, visible: true },
       { card_key: 'both', label: 'גם וגם', color: 'text-purple-600', value: stats.bothRate, count: stats.both, order: 2, visible: true },
       { card_key: 'none', label: 'לא טופל', color: 'text-gray-700', value: stats.noneRate, count: stats.none, order: 3, visible: true },
+      { card_key: 'kpi_nonBot', label: 'לא מהבוט', color: 'text-amber-600', value: stats.nonBotRate, count: stats.nonBot, order: 4, visible: true },
     ];
     const prefCards = displayPref?.cards || [];
     if (!prefCards.length) return base;
@@ -304,7 +311,7 @@ export default function HistoricalDataAnalysisPage() {
       </div>
 
       {/* Stats Cards - Clickable */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card
           className="cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all border-2 border-transparent"
           onClick={() => {
@@ -370,6 +377,28 @@ export default function HistoricalDataAnalysisPage() {
           </CardContent>
         </Card>
 
+        {/* KPI: Not from bot */}
+        <Card
+          className="cursor-pointer hover:shadow-lg hover:border-amber-300 transition-all border-2 border-transparent"
+          onClick={() => {
+            setServeTypeFilter('all');
+            setSearchQuery('');
+            document.getElementById('data-table')?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500">לא מהבוט</p>
+                <p className="text-2xl font-bold text-amber-600">{stats.nonBot.toLocaleString()}</p>
+                <p className="text-xs text-gray-400">{stats.nonBotRate}% מכלל המסוננות</p>
+              </div>
+              <Ban className="w-8 h-8 text-amber-500" />
+            </div>
+            <p className="text-xs text-amber-500 mt-2">לחץ לצפייה בנתונים ←</p>
+          </CardContent>
+        </Card>
+
         <Card
           className="cursor-pointer hover:shadow-lg hover:border-purple-300 transition-all border-2 border-transparent"
           onClick={() => {
@@ -392,9 +421,9 @@ export default function HistoricalDataAnalysisPage() {
       <Card className="bg-white border border-[#e5e7eb]">
         <CardContent className="p-4">
           <div className="text-xs text-gray-500 mb-3">
-            הבהרה: "דיוק הבוט" ו"תיקוני תפעול" הם מדדים חופפים ולכן אינם מסתכמים ל-100%. להלן חלוקה מלאה.
+            הבהרה: "דיוק הבוט" ו"תיקוני תפעול" הם מדדים חופפים ולכן אינם מסתכמים ל-100%. להלן חלוקה מלאה + KPI נוסף.
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             {displayCards.map((c) => (
               <div key={c.card_key} className="p-3 bg-gray-50 rounded-lg text-center">
                 <div className={`text-xl font-bold ${c.color}`}>{c.value}%</div>
