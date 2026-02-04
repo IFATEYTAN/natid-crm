@@ -7,7 +7,7 @@ import { useVendors } from '@/components/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
 import StatCard from '@/components/ui/StatCard';
 import StatusBadge from '@/components/ui/StatusBadge';
-import DataTable from '@/components/ui/DataTable';
+// DataTable lazy import below
 import AvatarStack from '@/components/ui/AvatarStack';
 import {
   Plus,
@@ -38,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import AIInsightsWidget from '@/components/ai/AIInsightsWidget';
+// AIInsightsWidget lazy import below
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
@@ -57,9 +57,13 @@ const StatusDistributionChart = lazy(() =>
     default: module.StatusDistributionChart,
   }))
 );
+// Additional lazy-loaded components to reduce main bundle size
+const WorkQueueOverview = lazy(() => import('@/components/dashboard/WorkQueueOverview'));
+const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
+const AIInsightsWidget = lazy(() => import('@/components/ai/AIInsightsWidget'));
 
-// Work Queue Overview Component
-function WorkQueueOverview({ calls, isLoading }) {
+// Work Queue Overview moved to lazy-loaded component components/dashboard/WorkQueueOverview.jsx
+// function WorkQueueOverview({ calls, isLoading }) {
   const { data: queueItems = [] } = useQuery({
     queryKey: ['dashboardQueue'],
     queryFn: () => base44.entities.WorkQueue.list(),
@@ -718,7 +722,9 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Work Queue - Takes up 2/3 */}
             <div className="xl:col-span-2">
-              <WorkQueueOverview calls={calls} isLoading={isLoading} />
+              <Suspense fallback={<Skeleton className="h-64" />}>
+                <WorkQueueOverview calls={calls} isLoading={isLoading} />
+              </Suspense>
             </div>
 
             {/* KPI Column - Takes up 1/3 */}
@@ -793,7 +799,9 @@ export default function Dashboard() {
 
           {/* AI Insights Widget - Only for users with reports permission */}
           <PermissionGuard category="reports" permission="performance">
-            <AIInsightsWidget />
+            <Suspense fallback={<Skeleton className="h-[120px]" />}>
+              <AIInsightsWidget />
+            </Suspense>
           </PermissionGuard>
 
           {/* Charts Section */}
@@ -817,15 +825,17 @@ export default function Dashboard() {
               </Link>
             </CardHeader>
             <CardContent>
-              <DataTable
-                columns={columns}
-                data={calls.slice(0, 10)}
-                isLoading={isLoading}
-                onRowClick={(row) =>
-                  (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
-                }
-                emptyMessage="אין קריאות להצגה"
-              />
+              <Suspense fallback={<Skeleton className="h-40" />}>
+                <DataTableLazy
+                  columns={columns}
+                  data={calls.slice(0, 10)}
+                  isLoading={isLoading}
+                  onRowClick={(row) =>
+                    (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
+                  }
+                  emptyMessage="אין קריאות להצגה"
+                />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1015,15 +1025,17 @@ export default function Dashboard() {
                 <AvatarStack users={availableVendors} max={5} size="sm" />
               </CardHeader>
               <CardContent>
-                <DataTable
-                  columns={vendorColumns}
-                  data={availableVendors}
-                  isLoading={vendorsLoading}
-                  onRowClick={(row) =>
-                    (window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id)
-                  }
-                  emptyMessage="אין ספקים זמינים כרגע"
-                />
+                <Suspense fallback={<Skeleton className="h-40" />}>
+                  <DataTableLazy
+                    columns={vendorColumns}
+                    data={availableVendors}
+                    isLoading={vendorsLoading}
+                    onRowClick={(row) =>
+                      (window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id)
+                    }
+                    emptyMessage="אין ספקים זמינים כרגע"
+                  />
+                </Suspense>
               </CardContent>
             </Card>
           </div>
@@ -1166,13 +1178,15 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <DataTable
-                columns={columns}
-                data={filteredTotalsCalls}
-                isLoading={callsLoading}
-                onRowClick={(row) => (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))}
-                emptyMessage="לא נמצאו קריאות בטווח"
-              />
+              <Suspense fallback={<Skeleton className="h-40" />}>
+                <DataTableLazy
+                  columns={columns}
+                  data={filteredTotalsCalls}
+                  isLoading={callsLoading}
+                  onRowClick={(row) => (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))}
+                  emptyMessage="לא נמצאו קריאות בטווח"
+                />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
