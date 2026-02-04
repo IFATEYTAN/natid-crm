@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -9,12 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import DataTable from '@/components/ui/DataTable';
+
 import StatusBadge from '@/components/ui/StatusBadge';
-import VendorNewCallAlert from '@/components/vendor/VendorNewCallAlert';
-import VendorStats from '@/components/vendor/VendorStats';
-import VendorAvailabilityToggle from '@/components/vendor/VendorAvailabilityToggle';
-import VendorGPSTracker from '@/components/vendor/VendorGPSTracker';
+import { Skeleton } from '@/components/ui/skeleton';
+const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
+const VendorNewCallAlertLazy = lazy(() => import('@/components/vendor/VendorNewCallAlert'));
+const VendorStatsLazy = lazy(() => import('@/components/vendor/VendorStats'));
+const VendorAvailabilityToggleLazy = lazy(() => import('@/components/vendor/VendorAvailabilityToggle'));
+
+
+
+
 import {
   Truck,
   Phone,
@@ -409,20 +414,22 @@ export default function VendorPortalPage() {
   return (
     <div className="space-y-6">
       {/* New Call Alert */}
-      <VendorNewCallAlert
-        call={pendingCall}
-        isOpen={showNewCallAlert}
-        onAccept={handleAcceptCall}
-        onDecline={handleDeclineCall}
-        timeoutSeconds={120}
-        vendorContract={contractQuery.data}
-        vendorProfile={vendorProfile}
-      />
+      <Suspense fallback={null}>
+        <VendorNewCallAlertLazy
+          call={pendingCall}
+          isOpen={showNewCallAlert}
+          onAccept={handleAcceptCall}
+          onDecline={handleDeclineCall}
+          timeoutSeconds={120}
+          vendorContract={contractQuery.data}
+          vendorProfile={vendorProfile}
+        />
+      </Suspense>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#172B4D]">שלום, {vendorProfile.vendor_name}</h1>
+          <h1 className="text-2xl font-bold text-[#172B4D]">שלום, {vendorProfile?.vendor_name}</h1>
           {isAdmin && (
             <p className="text-xs text-[#6B778C] mt-1">מציג בתור ספק (צפייה כאדמין)</p>
           )}
@@ -447,16 +454,20 @@ export default function VendorPortalPage() {
       </div>
 
       {/* Availability Toggle - Prominent */}
-      <VendorAvailabilityToggle
-        vendor={vendorProfile}
-        isAvailable={isAvailable}
-        onToggle={toggleAvailability}
-        lastLocationUpdate={lastLocationUpdate}
-        locationError={locationError}
-      />
+      <Suspense fallback={<div className="h-16" />}> 
+        <VendorAvailabilityToggleLazy
+          vendor={vendorProfile}
+          isAvailable={isAvailable}
+          onToggle={toggleAvailability}
+          lastLocationUpdate={lastLocationUpdate}
+          locationError={locationError}
+        />
+      </Suspense>
 
       {/* Stats */}
-      <VendorStats vendor={vendorProfile} calls={calls} />
+      <Suspense fallback={<Skeleton className="h-32" />}> 
+        <VendorStatsLazy vendor={vendorProfile} calls={calls} />
+      </Suspense>
 
       {/* Active Calls Alert */}
       {activeCalls.length > 0 && (
@@ -541,17 +552,23 @@ export default function VendorPortalPage() {
               <TabsTrigger value="completed">הושלמו ({completedCalls.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
-              <DataTable columns={columns} data={calls} emptyMessage="אין קריאות להצגה" />
+              <Suspense fallback={<Skeleton className="h-40" />}> 
+                <DataTableLazy columns={columns} data={calls} emptyMessage="אין קריאות להצגה" />
+              </Suspense>
             </TabsContent>
             <TabsContent value="active" className="mt-4">
-              <DataTable columns={columns} data={activeCalls} emptyMessage="אין קריאות פעילות" />
+              <Suspense fallback={<Skeleton className="h-40" />}> 
+                <DataTableLazy columns={columns} data={activeCalls} emptyMessage="אין קריאות פעילות" />
+              </Suspense>
             </TabsContent>
             <TabsContent value="completed" className="mt-4">
-              <DataTable
-                columns={columns}
-                data={completedCalls}
-                emptyMessage="אין קריאות שהושלמו"
-              />
+              <Suspense fallback={<Skeleton className="h-40" />}> 
+                <DataTableLazy
+                  columns={columns}
+                  data={completedCalls}
+                  emptyMessage="אין קריאות שהושלמו"
+                />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </CardHeader>
