@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
-import { useCall, useUpdateCall } from '@/components/hooks/useCalls';
-import { useVendors } from '@/components/hooks/useVendors';
+import { useCall, useUpdateCall } from '@/features/calls/hooks/useCalls';
+import { useVendors } from '@/features/vendors/hooks/useVendors';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard, PermissionButton } from '@/components/permissions/PermissionGuard';
-import { useAuditLog } from '@/components/hooks/useAuditLog';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -709,37 +709,37 @@ export default function CallDetailsPage() {
             </div>
           </TabsContent>
 
-           <TabsContent value="operatorNotes">
-             <Card className="bg-white">
-               <CardHeader className="pb-3">
-                 <CardTitle className="text-base flex items-center gap-2">
-                   <Pencil className="w-4 h-4 text-[#6B778C]" />
-                   הערות מוקדן
-                 </CardTitle>
-               </CardHeader>
-               <CardContent>
-                 <div className="space-y-3">
-                   <Textarea
-                     value={operatorNotes}
-                     onChange={(e) => setOperatorNotes(e.target.value)}
-                     placeholder="הקלד הערות חופשיות..."
-                     className="min-h-[140px]"
-                     disabled={!canEdit}
-                   />
-                   <div className="flex justify-end">
-                     <PermissionGuard category="calls" permission="edit">
-                       <Button onClick={handleSaveOperatorNotes} className="gap-2">
-                         <Save className="w-4 h-4" />
-                         שמור
-                       </Button>
-                     </PermissionGuard>
-                   </div>
-                 </div>
-               </CardContent>
-             </Card>
-           </TabsContent>
+          <TabsContent value="operatorNotes">
+            <Card className="bg-white">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Pencil className="w-4 h-4 text-[#6B778C]" />
+                  הערות מוקדן
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Textarea
+                    value={operatorNotes}
+                    onChange={(e) => setOperatorNotes(e.target.value)}
+                    placeholder="הקלד הערות חופשיות..."
+                    className="min-h-[140px]"
+                    disabled={!canEdit}
+                  />
+                  <div className="flex justify-end">
+                    <PermissionGuard category="calls" permission="edit">
+                      <Button onClick={handleSaveOperatorNotes} className="gap-2">
+                        <Save className="w-4 h-4" />
+                        שמור
+                      </Button>
+                    </PermissionGuard>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-           <TabsContent value="files">
+          <TabsContent value="files">
             <Card className="bg-white">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -813,16 +813,31 @@ export default function CallDetailsPage() {
                           {item.__type === 'message' ? (
                             <>
                               <div className="flex items-center gap-2">
-                                <Badge className={`text-xs ${item.sender_role === 'operator' ? 'bg-blue-100 text-blue-700' : item.sender_role === 'vendor' ? 'bg-green-100 text-green-700' : item.sender_role === 'customer' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
-                                  {item.sender_role === 'operator' ? 'מוקדן' : item.sender_role === 'vendor' ? 'ספק' : item.sender_role === 'customer' ? 'לקוח' : 'מערכת'}
+                                <Badge
+                                  className={`text-xs ${item.sender_role === 'operator' ? 'bg-blue-100 text-blue-700' : item.sender_role === 'vendor' ? 'bg-green-100 text-green-700' : item.sender_role === 'customer' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}
+                                >
+                                  {item.sender_role === 'operator'
+                                    ? 'מוקדן'
+                                    : item.sender_role === 'vendor'
+                                      ? 'ספק'
+                                      : item.sender_role === 'customer'
+                                        ? 'לקוח'
+                                        : 'מערכת'}
                                 </Badge>
-                                <span className="font-medium text-sm">{item.sender_name || ''}</span>
+                                <span className="font-medium text-sm">
+                                  {item.sender_name || ''}
+                                </span>
                               </div>
                               {item.message_text && (
                                 <p className="text-sm mt-1">{item.message_text}</p>
                               )}
                               {item.file_url && (
-                                <a href={item.file_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline mt-1 inline-block">
+                                <a
+                                  href={item.file_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-xs text-blue-600 underline mt-1 inline-block"
+                                >
                                   קובץ מצורף
                                 </a>
                               )}

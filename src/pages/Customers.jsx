@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl, formatDate } from '@/components/utils';
-import { useCustomers, useDeleteCustomer } from '@/components/hooks/useCustomers';
+import { useCustomers, useDeleteCustomer } from '@/features/customers/hooks/useCustomers';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import * as vendorsApi from '../api';
 
 /**
@@ -9,6 +10,7 @@ export const useVendors = (sort = '-created_date') => {
   return useQuery({
     queryKey: queryKeys.vendors.all(),
     queryFn: () => vendorsApi.getVendors(sort),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
@@ -42,6 +44,7 @@ export const useAvailableVendors = (refetchInterval = 30000) => {
     queryKey: queryKeys.vendors.available(),
     queryFn: vendorsApi.getAvailableVendors,
     refetchInterval,
+    staleTime: 1000 * 60, // 1 minute
   });
 };
 
@@ -55,6 +58,10 @@ export const useCreateVendor = () => {
     mutationFn: vendorsApi.createVendor,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
+      toast.success('ספק נוצר בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה ביצירת ספק: ${error.message}`);
     },
   });
 };
@@ -67,10 +74,14 @@ export const useUpdateVendor = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => vendorsApi.updateVendor(id, data),
-    onSuccess: (_, { id }) => {
+    onSuccess: (updatedVendor, { id }) => {
+      queryClient.setQueryData(queryKeys.vendors.detail(id), updatedVendor);
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.detail(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors.available() });
+      toast.success('ספק עודכן בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בעדכון ספק: ${error.message}`);
     },
   });
 };
@@ -85,6 +96,33 @@ export const useDeleteVendor = () => {
     mutationFn: vendorsApi.deleteVendor,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
+      toast.success('ספק נמחק בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה במחיקת ספק: ${error.message}`);
+    },
+  });
+};
+
+/**
+ * Hook for updating vendor availability
+ */
+export const useUpdateVendorAvailability = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, isAvailable }) =>
+      vendorsApi.updateVendor(id, {
+        is_available_now: isAvailable,
+        availability_status: isAvailable ? 'available' : 'offline',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.available() });
+      toast.success('זמינות הספק עודכנה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בעדכון זמינות: ${error.message}`);
     },
   });
 };

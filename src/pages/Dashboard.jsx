@@ -2,8 +2,8 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { useCalls } from '@/components/hooks/useCalls';
-import { useVendors } from '@/components/hooks/useVendors';
+import { useCalls } from '@/features/calls/hooks/useCalls';
+import { useVendors } from '@/features/vendors/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
 const StatCard = lazy(() => import('@/components/ui/StatCard'));
 const StatusBadge = lazy(() => import('@/components/ui/StatusBadge'));
@@ -150,7 +150,8 @@ export default function Dashboard() {
   }
 
   const filteredTotalsCalls = calls.filter(
-    (c) => c.created_date && parseISO(c.created_date) >= startDate && parseISO(c.created_date) <= endDate
+    (c) =>
+      c.created_date && parseISO(c.created_date) >= startDate && parseISO(c.created_date) <= endDate
   );
 
   const handleExportTotals = () => {
@@ -159,9 +160,12 @@ export default function Dashboard() {
       c.call_number || `#${c.id?.slice(-6)}`,
       c.customer_name || '',
       c.call_status || '',
-      c.created_date || ''
+      c.created_date || '',
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const csv = [
+      headers.join(','),
+      ...rows.map((r) => r.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(',')),
+    ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -561,7 +565,7 @@ export default function Dashboard() {
         <TabsContent value="dashboard" className="space-y-6 mt-6 focus-visible:outline-none">
           {/* Main Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="קריאות פעילות"
                 value={openCalls.length}
@@ -572,7 +576,7 @@ export default function Dashboard() {
                 className="hover:border-orange-300 hover:shadow-md cursor-pointer"
               />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="ממתינות לשיוך"
                 value={waitingCalls.length}
@@ -583,7 +587,7 @@ export default function Dashboard() {
                 className="hover:border-red-300 hover:shadow-md cursor-pointer"
               />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="הושלמו היום"
                 value={completedToday.length}
@@ -594,7 +598,7 @@ export default function Dashboard() {
                 className="hover:border-green-300 hover:shadow-md cursor-pointer"
               />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="ספקים זמינים"
                 value={availableVendors.length}
@@ -732,7 +736,7 @@ export default function Dashboard() {
         <TabsContent value="operator" className="space-y-6 mt-6 focus-visible:outline-none">
           {/* Operator Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="הקריאות שלי"
                 value={myOpenCalls.length}
@@ -743,7 +747,7 @@ export default function Dashboard() {
                 className="hover:border-blue-300 cursor-pointer"
               />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="הושלמו היום"
                 value={myCompletedToday.length}
@@ -754,7 +758,7 @@ export default function Dashboard() {
                 className="hover:border-green-300 cursor-pointer"
               />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="ממתינות לשיוך"
                 value={unassignedCalls.length}
@@ -765,7 +769,7 @@ export default function Dashboard() {
                 className="hover:border-orange-300 cursor-pointer"
               />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="דחופות שלי"
                 value={myUrgentCalls.length}
@@ -776,7 +780,7 @@ export default function Dashboard() {
                 className="hover:border-red-300 cursor-pointer"
               />
             </Suspense>
-            <Suspense fallback={<Skeleton className="h-24" />}> 
+            <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="ספקים זמינים"
                 value={availableVendors.length}
@@ -877,7 +881,11 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Suspense fallback={<span className="text-xs bg-gray-100 px-2 py-1 rounded">...</span>}>
+                        <Suspense
+                          fallback={
+                            <span className="text-xs bg-gray-100 px-2 py-1 rounded">...</span>
+                          }
+                        >
                           <StatusBadge status={call.call_status} size="sm" />
                         </Suspense>
                         <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
@@ -1044,11 +1052,19 @@ export default function Dashboard() {
                   <div className="flex flex-col sm:flex-row gap-3 w-full">
                     <div className="flex-1">
                       <label className="label-text">מתאריך ושעה</label>
-                      <Input type="datetime-local" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+                      <Input
+                        type="datetime-local"
+                        value={customStart}
+                        onChange={(e) => setCustomStart(e.target.value)}
+                      />
                     </div>
                     <div className="flex-1">
                       <label className="label-text">עד תאריך ושעה</label>
-                      <Input type="datetime-local" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+                      <Input
+                        type="datetime-local"
+                        value={customEnd}
+                        onChange={(e) => setCustomEnd(e.target.value)}
+                      />
                     </div>
                   </div>
                 )}
@@ -1061,12 +1077,24 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-100">
-                  <div className="text-2xl font-bold text-gray-900">{filteredTotalsCalls.length}</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {filteredTotalsCalls.length}
+                  </div>
                   <div className="text-xs text-gray-500">סה"כ קריאות בטווח</div>
                 </div>
                 <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
                   <div className="text-2xl font-bold text-blue-600">
-                    {filteredTotalsCalls.filter((c) => ['waiting_treatment','awaiting_assignment','assigning','vendor_enroute','in_progress'].includes(c.call_status)).length}
+                    {
+                      filteredTotalsCalls.filter((c) =>
+                        [
+                          'waiting_treatment',
+                          'awaiting_assignment',
+                          'assigning',
+                          'vendor_enroute',
+                          'in_progress',
+                        ].includes(c.call_status)
+                      ).length
+                    }
                   </div>
                   <div className="text-xs text-blue-500">פתוחות</div>
                 </div>
@@ -1089,7 +1117,9 @@ export default function Dashboard() {
                   columns={columns}
                   data={filteredTotalsCalls}
                   isLoading={callsLoading}
-                  onRowClick={(row) => (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))}
+                  onRowClick={(row) =>
+                    (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
+                  }
                   emptyMessage="לא נמצאו קריאות בטווח"
                 />
               </Suspense>

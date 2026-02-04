@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useVendors } from '@/components/hooks/useVendors';
-import { useCalls } from '@/components/hooks/useCalls';
+import { useVendors } from '@/features/vendors/hooks/useVendors';
+import { useCalls } from '@/features/calls/hooks/useCalls';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';

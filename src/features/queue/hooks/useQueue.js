@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import * as queueApi from '../api';
 
 /**
@@ -10,6 +11,7 @@ export const useWorkQueue = (sort = '-priority_score', refetchInterval = 15000) 
     queryKey: queryKeys.queue.all(),
     queryFn: () => queueApi.getWorkQueue(sort),
     refetchInterval,
+    staleTime: 1000 * 30, // 30 seconds
   });
 };
 
@@ -45,6 +47,10 @@ export const useUpdateQueueItem = () => {
     mutationFn: ({ id, data }) => queueApi.updateQueueItem(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+      toast.success('פריט בתור עודכן');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בעדכון: ${error.message}`);
     },
   });
 };
@@ -56,9 +62,13 @@ export const useAssignToAgent = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ queueId, agentEmail }) => queueApi.assignToAgent(queueId, agentEmail),
+    mutationFn: ({ queueItemId, agentEmail }) => queueApi.assignToAgent(queueItemId, agentEmail),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+      toast.success('קריאה שובצה לנציג');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בשיבוץ: ${error.message}`);
     },
   });
 };

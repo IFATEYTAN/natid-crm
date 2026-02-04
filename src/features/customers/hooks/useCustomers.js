@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import * as customersApi from '../api';
 
 /**
@@ -9,6 +10,7 @@ export const useCustomers = (sort = '-created_date') => {
   return useQuery({
     queryKey: queryKeys.customers.all(),
     queryFn: () => customersApi.getCustomers(sort),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
@@ -44,6 +46,10 @@ export const useCreateCustomer = () => {
     mutationFn: customersApi.createCustomer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
+      toast.success('לקוח נוצר בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה ביצירת לקוח: ${error.message}`);
     },
   });
 };
@@ -56,9 +62,13 @@ export const useUpdateCustomer = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => customersApi.updateCustomer(id, data),
-    onSuccess: (_, { id }) => {
+    onSuccess: (updatedCustomer, { id }) => {
+      queryClient.setQueryData(queryKeys.customers.detail(id), updatedCustomer);
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.detail(id) });
+      toast.success('לקוח עודכן בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה בעדכון לקוח: ${error.message}`);
     },
   });
 };
@@ -73,6 +83,10 @@ export const useDeleteCustomer = () => {
     mutationFn: customersApi.deleteCustomer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
+      toast.success('לקוח נמחק בהצלחה');
+    },
+    onError: (error) => {
+      toast.error(`שגיאה במחיקת לקוח: ${error.message}`);
     },
   });
 };

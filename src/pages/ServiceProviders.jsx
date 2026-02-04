@@ -5,7 +5,7 @@ import {
   useVendors,
   useDeleteVendor,
   useUpdateVendorAvailability,
-} from '@/components/hooks/useVendors';
+} from '@/features/vendors/hooks/useVendors';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';

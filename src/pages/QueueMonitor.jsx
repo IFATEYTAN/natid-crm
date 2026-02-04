@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
-import { useWorkQueue } from '@/components/hooks/useWorkQueue';
-import { useCalls } from '@/components/hooks/useCalls';
+import { useWorkQueue } from '@/features/queue/hooks/useQueue';
+import { useCalls } from '@/features/calls/hooks/useCalls';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import {
   ArrowRight,
@@ -77,18 +77,55 @@ export default function QueueMonitor() {
       setSeeding(true);
       // Create demo calls
       const demoCalls = await base44.entities.Call.bulkCreate([
-        { call_number: 'C-1001', customer_name: 'דנה כהן', customer_phone: '050-1111111', pickup_location_address: 'דיזנגוף 100, תל אביב', issue_type: 'flat_tire', call_status: 'waiting_treatment' },
-        { call_number: 'C-1002', customer_name: 'יואב לוי', customer_phone: '050-2222222', pickup_location_address: 'הרצל 5, רמת גן', issue_type: 'dead_battery', call_status: 'awaiting_assignment' },
-        { call_number: 'C-1003', customer_name: 'אורי אוחנה', customer_phone: '050-3333333', pickup_location_address: 'ויצמן 12, נתניה', issue_type: 'mechanical', call_status: 'assigning' },
-        { call_number: 'C-1004', customer_name: 'מאיה דן', customer_phone: '050-4444444', pickup_location_address: 'יעקב דורי 8, ראשון לציון', issue_type: 'no_fuel', call_status: 'vendor_enroute' },
-        { call_number: 'C-1005', customer_name: 'תומר לב', customer_phone: '050-5555555', pickup_location_address: 'דרך בר יהודה 77, חיפה', issue_type: 'locked_keys', call_status: 'in_progress' },
+        {
+          call_number: 'C-1001',
+          customer_name: 'דנה כהן',
+          customer_phone: '050-1111111',
+          pickup_location_address: 'דיזנגוף 100, תל אביב',
+          issue_type: 'flat_tire',
+          call_status: 'waiting_treatment',
+        },
+        {
+          call_number: 'C-1002',
+          customer_name: 'יואב לוי',
+          customer_phone: '050-2222222',
+          pickup_location_address: 'הרצל 5, רמת גן',
+          issue_type: 'dead_battery',
+          call_status: 'awaiting_assignment',
+        },
+        {
+          call_number: 'C-1003',
+          customer_name: 'אורי אוחנה',
+          customer_phone: '050-3333333',
+          pickup_location_address: 'ויצמן 12, נתניה',
+          issue_type: 'mechanical',
+          call_status: 'assigning',
+        },
+        {
+          call_number: 'C-1004',
+          customer_name: 'מאיה דן',
+          customer_phone: '050-4444444',
+          pickup_location_address: 'יעקב דורי 8, ראשון לציון',
+          issue_type: 'no_fuel',
+          call_status: 'vendor_enroute',
+        },
+        {
+          call_number: 'C-1005',
+          customer_name: 'תומר לב',
+          customer_phone: '050-5555555',
+          pickup_location_address: 'דרך בר יהודה 77, חיפה',
+          issue_type: 'locked_keys',
+          call_status: 'in_progress',
+        },
       ]);
 
       // Create demo queue items linked to calls
       await base44.entities.WorkQueue.bulkCreate(
         (demoCalls || []).map((c, idx) => ({
           call_id: c.id,
-          queue_status: ['waiting_in_queue', 'assigned_to_agent', 'in_progress', 'completed'][idx % 4],
+          queue_status: ['waiting_in_queue', 'assigned_to_agent', 'in_progress', 'completed'][
+            idx % 4
+          ],
           priority_score: 20 + idx * 15,
           added_to_queue_at: new Date().toISOString(),
         }))
