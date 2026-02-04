@@ -43,9 +43,7 @@ import {
 } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
-import {
-  PageTransition,
-} from '@/components/animations/AnimatedComponents';
+import { PageTransition } from '@/components/animations/AnimatedComponents';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית',

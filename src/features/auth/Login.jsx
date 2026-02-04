@@ -5,14 +5,7 @@ import { base44 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import FormInput from '@/components/ui/FormInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  LogIn,
-  ShieldCheck,
-  AlertCircle,
-  ArrowRight,
-  Mail,
-  CheckCircle,
-} from 'lucide-react';
+import { LogIn, ShieldCheck, AlertCircle, ArrowRight, Mail, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import backgroundImage from '@/AdobeStock_328133100.jpeg';
 

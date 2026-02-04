@@ -25,16 +25,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Phone,
-  Mail,
-  MapPin,
-  MessageSquare,
-  Plus,
-  ArrowRight,
-  Calendar,
-  User,
-} from 'lucide-react';
+import { Phone, Mail, MapPin, MessageSquare, Plus, ArrowRight, Calendar, User } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 import { triggerNotification } from '@/components/NotificationsUtils';
