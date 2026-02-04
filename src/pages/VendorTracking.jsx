@@ -41,53 +41,9 @@ import { he } from 'date-fns/locale';
 // Lazy map component
 const VendorTrackingLeafletMap = React.lazy(() => import('@/components/maps/VendorTrackingLeafletMap'));
 
-  const colors = {
-    available: '#22c55e',
-    busy: '#f97316',
-    offline: '#6b7280',
-    on_break: '#eab308'
-  };
-  
-  return L.divIcon({
-    className: 'custom-vendor-marker',
-    html: `
-      <div style="
-        background-color: ${colors[status] || colors.offline};
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 3px solid white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      ">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 8H17V4H3C1.9 4 1 4.9 1 6V17H3C3 18.66 4.34 20 6 20S9 18.66 9 17H15C15 18.66 16.34 20 18 20S21 18.66 21 17H23V12L20 8ZM6 18.5C5.17 18.5 4.5 17.83 4.5 17S5.17 15.5 6 15.5 7.5 16.17 7.5 17 6.83 18.5 6 18.5ZM19.5 9.5L21.46 12H17V9.5H19.5ZM18 18.5C17.17 18.5 16.5 17.83 16.5 17S17.17 15.5 18 15.5 19.5 16.17 19.5 17 18.83 18.5 18 18.5Z"/>
-        </svg>
-      </div>
-    `,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
-    popupAnchor: [0, -18]
-  });
-};
 
 
-  const map = useMap();
-  
-  useEffect(() => {
-    if (vendors.length > 0) {
-      const validVendors = vendors.filter(v => v.current_latitude && v.current_longitude);
-      if (validVendors.length > 0) {
-        const bounds = L.latLngBounds(
-          validVendors.map(v => [v.current_latitude, v.current_longitude])
-        );
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
-    }
-  }, [vendors, map]);
-  
+
   const availabilityLabels = {
   available: 'זמין',
   busy: 'עסוק',
@@ -264,87 +220,9 @@ export default function VendorTrackingPage() {
         <Card className="lg:col-span-3 bg-white overflow-hidden">
           <CardContent className="p-0">
             <div className="h-[500px]">
-              <MapContainer
-                key="vendor-tracking-map"
-                center={defaultCenter}
-                zoom={8}
-                style={{ height: '100%', width: '100%' }}
-                whenCreated={(map) => {
-                  window._vendorTrackingMap = map;
-                }}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <FitBounds vendors={filteredVendors} />
-                
-                {filteredVendors.map(vendor => (
-                  <Marker
-                    key={vendor.id}
-                    position={[vendor.current_latitude, vendor.current_longitude]}
-                    icon={createVendorIcon(vendor.availability_status)}
-                    eventHandlers={{
-                      click: () => setSelectedVendor(vendor.id)
-                    }}
-                  >
-                    <Popup>
-                      <div className="text-right min-w-[200px]" dir="rtl">
-                        <h3 className="font-bold text-lg mb-2">{vendor.vendor_name}</h3>
-                        <Badge className={cn("mb-2", availabilityColors[vendor.availability_status])}>
-                          {availabilityLabels[vendor.availability_status]}
-                        </Badge>
-                        
-                        <div className="space-y-1 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-3 h-3" />
-                            <span dir="ltr">{vendor.phone}</span>
-                          </div>
-                          
-                          {vendor.last_location_update && (
-                            <div className="flex items-center gap-2 text-[#6B778C]">
-                              <Clock className="w-3 h-3" />
-                              <span>
-                                עודכן {formatDistanceToNow(new Date(vendor.last_location_update), { 
-                                  addSuffix: true, 
-                                  locale: he 
-                                })}
-                              </span>
-                            </div>
-                          )}
-                          
-                          {getVendorActiveCall(vendor.id) && (
-                            <div className="mt-2 p-2 bg-orange-50 rounded">
-                              <div className="flex items-center gap-1 text-orange-800">
-                                <AlertCircle className="w-3 h-3" />
-                                <span className="font-medium">בקריאה פעילה</span>
-                              </div>
-                              <Link 
-                                to={createPageUrl(`CallDetails?id=${getVendorActiveCall(vendor.id).id}`)}
-                                className="text-xs text-blue-600 hover:underline"
-                              >
-                                {getVendorActiveCall(vendor.id).call_number}
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="mt-3 flex gap-2">
-                          <Link to={createPageUrl(`VendorDetails?id=${vendor.id}`)}>
-                            <Button size="sm" variant="outline">פרטים</Button>
-                          </Link>
-                          <a href={`tel:${vendor.phone}`}>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                              <Phone className="w-3 h-3 ml-1" />
-                              התקשר
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
+              <Suspense fallback={<div className='h-full w-full bg-gray-50' />}> 
+                <VendorTrackingLeafletMap vendors={filteredVendors} onSelectVendor={setSelectedVendor} />
+              </Suspense>
             </div>
           </CardContent>
         </Card>
