@@ -886,15 +886,17 @@ export default function Dashboard() {
                 <CardDescription>קריאות המשויכות אליך וממתינות לטיפול</CardDescription>
               </CardHeader>
               <CardContent>
-                <DataTable
-                  columns={operatorCallColumns}
-                  data={myOpenCalls}
-                  isLoading={callsLoading}
-                  onRowClick={(row) =>
-                    (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
-                  }
-                  emptyMessage="אין קריאות משויכות אליך כרגע"
-                />
+                <Suspense fallback={<Skeleton className="h-40" />}>
+                  <DataTableLazy
+                    columns={operatorCallColumns}
+                    data={myOpenCalls}
+                    isLoading={callsLoading}
+                    onRowClick={(row) =>
+                      (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
+                    }
+                    emptyMessage="אין קריאות משויכות אליך כרגע"
+                  />
+                </Suspense>
               </CardContent>
             </Card>
 
