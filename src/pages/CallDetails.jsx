@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
 import { useCall, useUpdateCall } from '@/components/hooks/useCalls';
@@ -36,7 +36,7 @@ import FileUploader from '@/components/files/FileUploader';
 import SignaturePad from '@/components/signature/SignaturePad';
 import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
-import VendorLiveMap from '@/components/maps/VendorLiveMap';
+const VendorLiveMap = React.lazy(() => import('@/components/maps/VendorLiveMap'));
 import CallSummaryEditor from '@/components/call/CallSummaryEditor';
 import {
   ArrowRight,
@@ -557,14 +557,16 @@ export default function CallDetailsPage() {
           <TabsContent value="map">
             <div className="space-y-4">
               {call?.assigned_vendor_id ? (
-                <VendorLiveMap
-                  vendorId={call.assigned_vendor_id}
-                  callId={callId}
-                  pickupLat={call.pickup_location_lat}
-                  pickupLon={call.pickup_location_lon}
-                  showHistory={call.call_status === 'completed'}
-                  height="500px"
-                />
+                <Suspense fallback={<div className="h-[500px] w-full bg-gray-50" /> }>
+                  <VendorLiveMap
+                    vendorId={call.assigned_vendor_id}
+                    callId={callId}
+                    pickupLat={call.pickup_location_lat}
+                    pickupLon={call.pickup_location_lon}
+                    showHistory={call.call_status === 'completed'}
+                    height="500px"
+                  />
+                </Suspense>
               ) : (
                 <Card className="bg-white">
                   <CardContent className="py-12 text-center text-[#6B778C]">

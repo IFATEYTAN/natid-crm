@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useVendors } from '@/components/hooks/useVendors';
@@ -17,9 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+
+
+
 import {
   Truck,
   Phone,
@@ -36,16 +36,11 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-// Fix Leaflet default marker icon issue
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
 
-// Custom vendor marker
-const createVendorIcon = (status) => {
+
+// Lazy map component
+const VendorTrackingLeafletMap = React.lazy(() => import('@/components/maps/VendorTrackingLeafletMap'));
+
   const colors = {
     available: '#22c55e',
     busy: '#f97316',
@@ -78,8 +73,7 @@ const createVendorIcon = (status) => {
   });
 };
 
-// Auto-fit map to markers
-function FitBounds({ vendors }) {
+
   const map = useMap();
   
   useEffect(() => {
@@ -94,10 +88,7 @@ function FitBounds({ vendors }) {
     }
   }, [vendors, map]);
   
-  return null;
-}
-
-const availabilityLabels = {
+  const availabilityLabels = {
   available: 'זמין',
   busy: 'עסוק',
   offline: 'לא מחובר',
