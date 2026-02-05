@@ -89,8 +89,56 @@ export function VendorPerformanceChart({ data }) {
           <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
-          <Bar dataKey="total" name="סה" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="total" name='סה"כ' fill="#3b82f6" radius={[4, 4, 0, 0]} />
           <Bar dataKey="completed" name="הושלמו" fill="#111827" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function VendorRatingsChart({ data }) {
+  return (
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} layout="vertical">
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 12 }} />
+          <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10 }} />
+          <Tooltip />
+          <Bar dataKey="rating" name="דירוג" fill="#eab308" radius={[0, 4, 4, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function OperatorLoadChart({ data }) {
+  return (
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Bar dataKey="calls" name="קריאות" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function CustomerFrequencyChart({ data }) {
+  return (
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Bar dataKey="calls" name="קריאות" fill="#ec4899" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

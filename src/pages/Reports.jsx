@@ -26,6 +26,10 @@ const VendorPerformanceChart = React.lazy(() =>
   import('@/components/reports/ReportsCharts').then((m) => ({ default: m.VendorPerformanceChart }))
 );
 
+const OperationalEfficiencyReport = React.lazy(() => import('@/components/reports/OperationalEfficiencyReport'));
+const CustomerAnalysisReport = React.lazy(() => import('@/components/reports/CustomerAnalysisReport'));
+const VendorPerformanceReport = React.lazy(() => import('@/components/reports/VendorPerformanceReport'));
+
 import {
   BarChart3,
   TrendingUp,
@@ -66,8 +70,15 @@ export default function ReportsPage() {
     queryFn: () => base44.entities.Vendor.filter({}),
   });
 
+  // Fetch ratings
+  const ratingsQuery = useQuery({
+    queryKey: ['reportRatings'],
+    queryFn: () => base44.entities.VendorRating.filter({}, '-created_date', 200),
+  });
+
   const calls = callsQuery.data || [];
   const vendors = vendorsQuery.data || [];
+  const ratings = ratingsQuery.data || [];
 
   const seedDemoData = async () => {
     try {
@@ -466,6 +477,33 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </PermissionGuard>
+      
+      {/* Advanced Reports Tabs */}
+      <Tabs defaultValue="operational" className="mt-8">
+        <TabsList className="w-full justify-start bg-white p-1 border border-[#e5e7eb] rounded-lg">
+          <TabsTrigger value="operational" className="flex-1">יעילות תפעולית</TabsTrigger>
+          <TabsTrigger value="vendors" className="flex-1">ביצועי ספקים</TabsTrigger>
+          <TabsTrigger value="customers" className="flex-1">ניתוח לקוחות</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="operational" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <OperationalEfficiencyReport calls={filteredCalls} />
+          </Suspense>
+        </TabsContent>
+        
+        <TabsContent value="vendors" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <VendorPerformanceReport vendors={vendors} calls={filteredCalls} ratings={ratings} />
+          </Suspense>
+        </TabsContent>
+        
+        <TabsContent value="customers" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <CustomerAnalysisReport calls={filteredCalls} />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
