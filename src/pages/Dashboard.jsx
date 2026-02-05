@@ -446,24 +446,20 @@ export default function Dashboard() {
 
         {/* Cases Tab */}
         <TabsContent value="cases" className="space-y-6 mt-6 focus-visible:outline-none">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle>ניהול קריאות שירות</CardTitle>
-                  <CardDescription>צפייה וסינון כלל הקריאות במערכת</CardDescription>
-                </div>
-                <Suspense fallback={<Skeleton className="w-24 h-10" />}>
-                  <ExportMenu 
-                    data={filteredCalls} 
-                    columns={columns} 
-                    filename="dashboard_cases" 
-                    title="דוח קריאות - לוח בקרה"
-                  />
-                </Suspense>
-              </div>
-            </CardHeader>
-            <CardContent>
+          <CollapsibleCard
+            title="ניהול קריאות שירות"
+            description="צפייה וסינון כלל הקריאות במערכת"
+            headerRight={
+              <Suspense fallback={<Skeleton className="w-24 h-10" />}>
+                <ExportMenu 
+                  data={filteredCalls} 
+                  columns={columns} 
+                  filename="dashboard_cases" 
+                  title="דוח קריאות - לוח בקרה"
+                />
+              </Suspense>
+            }
+          >
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="relative flex-1">
                   <Input
@@ -526,8 +522,7 @@ export default function Dashboard() {
                   emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
                 />
               </Suspense>
-            </CardContent>
-          </Card>
+          </CollapsibleCard>
         </TabsContent>
 
         {/* Totals Tab */}
