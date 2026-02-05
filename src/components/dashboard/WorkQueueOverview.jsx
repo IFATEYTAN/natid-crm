@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import CollapsibleCard from '@/components/dashboard/CollapsibleCard';
 import { ChevronLeft, Users, CheckCircle2 } from 'lucide-react';
 
 export default function WorkQueueOverview({ calls = [], isLoading }) {
@@ -58,23 +58,19 @@ export default function WorkQueueOverview({ calls = [], isLoading }) {
   if (isLoading) return <Skeleton className="h-64" />;
 
   return (
-    <Card className="hover:shadow-md transition-all duration-300">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-bold text-gray-800">תור מתפעל בזמן אמת</CardTitle>
-            <CardDescription>מבט על עומסי העבודה במוקד</CardDescription>
-          </div>
-          <Link
-            to={createPageUrl('MyQueue')}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline flex items-center gap-1 transition-colors"
-          >
-            הצג תור מלא
-            <ChevronLeft className="w-4 h-4" />
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent>
+    <CollapsibleCard
+      title="תור מתפעל בזמן אמת"
+      description="מבט על עומסי העבודה במוקד"
+      headerRight={
+        <Link
+          to={createPageUrl('MyQueue')}
+          className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline flex items-center gap-1 transition-colors"
+        >
+          הצג תור מלא
+          <ChevronLeft className="w-4 h-4" />
+        </Link>
+      }
+    >
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Link to={createPageUrl('MyQueue')} className="block group">
             <div className="bg-orange-50 rounded-xl p-4 border border-orange-100 group-hover:border-orange-300 transition-all text-center">
@@ -134,7 +130,6 @@ export default function WorkQueueOverview({ calls = [], isLoading }) {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+    </CollapsibleCard>
   );
 }
