@@ -86,6 +86,7 @@ import VendorTracking from './pages/VendorTracking';
 import FeedbackManagement from './pages/FeedbackManagement';
 import FormView from './pages/FormView';
 import EditVendor from './pages/EditVendor';
+import VendorDetails from './pages/VendorDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -129,6 +130,7 @@ export const PAGES = {
     "FeedbackManagement": FeedbackManagement,
     "FormView": FormView,
     "EditVendor": EditVendor,
+    "VendorDetails": VendorDetails,
 }
 
 export const pagesConfig = {
