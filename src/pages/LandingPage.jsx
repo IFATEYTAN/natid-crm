@@ -47,24 +47,34 @@ function HeroIllustration() {
       xmlns="http://www.w3.org/2000/svg"
       className="w-full max-w-lg"
     >
-      <motion.circle
-        cx="250"
-        cy="200"
-        r="160"
-        fill="#FEE2E2"
+      <motion.g
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
-      />
-      <motion.circle
-        cx="250"
-        cy="200"
-        r="120"
-        fill="#FECACA"
+      >
+        <motion.circle
+          cx="250"
+          cy="200"
+          r="160"
+          fill="#FEE2E2"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.g>
+      <motion.g
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
-      />
+      >
+        <motion.circle
+          cx="250"
+          cy="200"
+          r="120"
+          fill="#FECACA"
+          animate={{ scale: [1, 1.03, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        />
+      </motion.g>
       <motion.path
         d="M50 300 Q150 280 250 290 Q350 300 450 280"
         stroke="#94A3B8"
@@ -90,56 +100,61 @@ function HeroIllustration() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 1.2, ease: 'easeOut' }}
       >
-        <rect x="140" y="240" width="80" height="40" rx="4" fill="#DC2626" />
-        <rect x="220" y="250" width="40" height="30" rx="3" fill="#B91C1C" />
-        <rect x="224" y="253" width="20" height="16" rx="2" fill="#BFDBFE" />
-        <motion.line
-          x1="155"
-          y1="240"
-          x2="130"
-          y2="200"
-          stroke="#7F1D1D"
-          strokeWidth="4"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.5, delay: 1.8 }}
-        />
-        <motion.line
-          x1="130"
-          y1="200"
-          x2="160"
-          y2="200"
-          stroke="#7F1D1D"
-          strokeWidth="3"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.3, delay: 2.1 }}
-        />
-        <motion.path
-          d="M160 200 L160 215 Q160 220 155 220 Q150 220 150 215"
-          stroke="#7F1D1D"
-          strokeWidth="2"
-          fill="none"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.3, delay: 2.3 }}
-        />
-        <circle cx="170" cy="283" r="10" fill="#1E293B" />
-        <circle cx="170" cy="283" r="4" fill="#94A3B8" />
-        <circle cx="240" cy="283" r="10" fill="#1E293B" />
-        <circle cx="240" cy="283" r="4" fill="#94A3B8" />
-        <text
-          x="165"
-          y="265"
-          fill="white"
-          fontSize="11"
-          fontWeight="bold"
-          fontFamily="Heebo, sans-serif"
+        <motion.g
+          animate={{ y: [0, -3, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          NatID
-        </text>
+          <rect x="140" y="240" width="80" height="40" rx="4" fill="#DC2626" />
+          <rect x="220" y="250" width="40" height="30" rx="3" fill="#B91C1C" />
+          <rect x="224" y="253" width="20" height="16" rx="2" fill="#BFDBFE" />
+          <motion.line
+            x1="155"
+            y1="240"
+            x2="130"
+            y2="200"
+            stroke="#7F1D1D"
+            strokeWidth="4"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.5, delay: 1.8 }}
+          />
+          <motion.line
+            x1="130"
+            y1="200"
+            x2="160"
+            y2="200"
+            stroke="#7F1D1D"
+            strokeWidth="3"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.3, delay: 2.1 }}
+          />
+          <motion.path
+            d="M160 200 L160 215 Q160 220 155 220 Q150 220 150 215"
+            stroke="#7F1D1D"
+            strokeWidth="2"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.3, delay: 2.3 }}
+          />
+          <circle cx="170" cy="283" r="10" fill="#1E293B" />
+          <circle cx="170" cy="283" r="4" fill="#94A3B8" />
+          <circle cx="240" cy="283" r="10" fill="#1E293B" />
+          <circle cx="240" cy="283" r="4" fill="#94A3B8" />
+          <text
+            x="165"
+            y="265"
+            fill="white"
+            fontSize="11"
+            fontWeight="bold"
+            fontFamily="Heebo, sans-serif"
+          >
+            NatID
+          </text>
+        </motion.g>
       </motion.g>
       <motion.g
         initial={{ y: -30, opacity: 0 }}
