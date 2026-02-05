@@ -376,25 +376,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <PermissionGuard category="reports" permission="performance">
-            <Suspense fallback={<Skeleton className="h-[120px]" />}>
-              <AIInsightsWidget />
-            </Suspense>
-          </PermissionGuard>
-
-          <Suspense fallback={<Skeleton className="h-64" />}>
-            <SmartAlertsTab currentUser={currentUser} />
-          </Suspense>
-
-          <div className="grid lg:grid-cols-2 gap-6">
-            <Suspense fallback={<Skeleton className="h-[300px]" />}>
-              <CallsTrendChart data={trendData} isLoading={isLoading} />
-            </Suspense>
-            <Suspense fallback={<Skeleton className="h-[300px]" />}>
-              <StatusDistributionChart data={statusData} isLoading={isLoading} />
-            </Suspense>
-          </div>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>קריאות אחרונות</CardTitle>
@@ -418,6 +399,25 @@ export default function Dashboard() {
               </Suspense>
             </CardContent>
           </Card>
+
+          <PermissionGuard category="reports" permission="performance">
+            <Suspense fallback={<Skeleton className="h-[120px]" />}>
+              <AIInsightsWidget />
+            </Suspense>
+          </PermissionGuard>
+
+          <Suspense fallback={<Skeleton className="h-64" />}>
+            <SmartAlertsTab currentUser={currentUser} />
+          </Suspense>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <CallsTrendChart data={trendData} isLoading={isLoading} />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <StatusDistributionChart data={statusData} isLoading={isLoading} />
+            </Suspense>
+          </div>
         </TabsContent>
 
         {/* Operator Tab */}
