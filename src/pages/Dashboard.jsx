@@ -59,6 +59,7 @@ const AIInsightsWidget = lazy(() => import('@/components/ai/AIInsightsWidget'));
 const DashboardOperatorTab = lazy(() => import('@/components/dashboard/DashboardOperatorTab'));
 const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
 const SmartAlertsTab = lazy(() => import('@/components/dashboard/SmartAlertsTab'));
+const VendorMapWidget = lazy(() => import('@/components/dashboard/VendorMapWidget'));
 
 
 export default function Dashboard() {
