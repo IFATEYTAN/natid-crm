@@ -82,17 +82,17 @@ export default function ServiceProvidersPage() {
 
   const vendorsQuery = useQuery({
     queryKey: ['service-providers'],
-    queryFn: () => base44.entities.ServiceProvider.list('-updated_date', 1000),
+    queryFn: () => base44.entities.Vendor.list('-updated_date', 1000),
   });
 
   const deleteVendor = useMutation({
-    mutationFn: (id) => base44.entities.ServiceProvider.delete(id),
+    mutationFn: (id) => base44.entities.Vendor.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
   });
 
   const updateAvailability = useMutation({
     mutationFn: ({ id, is_available_now, availability_status }) =>
-      base44.entities.ServiceProvider.update(id, { is_available_now, availability_status }),
+      base44.entities.Vendor.update(id, { is_available_now, availability_status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
   });
 
