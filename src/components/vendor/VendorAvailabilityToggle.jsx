@@ -93,39 +93,41 @@ export default function VendorAvailabilityToggle({
   };
 
   const handleStartBreak = async (minutes) => {
-    setIsLoading(true);
-    setShowBreakOptions(false);
-    try {
-      await base44.entities.Vendor.update(vendor.id, {
-        availability_status: 'on_break',
-      });
-      setIsOnBreak(true);
-      setBreakEndTime(Date.now() + minutes * 60 * 1000);
-      showToast.success(`הפסקה ל-${minutes} דקות התחילה`);
-    } catch (error) {
-      console.error('Error starting break:', error);
-      showToast.error('שגיאה בהפעלת הפסקה');
-    } finally {
-      setIsLoading(false);
-    }
+  setIsLoading(true);
+  setShowBreakOptions(false);
+  try {
+    await base44.functions.invoke('updateVendorStatus', {
+      vendor_id: vendor.id,
+      status: 'on_break'
+    });
+    setIsOnBreak(true);
+    setBreakEndTime(Date.now() + minutes * 60 * 1000);
+    showToast.success(`הפסקה ל-${minutes} דקות התחילה`);
+  } catch (error) {
+    console.error('Error starting break:', error);
+    showToast.error('שגיאה בהפעלת הפסקה');
+  } finally {
+    setIsLoading(false);
+  }
   };
 
   const handleEndBreak = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await base44.entities.Vendor.update(vendor.id, {
-        availability_status: 'available',
-      });
-      setIsOnBreak(false);
-      setBreakEndTime(null);
-      setBreakRemaining(null);
-      clearInterval(breakTimerRef.current);
-      showToast.success('חזרת מהפסקה - זמין לקריאות');
-    } catch (error) {
-      console.error('Error ending break:', error);
-    } finally {
-      setIsLoading(false);
-    }
+  setIsLoading(true);
+  try {
+    await base44.functions.invoke('updateVendorStatus', {
+      vendor_id: vendor.id,
+      status: 'available'
+    });
+    setIsOnBreak(false);
+    setBreakEndTime(null);
+    setBreakRemaining(null);
+    clearInterval(breakTimerRef.current);
+    showToast.success('חזרת מהפסקה - זמין לקריאות');
+  } catch (error) {
+    console.error('Error ending break:', error);
+  } finally {
+    setIsLoading(false);
+  }
   }, [vendor?.id]);
 
   const formatBreakRemaining = (ms) => {

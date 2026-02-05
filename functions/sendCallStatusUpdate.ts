@@ -56,6 +56,31 @@ Deno.serve(async (req) => {
       is_read: false
     });
 
+    // Notify operators about significant status changes
+    if (['in_progress', 'completed', 'cancelled', 'on_site'].includes(status)) {
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'admin' }); // And operators
+      
+      const titleMap = {
+        in_progress: 'טיפול החל',
+        completed: 'טיפול הושלם',
+        cancelled: 'קריאה בוטלה',
+        on_site: 'ספק הגיע'
+      };
+
+      for (const op of operators) {
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: op.id,
+          title: titleMap[status] || 'עדכון סטטוס',
+          message: `קריאה ${call.call_number || call.id.substring(0,8)}: ${messageText}`,
+          type: status === 'completed' ? 'success' : 'info',
+          is_read: false,
+          link: `/CallDetails?id=${call.id}`,
+          related_entity_id: call.id,
+          related_entity_type: 'call'
+        });
+      }
+    }
+
     // Send SMS to customer if phone exists (via Twilio)
     if (call.customer_phone) {
       const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');

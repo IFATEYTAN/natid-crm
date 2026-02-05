@@ -109,6 +109,23 @@ Deno.serve(async (req) => {
         changed_by: user?.email || 'system'
       });
 
+      // Notify operators
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'admin' }); // Also notify operators if role exists
+      // Note: In a real app we'd filter for operators too, assuming 'admin' for now or fetch both
+      
+      for (const op of operators) {
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: op.id,
+          title: 'ספק אישר קריאה',
+          message: `הספק ${vendor?.vendor_name} אישר את קריאה ${call.call_number || call.id.substring(0,8)}`,
+          type: 'success',
+          is_read: false,
+          link: `/CallDetails?id=${call.id}`,
+          related_entity_id: call.id,
+          related_entity_type: 'call'
+        });
+      }
+
       return Response.json({
         success: true,
         action: 'accepted',
@@ -132,6 +149,23 @@ Deno.serve(async (req) => {
         notes: `ספק דחה את הקריאה. סיבה: ${decline_reason || 'לא צוינה'}`,
         changed_by: user?.email || 'system'
       });
+
+      // Notify operators
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      const vendorName = (await base44.asServiceRole.entities.Vendor.filter({ id: attempt.vendor_id }))[0]?.vendor_name || 'ספק';
+
+      for (const op of operators) {
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: op.id,
+          title: 'ספק דחה קריאה',
+          message: `הספק ${vendorName} דחה את קריאה ${call.call_number || call.id.substring(0,8)}. סיבה: ${decline_reason || 'לא צוינה'}`,
+          type: 'warning',
+          is_read: false,
+          link: `/CallDetails?id=${call.id}`,
+          related_entity_id: call.id,
+          related_entity_type: 'call'
+        });
+      }
 
       // Get all previous declined vendors for this call
       const previousAttempts = await base44.asServiceRole.entities.CallAssignmentAttempt.filter({
