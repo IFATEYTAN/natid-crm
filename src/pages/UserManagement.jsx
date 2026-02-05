@@ -69,7 +69,10 @@ export default function UserManagementPage() {
       showToast.success('ההזמנה נשלחה בהצלחה');
     },
     onError: (error) => {
-      showToast.error('שגיאה בשליחת ההזמנה: ' + error.message);
+      console.error('Invite error:', error);
+      // Try to extract more specific error message from the response if available
+      const errorMsg = error.response?.data?.message || error.message || 'שגיאה לא ידועה';
+      showToast.error('שגיאה בשליחת ההזמנה: ' + errorMsg);
     },
   });
 
@@ -91,7 +94,13 @@ export default function UserManagementPage() {
       showToast.error('יש להזין כתובת אימייל');
       return;
     }
-    inviteMutation.mutate({ email: inviteEmail, role: inviteRole });
+    // Trim and lowercase email to prevent format errors
+    const cleanEmail = inviteEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      showToast.error('כתובת אימייל לא תקינה');
+      return;
+    }
+    inviteMutation.mutate({ email: cleanEmail, role: inviteRole });
   };
 
   if (isLoading) {
