@@ -86,15 +86,9 @@ export default function Dashboard() {
   const { data: calls = [], isLoading: callsLoading } = useCalls();
   const { data: vendors = [], isLoading: vendorsLoading } = useVendors();
 
-  const { data: availableVendors = [] } = useQuery({
-    queryKey: ['availableVendors'],
-    queryFn: () =>
-      base44.entities.Vendor.filter({
-        is_active: true,
-        availability_status: 'available',
-      }),
-    refetchInterval: 30000,
-  });
+  const availableVendors = vendors.filter(
+    (v) => v.is_active && v.availability_status === 'available'
+  );
 
   const isLoading = callsLoading || vendorsLoading;
 
