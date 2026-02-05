@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Shield, Headset, MapPin, Clock, Truck, BarChart3, Zap, CheckCircle } from 'lucide-react';
 
@@ -215,8 +216,19 @@ function HeroIllustration() {
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch (e) {
+        // Not logged in
+      }
+    };
+    checkAuth();
+
     const link = document.createElement('link');
     link.href =
       'https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap';
@@ -259,14 +271,23 @@ export default function LandingPage() {
             </div>
             <span className="text-xl font-bold text-gray-900">NatID CRM</span>
           </div>
-          <a
-            href={getLoginUrl()}
-            target="_top"
-            className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-            onClick={() => setIsLoading(true)}
-          >
-            כניסה למערכת
-          </a>
+          {user ? (
+            <Link
+              to="/Dashboard"
+              className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+            >
+              חזרה לדשבורד
+            </Link>
+          ) : (
+            <a
+              href={getLoginUrl()}
+              target="_top"
+              className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+              onClick={() => setIsLoading(true)}
+            >
+              כניסה למערכת
+            </a>
+          )}
         </div>
       </motion.header>
 
