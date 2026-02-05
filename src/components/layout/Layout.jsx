@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { AuthProvider } from '@/components/AuthProvider';
+
 // Lazy-load AccessibilityWidget
 const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
 const NatiAssistant = lazy(() => import('@/components/NatiAssistant'));
@@ -27,7 +28,6 @@ const ConnectionStatusIndicator = lazy(() =>
 
 // Lazy Toaster to reduce main bundle
 const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaster })));
-// animejs dynamically imported in effect to keep index chunk small
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,7 +35,7 @@ export default function Layout({ children, currentPageName }) {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
-  const navigate = useNavigate(); // Navigation hook
+  const navigate = useNavigate();
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
@@ -59,7 +59,6 @@ export default function Layout({ children, currentPageName }) {
     if (!notification.is_read) {
       markAsReadMutation.mutate(notification.id);
     }
-    // Link handling handled by Link component
   };
 
   // Initialize with the first group expanded ("תפעול יומי")
@@ -116,20 +115,6 @@ export default function Layout({ children, currentPageName }) {
       cancelled = true;
     };
   }, [currentPageName]);
-
-  if (currentPageName === 'LandingPage') {
-    return <AuthProvider>{children}</AuthProvider>;
-  }
-
-  if (isLoadingAuth) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!currentUser) return null;
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -198,6 +183,20 @@ export default function Layout({ children, currentPageName }) {
   const handleLogout = async () => {
     await base44.auth.logout();
   };
+
+  if (currentPageName === 'LandingPage') {
+    return <AuthProvider>{children}</AuthProvider>;
+  }
+
+  if (isLoadingAuth) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!currentUser) return null;
 
   return (
     <AuthProvider>
@@ -360,8 +359,6 @@ export default function Layout({ children, currentPageName }) {
               </div>
             ))}
           </nav>
-
-
 
           {/* User Section */}
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#E0E0E0]">
