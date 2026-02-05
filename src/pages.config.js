@@ -83,6 +83,7 @@ import VendorContracts from './pages/VendorContracts';
 import VendorGuide from './pages/VendorGuide';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
+import FeedbackManagement from './pages/FeedbackManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -123,6 +124,7 @@ export const PAGES = {
     "VendorGuide": VendorGuide,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
+    "FeedbackManagement": FeedbackManagement,
 }
 
 export const pagesConfig = {

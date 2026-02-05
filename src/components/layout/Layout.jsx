@@ -155,7 +155,7 @@ export default function Layout({ children, currentPageName }) {
         { name: 'ניתוח נתונים היסטוריים', href: 'HistoricalDataAnalysis' },
         { name: 'ייצוא מתקדם', href: 'AdvancedExport' },
         { name: 'לקוחות', href: 'Customers' },
-        { name: 'משובי לקוחות', href: 'CustomerFeedback' },
+        { name: 'משובי לקוחות', href: 'FeedbackManagement' },
         { name: 'נותני שירות', href: 'ServiceProviders' },
         { name: 'חוזי ספקים', href: 'VendorContracts' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
