@@ -16,12 +16,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { printData } from '@/components/ui/ExportMenu';
+import { printData, exportToHTML } from '@/components/ui/ExportMenu';
 import {
   Download,
   FileSpreadsheet,
   FileText,
   File,
+  FileCode,
   Calendar,
   Filter,
   CheckSquare,
@@ -363,6 +364,15 @@ export default function AdvancedExport() {
           printData(data, columns, { title, subtitle: `דוח ${entityName} - ייצוא מתקדם` });
           break;
         }
+        case 'html': {
+          const title = isCalls ? 'דוח קריאות' : 'דוח לקוחות';
+          const columns = fields.map(f => ({
+            header: allFieldLabels[f] || f,
+            accessor: f
+          }));
+          exportToHTML(data, columns, entityName, { title, subtitle: `דוח ${entityName} - ייצוא מתקדם` });
+          break;
+        }
       }
       showToast.success(`${feedbackMessages.export.success} - ${data.length} רשומות`);
     } catch (error) {
@@ -691,6 +701,18 @@ export default function AdvancedExport() {
                   <File className="w-4 h-4" />
                 )}
                 ייצוא PDF
+              </Button>
+              <Button
+                onClick={() => handleExport('html')}
+                disabled={isExporting}
+                className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileCode className="w-4 h-4" />
+                )}
+                ייצוא HTML
               </Button>
             </div>
           </CardContent>
