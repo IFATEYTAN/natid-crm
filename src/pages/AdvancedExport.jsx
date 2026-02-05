@@ -16,6 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { printData } from '@/components/ui/ExportMenu';
 import {
   Download,
   FileSpreadsheet,
@@ -298,57 +299,8 @@ export default function AdvancedExport() {
     return '\uFEFF' + headers.join('\t') + '\n' + rows.join('\n');
   };
 
-  const generatePDF = async (data, fields, fieldLabels, title) => {
-    const { jsPDF } = await import('jspdf');
-    const doc = new jsPDF({ orientation: 'landscape', putOnlyUsedFonts: true });
-
-    // Title
-    doc.setFontSize(18);
-    doc.text(title, doc.internal.pageSize.width / 2, 15, { align: 'center' });
-
-    doc.setFontSize(10);
-    doc.text(`Generated: ${moment().format('DD/MM/YYYY HH:mm')}`, 14, 25);
-    doc.text(`Total Records: ${data.length}`, 14, 30);
-
-    // Simple table
-    let y = 40;
-    const pageHeight = doc.internal.pageSize.height;
-    const margin = 14;
-    const cellHeight = 8;
-    const maxFieldsPerPage = Math.min(fields.length, 8);
-    const colWidth = (doc.internal.pageSize.width - 2 * margin) / maxFieldsPerPage;
-
-    // Headers
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'bold');
-    fields.slice(0, maxFieldsPerPage).forEach((field, i) => {
-      doc.text(fieldLabels[field] || field, margin + i * colWidth, y, { maxWidth: colWidth - 2 });
-    });
-
-    y += cellHeight;
-    doc.setFont(undefined, 'normal');
-
-    // Data rows
-    data.forEach((item, rowIndex) => {
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        y = 20;
-      }
-
-      fields.slice(0, maxFieldsPerPage).forEach((field, i) => {
-        let value = item[field];
-        if (value === null || value === undefined) value = '';
-        else if (typeof value === 'boolean') value = value ? 'Yes' : 'No';
-        else value = String(value).substring(0, 20);
-
-        doc.text(value, margin + i * colWidth, y, { maxWidth: colWidth - 2 });
-      });
-
-      y += cellHeight;
-    });
-
-    return doc;
-  };
+  // PDF generation now uses the robust printData function from ExportMenu
+  // which handles Hebrew/RTL correctly via browser printing
 
   const downloadFile = (content, filename, type) => {
     const blob = new Blob([content], { type });
@@ -404,8 +356,11 @@ export default function AdvancedExport() {
         }
         case 'pdf': {
           const title = isCalls ? 'דוח קריאות' : 'דוח לקוחות';
-          const doc = await generatePDF(data, fields, allFieldLabels, title);
-          doc.save(`${entityName}_export_${timestamp}.pdf`);
+          const columns = fields.map(f => ({
+            header: allFieldLabels[f] || f,
+            accessor: f
+          }));
+          printData(data, columns, { title, subtitle: `דוח ${entityName} - ייצוא מתקדם` });
           break;
         }
       }
