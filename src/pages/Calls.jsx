@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { useCalls } from '@/components/hooks/useCalls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,11 +67,7 @@ export default function CallsPage() {
     isLoading,
     refetch,
     isFetching,
-  } = useQuery({
-    queryKey: ['allCalls'],
-    queryFn: () => base44.entities.Call.list('-created_date', 500),
-    refetchInterval: 30000,
-  });
+  } = useCalls();
 
   // Filter calls
   const filteredCalls = useMemo(() => {
