@@ -1,6 +1,8 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useCalls } from '@/components/hooks/useCalls';
+import { useVendors } from '@/components/hooks/useVendors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -59,17 +61,11 @@ export default function ReportsPage() {
   const canViewFinancial = hasPermission('reports', 'financial');
   const canExport = hasPermission('reports', 'export');
 
-  // Fetch calls
-  const callsQuery = useQuery({
-    queryKey: ['reportCalls'],
-    queryFn: () => base44.entities.Call.filter({}, '-created_date', 500),
-  });
+  // Fetch calls - using shared hook for sync across screens
+  const callsQuery = useCalls();
 
-  // Fetch vendors
-  const vendorsQuery = useQuery({
-    queryKey: ['reportVendors'],
-    queryFn: () => base44.entities.Vendor.filter({}),
-  });
+  // Fetch vendors - using shared hook for sync across screens
+  const vendorsQuery = useVendors();
 
   // Fetch ratings
   const ratingsQuery = useQuery({
