@@ -384,29 +384,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-10 md:py-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">מוכנים להתחיל?</h2>
-            <div className="flex flex-col items-center gap-4">
-              <ul className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-gray-600 mb-8">
-                {['ללא התקנה', 'ממשק בעברית', 'תמיכה מלאה', 'אבטחה מתקדמת'].map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
 
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       <footer className="py-4 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-gray-400">
