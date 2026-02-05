@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Menu, X, Plus, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { AuthProvider } from '@/components/AuthProvider';
 // Lazy-load AccessibilityWidget
 const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
-const NatiAssistant = lazy(() => import('@/components/NatiAssistant'));
+const VendorAssistant = lazy(() => import('@/components/vendor/VendorAssistant'));
 // Lazy-load PWA and status widgets to reduce main bundle size
 const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'));
 const OfflineIndicator = lazy(() => import('@/components/pwa/OfflineIndicator'));
@@ -34,6 +34,7 @@ export default function Layout({ children, currentPageName }) {
   const [currentUser, setCurrentUser] = useState(null);
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
@@ -336,15 +337,7 @@ export default function Layout({ children, currentPageName }) {
             ))}
           </nav>
 
-          {/* Quick Actions */}
-          <div className="absolute bottom-20 left-4 right-4">
-            <Link to={createPageUrl('NewCase')}>
-              <Button className="w-full bg-[#FF0000] hover:bg-[#CC0000] active:scale-[0.98] text-white gap-2 shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] transition-all duration-200 rounded-[4px] px-6 py-2.5 font-bold">
-                <Plus className="w-5 h-5" />
-                קריאה חדשה
-              </Button>
-            </Link>
-          </div>
+
 
           {/* User Section */}
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#E0E0E0]">
@@ -378,6 +371,15 @@ export default function Layout({ children, currentPageName }) {
                   alt="נתי"
                   className="h-8 w-auto object-contain lg:hidden"
                 />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 hidden md:flex"
+                  onClick={() => navigate(-1)}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                  חזרה
+                </Button>
               </div>
             </div>
 
@@ -493,13 +495,15 @@ export default function Layout({ children, currentPageName }) {
             <UpdatePrompt />
           </Suspense>
 
-          {/* Nati Assistant (floating, all users) */}
-          <Suspense fallback={null}>
-            <NatiAssistant />
-          </Suspense>
+          {/* Vendor Assistant (floating, vendor only) */}
+          {currentUser?.role === 'vendor' && (
+            <Suspense fallback={null}>
+              <VendorAssistant isVendor />
+            </Suspense>
+          )}
 
-          {/* Connection Status (above Nati) */}
-          <div className="fixed bottom-24 left-4 z-40">
+          {/* Connection Status (bottom left) */}
+          <div className="fixed bottom-4 left-4 z-40">
             <Suspense fallback={null}>
               <ConnectionStatusIndicator />
             </Suspense>
