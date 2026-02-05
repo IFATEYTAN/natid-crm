@@ -32,6 +32,7 @@ const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaste
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate(); // Navigation hook
@@ -71,10 +72,33 @@ export default function Layout({ children, currentPageName }) {
         setCurrentUser(user);
       } catch (e) {
         // User not logged in
+      } finally {
+        setIsLoadingAuth(false);
       }
     };
     fetchUser();
   }, []);
+
+  // Redirect unauthenticated users to LandingPage
+  useEffect(() => {
+    if (!isLoadingAuth && !currentUser && currentPageName !== 'LandingPage') {
+      navigate('/LandingPage');
+    }
+  }, [isLoadingAuth, currentUser, currentPageName, navigate]);
+
+  if (currentPageName === 'LandingPage') {
+    return <AuthProvider>{children}</AuthProvider>;
+  }
+
+  if (isLoadingAuth) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!currentUser) return null;
 
   // Auto-redirect when visiting /login (builder preview link) to the official Base44 login flow
   useEffect(() => {
