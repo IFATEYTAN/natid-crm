@@ -353,7 +353,7 @@ export default function Layout({ children, currentPageName }) {
         </aside>
 
         {/* Main Content */}
-        <div className="lg:mr-64">
+        <div className="lg:mr-64 min-h-screen flex flex-col transition-all duration-300">
           {/* Top Bar */}
           <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
             <div className="flex items-center gap-4">
@@ -500,8 +500,8 @@ export default function Layout({ children, currentPageName }) {
             <NatiAssistant />
           </Suspense>
 
-          {/* Connection Status (bottom left) */}
-          <div className="fixed bottom-4 left-4 z-40">
+          {/* Connection Status (top left) */}
+          <div className="fixed top-20 left-4 z-40">
             <Suspense fallback={null}>
               <ConnectionStatusIndicator />
             </Suspense>

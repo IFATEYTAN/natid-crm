@@ -89,11 +89,20 @@
     @apply border-border;
   }
 
+  html, body {
+    @apply h-full w-full overflow-x-hidden;
+  }
+
   body {
     @apply bg-background text-foreground font-['Heebo'] antialiased;
     font-size: 16px;
     direction: rtl;
     text-align: right;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  #root {
+    @apply min-h-full flex flex-col;
   }
 
   /* Typography System */

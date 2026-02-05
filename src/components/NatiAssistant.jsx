@@ -503,7 +503,7 @@ export default function NatiAssistant() {
   }
 
   return (
-    <div className="fixed bottom-4 left-20 z-[100]" dir="rtl">
+    <div className="fixed bottom-20 left-4 z-[100]" dir="rtl">
       {/* Speech Bubble */}
       <AnimatePresence>
         {isOpen && (
