@@ -170,6 +170,8 @@ const customerStatusOptions = [
 
 export default function AdvancedExport() {
   const [activeTab, setActiveTab] = useState('calls');
+  // Enforce RTL on this page
+  const rtlProps = { dir: 'rtl', className: 'text-right' };
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState(null);
 
@@ -454,7 +456,7 @@ export default function AdvancedExport() {
                   {groupFieldKeys.length})
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-1 mr-6">
+              <div className="grid grid-cols-2 gap-1 mr-6 text-right">
                 {Object.entries(group.fields).map(([fieldKey, fieldLabel]) => (
                   <label
                     key={fieldKey}
@@ -481,8 +483,8 @@ export default function AdvancedExport() {
 
   return (
     <SlideUp>
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div>
+      <div className="max-w-5xl mx-auto space-y-6" dir="rtl">
+        <div className="text-right">
           <h1 className="text-2xl font-bold text-[#111827]">ייצוא מתקדם</h1>
           <p className="text-[#6b7280]">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
         </div>
@@ -696,7 +698,7 @@ export default function AdvancedExport() {
             <CardDescription>בחר פורמט לייצוא הנתונים</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 justify-start">
               <Button
                 onClick={() => handleExport('csv')}
                 disabled={isExporting}
