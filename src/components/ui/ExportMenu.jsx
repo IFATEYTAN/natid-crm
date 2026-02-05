@@ -254,9 +254,8 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
 export const printData = (data, columns, options = {}) => {
   const { title, subtitle } = options;
 
-  const printWindow = window.open('', '_blank');
-
-  printWindow.document.write(`
+  // Modern design with better styling
+  const htmlContent = `
 <!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head>
@@ -264,27 +263,97 @@ export const printData = (data, columns, options = {}) => {
   <title>${title || 'הדפסה'}</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap');
+    
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Heebo', sans-serif; padding: 20px; }
+    
+    body { 
+      font-family: 'Heebo', system-ui, -apple-system, sans-serif; 
+      padding: 30px;
+      color: ${BRAND_COLORS.text};
+      background: white;
+    }
+
     .header { 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      border-bottom: 3px solid ${BRAND_COLORS.primary}; 
-      padding-bottom: 15px; 
-      margin-bottom: 20px; 
+      border-bottom: 4px solid ${BRAND_COLORS.primary}; 
+      padding-bottom: 20px; 
+      margin-bottom: 30px; 
     }
-    .header-text h1 { color: ${BRAND_COLORS.text}; font-size: 24px; margin-bottom: 5px; }
-    .header-text p { color: ${BRAND_COLORS.textSecondary}; font-size: 14px; }
-    .logo { height: 50px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th { background: #f5f5f5; padding: 10px 12px; text-align: right; font-weight: 600; border: 1px solid #ddd; }
-    td { padding: 8px 12px; border: 1px solid #ddd; }
-    tr:nth-child(even) { background: #fafafa; }
-    .footer { margin-top: 30px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+
+    .header-text h1 { 
+      color: ${BRAND_COLORS.primary}; 
+      font-size: 28px; 
+      font-weight: 700;
+      margin-bottom: 8px; 
+    }
+
+    .header-text p { 
+      color: ${BRAND_COLORS.textSecondary}; 
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .logo { 
+      height: 60px; 
+      object-fit: contain;
+    }
+
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 12px; 
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid ${BRAND_COLORS.border};
+    }
+
+    th { 
+      background: ${BRAND_COLORS.secondary}; 
+      color: white; 
+      padding: 12px 16px; 
+      text-align: right; 
+      font-weight: 600; 
+      font-size: 13px;
+      border-bottom: 2px solid ${BRAND_COLORS.primary};
+      white-space: nowrap;
+    }
+
+    td { 
+      padding: 10px 16px; 
+      border-bottom: 1px solid ${BRAND_COLORS.border}; 
+    }
+
+    tr:nth-child(even) { background: #f8fafc; }
+    tr:hover { background: #f1f5f9; }
+
+    .footer { 
+      margin-top: 40px; 
+      padding-top: 20px;
+      border-top: 1px solid ${BRAND_COLORS.border};
+      font-size: 11px; 
+      color: ${BRAND_COLORS.textSecondary}; 
+      display: flex; 
+      justify-content: space-between; 
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background: #e2e8f0;
+    }
+
     @media print {
       @page { margin: 1cm; size: landscape; }
-      body { -webkit-print-color-adjust: exact; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .no-print { display: none; }
+      th { background-color: ${BRAND_COLORS.secondary} !important; color: white !important; }
+      tr:nth-child(even) { background-color: #f8fafc !important; }
     }
   </style>
 </head>
@@ -293,7 +362,8 @@ export const printData = (data, columns, options = {}) => {
     <div class="header-text">
       <h1>${title || 'דוח'}</h1>
       ${subtitle ? `<p>${subtitle}</p>` : ''}
-      <p>תאריך: ${new Date().toLocaleDateString('he-IL')}</p>
+      <p>תאריך הפקה: ${new Date().toLocaleDateString('he-IL', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+      <p>סה"כ רשומות: ${data.length}</p>
     </div>
     <img src="${LOGO_URL}" alt="Logo" class="logo" />
   </div>
@@ -311,10 +381,20 @@ export const printData = (data, columns, options = {}) => {
         <tr>
           ${columns.map((col) => {
             const rawValue = col.accessor ? row[col.accessor] : '';
-            const value = typeof rawValue === 'object' && rawValue !== null 
-              ? (rawValue.name || rawValue.label || '-') 
-              : String(rawValue || '');
-            return `<td>${value}</td>`;
+            // Try to extract text from objects or use raw value
+            let value = '';
+            if (typeof rawValue === 'object' && rawValue !== null) {
+              value = rawValue.name || rawValue.label || rawValue.id || '-';
+            } else {
+              value = String(rawValue || '');
+              if (value === 'undefined' || value === 'null') value = '';
+            }
+            
+            // Basic formatting
+            if (value === 'true') value = 'כן';
+            if (value === 'false') value = 'לא';
+
+            return `<td>${value || '-'}</td>`;
           }).join('')}
         </tr>
       `
@@ -324,22 +404,32 @@ export const printData = (data, columns, options = {}) => {
   </table>
 
   <div class="footer">
-    <span>NatID 360 Control</span>
-    <span>סה"כ ${data.length} רשומות</span>
+    <span>NatID 360 Control System</span>
+    <span>הופק ע"י ${typeof window !== 'undefined' ? window.location.hostname : 'NatID System'}</span>
   </div>
 
   <script>
+    // Auto print when loaded
     window.onload = function() { 
       setTimeout(() => {
         window.print();
-      }, 500);
+      }, 800);
     }
   </script>
 </body>
 </html>
-  `);
+  `;
 
-  printWindow.document.close();
+  // Use Blob to ensure UTF-8 encoding is respected
+  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  // Open the Blob URL
+  const printWindow = window.open(url, '_blank');
+  
+  if (!printWindow) {
+    toast.error('הדפדפן חסם את החלונית הקופצת. אנא אפשר חלוניות קופצות.');
+  }
 };
 
 // Email dialog component
