@@ -35,6 +35,7 @@ export default function Layout({ children, currentPageName }) {
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
