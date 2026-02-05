@@ -285,17 +285,7 @@ export default function LandingPage() {
                 מערכת CRM מתקדמת לניהול קריאות שירות, שיבוץ ספקים אוטומטי, מעקב GPS בזמן אמת, ודוחות
                 ביצועים מקיפים.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a
-                  href={getLoginUrl()}
-                  target="_top"
-                  className="px-8 py-4 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition-all hover:shadow-lg hover:shadow-red-200 flex items-center justify-center gap-2"
-                  onClick={() => setIsLoading(true)}
-                >
-                  <Shield className="w-5 h-5" />
-                  כניסה למערכת
-                </a>
-              </div>
+
               <div className="grid grid-cols-4 gap-4 mt-12">
                 {stats.map((stat, i) => (
                   <motion.div
@@ -376,14 +366,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <a
-                href={getLoginUrl()}
-                target="_top"
-                className="px-10 py-4 bg-red-600 text-white rounded-xl font-bold text-lg hover:bg-red-700 transition-all hover:shadow-lg hover:shadow-red-200"
-                onClick={() => setIsLoading(true)}
-              >
-                כניסה למערכת
-              </a>
+
             </div>
           </motion.div>
         </div>

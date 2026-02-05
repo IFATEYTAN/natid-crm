@@ -64,6 +64,7 @@ import Dashboard from './pages/Dashboard';
 import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
 import ImportHistoricalData from './pages/ImportHistoricalData';
 import IntegrationSettings from './pages/IntegrationSettings';
+import LandingPage from './pages/LandingPage';
 import MyNotificationSettings from './pages/MyNotificationSettings';
 import MyQueue from './pages/MyQueue';
 import MyVendorProfile from './pages/MyVendorProfile';
@@ -79,10 +80,9 @@ import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
 import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
+import VendorGuide from './pages/VendorGuide';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import LandingPage from './pages/LandingPage';
-import VendorGuide from './pages/VendorGuide';
 import __Layout from './Layout.jsx';
 
 
@@ -104,6 +104,7 @@ export const PAGES = {
     "HistoricalDataAnalysis": HistoricalDataAnalysis,
     "ImportHistoricalData": ImportHistoricalData,
     "IntegrationSettings": IntegrationSettings,
+    "LandingPage": LandingPage,
     "MyNotificationSettings": MyNotificationSettings,
     "MyQueue": MyQueue,
     "MyVendorProfile": MyVendorProfile,
@@ -119,10 +120,9 @@ export const PAGES = {
     "UserManagement": UserManagement,
     "VendorCallManagement": VendorCallManagement,
     "VendorContracts": VendorContracts,
+    "VendorGuide": VendorGuide,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "LandingPage": LandingPage,
-    "VendorGuide": VendorGuide,
 }
 
 export const pagesConfig = {
