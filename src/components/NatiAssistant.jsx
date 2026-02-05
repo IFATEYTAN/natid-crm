@@ -506,13 +506,17 @@ export default function NatiAssistant() {
   if (isHidden) {
     return (
       <motion.button
-        className="fixed bottom-4 left-4 z-50 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-red-600 hover:border-red-200 transition-colors"
+        className="fixed bottom-6 left-6 z-[100] w-14 h-14 bg-white border-2 border-red-100 rounded-full shadow-xl flex items-center justify-center text-red-500 hover:border-red-300 hover:bg-red-50 transition-all duration-300 group"
         onClick={handleShow}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         title="הצג את נתי"
       >
-        🚛
+        <span className="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform">🚛</span>
+        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+        </span>
       </motion.button>
     );
   }
