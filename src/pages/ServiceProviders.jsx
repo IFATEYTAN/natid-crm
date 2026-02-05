@@ -130,7 +130,11 @@ export default function ServiceProvidersPage() {
         vendor.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         vendor.phone?.includes(searchQuery) ||
         vendor.coverage_cities?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilter === 'all' || vendor.service_type?.includes(typeFilter);
+      const matchesType =
+        typeFilter === 'all' ||
+        (Array.isArray(vendor.service_type)
+          ? vendor.service_type.includes(typeFilter)
+          : vendor.service_type === typeFilter);
       const matchesAvailability =
         availabilityFilter === 'all' || vendor.availability_status === availabilityFilter;
       return matchesSearch && matchesType && matchesAvailability;
@@ -200,7 +204,9 @@ export default function ServiceProvidersPage() {
               {vendor.vendor_name}
             </Link>
             <div className="text-xs text-[#6B778C]">
-              {vendor.service_type?.map((t) => serviceTypeLabels[t] || t).join(', ')}
+              {Array.isArray(vendor.service_type)
+                ? vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')
+                : serviceTypeLabels[vendor.service_type] || vendor.service_type}
             </div>
           </div>
         </div>
