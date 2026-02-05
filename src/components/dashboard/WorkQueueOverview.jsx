@@ -51,7 +51,7 @@ export default function WorkQueueOverview({ calls, isLoading }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-bold text-gray-800">תור עבודה בזמן אמת</CardTitle>
+            <CardTitle className="text-lg font-bold text-gray-800">תור מתפעל בזמן אמת</CardTitle>
             <CardDescription>מבט על עומסי העבודה במוקד</CardDescription>
           </div>
           <Link

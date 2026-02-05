@@ -139,7 +139,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'נותני שירות', href: 'ServiceProviders' },
         { name: 'חוזי ספקים', href: 'VendorContracts' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
-        { name: 'מעקב ספקים', href: 'VendorTracking' },
+
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
       ],
