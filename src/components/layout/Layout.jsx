@@ -9,11 +9,9 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { AuthProvider } from '@/components/AuthProvider';
-
 // Lazy-load AccessibilityWidget
 const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
 const NatiAssistant = lazy(() => import('@/components/NatiAssistant'));
-
 // Lazy-load PWA and status widgets to reduce main bundle size
 const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'));
 const OfflineIndicator = lazy(() => import('@/components/pwa/OfflineIndicator'));
@@ -36,7 +34,7 @@ export default function Layout({ children, currentPageName }) {
   const [currentUser, setCurrentUser] = useState(null);
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Navigation hook
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
@@ -338,6 +336,8 @@ export default function Layout({ children, currentPageName }) {
               </div>
             ))}
           </nav>
+
+
 
           {/* User Section */}
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#E0E0E0]">
