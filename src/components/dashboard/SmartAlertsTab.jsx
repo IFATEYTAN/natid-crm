@@ -59,6 +59,7 @@ export default function SmartAlertsTab({ currentUser }) {
   };
 
   const getAlertIcon = (title) => {
+    if (!title) return Bell;
     if (title.includes('SLA')) return Clock;
     if (title.includes('זמן רב') || title.includes('זמן טיפול')) return AlertTriangle;
     if (title.includes('דחיות')) return AlertOctagon;
