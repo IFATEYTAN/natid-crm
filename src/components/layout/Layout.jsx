@@ -498,8 +498,8 @@ export default function Layout({ children, currentPageName }) {
             <NatiAssistant />
           </Suspense>
 
-          {/* Connection Status (bottom left) */}
-          <div className="fixed bottom-4 left-4 z-40">
+          {/* Connection Status (above Nati) */}
+          <div className="fixed bottom-24 left-4 z-40">
             <Suspense fallback={null}>
               <ConnectionStatusIndicator />
             </Suspense>
