@@ -4,8 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Download, User, MapPin, Loader2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { showToast } from '@/components/ui/FeedbackToast';
 
 export default function FormView() {
@@ -20,6 +18,10 @@ export default function FormView() {
     try {
       setIsGenerating(true);
       
+      // Dynamically import libraries to reduce bundle size
+      const { default: html2canvas } = await import('html2canvas');
+      const { default: jsPDF } = await import('jspdf');
+
       const element = pdfContentRef.current;
       
       // Capture with html2canvas using requested settings
