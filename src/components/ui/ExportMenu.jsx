@@ -10,6 +10,7 @@ import {
   Check,
   Loader2,
   Printer,
+  AlignRight,
 } from 'lucide-react';
 import { Button } from './button';
 import {
@@ -37,6 +38,8 @@ const BRAND_COLORS = {
   textSecondary: '#616161',
 };
 
+const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png';
+
 // Export to CSV with Hebrew support
 export const exportToCSV = (data, columns, filename = 'export') => {
   const BOM = '\uFEFF'; // UTF-8 BOM for Excel Hebrew support
@@ -49,9 +52,12 @@ export const exportToCSV = (data, columns, filename = 'export') => {
     .map((row) =>
       columns
         .map((col) => {
-          const value = col.accessor ? row[col.accessor] : '';
+          // Handle React elements (like badges) by extracting text content if possible, or using raw data
+          const rawValue = col.accessor ? row[col.accessor] : '';
+          const value = typeof rawValue === 'object' ? JSON.stringify(rawValue) : String(rawValue || '');
+          
           // Escape quotes and wrap in quotes if contains comma
-          const escaped = String(value || '').replace(/"/g, '""');
+          const escaped = value.replace(/"/g, '""');
           return `"${escaped}"`;
         })
         .join(',')
@@ -68,143 +74,32 @@ export const exportToCSV = (data, columns, filename = 'export') => {
   URL.revokeObjectURL(link.href);
 };
 
-// Export to styled Excel (XLSX format using CSV with styling markers)
-export const exportToExcel = async (data, columns, filename = 'export', options = {}) => {
-  const { title, subtitle } = options;
+// Export to Plain Text
+export const exportToText = (data, columns, filename = 'export', options = {}) => {
+  const { title } = options;
+  let content = `${title || 'ייצוא נתונים'}\n`;
+  content += `תאריך: ${new Date().toLocaleDateString('he-IL')}\n`;
+  content += `סה"כ רשומות: ${data.length}\n`;
+  content += '----------------------------------------\n\n';
 
-  // For now, export as CSV with Excel-friendly format
-  // Can be enhanced with xlsx library for full styling
-  const BOM = '\uFEFF';
-
-  let content = BOM;
-
-  // Add title if provided
-  if (title) {
-    content += `"${title}"\n`;
-    if (subtitle) {
-      content += `"${subtitle}"\n`;
-    }
+  data.forEach((row, index) => {
+    content += `רשומה #${index + 1}:\n`;
+    columns.forEach(col => {
+      const rawValue = col.accessor ? row[col.accessor] : '';
+      const value = typeof rawValue === 'object' && rawValue !== null 
+        ? (rawValue.name || rawValue.label || JSON.stringify(rawValue)) 
+        : String(rawValue || '-');
+      content += `${col.header}: ${value}\n`;
+    });
     content += '\n';
-  }
-
-  // Headers
-  content += columns.map((col) => `"${col.header}"`).join(',') + '\n';
-
-  // Rows
-  data.forEach((row) => {
-    content +=
-      columns
-        .map((col) => {
-          const value = col.accessor ? row[col.accessor] : '';
-          const escaped = String(value || '').replace(/"/g, '""');
-          return `"${escaped}"`;
-        })
-        .join(',') + '\n';
   });
 
-  const blob = new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `${filename}_${new Date().toISOString().split('T')[0]}.xls`;
+  link.download = `${filename}_${new Date().toISOString().split('T')[0]}.txt`;
   link.click();
   URL.revokeObjectURL(link.href);
-};
-
-// Export to styled PDF
-export const exportToPDF = async (data, columns, filename = 'export', options = {}) => {
-  const { title, subtitle, logoUrl } = options;
-
-  // Dynamic import for code splitting
-  const { default: jsPDF } = await import('jspdf');
-
-  const doc = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a4',
-  });
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
-  let yPos = margin;
-
-  // Header with brand styling
-  doc.setFillColor(BRAND_COLORS.primary);
-  doc.rect(0, 0, pageWidth, 25, 'F');
-
-  // Title
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18);
-  doc.setFont(undefined, 'bold');
-  doc.text(title || filename, pageWidth - margin, 15, { align: 'right' });
-
-  // Subtitle
-  if (subtitle) {
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text(subtitle, pageWidth - margin, 21, { align: 'right' });
-  }
-
-  // Date
-  doc.setFontSize(9);
-  doc.text(new Date().toLocaleDateString('he-IL'), margin, 15);
-
-  yPos = 35;
-
-  // Table headers
-  const colWidth = (pageWidth - 2 * margin) / columns.length;
-
-  doc.setFillColor(245, 245, 245);
-  doc.rect(margin, yPos, pageWidth - 2 * margin, 10, 'F');
-
-  doc.setTextColor(BRAND_COLORS.secondary);
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-
-  columns.forEach((col, idx) => {
-    const x = pageWidth - margin - (idx + 1) * colWidth + colWidth / 2;
-    doc.text(col.header, x, yPos + 7, { align: 'center' });
-  });
-
-  yPos += 12;
-
-  // Table rows
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(BRAND_COLORS.text);
-
-  data.forEach((row, rowIdx) => {
-    // Check if need new page
-    if (yPos > pageHeight - 20) {
-      doc.addPage();
-      yPos = margin;
-    }
-
-    // Alternating row colors
-    if (rowIdx % 2 === 0) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(margin, yPos - 2, pageWidth - 2 * margin, 8, 'F');
-    }
-
-    columns.forEach((col, idx) => {
-      const value = col.accessor ? String(row[col.accessor] || '') : '';
-      const x = pageWidth - margin - (idx + 1) * colWidth + colWidth / 2;
-      doc.text(value.substring(0, 20), x, yPos + 4, { align: 'center' });
-    });
-
-    yPos += 8;
-  });
-
-  // Footer
-  const totalPages = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`עמוד ${i} מתוך ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
-    doc.text('נתי שירותי דרך', margin, pageHeight - 10);
-  }
-
-  doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
 // Export to HTML
@@ -225,19 +120,38 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
       font-family: 'Heebo', sans-serif;
       background: ${BRAND_COLORS.background};
       color: ${BRAND_COLORS.text};
-      padding: 20px;
+      padding: 40px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      border-radius: 8px;
     }
     .header {
-      background: ${BRAND_COLORS.primary};
-      color: white;
-      padding: 20px 30px;
-      margin: -20px -20px 20px -20px;
-    }
-    .header h1 { font-size: 24px; margin-bottom: 5px; }
-    .header p { font-size: 14px; opacity: 0.9; }
-    .meta {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid ${BRAND_COLORS.primary};
+    }
+    .logo {
+      height: 60px;
+    }
+    .title-section h1 {
+      font-size: 28px;
+      color: ${BRAND_COLORS.text};
+      margin-bottom: 5px;
+    }
+    .title-section p {
+      color: ${BRAND_COLORS.textSecondary};
+    }
+    .meta {
+      display: flex;
+      gap: 20px;
       margin-bottom: 20px;
       color: ${BRAND_COLORS.textSecondary};
       font-size: 14px;
@@ -245,16 +159,14 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
     table {
       width: 100%;
       border-collapse: collapse;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-top: 20px;
     }
     th {
-      background: #f5f5f5;
+      background: #f8f9fa;
+      color: ${BRAND_COLORS.text};
       padding: 12px 16px;
       text-align: right;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 14px;
       border-bottom: 2px solid ${BRAND_COLORS.border};
     }
@@ -262,11 +174,12 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
       padding: 12px 16px;
       border-bottom: 1px solid ${BRAND_COLORS.border};
       font-size: 14px;
+      color: ${BRAND_COLORS.text};
     }
     tr:nth-child(even) { background: #fafafa; }
     tr:hover { background: #f0f0f0; }
     .footer {
-      margin-top: 30px;
+      margin-top: 40px;
       padding-top: 20px;
       border-top: 1px solid ${BRAND_COLORS.border};
       display: flex;
@@ -275,44 +188,55 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
       font-size: 12px;
     }
     @media print {
-      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { padding: 0; }
+      body { padding: 0; background: white; }
+      .container { box-shadow: none; padding: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>${title || filename}</h1>
-    ${subtitle ? `<p>${subtitle}</p>` : ''}
-  </div>
+  <div class="container">
+    <div class="header">
+      <div class="title-section">
+        <h1>${title || filename}</h1>
+        ${subtitle ? `<p>${subtitle}</p>` : ''}
+      </div>
+      <img src="${LOGO_URL}" alt="NatID 360" class="logo" />
+    </div>
 
-  <div class="meta">
-    <span>סה"כ רשומות: ${data.length}</span>
-    <span>תאריך הפקה: ${new Date().toLocaleDateString('he-IL')}</span>
-  </div>
+    <div class="meta">
+      <span>סה"כ רשומות: ${data.length}</span>
+      <span>תאריך הפקה: ${new Date().toLocaleDateString('he-IL')}</span>
+    </div>
 
-  <table>
-    <thead>
-      <tr>
-        ${columns.map((col) => `<th>${col.header}</th>`).join('')}
-      </tr>
-    </thead>
-    <tbody>
-      ${data
-        .map(
-          (row) => `
+    <table>
+      <thead>
         <tr>
-          ${columns.map((col) => `<td>${row[col.accessor] || ''}</td>`).join('')}
+          ${columns.map((col) => `<th>${col.header}</th>`).join('')}
         </tr>
-      `
-        )
-        .join('')}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        ${data
+          .map(
+            (row) => `
+          <tr>
+            ${columns.map((col) => {
+              const rawValue = col.accessor ? row[col.accessor] : '';
+              const value = typeof rawValue === 'object' && rawValue !== null 
+                ? (rawValue.name || rawValue.label || '-') 
+                : String(rawValue || '');
+              return `<td>${value}</td>`;
+            }).join('')}
+          </tr>
+        `
+          )
+          .join('')}
+      </tbody>
+    </table>
 
-  <div class="footer">
-    <span>נתי שירותי דרך</span>
-    <span>הופק מ-NATID CRM</span>
+    <div class="footer">
+      <span>NatID 360 Control</span>
+      <span>הופק ע"י המערכת</span>
+    </div>
   </div>
 </body>
 </html>
@@ -326,7 +250,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
   URL.revokeObjectURL(link.href);
 };
 
-// Print preview
+// Print/PDF preview (uses browser print to PDF for best Hebrew support)
 export const printData = (data, columns, options = {}) => {
   const { title, subtitle } = options;
 
@@ -342,22 +266,36 @@ export const printData = (data, columns, options = {}) => {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Heebo', sans-serif; padding: 20px; }
-    .header { border-bottom: 3px solid ${BRAND_COLORS.primary}; padding-bottom: 15px; margin-bottom: 20px; }
-    .header h1 { color: ${BRAND_COLORS.primary}; font-size: 22px; }
-    .header p { color: ${BRAND_COLORS.textSecondary}; font-size: 14px; margin-top: 5px; }
+    .header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      border-bottom: 3px solid ${BRAND_COLORS.primary}; 
+      padding-bottom: 15px; 
+      margin-bottom: 20px; 
+    }
+    .header-text h1 { color: ${BRAND_COLORS.text}; font-size: 24px; margin-bottom: 5px; }
+    .header-text p { color: ${BRAND_COLORS.textSecondary}; font-size: 14px; }
+    .logo { height: 50px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     th { background: #f5f5f5; padding: 10px 12px; text-align: right; font-weight: 600; border: 1px solid #ddd; }
     td { padding: 8px 12px; border: 1px solid #ddd; }
     tr:nth-child(even) { background: #fafafa; }
     .footer { margin-top: 30px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
-    @page { margin: 1cm; }
+    @media print {
+      @page { margin: 1cm; size: landscape; }
+      body { -webkit-print-color-adjust: exact; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>${title || 'דוח'}</h1>
-    ${subtitle ? `<p>${subtitle}</p>` : ''}
-    <p>תאריך: ${new Date().toLocaleDateString('he-IL')}</p>
+    <div class="header-text">
+      <h1>${title || 'דוח'}</h1>
+      ${subtitle ? `<p>${subtitle}</p>` : ''}
+      <p>תאריך: ${new Date().toLocaleDateString('he-IL')}</p>
+    </div>
+    <img src="${LOGO_URL}" alt="Logo" class="logo" />
   </div>
 
   <table>
@@ -371,7 +309,13 @@ export const printData = (data, columns, options = {}) => {
         .map(
           (row) => `
         <tr>
-          ${columns.map((col) => `<td>${row[col.accessor] || ''}</td>`).join('')}
+          ${columns.map((col) => {
+            const rawValue = col.accessor ? row[col.accessor] : '';
+            const value = typeof rawValue === 'object' && rawValue !== null 
+              ? (rawValue.name || rawValue.label || '-') 
+              : String(rawValue || '');
+            return `<td>${value}</td>`;
+          }).join('')}
         </tr>
       `
         )
@@ -380,12 +324,16 @@ export const printData = (data, columns, options = {}) => {
   </table>
 
   <div class="footer">
-    <span>נתי שירותי דרך</span>
+    <span>NatID 360 Control</span>
     <span>סה"כ ${data.length} רשומות</span>
   </div>
 
   <script>
-    window.onload = function() { window.print(); }
+    window.onload = function() { 
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    }
   </script>
 </body>
 </html>
@@ -397,7 +345,7 @@ export const printData = (data, columns, options = {}) => {
 // Email dialog component
 function EmailDialog({ open, onOpenChange, onSend, title }) {
   const [email, setEmail] = useState('');
-  const [subject, setSubject] = useState(title ? `דוח: ${title}` : 'דוח מ-NATID CRM');
+  const [subject, setSubject] = useState(title ? `דוח: ${title}` : 'דוח מ-NatID 360');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
@@ -423,7 +371,7 @@ function EmailDialog({ open, onOpenChange, onSend, title }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="w-5 h-5 text-[#FF0000]" />
@@ -502,24 +450,29 @@ export default function ExportMenu({
     setExportType(type);
 
     try {
-      const options = { title, subtitle };
+      const options = { title: title || 'NatID 360 Control', subtitle };
 
       switch (type) {
         case 'csv':
           exportToCSV(data, columns, filename);
-          toast.success('הקובץ הורד בהצלחה');
+          toast.success('קובץ CSV הורד בהצלחה');
+          break;
+        case 'text':
+          exportToText(data, columns, filename, options);
+          toast.success('קובץ טקסט הורד בהצלחה');
           break;
         case 'excel':
-          await exportToExcel(data, columns, filename, options);
-          toast.success('הקובץ הורד בהצלחה');
+          // Reusing CSV logic for Excel compatibility
+          exportToCSV(data, columns, filename); 
+          toast.success('קובץ Excel הורד בהצלחה');
           break;
         case 'pdf':
-          await exportToPDF(data, columns, filename, options);
-          toast.success('הקובץ הורד בהצלחה');
+          // Use print-to-pdf flow for best Hebrew support
+          printData(data, columns, { ...options, title: title || 'דוח PDF' });
           break;
         case 'html':
           exportToHTML(data, columns, filename, options);
-          toast.success('הקובץ הורד בהצלחה');
+          toast.success('קובץ HTML הורד בהצלחה');
           break;
         case 'print':
           printData(data, columns, options);
@@ -535,10 +488,10 @@ export default function ExportMenu({
   };
 
   const exportOptions = [
-    { type: 'pdf', label: 'PDF', icon: FileText, description: 'מסמך מעוצב' },
-    { type: 'excel', label: 'Excel', icon: FileSpreadsheet, description: 'גיליון אלקטרוני' },
-    { type: 'csv', label: 'CSV', icon: FileSpreadsheet, description: 'נתונים גולמיים' },
-    { type: 'html', label: 'HTML', icon: FileCode, description: 'דף אינטרנט' },
+    { type: 'html', label: 'HTML', icon: FileCode, description: 'דף אינטרנט מעוצב', color: 'bg-purple-100 text-purple-600' },
+    { type: 'pdf', label: 'PDF', icon: FileText, description: 'שמירה כ-PDF', color: 'bg-red-100 text-red-600' },
+    { type: 'text', label: 'Text', icon: AlignRight, description: 'קובץ טקסט רגיל', color: 'bg-gray-100 text-gray-600' },
+    { type: 'csv', label: 'CSV/Excel', icon: FileSpreadsheet, description: 'גיליון נתונים', color: 'bg-green-100 text-green-600' },
   ];
 
   return (
@@ -560,7 +513,7 @@ export default function ExportMenu({
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-64" dir="rtl">
           <AnimatePresence>
             {exportOptions.map((option, idx) => (
               <motion.div
@@ -572,16 +525,13 @@ export default function ExportMenu({
                 <DropdownMenuItem
                   onClick={() => handleExport(option.type)}
                   disabled={isExporting}
-                  className="cursor-pointer"
+                  className="cursor-pointer py-3"
                 >
                   <div className="flex items-center gap-3 w-full">
                     <div
                       className={cn(
-                        'w-8 h-8 rounded-lg flex items-center justify-center',
-                        option.type === 'pdf' && 'bg-red-100 text-red-600',
-                        option.type === 'excel' && 'bg-green-100 text-green-600',
-                        option.type === 'csv' && 'bg-blue-100 text-blue-600',
-                        option.type === 'html' && 'bg-purple-100 text-purple-600'
+                        'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                        option.color
                       )}
                     >
                       {isExporting && exportType === option.type ? (
@@ -590,8 +540,8 @@ export default function ExportMenu({
                         <option.icon className="w-4 h-4" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <div className="font-medium">{option.label}</div>
+                    <div className="flex-1 text-right">
+                      <div className="font-medium text-sm">{option.label}</div>
                       <div className="text-xs text-gray-500">{option.description}</div>
                     </div>
                     {isExporting && exportType === option.type && (
@@ -606,13 +556,13 @@ export default function ExportMenu({
           {(showPrint || showEmail) && <DropdownMenuSeparator />}
 
           {showPrint && (
-            <DropdownMenuItem onClick={() => handleExport('print')} className="cursor-pointer">
+            <DropdownMenuItem onClick={() => handleExport('print')} className="cursor-pointer py-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                  <Printer className="w-4 h-4 text-gray-600" />
+                <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <Printer className="w-4 h-4 text-slate-600" />
                 </div>
-                <div>
-                  <div className="font-medium">הדפסה</div>
+                <div className="text-right">
+                  <div className="font-medium text-sm">הדפסה</div>
                   <div className="text-xs text-gray-500">תצוגה מקדימה</div>
                 </div>
               </div>
@@ -620,13 +570,13 @@ export default function ExportMenu({
           )}
 
           {showEmail && onEmailSend && (
-            <DropdownMenuItem onClick={() => setEmailDialogOpen(true)} className="cursor-pointer">
+            <DropdownMenuItem onClick={() => setEmailDialogOpen(true)} className="cursor-pointer py-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4 text-orange-600" />
                 </div>
-                <div>
-                  <div className="font-medium">שליחה במייל</div>
+                <div className="text-right">
+                  <div className="font-medium text-sm">שליחה במייל</div>
                   <div className="text-xs text-gray-500">שלח לכתובת מייל</div>
                 </div>
               </div>
