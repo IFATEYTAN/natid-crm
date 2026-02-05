@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/lib/api';
+import { base44 } from '@/api/base44Client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Trophy, MapPin, Clock } from 'lucide-react';

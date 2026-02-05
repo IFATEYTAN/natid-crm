@@ -23,6 +23,7 @@ import {
   createValidationSchema,
 } from '@/components/forms/FormValidation';
 import { showToast } from '@/components/ui/FeedbackToast';
+import AICategorization from '@/components/ai/AICategorization';
 
 const newCaseSchema = createValidationSchema({
   caller_name: { label: 'שם המתקשר', validators: [validators.required] },
@@ -370,6 +371,17 @@ export default function NewCase() {
                   }
                   rows={3}
                   placeholder="תאר את התקלה..."
+                />
+              </div>
+              <div className="md:col-span-2">
+                <AICategorization
+                  problemDescription={formData.problem_description}
+                  locationAddress={formData.location_address}
+                  locationCity={formData.location_city}
+                  vehicleType={formData.vehicle_type}
+                  onApply={({ service_type, priority }) => {
+                    setFormData(prev => ({ ...prev, service_type, priority }));
+                  }}
                 />
               </div>
               <div className="md:col-span-2">
