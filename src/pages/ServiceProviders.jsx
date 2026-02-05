@@ -1,12 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import {
-  useVendors,
-  useDeleteVendor,
-  useUpdateVendorAvailability,
-} from '@/features/vendors/hooks/useVendors';
-import { useQuery } from '@tanstack/react-query';
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { Button } from '@/components/ui/button';
@@ -82,9 +78,23 @@ export default function ServiceProvidersPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
 
-  const vendorsQuery = useVendors();
-  const deleteVendor = useDeleteVendor();
-  const updateAvailability = useUpdateVendorAvailability();
+  const queryClient = useQueryClient();
+
+  const vendorsQuery = useQuery({
+    queryKey: ['service-providers'],
+    queryFn: () => base44.entities.ServiceProvider.list('-updated_date', 1000),
+  });
+
+  const deleteVendor = useMutation({
+    mutationFn: (id) => base44.entities.ServiceProvider.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
+  });
+
+  const updateAvailability = useMutation({
+    mutationFn: ({ id, is_available_now, availability_status }) =>
+      base44.entities.ServiceProvider.update(id, { is_available_now, availability_status }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
+  });
 
   const vendors = vendorsQuery.data || [];
 
