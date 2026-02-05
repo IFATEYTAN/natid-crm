@@ -328,16 +328,12 @@ export default function Dashboard() {
               <Suspense fallback={<Skeleton className="h-40" />}>
                 <DataTableLazy
                   columns={columns}
-                  data={openCalls.map((call) => ({
-                    ...call,
-                    _rowClassName: call.call_status === 'completed' ? 'bg-green-50' : '',
-                  }))}
+                  data={openCalls}
                   isLoading={isLoading}
                   onRowClick={(row) =>
                     (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
                   }
                   emptyMessage="אין קריאות בטיפול כרגע"
-                  rowClassName={(row) => row._rowClassName || ''}
                 />
               </Suspense>
             </CardContent>
