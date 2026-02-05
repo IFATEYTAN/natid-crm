@@ -26,9 +26,9 @@ const VendorPerformanceChart = React.lazy(() =>
   import('@/components/reports/ReportsCharts').then((m) => ({ default: m.VendorPerformanceChart }))
 );
 
-const OperationalEfficiencyReport = React.lazy(() => import('@/components/reports/OperationalEfficiencyReport'));
-const CustomerAnalysisReport = React.lazy(() => import('@/components/reports/CustomerAnalysisReport'));
-const VendorPerformanceReport = React.lazy(() => import('@/components/reports/VendorPerformanceReport'));
+const OperationalEfficiencyReport = React.lazy(() => import('@/components/reports/OperationalEfficiencyReport.jsx'));
+const CustomerAnalysisReport = React.lazy(() => import('@/components/reports/CustomerAnalysisReport.jsx'));
+const VendorPerformanceReport = React.lazy(() => import('@/components/reports/VendorPerformanceReport.jsx'));
 
 import ExportMenu from '@/components/ui/ExportMenu';
 import {

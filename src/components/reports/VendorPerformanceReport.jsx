@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import DataTable from '@/components/ui/DataTable';
 import { Star, Clock, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+import { createPageUrl } from '@/components/utils';
 
 export default function VendorPerformanceReport({ vendors, calls, ratings }) {
   const vendorStats = vendors
