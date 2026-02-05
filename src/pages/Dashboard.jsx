@@ -304,10 +304,46 @@ export default function Dashboard() {
             </Suspense>
           </div>
 
+          {/* מעקב GPS ספקים */}
+          <Suspense fallback={<Skeleton className="h-[350px]" />}>
+            <DashboardVendorMap />
+          </Suspense>
+
+          {/* תור מתפעל בזמן אמת */}
           <Suspense fallback={<Skeleton className="h-64" />}>
             <WorkQueueOverview calls={calls} isLoading={isLoading} />
           </Suspense>
 
+          {/* קריאות במעקב - רק קריאות בטיפול פעיל */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>קריאות במעקב</CardTitle>
+              <Link to={createPageUrl('Calls')}>
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                  לכל הקריאות <ChevronLeft className="w-4 h-4 mr-1" />
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <Suspense fallback={<Skeleton className="h-40" />}>
+                <DataTableLazy
+                  columns={columns}
+                  data={openCalls.map((call) => ({
+                    ...call,
+                    _rowClassName: call.call_status === 'completed' ? 'bg-green-50' : '',
+                  }))}
+                  isLoading={isLoading}
+                  onRowClick={(row) =>
+                    (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
+                  }
+                  emptyMessage="אין קריאות בטיפול כרגע"
+                  rowClassName={(row) => row._rowClassName || ''}
+                />
+              </Suspense>
+            </CardContent>
+          </Card>
+
+          {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <Link to={createPageUrl('CustomerFeedback')} className="block">
               <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
@@ -373,30 +409,6 @@ export default function Dashboard() {
               </Card>
             </Link>
           </div>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>קריאות אחרונות</CardTitle>
-              <Link to={createPageUrl('Calls')}>
-                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                  לכל הקריאות <ChevronLeft className="w-4 h-4 mr-1" />
-                </Button>
-              </Link>
-            </CardHeader>
-            <CardContent>
-              <Suspense fallback={<Skeleton className="h-40" />}>
-                <DataTableLazy
-                  columns={columns}
-                  data={calls.slice(0, 10)}
-                  isLoading={isLoading}
-                  onRowClick={(row) =>
-                    (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
-                  }
-                  emptyMessage="אין קריאות להצגה"
-                />
-              </Suspense>
-            </CardContent>
-          </Card>
 
           <PermissionGuard category="reports" permission="performance">
             <Suspense fallback={<Skeleton className="h-[120px]" />}>
