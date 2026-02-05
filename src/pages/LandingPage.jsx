@@ -270,9 +270,9 @@ export default function LandingPage() {
         </div>
       </motion.header>
 
-      <section className="pt-28 pb-16 md:pt-36 md:pb-24">
+      <section className="pt-24 pb-8 md:pt-28 md:pb-12">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -286,7 +286,7 @@ export default function LandingPage() {
                 ביצועים מקיפים.
               </p>
 
-              <div className="grid grid-cols-4 gap-4 mt-12">
+              <div className="grid grid-cols-4 gap-4 mt-8">
                 {stats.map((stat, i) => (
                   <motion.div
                     key={stat.label}
@@ -313,10 +313,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-10 md:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
-            className="text-center mb-12"
+            className="text-center mb-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -348,7 +348,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24">
+      <section className="py-10 md:py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -372,8 +372,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="py-8 border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
+      <footer className="py-4 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-gray-400">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
               <Zap className="w-3.5 h-3.5 text-white" />
