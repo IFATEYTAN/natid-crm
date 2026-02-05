@@ -306,7 +306,7 @@ export default function Dashboard() {
 
           {/* מעקב GPS ספקים */}
           <Suspense fallback={<Skeleton className="h-[350px]" />}>
-            <DashboardVendorMap />
+            <VendorMapWidget />
           </Suspense>
 
           {/* תור מתפעל בזמן אמת */}
