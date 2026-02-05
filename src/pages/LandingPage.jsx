@@ -386,15 +386,14 @@ export default function LandingPage() {
 
 
 
-      <footer className="py-4 border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-2 text-sm text-gray-400">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span>NatID CRM</span>
-          </div>
-          <p>מערכת ניהול קריאות שירות מתקדמת</p>
+      <footer className="py-8 border-t border-gray-100 bg-white">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/94c28994a_image.png" 
+            alt="Nati Road Services" 
+            className="h-10 md:h-12 w-auto object-contain"
+          />
+          <p className="text-gray-500 text-sm font-medium">מערכת ניהול קריאות שירות מתקדמת</p>
         </div>
       </footer>
     </div>
