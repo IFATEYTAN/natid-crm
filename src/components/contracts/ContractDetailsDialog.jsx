@@ -31,6 +31,9 @@ import {
   History,
   RefreshCw,
   Ban,
+  Download,
+  Mail,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays } from 'date-fns';
@@ -181,7 +184,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
 
             <TabsContent value="details" className="space-y-4 mt-4">
               {/* Vendor Info */}
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-gray-50 rounded-lg flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
                     <Truck className="w-6 h-6 text-blue-600" />
@@ -192,6 +195,18 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                       {contractTypeLabels[contract.contract_type]}
                     </p>
                   </div>
+                </div>
+                <div className="flex gap-2">
+                  {contract.document_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(contract.document_url, '_blank')}
+                      title="הורד מסמך"
+                    >
+                      <Download className="w-4 h-4 text-gray-600" />
+                    </Button>
+                  )}
                 </div>
               </div>
 

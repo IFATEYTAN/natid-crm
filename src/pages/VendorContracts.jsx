@@ -32,11 +32,23 @@ import {
   Truck,
   RefreshCw,
   Bell,
+  Mail,
+  MessageCircle,
+  Download,
+  MoreVertical,
+  File
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, differenceInDays, addDays, isPast, isFuture } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { showToast } from '@/components/ui/FeedbackToast';
+import ExportMenu from '@/components/ui/ExportMenu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const statusConfig = {
   draft: { label: 'טיוטה', color: 'bg-gray-100 text-gray-700', icon: FileText },
@@ -110,6 +122,51 @@ export default function VendorContractsPage() {
   const handleViewContract = (contract) => {
     setSelectedContract(contract);
     setShowDetailsDialog(true);
+  };
+
+  const handleSendEmail = async (contract) => {
+    const vendor = vendors.find(v => v.id === contract.vendor_id);
+    if (!vendor?.email) {
+      showToast.error('לא נמצאה כתובת מייל לספק');
+      return;
+    }
+
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: vendor.email,
+        subject: `חוזה התקשרות - ${contract.contract_number}`,
+        body: `
+          שלום ${vendor.contact_person || vendor.vendor_name},
+          
+          מצורפים פרטי החוזה שלך:
+          מספר חוזה: ${contract.contract_number}
+          תוקף: ${format(new Date(contract.start_date), 'dd/MM/yyyy')} - ${format(new Date(contract.end_date), 'dd/MM/yyyy')}
+          
+          ${contract.document_url ? `לינק לחוזה החתום: ${contract.document_url}` : ''}
+          
+          בברכה,
+          צוות NatID 360
+        `
+      });
+      showToast.success('המייל נשלח בהצלחה');
+    } catch (error) {
+      console.error('Email error:', error);
+      showToast.error('שגיאה בשליחת המייל');
+    }
+  };
+
+  const handleWhatsApp = (contract) => {
+    const vendor = vendors.find(v => v.id === contract.vendor_id);
+    if (!vendor?.phone) {
+      showToast.error('לא נמצא מספר טלפון לספק');
+      return;
+    }
+
+    const phone = vendor.phone.replace(/\D/g, '').replace(/^0/, '972');
+    const text = encodeURIComponent(
+      `שלום ${vendor.vendor_name},\nהנה הקישור לחוזה שלך (${contract.contract_number}):\n${contract.document_url || 'לא צורף מסמך'}`
+    );
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
   };
 
   const columns = [
@@ -192,12 +249,49 @@ export default function VendorContractsPage() {
       },
     },
     {
+      header: 'מסמך',
+      cell: (contract) => contract.document_url ? (
+        <a 
+          href={contract.document_url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800"
+          title="הורד חוזה"
+        >
+          <File className="w-4 h-4" />
+        </a>
+      ) : null
+    },
+    {
       header: 'פעולות',
       cell: (contract) => (
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => handleViewContract(contract)}>
             פרטים
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleSendEmail(contract)}>
+                <Mail className="w-4 h-4 ml-2" />
+                שלח במייל
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleWhatsApp(contract)}>
+                <MessageCircle className="w-4 h-4 ml-2" />
+                שלח בווצאפ
+              </DropdownMenuItem>
+              {contract.document_url && (
+                <DropdownMenuItem onClick={() => window.open(contract.document_url, '_blank')}>
+                  <Download className="w-4 h-4 ml-2" />
+                  הורד מסמך
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },
@@ -212,6 +306,19 @@ export default function VendorContractsPage() {
           <p className="text-[#6b7280] text-sm">ניהול חוזים והסכמים עם ספקים</p>
         </div>
         <div className="flex gap-2">
+          <ExportMenu 
+            data={filteredContracts}
+            columns={[
+              { header: 'מספר חוזה', accessor: 'contract_number' },
+              { header: 'ספק', accessor: 'vendor_name' },
+              { header: 'סוג', accessor: 'contract_type' },
+              { header: 'סטטוס', accessor: 'status' },
+              { header: 'תאריך התחלה', accessor: 'start_date' },
+              { header: 'תאריך סיום', accessor: 'end_date' }
+            ]}
+            title="רשימת חוזי ספקים"
+            filename="contracts"
+          />
           <Button variant="outline" size="sm" onClick={() => contractsQuery.refetch()}>
             <RefreshCw className={cn('w-4 h-4', contractsQuery.isFetching && 'animate-spin')} />
           </Button>

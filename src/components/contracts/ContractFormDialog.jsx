@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, FileText, DollarSign, Shield, MapPin } from 'lucide-react';
+import { Loader2, FileText, DollarSign, Shield, MapPin, Upload, X, File } from 'lucide-react';
 import { format, addYears } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
 
@@ -75,7 +75,10 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
     insurance_minimum_amount: 1000000,
     special_terms: '',
     notes: '',
+    document_url: '',
   });
+
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (contract) {
@@ -156,6 +159,28 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
         ? [...prev.service_types, service]
         : prev.service_types.filter((s) => s !== service),
     }));
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast.error('הקובץ גדול מדי (מקסימום 10MB)');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData((prev) => ({ ...prev, document_url: file_url }));
+      showToast.success('הקובץ הועלה בהצלחה');
+    } catch (error) {
+      console.error('Upload error:', error);
+      showToast.error('שגיאה בהעלאת הקובץ');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -527,6 +552,49 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     />
                   </div>
                 )}
+              </div>
+
+              <div>
+                <Label>מסמך החוזה (PDF)</Label>
+                <div className="mt-2">
+                  {formData.document_url ? (
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 border rounded-lg">
+                      <File className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm flex-1 truncate">מסמך מצורף</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setFormData({ ...formData, document_url: '' })}
+                        className="text-red-500 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                        className="hidden"
+                        id="contract-upload"
+                      />
+                      <Label
+                        htmlFor="contract-upload"
+                        className="flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors w-full justify-center text-gray-600"
+                      >
+                        {uploading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4" />
+                        )}
+                        {uploading ? 'מעלה...' : 'העלה קובץ PDF'}
+                      </Label>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
