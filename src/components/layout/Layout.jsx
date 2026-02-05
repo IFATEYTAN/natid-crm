@@ -131,9 +131,17 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'רשימת קריאות', href: 'Calls' },
         { name: 'לוח שנה', href: 'Calendar' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
+      ],
+    },
+    {
+      title: 'ניהול ספקים',
+      items: [
+        { name: 'נותני שירות', href: 'ServiceProviders' },
+        { name: 'חוזי ספקים', href: 'VendorContracts' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
         { name: 'מעקב ספקים', href: 'VendorTracking' },
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
+        { name: 'פורטל ספקים', href: 'VendorPortal' },
       ],
     },
     {
@@ -144,11 +152,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'ייצוא מתקדם', href: 'AdvancedExport' },
         { name: 'לקוחות', href: 'Customers' },
         { name: 'משובי לקוחות', href: 'FeedbackManagement' },
-        { name: 'נותני שירות', href: 'ServiceProviders' },
-        { name: 'חוזי ספקים', href: 'VendorContracts' },
-        { name: 'פורטל ספקים', href: 'VendorPortal' },
         { name: 'הפרופיל שלי', href: 'UserProfile' },
-        { name: 'מדריך לספק', href: 'VendorGuide' },
       ],
     },
     {
