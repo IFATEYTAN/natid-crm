@@ -20,6 +20,7 @@ import {
   Users,
   Calendar,
   BarChart3,
+  BellRing
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,6 +58,7 @@ const ExportMenu = lazy(() => import('@/components/ui/ExportMenu'));
 const AIInsightsWidget = lazy(() => import('@/components/ai/AIInsightsWidget'));
 const DashboardOperatorTab = lazy(() => import('@/components/dashboard/DashboardOperatorTab'));
 const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
+const SmartAlertsTab = lazy(() => import('@/components/dashboard/SmartAlertsTab'));
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -250,6 +252,16 @@ export default function Dashboard() {
             <span className="hidden md:inline">סה"כ קריאות</span>
             <span className="md:hidden">סה"כ</span>
           </TabsTrigger>
+          <PermissionGuard category="reports" permission="view">
+            <TabsTrigger
+              value="alerts"
+              className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"
+            >
+              <BellRing className="w-4 h-4 text-orange-500" />
+              <span className="hidden md:inline">התראות חכמות</span>
+              <span className="md:hidden">התראות</span>
+            </TabsTrigger>
+          </PermissionGuard>
         </TabsList>
 
         {/* Dashboard Tab */}
@@ -521,6 +533,13 @@ export default function Dashboard() {
         <TabsContent value="totals" className="space-y-6 mt-6 focus-visible:outline-none">
           <Suspense fallback={<Skeleton className="h-96" />}>
             <DashboardTotalsTab calls={calls} callsLoading={callsLoading} />
+          </Suspense>
+        </TabsContent>
+
+        {/* Alerts Tab */}
+        <TabsContent value="alerts" className="space-y-6 mt-6 focus-visible:outline-none">
+          <Suspense fallback={<Skeleton className="h-96" />}>
+            <SmartAlertsTab currentUser={currentUser} />
           </Suspense>
         </TabsContent>
       </Tabs>
