@@ -252,16 +252,6 @@ export default function Dashboard() {
             <span className="hidden md:inline">סה"כ קריאות</span>
             <span className="md:hidden">סה"כ</span>
           </TabsTrigger>
-          <PermissionGuard category="reports" permission="view">
-            <TabsTrigger
-              value="alerts"
-              className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"
-            >
-              <BellRing className="w-4 h-4 text-orange-500" />
-              <span className="hidden md:inline">התראות חכמות</span>
-              <span className="md:hidden">התראות</span>
-            </TabsTrigger>
-          </PermissionGuard>
         </TabsList>
 
         {/* Dashboard Tab */}
@@ -391,6 +381,10 @@ export default function Dashboard() {
               <AIInsightsWidget />
             </Suspense>
           </PermissionGuard>
+
+          <Suspense fallback={<Skeleton className="h-64" />}>
+            <SmartAlertsTab currentUser={currentUser} />
+          </Suspense>
 
           <div className="grid lg:grid-cols-2 gap-6">
             <Suspense fallback={<Skeleton className="h-[300px]" />}>
@@ -536,12 +530,7 @@ export default function Dashboard() {
           </Suspense>
         </TabsContent>
 
-        {/* Alerts Tab */}
-        <TabsContent value="alerts" className="space-y-6 mt-6 focus-visible:outline-none">
-          <Suspense fallback={<Skeleton className="h-96" />}>
-            <SmartAlertsTab currentUser={currentUser} />
-          </Suspense>
-        </TabsContent>
+
       </Tabs>
     </div>
   );
