@@ -436,7 +436,7 @@ function LayoutContent({ children, currentPageName }) {
                         >
                           <div className="flex justify-between items-start mb-1">
                             <span className="text-xs text-gray-400">
-                              {format(parseISO(notification.created_at), 'HH:mm')}
+                              {notification.created_date ? format(parseISO(notification.created_date), 'HH:mm') : ''}
                             </span>
                             {!notification.is_read && (
                               <span className="w-2 h-2 bg-blue-500 rounded-full mt-1" />
