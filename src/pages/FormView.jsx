@@ -57,29 +57,9 @@ export default function FormView() {
 
       // Handle multi-page overflow
       while (heightLeft > 0) {
-        position = heightLeft - contentHeight + margin; // Adjust position for next page
+        position -= pageHeight; // Shift image up by one page content height
         pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', margin, position - margin, contentWidth, contentHeight); // Adjust y offset
-        // Note: The simple image slicing for multipage PDF from a single long canvas is complex. 
-        // For this specific request "handle multi-page overflow", simpler approach is adding new page 
-        // and shifting the image up. A cleaner approach often involves capturing pages separately, 
-        // but the prompt implies capturing the *entire* ref element once. 
-        // Standard approach for long image in jsPDF:
-        
-        // Resetting position for the loop logic to be correct standard 'long image' handling:
-        // Actually, let's use the standard loop:
-        /*
-        let position = 0;
-        pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
-        heightLeft -= pageHeight;
-        
-        while (heightLeft >= 0) {
-          position = heightLeft - contentHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', margin, position + margin, contentWidth, contentHeight); // position is negative
-          heightLeft -= pageHeight;
-        }
-        */
+        pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, contentHeight);
         heightLeft -= pageHeight;
       }
 
