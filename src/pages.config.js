@@ -61,6 +61,9 @@ import CustomerDetails from './pages/CustomerDetails';
 import CustomerFeedback from './pages/CustomerFeedback';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
+import EditVendor from './pages/EditVendor';
+import FeedbackManagement from './pages/FeedbackManagement';
+import FormView from './pages/FormView';
 import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
 import ImportHistoricalData from './pages/ImportHistoricalData';
 import IntegrationSettings from './pages/IntegrationSettings';
@@ -80,13 +83,11 @@ import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
 import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
+import VendorDetails from './pages/VendorDetails';
 import VendorGuide from './pages/VendorGuide';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import FeedbackManagement from './pages/FeedbackManagement';
-import FormView from './pages/FormView';
-import EditVendor from './pages/EditVendor';
-import VendorDetails from './pages/VendorDetails';
+import UserProfile from './pages/UserProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -105,6 +106,9 @@ export const PAGES = {
     "CustomerFeedback": CustomerFeedback,
     "Customers": Customers,
     "Dashboard": Dashboard,
+    "EditVendor": EditVendor,
+    "FeedbackManagement": FeedbackManagement,
+    "FormView": FormView,
     "HistoricalDataAnalysis": HistoricalDataAnalysis,
     "ImportHistoricalData": ImportHistoricalData,
     "IntegrationSettings": IntegrationSettings,
@@ -124,13 +128,11 @@ export const PAGES = {
     "UserManagement": UserManagement,
     "VendorCallManagement": VendorCallManagement,
     "VendorContracts": VendorContracts,
+    "VendorDetails": VendorDetails,
     "VendorGuide": VendorGuide,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "FeedbackManagement": FeedbackManagement,
-    "FormView": FormView,
-    "EditVendor": EditVendor,
-    "VendorDetails": VendorDetails,
+    "UserProfile": UserProfile,
 }
 
 export const pagesConfig = {

@@ -147,7 +147,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'נותני שירות', href: 'ServiceProviders' },
         { name: 'חוזי ספקים', href: 'VendorContracts' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
-        { name: 'הפרופיל שלי', href: 'MyVendorProfile' },
+        { name: 'הפרופיל שלי', href: 'UserProfile' },
         { name: 'מדריך לספק', href: 'VendorGuide' },
       ],
     },

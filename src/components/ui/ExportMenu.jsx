@@ -175,6 +175,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
       border-bottom: 1px solid ${BRAND_COLORS.border};
       font-size: 14px;
       color: ${BRAND_COLORS.text};
+      text-align: right;
     }
     tr:nth-child(even) { background: #fafafa; }
     tr:hover { background: #f0f0f0; }
@@ -324,6 +325,7 @@ export const printData = (data, columns, options = {}) => {
     td { 
       padding: 10px 16px; 
       border-bottom: 1px solid ${BRAND_COLORS.border}; 
+      text-align: right;
     }
 
     tr:nth-child(even) { background: #f8fafc; }

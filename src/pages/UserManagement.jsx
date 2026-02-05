@@ -22,8 +22,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Users, UserPlus, Search, Mail, Shield, ShieldCheck, Key } from 'lucide-react';
+import { Users, UserPlus, Search, Mail, Shield, ShieldCheck, Key, Pencil } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
+import ExportMenu from '@/components/ui/ExportMenu';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { cn } from '@/lib/utils';
@@ -44,8 +45,10 @@ export default function UserManagementPage() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('user');
+  const [editUser, setEditUser] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { logCreate } = useAuditLog();
+  const { logCreate, logUpdate } = useAuditLog();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -70,11 +73,41 @@ export default function UserManagementPage() {
     },
     onError: (error) => {
       console.error('Invite error:', error);
-      // Try to extract more specific error message from the response if available
       const errorMsg = error.response?.data?.message || error.message || 'שגיאה לא ידועה';
       showToast.error('שגיאה בשליחת ההזמנה: ' + errorMsg);
     },
   });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
+    onSuccess: (_, variables) => {
+      logUpdate(
+        'User',
+        variables.id,
+        'עדכון פרטי משתמש',
+        `עודכן משתמש: ${variables.data.full_name}, תפקיד: ${variables.data.role}`
+      );
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setEditDialogOpen(false);
+      setEditUser(null);
+      showToast.success('המשתמש עודכן בהצלחה');
+    },
+    onError: (error) => {
+      console.error('Update error:', error);
+      showToast.error('שגיאה בעדכון המשתמש');
+    },
+  });
+
+  const handleUpdateUser = () => {
+    if (!editUser) return;
+    updateMutation.mutate({
+      id: editUser.id,
+      data: {
+        full_name: editUser.full_name,
+        role: editUser.role,
+      },
+    });
+  };
 
   const filteredUsers = users.filter(
     (user) =>
@@ -112,10 +145,22 @@ export default function UserManagementPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-[#111827]">ניהול משתמשים</h1>
-            <p className="text-[#6b7280] text-sm">ניהול והזמנת משתמשים למערכת</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-[#111827]">ניהול משתמשים</h1>
+          <p className="text-[#6b7280] text-sm">ניהול והזמנת משתמשים למערכת</p>
+        </div>
+        <div className="flex gap-2">
+          <ExportMenu 
+            data={users}
+            columns={[
+              { header: 'שם מלא', accessor: 'full_name' },
+              { header: 'אימייל', accessor: 'email' },
+              { header: 'תפקיד', accessor: 'role' },
+              { header: 'תאריך הצטרפות', accessor: 'created_date' }
+            ]}
+            filename="users_list"
+            title="רשימת משתמשים"
+          />
           <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2">
@@ -160,7 +205,58 @@ export default function UserManagementPage() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>עריכת משתמש</DialogTitle>
+            </DialogHeader>
+            {editUser && (
+              <div className="space-y-4 pt-4">
+                <div>
+                  <Label>שם מלא</Label>
+                  <Input
+                    value={editUser.full_name || ''}
+                    onChange={(e) => setEditUser({ ...editUser, full_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>אימייל</Label>
+                  <Input
+                    value={editUser.email}
+                    disabled
+                    className="bg-gray-50"
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <Label>תפקיד</Label>
+                  <Select 
+                    value={editUser.role} 
+                    onValueChange={(val) => setEditUser({ ...editUser, role: val })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">משתמש</SelectItem>
+                      <SelectItem value="admin">מנהל</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  className="w-full bg-[#3b82f6] hover:bg-[#2563eb]"
+                  onClick={handleUpdateUser}
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? 'שומר...' : 'שמור שינויים'}
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
@@ -253,12 +349,26 @@ export default function UserManagementPage() {
                     <Badge className={cn('text-xs', roleBadgeColors[user.role])}>
                       {roleLabels[user.role] || user.role}
                     </Badge>
-                    <Link to={createPageUrl('RoleManagement')}>
-                      <Button variant="ghost" size="sm" className="gap-1 text-xs">
-                        <Key className="w-3 h-3" />
-                        הרשאות
+                    <div className="flex gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="gap-1 text-xs hover:bg-blue-50 text-blue-600"
+                        onClick={() => {
+                          setEditUser(user);
+                          setEditDialogOpen(true);
+                        }}
+                      >
+                        <Pencil className="w-3 h-3" />
+                        ערוך
                       </Button>
-                    </Link>
+                      <Link to={createPageUrl('RoleManagement')}>
+                        <Button variant="ghost" size="sm" className="gap-1 text-xs">
+                          <Key className="w-3 h-3" />
+                          הרשאות
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
