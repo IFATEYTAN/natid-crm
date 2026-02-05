@@ -27,7 +27,7 @@ import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { cn } from '@/lib/utils';
-import { useAuditLog } from '@/hooks/useAuditLog';
+import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const roleLabels = {
   admin: 'מנהל',

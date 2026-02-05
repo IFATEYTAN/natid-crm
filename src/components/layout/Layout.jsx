@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { AuthProvider } from '@/components/AuthProvider';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 // Lazy-load AccessibilityWidget
 const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
@@ -31,6 +32,7 @@ const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaste
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { canAccessPage } = usePermissions();
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const mainContentRef = useRef(null);
@@ -337,6 +339,7 @@ export default function Layout({ children, currentPageName }) {
                 {expandedGroups[group.title] && (
                   <div className="space-y-1 mt-1">
                     {group.items.map((item) => {
+                      if (!canAccessPage(item.href)) return null;
                       const isActive = currentPageName === item.href;
                       return (
                         <Link
