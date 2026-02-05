@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useQuery } from '@tanstack/react-query';
+import { useCalls } from '@/components/hooks/useCalls';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,12 +49,7 @@ export default function MyQueuePage() {
     isLoading,
     refetch,
     isFetching,
-  } = useQuery({
-    queryKey: ['myCalls', currentUser?.email],
-    queryFn: () => base44.entities.Call.list('-created_date', 200),
-    enabled: !!currentUser?.email,
-    refetchInterval: 30000,
-  });
+  } = useCalls();
 
   // Filter calls assigned to current user (by created_by or assigned operator)
   const myCalls = useMemo(() => {
