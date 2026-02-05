@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import CollapsibleCard from '@/components/dashboard/CollapsibleCard';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
@@ -316,29 +317,28 @@ export default function Dashboard() {
           </Suspense>
 
           {/* קריאות במעקב - רק קריאות בטיפול פעיל */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>קריאות במעקב</CardTitle>
+          <CollapsibleCard
+            title="קריאות במעקב"
+            headerRight={
               <Link to={createPageUrl('Calls')}>
                 <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
                   לכל הקריאות <ChevronLeft className="w-4 h-4 mr-1" />
                 </Button>
               </Link>
-            </CardHeader>
-            <CardContent>
-              <Suspense fallback={<Skeleton className="h-40" />}>
-                <DataTableLazy
-                  columns={columns}
-                  data={openCalls}
-                  isLoading={isLoading}
-                  onRowClick={(row) =>
-                    (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
-                  }
-                  emptyMessage="אין קריאות בטיפול כרגע"
-                />
-              </Suspense>
-            </CardContent>
-          </Card>
+            }
+          >
+            <Suspense fallback={<Skeleton className="h-40" />}>
+              <DataTableLazy
+                columns={columns}
+                data={openCalls}
+                isLoading={isLoading}
+                onRowClick={(row) =>
+                  (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
+                }
+                emptyMessage="אין קריאות בטיפול כרגע"
+              />
+            </Suspense>
+          </CollapsibleCard>
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
