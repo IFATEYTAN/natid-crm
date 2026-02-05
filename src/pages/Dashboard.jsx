@@ -61,6 +61,9 @@ const DashboardOperatorTab = lazy(() => import('@/components/dashboard/Dashboard
 const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
 const SmartAlertsTab = lazy(() => import('@/components/dashboard/SmartAlertsTab'));
 const VendorMapWidget = lazy(() => import('@/components/dashboard/VendorMapWidget'));
+const EscalationPredictionWidget = lazy(() => import('@/components/ai/EscalationPredictionWidget'));
+const RecurringPatternsWidget = lazy(() => import('@/components/ai/RecurringPatternsWidget'));
+const ProactiveRecommendationsWidget = lazy(() => import('@/components/ai/ProactiveRecommendationsWidget'));
 
 
 export default function Dashboard() {
@@ -401,11 +404,26 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <PermissionGuard category="reports" permission="performance">
-            <Suspense fallback={<Skeleton className="h-[120px]" />}>
-              <AIInsightsWidget />
+          {/* AI Analysis Section */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Suspense fallback={<Skeleton className="h-[200px]" />}>
+              <EscalationPredictionWidget />
             </Suspense>
-          </PermissionGuard>
+            <PermissionGuard category="reports" permission="performance">
+              <Suspense fallback={<Skeleton className="h-[200px]" />}>
+                <AIInsightsWidget />
+              </Suspense>
+            </PermissionGuard>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <RecurringPatternsWidget />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="h-[300px]" />}>
+              <ProactiveRecommendationsWidget />
+            </Suspense>
+          </div>
 
           <Suspense fallback={<Skeleton className="h-64" />}>
             <SmartAlertsTab currentUser={currentUser} />
