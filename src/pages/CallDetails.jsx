@@ -43,6 +43,8 @@ const CallFeedbackTab = React.lazy(() => import('@/components/call-details/CallF
 const CallFilesTab = React.lazy(() => import('@/components/call-details/CallFilesTab'));
 const VendorLiveMap = React.lazy(() => import('@/components/maps/VendorLiveMap'));
 const CallSummaryEditor = React.lazy(() => import('@/components/call/CallSummaryEditor'));
+const QuickCallSummary = React.lazy(() => import('@/components/ai/QuickCallSummary'));
+const VendorRecommendation = React.lazy(() => import('@/components/ai/VendorRecommendation'));
 
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();
@@ -259,20 +261,28 @@ export default function CallDetailsPage() {
                         <DialogTitle>שיבוץ ספק לקריאה</DialogTitle>
                         <DialogDescription>בחר ספק זמין לטיפול בקריאה</DialogDescription>
                       </DialogHeader>
-                      <div className="py-4">
-                        <Label>ספק</Label>
-                        <Select value={selectedVendor} onValueChange={setSelectedVendor}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="בחר ספק" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableVendors.map((vendor) => (
-                              <SelectItem key={vendor.id} value={vendor.id}>
-                                {vendor.vendor_name} - {vendor.coverage_cities}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="py-4 space-y-4">
+                        <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                          <VendorRecommendation
+                            callDetails={call}
+                            onSelectVendor={(vendor) => setSelectedVendor(vendor.id)}
+                          />
+                        </Suspense>
+                        <div>
+                          <Label>או בחר ספק ידנית</Label>
+                          <Select value={selectedVendor} onValueChange={setSelectedVendor}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="בחר ספק" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableVendors.map((vendor) => (
+                                <SelectItem key={vendor.id} value={vendor.id}>
+                                  {vendor.vendor_name} - {vendor.coverage_cities}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setShowAssignDialog(false)}>
@@ -327,16 +337,21 @@ export default function CallDetailsPage() {
           </TabsList>
 
           <TabsContent value="details">
-            <Suspense fallback={<div className="h-40 w-full bg-gray-50" />}>
-              <CallDetailsInfoTab
-                call={call}
-                callId={callId}
-                photos={photos}
-                showSignature={showSignature}
-                setShowSignature={setShowSignature}
-                onSignatureSaved={handleSignatureSaved}
-              />
-            </Suspense>
+            <div className="space-y-4">
+              <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                <QuickCallSummary callId={callId} />
+              </Suspense>
+              <Suspense fallback={<div className="h-40 w-full bg-gray-50" />}>
+                <CallDetailsInfoTab
+                  call={call}
+                  callId={callId}
+                  photos={photos}
+                  showSignature={showSignature}
+                  setShowSignature={setShowSignature}
+                  onSignatureSaved={handleSignatureSaved}
+                />
+              </Suspense>
+            </div>
           </TabsContent>
 
           <TabsContent value="map">
