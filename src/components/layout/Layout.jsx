@@ -11,7 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { AuthProvider } from '@/components/AuthProvider';
 // Lazy-load AccessibilityWidget
 const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
-const VendorAssistant = lazy(() => import('@/components/vendor/VendorAssistant'));
+const NatiAssistant = lazy(() => import('@/components/NatiAssistant'));
 // Lazy-load PWA and status widgets to reduce main bundle size
 const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'));
 const OfflineIndicator = lazy(() => import('@/components/pwa/OfflineIndicator'));
@@ -34,7 +34,6 @@ export default function Layout({ children, currentPageName }) {
   const [currentUser, setCurrentUser] = useState(null);
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const navigate = useNavigate();
 
   // Fetch Notifications
@@ -375,7 +374,7 @@ export default function Layout({ children, currentPageName }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-2 hidden md:flex"
+                  className="gap-2"
                   onClick={() => navigate(-1)}
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -496,12 +495,10 @@ export default function Layout({ children, currentPageName }) {
             <UpdatePrompt />
           </Suspense>
 
-          {/* Vendor Assistant (floating, vendor only) */}
-          {currentUser?.role === 'vendor' && (
-            <Suspense fallback={null}>
-              <VendorAssistant isVendor />
-            </Suspense>
-          )}
+          {/* Nati Assistant (floating) */}
+          <Suspense fallback={null}>
+            <NatiAssistant />
+          </Suspense>
 
           {/* Connection Status (bottom left) */}
           <div className="fixed bottom-4 left-4 z-40">
