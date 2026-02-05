@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
-import { useWorkQueue } from '@/features/queue/hooks/useQueue';
-import { useCalls } from '@/features/calls/hooks/useCalls';
+import { useWorkQueue } from '@/components/hooks/useWorkQueue';
+import { useCalls } from '@/components/hooks/useCalls';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import {
   ArrowRight,
