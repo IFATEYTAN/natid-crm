@@ -2,8 +2,8 @@ import React, { useState, Suspense, lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { useCalls } from '@/features/calls/hooks/useCalls';
-import { useVendors } from '@/features/vendors/hooks/useVendors';
+import { useCalls } from '@/components/hooks/useCalls';
+import { useVendors } from '@/components/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
 const StatCard = lazy(() => import('@/components/ui/StatCard'));
 import {
