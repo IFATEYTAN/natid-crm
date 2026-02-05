@@ -67,6 +67,7 @@ export default function Layout({ children, currentPageName }) {
   const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
 
   useEffect(() => {
+    document.title = 'NatID 360 Control'; // Set system name
     const fetchUser = async () => {
       try {
         const user = await base44.auth.me();
@@ -307,8 +308,9 @@ export default function Layout({ children, currentPageName }) {
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
                 alt="נתי"
-                className="h-12 w-auto object-contain"
+                className="h-10 w-auto object-contain"
               />
+              <span className="font-bold text-lg text-[#111827] hidden md:block">NatID 360 Control</span>
             </div>
             <Button
               variant="ghost"

@@ -188,8 +188,9 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-200">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            {currentUser ? `שלום, ${currentUser.full_name}` : 'לוח בקרה'}
+            {currentUser ? `שלום, ${currentUser.full_name}` : 'NatID 360 Control'}
           </h1>
+          <p className="text-[#6b7280] text-sm mb-1">ברוכים הבאים ל-NatID 360 Control</p>
           <div className="flex items-center gap-2 text-gray-500 mt-1">
             <Calendar className="w-4 h-4" />
             <p className="text-sm">{format(today, 'EEEE, d בMMMM yyyy', { locale: he })}</p>
