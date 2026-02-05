@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChevronLeft, Users, CheckCircle2 } from 'lucide-react';
 
-export default function WorkQueueOverview({ calls, isLoading }) {
+export default function WorkQueueOverview({ calls = [], isLoading }) {
   const { data: queueItems = [] } = useQuery({
     queryKey: ['dashboardQueue'],
     queryFn: () => base44.entities.WorkQueue.list(),
@@ -22,14 +22,25 @@ export default function WorkQueueOverview({ calls, isLoading }) {
     },
   });
 
-  const waitingInQueue = queueItems.filter((q) => q.queue_status === 'waiting_in_queue').length;
-  const assignedToAgents = queueItems.filter((q) => q.queue_status === 'assigned_to_agent').length;
-  const inProgress = queueItems.filter((q) => q.queue_status === 'in_progress').length;
+  // Derive stats from actual Call data so numbers stay in sync with the dashboard
+  const waitingInQueue = calls.filter(
+    (c) => c.call_status === 'waiting_treatment' || c.call_status === 'awaiting_assignment'
+  ).length;
+  const assignedToAgents = calls.filter(
+    (c) => c.call_status === 'assigning' || c.call_status === 'assigned'
+  ).length;
+  const inProgress = calls.filter(
+    (c) => c.call_status === 'vendor_enroute' || c.call_status === 'in_progress'
+  ).length;
 
-  const completed = queueItems.filter((q) => q.queue_status === 'completed' && q.time_to_complete);
+  const completedCalls = calls.filter(
+    (c) => c.call_status === 'completed' && c.time_to_completion
+  );
   const avgTime =
-    completed.length > 0
-      ? Math.round(completed.reduce((sum, q) => sum + q.time_to_complete, 0) / completed.length)
+    completedCalls.length > 0
+      ? Math.round(
+          completedCalls.reduce((sum, c) => sum + c.time_to_completion, 0) / completedCalls.length
+        )
       : 0;
 
   // Agent breakdown
