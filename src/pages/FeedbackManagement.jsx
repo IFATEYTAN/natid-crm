@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import ExportMenu from '@/components/ui/ExportMenu';
 import { Star, Loader2, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -26,6 +27,21 @@ export default function FeedbackManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">משובי לקוחות</h1>
+        <ExportMenu 
+          data={feedbacks || []} 
+          columns={[
+            { header: 'לקוח', accessor: 'customer_name' },
+            { header: 'טלפון', accessor: 'customer_phone' },
+            { header: 'קריאה', accessor: 'call_number' },
+            { header: 'דירוג', accessor: 'overall_rating' },
+            { header: 'ממליץ?', accessor: 'would_recommend' },
+            { header: 'משוב מילולי', accessor: 'feedback_text' },
+            { header: 'ספק', accessor: 'vendor_name' },
+            { header: 'תאריך', accessor: 'created_at' }
+          ]} 
+          filename="customer_feedback" 
+          title="דוח משובי לקוחות"
+        />
       </div>
 
       <div className="grid gap-4">

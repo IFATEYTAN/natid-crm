@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
+import ExportMenu from '@/components/ui/ExportMenu';
 import {
   Phone,
   Plus,
@@ -213,6 +214,12 @@ export default function CallsPage() {
           <p className="text-[#6B778C] text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
         <div className="flex items-center gap-3">
+          <ExportMenu 
+            data={filteredCalls} 
+            columns={columns} 
+            filename="calls_export" 
+            title="דוח קריאות שירות"
+          />
           <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
             <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן

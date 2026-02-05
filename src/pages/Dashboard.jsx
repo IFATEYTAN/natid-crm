@@ -53,6 +53,7 @@ const StatusDistributionChart = lazy(() =>
 );
 const WorkQueueOverview = lazy(() => import('@/components/dashboard/WorkQueueOverview'));
 const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
+const ExportMenu = lazy(() => import('@/components/ui/ExportMenu'));
 const AIInsightsWidget = lazy(() => import('@/components/ai/AIInsightsWidget'));
 const DashboardOperatorTab = lazy(() => import('@/components/dashboard/DashboardOperatorTab'));
 const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
@@ -426,8 +427,20 @@ export default function Dashboard() {
         <TabsContent value="cases" className="space-y-6 mt-6 focus-visible:outline-none">
           <Card>
             <CardHeader>
-              <CardTitle>ניהול קריאות שירות</CardTitle>
-              <CardDescription>צפייה וסינון כלל הקריאות במערכת</CardDescription>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>ניהול קריאות שירות</CardTitle>
+                  <CardDescription>צפייה וסינון כלל הקריאות במערכת</CardDescription>
+                </div>
+                <Suspense fallback={<Skeleton className="w-24 h-10" />}>
+                  <ExportMenu 
+                    data={filteredCalls} 
+                    columns={columns} 
+                    filename="dashboard_cases" 
+                    title="דוח קריאות - לוח בקרה"
+                  />
+                </Suspense>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4 mb-6">

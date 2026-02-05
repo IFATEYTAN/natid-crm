@@ -30,6 +30,7 @@ const OperationalEfficiencyReport = React.lazy(() => import('@/components/report
 const CustomerAnalysisReport = React.lazy(() => import('@/components/reports/CustomerAnalysisReport'));
 const VendorPerformanceReport = React.lazy(() => import('@/components/reports/VendorPerformanceReport'));
 
+import ExportMenu from '@/components/ui/ExportMenu';
 import {
   BarChart3,
   TrendingUp,
@@ -311,16 +312,21 @@ export default function ReportsPage() {
             </SelectContent>
           </Select>
           <PermissionGuard category="reports" permission="export">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => {
-                logExport('Reports', `ייצוא דוח - ${dateRange} ימים`);
-              }}
-            >
-              <Download className="w-4 h-4" />
-              ייצוא
-            </Button>
+            <ExportMenu 
+              data={filteredCalls}
+              columns={[
+                { header: 'מספר קריאה', accessor: 'call_number' },
+                { header: 'לקוח', accessor: 'customer_name' },
+                { header: 'טלפון', accessor: 'customer_phone' },
+                { header: 'מיקום', accessor: 'pickup_location_address' },
+                { header: 'סוג תקלה', accessor: 'issue_type' },
+                { header: 'סטטוס', accessor: 'call_status' },
+                { header: 'תאריך', accessor: 'created_date' },
+                { header: 'זמן טיפול (דק)', accessor: 'time_to_completion' }
+              ]}
+              filename={`reports_${dateRange}days`}
+              title={`דוח ביצועים - ${dateRange} ימים אחרונים`}
+            />
           </PermissionGuard>
         </div>
       </div>
