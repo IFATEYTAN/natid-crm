@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Mail, Shield, Save, Loader2 } from 'lucide-react';
+import { User, Mail, Shield, Save, Loader2, Camera, Upload } from 'lucide-react';
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
@@ -15,7 +15,9 @@ export default function UserProfilePage() {
     full_name: '',
     email: '',
     role: '',
+    profile_image: '',
   });
+  const [uploading, setUploading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -28,6 +30,7 @@ export default function UserProfilePage() {
           full_name: user.full_name || '',
           email: user.email || '',
           role: user.role || 'user',
+          profile_image: user.profile_image || '',
         });
       } catch (e) {
         console.error('Failed to fetch user:', e);
@@ -50,7 +53,32 @@ export default function UserProfilePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateMutation.mutate({ full_name: formData.full_name });
+    updateMutation.mutate({ 
+      full_name: formData.full_name,
+      profile_image: formData.profile_image
+    });
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast.error('הקובץ גדול מדי (מקסימום 5MB)');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setFormData(prev => ({ ...prev, profile_image: file_url }));
+      showToast.success('התמונה הועלתה בהצלחה');
+    } catch (error) {
+      console.error('Upload error:', error);
+      showToast.error('שגיאה בהעלאת התמונה');
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (!currentUser) {
@@ -74,7 +102,46 @@ export default function UserProfilePage() {
             <CardDescription>פרטי החשבון שלך במערכת</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Profile Image Section */}
+              <div className="flex flex-col items-center gap-4 py-4">
+                <div className="relative group">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
+                    {formData.profile_image ? (
+                      <img 
+                        src={formData.profile_image} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-2xl font-bold text-gray-400">
+                        {formData.full_name?.charAt(0) || '?'}
+                      </span>
+                    )}
+                    {uploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  <label 
+                    htmlFor="profile-upload" 
+                    className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full text-white cursor-pointer hover:bg-blue-700 transition-colors shadow-sm"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <input
+                      id="profile-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                  </label>
+                </div>
+                <p className="text-sm text-gray-500">לחץ על המצלמה להחלפת תמונה</p>
+              </div>
+
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <Label>שם מלא</Label>
