@@ -66,6 +66,13 @@ export default function Dashboard() {
 
   const today = new Date();
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'בוקר טוב';
+    if (hour >= 12 && hour < 18) return 'צהריים טובים';
+    return 'ערב טוב';
+  };
+
   const { data: workQueue = [] } = useQuery({
     queryKey: ['workQueue'],
     queryFn: () => base44.entities.WorkQueue.list(),
@@ -188,7 +195,7 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-200">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            {currentUser ? `שלום, ${currentUser.full_name}` : 'NatID 360 Control'}
+            {currentUser ? `${getGreeting()}, ${currentUser.full_name}` : 'NatID 360 Control'}
           </h1>
           <p className="text-[#6b7280] text-sm mb-1">ברוכים הבאים ל-NatID 360 Control</p>
           <div className="flex items-center gap-2 text-gray-500 mt-1">
