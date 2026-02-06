@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Check, ExternalLink, Trash2, AlertTriangle, Clock, AlertOctagon } from 'lucide-react';
+import { Bell, Check, ExternalLink, Trash2, AlertTriangle, Clock, AlertOctagon, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 
 export default function SmartAlertsTab({ currentUser }) {
   const queryClient = useQueryClient();
+  const [expanded, setExpanded] = React.useState(false);
 
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: ['smartAlerts', currentUser?.id],
@@ -73,24 +74,34 @@ export default function SmartAlertsTab({ currentUser }) {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 cursor-pointer" onClick={() => setExpanded(!expanded)}>
           <div>
             <CardTitle className="text-xl flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
               התראות חכמות וזיהוי חריגות
+              {alerts.length > 0 && (
+                <Badge className="bg-orange-100 text-orange-700 text-xs">{alerts.length}</Badge>
+              )}
             </CardTitle>
-            <CardDescription>
-              מערכת זיהוי פרואקטיבי של בעיות תפעוליות, חריגות SLA וביצועי ספקים
-            </CardDescription>
+            {expanded && (
+              <CardDescription>
+                מערכת זיהוי פרואקטיבי של בעיות תפעוליות, חריגות SLA וביצועי ספקים
+              </CardDescription>
+            )}
           </div>
-          {alerts.length > 0 && (
-            <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
-              <Check className="w-4 h-4 ml-2" />
-              סמן הכל כנקרא
+          <div className="flex items-center gap-2">
+            {expanded && alerts.length > 0 && (
+              <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleMarkAllRead(); }}>
+                <Check className="w-4 h-4 ml-2" />
+                סמן הכל כנקרא
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
-          )}
+          </div>
         </CardHeader>
-        <CardContent>
+        {expanded && <CardContent>
           {alerts.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-200">
               <Check className="w-12 h-12 mx-auto text-green-500 mb-3 opacity-20" />
@@ -141,7 +152,7 @@ export default function SmartAlertsTab({ currentUser }) {
               })}
             </div>
           )}
-        </CardContent>
+        </CardContent>}
       </Card>
     </div>
   );
