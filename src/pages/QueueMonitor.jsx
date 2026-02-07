@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
@@ -15,6 +15,8 @@ import {
   AlertCircle,
   CheckCircle2,
   MoreVertical,
+  CalendarDays,
+  ListChecks,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +39,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ShiftScheduleTab = lazy(() => import('@/components/queue/ShiftScheduleTab'));
 
 const statusOptions = [
   { value: 'all', label: 'הכל' },
@@ -234,7 +240,7 @@ export default function QueueMonitor() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">ניטור תורים</h1>
-          <p className="text-gray-500">ניהול ובקרה על תור המשימות בזמן אמת</p>
+          <p className="text-gray-500">ניהול ובקרה על תור המשימות ולו"ז משמרות</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={seedDemoData} isLoading={seeding}>
@@ -243,43 +249,64 @@ export default function QueueMonitor() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>רשימת המתנה</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="חיפוש לפי שם לקוח או מספר קריאה..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10"
-              />
-            </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="סטטוס" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <Tabs defaultValue="queue" className="w-full">
+        <TabsList>
+          <TabsTrigger value="queue" className="gap-1.5">
+            <ListChecks className="w-4 h-4" />
+            רשימת המתנה
+          </TabsTrigger>
+          <TabsTrigger value="shifts" className="gap-1.5">
+            <CalendarDays className="w-4 h-4" />
+            לו"ז משמרות
+          </TabsTrigger>
+        </TabsList>
 
-          <DataTable
-            columns={columns}
-            data={filteredItems}
-            isLoading={isLoading}
-            emptyMessage="אין קריאות בתור כרגע"
-          />
-        </CardContent>
-      </Card>
+        <TabsContent value="queue">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>רשימת המתנה</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="חיפוש לפי שם לקוח או מספר קריאה..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pr-10"
+                  />
+                </div>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="סטטוס" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <DataTable
+                columns={columns}
+                data={filteredItems}
+                isLoading={isLoading}
+                emptyMessage="אין קריאות בתור כרגע"
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="shifts">
+          <Suspense fallback={<Skeleton className="h-[400px] rounded-lg" />}>
+            <ShiftScheduleTab />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
