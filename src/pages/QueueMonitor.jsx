@@ -50,6 +50,8 @@ const statusOptions = [
   { value: 'assigned_to_agent', label: 'משובץ לנציג' },
   { value: 'in_progress', label: 'בטיפול' },
   { value: 'completed', label: 'הושלם' },
+  { value: 'transferred', label: 'הועבר' },
+  { value: 'rejected', label: 'נדחה' },
 ];
 
 export default function QueueMonitor() {
