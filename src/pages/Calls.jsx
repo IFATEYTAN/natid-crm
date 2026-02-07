@@ -94,6 +94,12 @@ export default function CallsPage() {
       'assigning',
       'vendor_enroute',
       'in_progress',
+      'vendor_arrived',
+      'future_service',
+      'in_followup',
+      'in_storage',
+      'continued_treatment',
+      'awaiting_payment',
     ].includes(c.call_status)
   );
   const completedCalls = filteredCalls.filter((c) =>
@@ -280,6 +286,12 @@ export default function CallsPage() {
                 <SelectItem value="assigning">בתהליך שיבוץ</SelectItem>
                 <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
                 <SelectItem value="in_progress">בטיפול</SelectItem>
+                <SelectItem value="vendor_arrived">נותן השירות הגיע</SelectItem>
+                <SelectItem value="future_service">שירות עתידי</SelectItem>
+                <SelectItem value="in_followup">במעקב</SelectItem>
+                <SelectItem value="in_storage">באחסנה</SelectItem>
+                <SelectItem value="continued_treatment">המשך טיפול</SelectItem>
+                <SelectItem value="awaiting_payment">המתנה לחיוב</SelectItem>
                 <SelectItem value="completed">הושלם</SelectItem>
                 <SelectItem value="cancelled">בוטל</SelectItem>
               </SelectContent>

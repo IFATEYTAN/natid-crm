@@ -492,6 +492,12 @@ export default function Dashboard() {
                     <SelectItem value="assigning">בשיוך</SelectItem>
                     <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
                     <SelectItem value="in_progress">בטיפול</SelectItem>
+                    <SelectItem value="vendor_arrived">נותן השירות הגיע</SelectItem>
+                    <SelectItem value="future_service">שירות עתידי</SelectItem>
+                    <SelectItem value="in_followup">במעקב</SelectItem>
+                    <SelectItem value="in_storage">באחסנה</SelectItem>
+                    <SelectItem value="continued_treatment">המשך טיפול</SelectItem>
+                    <SelectItem value="awaiting_payment">המתנה לחיוב</SelectItem>
                     <SelectItem value="completed">הושלם</SelectItem>
                     <SelectItem value="cancelled">בוטל</SelectItem>
                   </SelectContent>

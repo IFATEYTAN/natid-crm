@@ -16,6 +16,12 @@ const statusConfig = {
   assigning: { label: 'בשיוך', variant: 'primary' },
   vendor_enroute: { label: 'ספק בדרך', variant: 'primary' },
   in_progress: { label: 'בטיפול', variant: 'primary' },
+  vendor_arrived: { label: 'נותן השירות הגיע', variant: 'dark' },
+  future_service: { label: 'שירות עתידי', variant: 'light' },
+  in_followup: { label: 'במעקב', variant: 'primary' },
+  in_storage: { label: 'באחסנה', variant: 'light' },
+  continued_treatment: { label: 'המשך טיפול', variant: 'primary' },
+  awaiting_payment: { label: 'המתנה לחיוב', variant: 'danger' },
 
   // DARK (Black) for completed/success
   completed: { label: 'הושלם', variant: 'dark' },
