@@ -50,6 +50,8 @@ const CancelCallDialog = React.lazy(() => import('@/components/call-details/Canc
 const DepositSection = React.lazy(() => import('@/components/call-details/DepositSection'));
 const CallProductsSection = React.lazy(() => import('@/components/call-details/CallProductsSection'));
 const CallPricingSection = React.lazy(() => import('@/components/call-details/CallPricingSection'));
+const EligibilityCheckSection = React.lazy(() => import('@/components/call-details/EligibilityCheckSection'));
+const RemindersList = React.lazy(() => import('@/components/reminders/RemindersList'));
 
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();
@@ -338,6 +340,7 @@ export default function CallDetailsPage() {
           <TabsList>
             <TabsTrigger value="details">פרטים</TabsTrigger>
             <TabsTrigger value="finance">כלכלה</TabsTrigger>
+            <TabsTrigger value="reminders">תזכורות</TabsTrigger>
             <TabsTrigger value="map">מפה</TabsTrigger>
             <TabsTrigger value="chat">צ'אט</TabsTrigger>
             <TabsTrigger value="operatorNotes">הערות מוקדן</TabsTrigger>
@@ -387,6 +390,9 @@ export default function CallDetailsPage() {
           <TabsContent value="finance">
             <div className="space-y-4">
               <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                <EligibilityCheckSection call={call} callId={callId} currentUser={currentUser} />
+              </Suspense>
+              <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
                 <DepositSection call={call} callId={callId} currentUser={currentUser} />
               </Suspense>
               <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
@@ -396,6 +402,12 @@ export default function CallDetailsPage() {
                 <CallPricingSection call={call} callId={callId} />
               </Suspense>
             </div>
+          </TabsContent>
+
+          <TabsContent value="reminders">
+            <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+              <RemindersList callId={callId} call={call} currentUser={currentUser} />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="map">
