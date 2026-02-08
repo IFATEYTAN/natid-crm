@@ -149,6 +149,7 @@ function LayoutContent({ children, currentPageName }) {
       items: [
         { name: 'תעריפון תפעול', href: 'OperationalRates' },
         { name: 'קטלוג מוצרים', href: 'ProductCatalog' },
+        { name: 'תזכורות', href: 'Reminders' },
       ],
     },
     {

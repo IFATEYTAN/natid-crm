@@ -90,6 +90,7 @@ import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
 import OperationalRates from './pages/OperationalRates';
 import ProductCatalog from './pages/ProductCatalog';
+import Reminders from './pages/Reminders';
 import __Layout from './Layout.jsx';
 
 
@@ -137,6 +138,7 @@ export const PAGES = {
     "VendorTracking": VendorTracking,
     "OperationalRates": OperationalRates,
     "ProductCatalog": ProductCatalog,
+    "Reminders": Reminders,
 }
 
 export const pagesConfig = {
