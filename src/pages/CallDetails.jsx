@@ -175,9 +175,7 @@ export default function CallDetailsPage() {
 
   const handleAssignVendor = async () => {
     if (!selectedVendor || !canAssign) return;
-
     const vendor = vendors.find((v) => v.id === selectedVendor);
-
     await base44.entities.Call.update(callId, {
       assigned_vendor_id: selectedVendor,
       assigned_vendor_name: vendor?.vendor_name,
