@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
-import { useCall, useUpdateCall } from '@/features/calls/hooks/useCalls';
-import { useVendors } from '@/features/vendors/hooks/useVendors';
+import { useCalls } from '@/components/hooks/useCalls';
+import { useVendors } from '@/components/hooks/useVendors';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
-import { useAuditLog } from '@/hooks/useAuditLog';
+import { useAuditLog } from '@/components/hooks/useAuditLog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -63,14 +63,18 @@ export default function CallDetailsPage() {
 
   // Permission & Audit
   const { currentUser, hasPermission } = usePermissions();
-  const { logStatusChange, logAssign } = useAuditLog();
+  const { logAction } = useAuditLog();
 
   const canEdit = hasPermission('calls', 'edit');
   const canAssign = hasPermission('calls', 'assign');
 
-  const callQuery = useCall(callId);
+  const callQuery = useQuery({
+    queryKey: ['call', callId],
+    queryFn: () => base44.entities.Call.filter({ id: callId }),
+    enabled: !!callId,
+    refetchInterval: 15000,
+  });
   const vendorsQuery = useVendors();
-  const updateCall = useUpdateCall();
 
   const call = callQuery.data?.[0];
   const vendors = vendorsQuery.data || [];
@@ -134,8 +138,9 @@ export default function CallDetailsPage() {
       updates.closed_at = new Date().toISOString();
     }
 
-    updateCall.mutate({ id: callId, data: updates });
-    logStatusChange('Call', callId, call?.call_number, call?.call_status, newStatus);
+    await base44.entities.Call.update(callId, updates);
+    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    logAction('status_change', 'Call', callId, call?.call_number, `Status: ${call?.call_status} → ${newStatus}`, call?.call_status, newStatus);
 
     if (newStatus === 'completed') {
       try {
@@ -174,17 +179,15 @@ export default function CallDetailsPage() {
 
     const vendor = vendors.find((v) => v.id === selectedVendor);
 
-    updateCall.mutate({
-      id: callId,
-      data: {
-        assigned_vendor_id: selectedVendor,
-        assigned_vendor_name: vendor?.vendor_name,
-        assigned_at: new Date().toISOString(),
-        call_status: 'assigning',
-      },
+    await base44.entities.Call.update(callId, {
+      assigned_vendor_id: selectedVendor,
+      assigned_vendor_name: vendor?.vendor_name,
+      assigned_at: new Date().toISOString(),
+      call_status: 'assigning',
     });
+    queryClient.invalidateQueries({ queryKey: ['call', callId] });
 
-    logAssign('Call', callId, call?.call_number, vendor?.vendor_name);
+    logAction('assign', 'Call', callId, call?.call_number, `Assigned to ${vendor?.vendor_name}`);
 
     base44.entities.CallHistory.create({
       call_id: callId,
@@ -210,7 +213,7 @@ export default function CallDetailsPage() {
 
   const handleSaveOperatorNotes = () => {
     if (!canEdit) return;
-    updateCall.mutate({ id: callId, data: { operator_notes: operatorNotes } });
+    await base44.entities.Call.update(callId, { operator_notes: operatorNotes });
     toast.success('הערות נשמרו');
     queryClient.invalidateQueries({ queryKey: ['call', callId] });
   };
