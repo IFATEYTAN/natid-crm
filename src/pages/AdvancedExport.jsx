@@ -385,8 +385,8 @@ export default function AdvancedExport() {
   };
 
   const renderFieldSelector = (fieldDefinitions, selectedFields, setSelectedFields) => (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className="space-y-4" dir="rtl">
+      <div className="flex gap-2 justify-start">
         <Button
           variant="outline"
           size="sm"
@@ -399,7 +399,7 @@ export default function AdvancedExport() {
         </Button>
       </div>
 
-      <ScrollArea className="h-[300px] border rounded-lg p-4">
+      <ScrollArea className="h-[300px] border rounded-lg p-4" dir="rtl">
         {Object.entries(fieldDefinitions).map(([groupKey, group]) => {
           const groupFieldKeys = Object.keys(group.fields);
           const allSelected = groupFieldKeys.every((f) => selectedFields.includes(f));
@@ -408,7 +408,7 @@ export default function AdvancedExport() {
           return (
             <div key={groupKey} className="mb-4">
               <div
-                className="flex items-center gap-2 mb-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                className="flex items-center gap-2 mb-2 cursor-pointer hover:bg-gray-50 p-1 rounded flex-row-reverse justify-end"
                 onClick={() => toggleFieldGroup(group.fields, selectedFields, setSelectedFields)}
               >
                 <Checkbox
@@ -425,7 +425,7 @@ export default function AdvancedExport() {
                 {Object.entries(group.fields).map(([fieldKey, fieldLabel]) => (
                   <label
                     key={fieldKey}
-                    className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded"
+                    className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded flex-row-reverse justify-end"
                   >
                     <Checkbox
                       checked={selectedFields.includes(fieldKey)}
@@ -442,7 +442,7 @@ export default function AdvancedExport() {
         })}
       </ScrollArea>
 
-      <div className="text-sm text-gray-500">נבחרו {selectedFields.length} שדות</div>
+      <div className="text-sm text-gray-500 text-right">נבחרו {selectedFields.length} שדות</div>
     </div>
   );
 
@@ -454,24 +454,61 @@ export default function AdvancedExport() {
           <p className="text-[#6b7280]">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="calls" className="gap-2">
+            <TabsTrigger value="calls" className="gap-2 flex-row-reverse">
               <Phone className="w-4 h-4" />
               קריאות
             </TabsTrigger>
-            <TabsTrigger value="customers" className="gap-2">
+            <TabsTrigger value="customers" className="gap-2 flex-row-reverse">
               <Users className="w-4 h-4" />
               לקוחות
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="calls" className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" dir="rtl">
+              {/* Status Filter - first on right */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2 flex-row-reverse justify-end">
+                    <Filter className="w-4 h-4" />
+                    סינון לפי סטטוס
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select value={callsStatus} onValueChange={setCallsStatus} dir="rtl">
+                    <SelectTrigger className="text-right">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {callStatusOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="mt-4 p-3 bg-[#eff6ff] rounded-[8px] border border-[#bfdbfe]">
+                    {callsLoading ? (
+                      <div className="flex items-center gap-2 text-sm text-[#3b82f6] flex-row-reverse justify-end">
+                        <InlineLoader className="text-[#3b82f6]" />
+                        <span>טוען נתונים...</span>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[#1e40af] flex items-center gap-2 flex-row-reverse justify-end">
+                        <CheckCircle className="w-4 h-4" />
+                        <strong>{calls.length}</strong> קריאות נמצאו בטווח שנבחר
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Date Range */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="text-base flex items-center gap-2 flex-row-reverse justify-end">
                     <Calendar className="w-4 h-4" />
                     טווח תאריכים
                   </CardTitle>
@@ -485,6 +522,7 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCallsDateRange({ ...callsDateRange, start: e.target.value })
                       }
+                      className="text-right"
                     />
                   </div>
                   <div>
@@ -495,44 +533,8 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCallsDateRange({ ...callsDateRange, end: e.target.value })
                       }
+                      className="text-right"
                     />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Status Filter */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    סינון לפי סטטוס
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={callsStatus} onValueChange={setCallsStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {callStatusOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="mt-4 p-3 bg-[#eff6ff] rounded-[8px] border border-[#bfdbfe]">
-                    {callsLoading ? (
-                      <div className="flex items-center gap-2 text-sm text-[#3b82f6]">
-                        <InlineLoader className="text-[#3b82f6]" />
-                        <span>טוען נתונים...</span>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-[#1e40af] flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4" />
-                        <strong>{calls.length}</strong> קריאות נמצאו בטווח שנבחר
-                      </p>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -541,11 +543,11 @@ export default function AdvancedExport() {
             {/* Field Selection */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-base flex items-center gap-2 flex-row-reverse justify-end">
                   <CheckSquare className="w-4 h-4" />
                   בחירת שדות לייצוא
                 </CardTitle>
-                <CardDescription>בחר את השדות שברצונך לכלול בקובץ המיוצא</CardDescription>
+                <CardDescription className="text-right">בחר את השדות שברצונך לכלול בקובץ המיוצא</CardDescription>
               </CardHeader>
               <CardContent>
                 {renderFieldSelector(callFields, selectedCallFields, setSelectedCallFields)}
@@ -554,11 +556,48 @@ export default function AdvancedExport() {
           </TabsContent>
 
           <TabsContent value="customers" className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" dir="rtl">
+              {/* Status Filter - first on right */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2 flex-row-reverse justify-end">
+                    <Filter className="w-4 h-4" />
+                    סינון לפי סטטוס
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select value={customersStatus} onValueChange={setCustomersStatus} dir="rtl">
+                    <SelectTrigger className="text-right">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customerStatusOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="mt-4 p-3 bg-[#eff6ff] rounded-[8px] border border-[#bfdbfe]">
+                    {customersLoading ? (
+                      <div className="flex items-center gap-2 text-sm text-[#3b82f6] flex-row-reverse justify-end">
+                        <InlineLoader className="text-[#3b82f6]" />
+                        <span>טוען נתונים...</span>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-[#1e40af] flex items-center gap-2 flex-row-reverse justify-end">
+                        <CheckCircle className="w-4 h-4" />
+                        <strong>{customers.length}</strong> לקוחות נמצאו בטווח שנבחר
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Date Range */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="text-base flex items-center gap-2 flex-row-reverse justify-end">
                     <Calendar className="w-4 h-4" />
                     טווח תאריכים
                   </CardTitle>
@@ -572,6 +611,7 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCustomersDateRange({ ...customersDateRange, start: e.target.value })
                       }
+                      className="text-right"
                     />
                   </div>
                   <div>
@@ -582,44 +622,8 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCustomersDateRange({ ...customersDateRange, end: e.target.value })
                       }
+                      className="text-right"
                     />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Status Filter */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    סינון לפי סטטוס
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select value={customersStatus} onValueChange={setCustomersStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {customerStatusOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="mt-4 p-3 bg-[#eff6ff] rounded-[8px] border border-[#bfdbfe]">
-                    {customersLoading ? (
-                      <div className="flex items-center gap-2 text-sm text-[#3b82f6]">
-                        <InlineLoader className="text-[#3b82f6]" />
-                        <span>טוען נתונים...</span>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-[#1e40af] flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4" />
-                        <strong>{customers.length}</strong> לקוחות נמצאו בטווח שנבחר
-                      </p>
-                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -628,11 +632,11 @@ export default function AdvancedExport() {
             {/* Field Selection */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="text-base flex items-center gap-2 flex-row-reverse justify-end">
                   <CheckSquare className="w-4 h-4" />
                   בחירת שדות לייצוא
                 </CardTitle>
-                <CardDescription>בחר את השדות שברצונך לכלול בקובץ המיוצא</CardDescription>
+                <CardDescription className="text-right">בחר את השדות שברצונך לכלול בקובץ המיוצא</CardDescription>
               </CardHeader>
               <CardContent>
                 {renderFieldSelector(
@@ -647,7 +651,7 @@ export default function AdvancedExport() {
 
         {/* Export Error */}
         {exportError && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800">
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 flex-row-reverse justify-end">
             <AlertCircle className="w-4 h-4" />
             {exportError}
           </div>
@@ -656,14 +660,14 @@ export default function AdvancedExport() {
         {/* Export Actions */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
+            <CardTitle className="text-base flex items-center gap-2 flex-row-reverse justify-end">
               <Download className="w-4 h-4" />
               ייצוא
             </CardTitle>
-            <CardDescription>בחר פורמט לייצוא הנתונים</CardDescription>
+            <CardDescription className="text-right">בחר פורמט לייצוא הנתונים</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3 justify-start">
+            <div className="flex flex-wrap gap-3 justify-end">
               <Button
                 onClick={() => handleExport('csv')}
                 disabled={isExporting}
