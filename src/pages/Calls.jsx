@@ -329,6 +329,7 @@ export default function CallsPage() {
               data={activeCalls}
               isLoading={isLoading}
               emptyMessage="אין קריאות פעילות"
+              rowColorField="call_status"
             />
           )}
           {activeTab === 'completed' && (
@@ -337,6 +338,7 @@ export default function CallsPage() {
               data={completedCalls}
               isLoading={isLoading}
               emptyMessage="אין קריאות שהושלמו"
+              rowColorField="call_status"
             />
           )}
           {activeTab === 'all' && (
@@ -345,6 +347,7 @@ export default function CallsPage() {
               data={filteredCalls}
               isLoading={isLoading}
               emptyMessage="אין קריאות להצגה"
+              rowColorField="call_status"
             />
           )}
         </CardContent>
