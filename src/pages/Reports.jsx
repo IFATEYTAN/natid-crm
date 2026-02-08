@@ -31,6 +31,9 @@ const VendorPerformanceChart = React.lazy(() =>
 const OperationalEfficiencyReport = React.lazy(() => import('@/components/reports/OperationalEfficiencyReport.jsx'));
 const CustomerAnalysisReport = React.lazy(() => import('@/components/reports/CustomerAnalysisReport.jsx'));
 const VendorPerformanceReport = React.lazy(() => import('@/components/reports/VendorPerformanceReport.jsx'));
+const CompanyReport = React.lazy(() => import('@/components/reports/CompanyReport'));
+const FinancialReport = React.lazy(() => import('@/components/reports/FinancialReport'));
+const UsageReport = React.lazy(() => import('@/components/reports/UsageReport'));
 
 import ExportMenu from '@/components/ui/ExportMenu';
 import {
@@ -482,10 +485,13 @@ export default function ReportsPage() {
       
       {/* Advanced Reports Tabs */}
       <Tabs defaultValue="operational" className="mt-8">
-        <TabsList className="w-full justify-start bg-white p-1 border border-[#e5e7eb] rounded-lg">
-          <TabsTrigger value="operational" className="flex-1">יעילות תפעולית</TabsTrigger>
-          <TabsTrigger value="vendors" className="flex-1">ביצועי ספקים</TabsTrigger>
-          <TabsTrigger value="customers" className="flex-1">ניתוח לקוחות</TabsTrigger>
+        <TabsList className="w-full justify-start bg-white p-1 border border-[#e5e7eb] rounded-lg flex-wrap">
+          <TabsTrigger value="operational">יעילות תפעולית</TabsTrigger>
+          <TabsTrigger value="vendors">ביצועי ספקים</TabsTrigger>
+          <TabsTrigger value="customers">ניתוח לקוחות</TabsTrigger>
+          <TabsTrigger value="companies">מרכז חברות</TabsTrigger>
+          <TabsTrigger value="financial">פיננסי</TabsTrigger>
+          <TabsTrigger value="usage">שימושים</TabsTrigger>
         </TabsList>
         
         <TabsContent value="operational" className="mt-4">
@@ -503,6 +509,26 @@ export default function ReportsPage() {
         <TabsContent value="customers" className="mt-4">
           <Suspense fallback={<Skeleton className="h-[400px]" />}>
              <CustomerAnalysisReport calls={filteredCalls} />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="companies" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-[400px]" />}>
+            <CompanyReport calls={filteredCalls} />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="financial" className="mt-4">
+          <PermissionGuard category="reports" permission="financial" showMessage>
+            <Suspense fallback={<Skeleton className="h-[400px]" />}>
+              <FinancialReport calls={filteredCalls} />
+            </Suspense>
+          </PermissionGuard>
+        </TabsContent>
+
+        <TabsContent value="usage" className="mt-4">
+          <Suspense fallback={<Skeleton className="h-[400px]" />}>
+            <UsageReport calls={filteredCalls} />
           </Suspense>
         </TabsContent>
       </Tabs>
