@@ -417,8 +417,8 @@ export default function VendorGuide() {
         <div className="flex justify-center mb-4">
           <HeroTruck />
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">המדריך לספק</h1>
-        <p className="text-gray-500 text-lg">כל מה שצריך לדעת כדי לעבוד עם NatID CRM</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">המדריך לספק - NatID 360 Control</h1>
+        <p className="text-gray-500 text-lg">כל מה שצריך לדעת כדי לעבוד עם פורטל הספקים מקצה לקצה</p>
       </motion.div>
 
       {/* Quick Navigation */}
