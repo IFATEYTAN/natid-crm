@@ -1,19 +1,19 @@
 import React, { useMemo, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Repeat, MapPin, Car } from 'lucide-react';
+import { Users, Repeat, Car } from 'lucide-react';
 import { CustomerFrequencyChart, IssueTypesChart } from '@/components/reports/ReportsCharts';
 
 export default function CustomerAnalysisReport({ calls }) {
   // Stats calculation
   const stats = useMemo(() => {
-    const uniqueCustomers = new Set(calls.map(c => c.customer_phone)).size;
+    const uniqueCustomers = new Set(calls.map((c) => c.customer_phone)).size;
     const returningCustomers = calls.reduce((acc, call) => {
-        acc[call.customer_phone] = (acc[call.customer_phone] || 0) + 1;
-        return acc;
+      acc[call.customer_phone] = (acc[call.customer_phone] || 0) + 1;
+      return acc;
     }, {});
-    
-    const returningCount = Object.values(returningCustomers).filter(count => count > 1).length;
+
+    const returningCount = Object.values(returningCustomers).filter((count) => count > 1).length;
     const totalCalls = calls.length;
 
     return {
@@ -39,29 +39,29 @@ export default function CustomerAnalysisReport({ calls }) {
 
   // Service Types (using existing logic logic but passing to chart)
   const serviceTypesData = useMemo(() => {
-      const typeCounts = {};
-      const typeLabels = {
-        mechanical: 'תקלה מכנית',
-        stopped_driving: 'רכב לא נוסע',
-        flat_tire: "פנצ'ר",
-        accident: 'תאונה',
-        no_fuel: 'אין דלק',
-        dead_battery: 'מצבר',
-        locked_keys: 'מפתחות',
-        other: 'אחר',
-      };
-  
-      calls.forEach((call) => {
-        const type = call.issue_type || 'other';
-        typeCounts[type] = (typeCounts[type] || 0) + 1;
-      });
-  
-      return Object.entries(typeCounts)
-        .map(([type, count]) => ({
-          name: typeLabels[type] || type,
-          value: count,
-        }))
-        .sort((a, b) => b.value - a.value);
+    const typeCounts = {};
+    const typeLabels = {
+      mechanical: 'תקלה מכנית',
+      stopped_driving: 'רכב לא נוסע',
+      flat_tire: "פנצ'ר",
+      accident: 'תאונה',
+      no_fuel: 'אין דלק',
+      dead_battery: 'מצבר',
+      locked_keys: 'מפתחות',
+      other: 'אחר',
+    };
+
+    calls.forEach((call) => {
+      const type = call.issue_type || 'other';
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+
+    return Object.entries(typeCounts)
+      .map(([type, count]) => ({
+        name: typeLabels[type] || type,
+        value: count,
+      }))
+      .sort((a, b) => b.value - a.value);
   }, [calls]);
 
   return (
@@ -121,14 +121,14 @@ export default function CustomerAnalysisReport({ calls }) {
             </Suspense>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
-             <CardTitle className="text-lg">סוגי שירות נפוצים</CardTitle>
+            <CardTitle className="text-lg">סוגי שירות נפוצים</CardTitle>
           </CardHeader>
           <CardContent>
             <Suspense fallback={<Skeleton className="h-[300px]" />}>
-               <IssueTypesChart data={serviceTypesData} />
+              <IssueTypesChart data={serviceTypesData} />
             </Suspense>
           </CardContent>
         </Card>

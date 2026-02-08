@@ -1,14 +1,26 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Calendar as CalendarIcon, Plus, ChevronRight, ChevronLeft, User, Clock, Trash2, Edit2 } from 'lucide-react';
-import { format, addDays, startOfWeek, isSameDay, parseISO } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Calendar as CalendarIcon, Plus, ChevronRight, ChevronLeft, Trash2 } from 'lucide-react';
+import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 const shiftTypeLabels = {
@@ -80,12 +92,18 @@ export default function ShiftScheduleTab() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.AgentShift.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['agentShifts'] }); closeDialog(); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agentShifts'] });
+      closeDialog();
+    },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.AgentShift.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['agentShifts'] }); closeDialog(); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agentShifts'] });
+      closeDialog();
+    },
   });
 
   const deleteMutation = useMutation({
@@ -96,12 +114,29 @@ export default function ShiftScheduleTab() {
   const closeDialog = () => {
     setShowDialog(false);
     setEditingShift(null);
-    setFormData({ agent_name: '', agent_email: '', shift_date: '', shift_type: 'morning', start_time: '07:00', end_time: '15:00', status: 'scheduled', notes: '' });
+    setFormData({
+      agent_name: '',
+      agent_email: '',
+      shift_date: '',
+      shift_type: 'morning',
+      start_time: '07:00',
+      end_time: '15:00',
+      status: 'scheduled',
+      notes: '',
+    });
   };
 
   const openNewShift = (date) => {
     setEditingShift(null);
-    setFormData({ ...formData, shift_date: format(date, 'yyyy-MM-dd'), shift_type: 'morning', start_time: '07:00', end_time: '15:00', status: 'scheduled', notes: '' });
+    setFormData({
+      ...formData,
+      shift_date: format(date, 'yyyy-MM-dd'),
+      shift_type: 'morning',
+      start_time: '07:00',
+      end_time: '15:00',
+      status: 'scheduled',
+      notes: '',
+    });
     setShowDialog(true);
   };
 
@@ -136,13 +171,13 @@ export default function ShiftScheduleTab() {
 
   // Group shifts by agent for the weekly view
   const agentNames = useMemo(() => {
-    const names = new Set(shifts.map(s => s.agent_name));
+    const names = new Set(shifts.map((s) => s.agent_name));
     return [...names].sort();
   }, [shifts]);
 
   const getShiftsForAgentAndDay = (agentName, day) => {
     const dayStr = format(day, 'yyyy-MM-dd');
-    return shifts.filter(s => s.agent_name === agentName && s.shift_date === dayStr);
+    return shifts.filter((s) => s.agent_name === agentName && s.shift_date === dayStr);
   };
 
   return (
@@ -154,12 +189,17 @@ export default function ShiftScheduleTab() {
             <ChevronRight className="w-4 h-4" />
           </Button>
           <h3 className="font-semibold text-gray-800">
-            {format(weekDays[0], 'd MMM', { locale: he })} - {format(weekDays[6], 'd MMM yyyy', { locale: he })}
+            {format(weekDays[0], 'd MMM', { locale: he })} -{' '}
+            {format(weekDays[6], 'd MMM yyyy', { locale: he })}
           </h3>
           <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, 7))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))}
+          >
             היום
           </Button>
         </div>
@@ -175,11 +215,16 @@ export default function ShiftScheduleTab() {
           <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b">
-                <th className="p-3 text-right text-sm font-semibold text-gray-600 w-32 bg-gray-50 sticky right-0">נציג</th>
+                <th className="p-3 text-right text-sm font-semibold text-gray-600 w-32 bg-gray-50 sticky right-0">
+                  נציג
+                </th>
                 {weekDays.map((day, i) => {
                   const isToday = isSameDay(day, new Date());
                   return (
-                    <th key={i} className={`p-3 text-center text-sm font-semibold min-w-[120px] ${isToday ? 'bg-blue-50 text-blue-700' : 'text-gray-600 bg-gray-50'}`}>
+                    <th
+                      key={i}
+                      className={`p-3 text-center text-sm font-semibold min-w-[120px] ${isToday ? 'bg-blue-50 text-blue-700' : 'text-gray-600 bg-gray-50'}`}
+                    >
                       <div>{format(day, 'EEEE', { locale: he })}</div>
                       <div className="text-xs font-normal">{format(day, 'd/M')}</div>
                     </th>
@@ -220,9 +265,13 @@ export default function ShiftScheduleTab() {
                               className={`rounded-md p-1.5 border text-xs cursor-pointer hover:shadow-sm transition-shadow ${shiftTypeColors[shift.shift_type]}`}
                             >
                               <div className="flex items-center justify-between">
-                                <span className="font-medium">{shiftTypeLabels[shift.shift_type]}</span>
+                                <span className="font-medium">
+                                  {shiftTypeLabels[shift.shift_type]}
+                                </span>
                                 {shift.status !== 'scheduled' && (
-                                  <Badge className={`text-[9px] px-1 py-0 ${statusColors[shift.status]}`}>
+                                  <Badge
+                                    className={`text-[9px] px-1 py-0 ${statusColors[shift.status]}`}
+                                  >
                                     {statusLabels[shift.status]}
                                   </Badge>
                                 )}
@@ -267,15 +316,23 @@ export default function ShiftScheduleTab() {
                     if (v === '_custom') {
                       setFormData({ ...formData, agent_email: '', agent_name: '' });
                     } else {
-                      const user = users.find(u => u.email === v);
-                      setFormData({ ...formData, agent_email: v, agent_name: user?.full_name || v });
+                      const user = users.find((u) => u.email === v);
+                      setFormData({
+                        ...formData,
+                        agent_email: v,
+                        agent_name: user?.full_name || v,
+                      });
                     }
                   }}
                 >
-                  <SelectTrigger><SelectValue placeholder="בחר נציג" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר נציג" />
+                  </SelectTrigger>
                   <SelectContent>
                     {users.map((u) => (
-                      <SelectItem key={u.id} value={u.email}>{u.full_name || u.email}</SelectItem>
+                      <SelectItem key={u.id} value={u.email}>
+                        {u.full_name || u.email}
+                      </SelectItem>
                     ))}
                     <SelectItem value="_custom">הזן ידנית...</SelectItem>
                   </SelectContent>
@@ -309,7 +366,9 @@ export default function ShiftScheduleTab() {
             <div>
               <label className="text-sm text-gray-600 mb-1 block">סוג משמרת</label>
               <Select value={formData.shift_type} onValueChange={handleShiftTypeChange}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="morning">בוקר (07:00-15:00)</SelectItem>
                   <SelectItem value="afternoon">צהריים (15:00-23:00)</SelectItem>
@@ -322,19 +381,32 @@ export default function ShiftScheduleTab() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">שעת התחלה</label>
-                <Input type="time" value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: e.target.value })} />
+                <Input
+                  type="time"
+                  value={formData.start_time}
+                  onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                />
               </div>
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">שעת סיום</label>
-                <Input type="time" value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} />
+                <Input
+                  type="time"
+                  value={formData.end_time}
+                  onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                />
               </div>
             </div>
 
             {editingShift && (
               <div>
                 <label className="text-sm text-gray-600 mb-1 block">סטטוס</label>
-                <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={formData.status}
+                  onValueChange={(v) => setFormData({ ...formData, status: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="scheduled">מתוכנן</SelectItem>
                     <SelectItem value="active">פעיל</SelectItem>
@@ -348,20 +420,33 @@ export default function ShiftScheduleTab() {
 
             <div>
               <label className="text-sm text-gray-600 mb-1 block">הערות</label>
-              <Input value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="הערות (אופציונלי)" />
+              <Input
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="הערות (אופציונלי)"
+              />
             </div>
           </div>
 
           <DialogFooter className="flex justify-between">
             <div>
               {editingShift && (
-                <Button variant="destructive" size="sm" onClick={() => { deleteMutation.mutate(editingShift.id); closeDialog(); }}>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    deleteMutation.mutate(editingShift.id);
+                    closeDialog();
+                  }}
+                >
                   <Trash2 className="w-4 h-4 ml-1" /> מחק
                 </Button>
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={closeDialog}>ביטול</Button>
+              <Button variant="outline" onClick={closeDialog}>
+                ביטול
+              </Button>
               <Button onClick={handleSave} disabled={!formData.agent_name || !formData.shift_date}>
                 {editingShift ? 'עדכן' : 'שמור'}
               </Button>

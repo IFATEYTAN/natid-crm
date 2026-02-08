@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,15 +34,17 @@ export default function CallPricingSection({ call, callId }) {
     let total = 0;
 
     // 1. Base rate
-    const baseRate = rates.find(r => r.rate_type === 'base');
+    const baseRate = rates.find((r) => r.rate_type === 'base');
     if (baseRate) {
       items.push({ label: 'תעריף בסיס', amount: baseRate.amount, type: 'base' });
       total += baseRate.amount;
     }
 
     // 2. Time surcharge (morning/night)
-    const callHour = call?.created_date ? new Date(call.created_date).getHours() : new Date().getHours();
-    const timeRates = rates.filter(r => r.rate_type === 'time_surcharge');
+    const callHour = call?.created_date
+      ? new Date(call.created_date).getHours()
+      : new Date().getHours();
+    const timeRates = rates.filter((r) => r.rate_type === 'time_surcharge');
     for (const tr of timeRates) {
       const from = tr.applies_from_hour ?? 0;
       const to = tr.applies_to_hour ?? 24;
@@ -53,7 +55,7 @@ export default function CallPricingSection({ call, callId }) {
         matches = callHour >= from || callHour < to;
       }
       if (matches) {
-        const surcharge = tr.is_percentage ? (total * tr.amount / 100) : tr.amount;
+        const surcharge = tr.is_percentage ? (total * tr.amount) / 100 : tr.amount;
         items.push({ label: tr.condition_label || tr.name, amount: surcharge, type: 'surcharge' });
         total += surcharge;
       }
@@ -62,9 +64,11 @@ export default function CallPricingSection({ call, callId }) {
     // 3. Area surcharge
     const area = call?.pickup_location_area;
     if (area) {
-      const areaRates = rates.filter(r => r.rate_type === 'area_surcharge' && (r.applies_to_areas || []).includes(area));
+      const areaRates = rates.filter(
+        (r) => r.rate_type === 'area_surcharge' && (r.applies_to_areas || []).includes(area)
+      );
       for (const ar of areaRates) {
-        const surcharge = ar.is_percentage ? (total * ar.amount / 100) : ar.amount;
+        const surcharge = ar.is_percentage ? (total * ar.amount) / 100 : ar.amount;
         items.push({ label: ar.condition_label || ar.name, amount: surcharge, type: 'surcharge' });
         total += surcharge;
       }
@@ -72,19 +76,27 @@ export default function CallPricingSection({ call, callId }) {
 
     // 4. Toll road (kvish 6)
     if (call?.is_toll_road) {
-      const tollRates = rates.filter(r => r.rate_type === 'toll_road');
+      const tollRates = rates.filter((r) => r.rate_type === 'toll_road');
       for (const tr of tollRates) {
-        const surcharge = tr.is_percentage ? (total * tr.amount / 100) : tr.amount;
-        items.push({ label: tr.condition_label || 'תוספת כביש אגרה', amount: surcharge, type: 'surcharge' });
+        const surcharge = tr.is_percentage ? (total * tr.amount) / 100 : tr.amount;
+        items.push({
+          label: tr.condition_label || 'תוספת כביש אגרה',
+          amount: surcharge,
+          type: 'surcharge',
+        });
         total += surcharge;
       }
     }
 
     // 5. Vehicle type surcharge
     if (call?.vehicle_type) {
-      const vehicleRates = rates.filter(r => r.rate_type === 'vehicle_type' && (r.applies_to_vehicle_types || []).includes(call.vehicle_type));
+      const vehicleRates = rates.filter(
+        (r) =>
+          r.rate_type === 'vehicle_type' &&
+          (r.applies_to_vehicle_types || []).includes(call.vehicle_type)
+      );
       for (const vr of vehicleRates) {
-        const surcharge = vr.is_percentage ? (total * vr.amount / 100) : vr.amount;
+        const surcharge = vr.is_percentage ? (total * vr.amount) / 100 : vr.amount;
         items.push({ label: vr.condition_label || vr.name, amount: surcharge, type: 'surcharge' });
         total += surcharge;
       }
@@ -92,10 +104,16 @@ export default function CallPricingSection({ call, callId }) {
 
     // 6. KM charge
     if (call?.estimated_distance_km) {
-      const kmRate = rates.find(r => r.rate_type === 'service_type' && r.condition_key === 'per_km');
+      const kmRate = rates.find(
+        (r) => r.rate_type === 'service_type' && r.condition_key === 'per_km'
+      );
       if (kmRate) {
         const kmCharge = call.estimated_distance_km * kmRate.amount;
-        items.push({ label: `${call.estimated_distance_km} ק"מ × ₪${kmRate.amount}`, amount: kmCharge, type: 'km' });
+        items.push({
+          label: `${call.estimated_distance_km} ק"מ × ₪${kmRate.amount}`,
+          amount: kmCharge,
+          type: 'km',
+        });
         total += kmCharge;
       }
     }
@@ -103,13 +121,20 @@ export default function CallPricingSection({ call, callId }) {
     // 7. Products
     const productsTotal = callProducts.reduce((sum, cp) => sum + (cp.total_price || 0), 0);
     if (productsTotal > 0) {
-      items.push({ label: `מוצרים (${callProducts.length} פריטים)`, amount: productsTotal, type: 'products' });
+      items.push({
+        label: `מוצרים (${callProducts.length} פריטים)`,
+        amount: productsTotal,
+        type: 'products',
+      });
       total += productsTotal;
     }
 
     // 8. Deposits
-    const activeDeposits = deposits.filter(d => d.status === 'active' || d.status === 'charged');
-    const depositTotal = activeDeposits.reduce((sum, d) => sum + (d.charged_amount || d.amount || 0), 0);
+    const activeDeposits = deposits.filter((d) => d.status === 'active' || d.status === 'charged');
+    const depositTotal = activeDeposits.reduce(
+      (sum, d) => sum + (d.charged_amount || d.amount || 0),
+      0
+    );
 
     setBreakdown({ items, total: Math.round(total), productsTotal, depositTotal });
     setCalculating(false);
@@ -132,7 +157,13 @@ export default function CallPricingSection({ call, callId }) {
             <Calculator className="w-4 h-4 text-[#3b82f6]" />
             תעריפון תפעול
           </CardTitle>
-          <Button size="sm" variant="outline" onClick={calculatePricing} isLoading={calculating} className="gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={calculatePricing}
+            isLoading={calculating}
+            className="gap-1"
+          >
             <RefreshCw className="w-3 h-3" /> חשב תעריף
           </Button>
         </div>
@@ -149,10 +180,21 @@ export default function CallPricingSection({ call, callId }) {
             {/* Breakdown */}
             <div className="space-y-1.5">
               {breakdown.items.map((item, i) => (
-                <div key={i} className="flex justify-between items-center text-sm py-1 px-2 rounded hover:bg-gray-50">
+                <div
+                  key={i}
+                  className="flex justify-between items-center text-sm py-1 px-2 rounded hover:bg-gray-50"
+                >
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
-                      {item.type === 'base' ? 'בסיס' : item.type === 'surcharge' ? 'תוספת' : item.type === 'km' ? 'ק"מ' : item.type === 'products' ? 'מוצרים' : ''}
+                      {item.type === 'base'
+                        ? 'בסיס'
+                        : item.type === 'surcharge'
+                          ? 'תוספת'
+                          : item.type === 'km'
+                            ? 'ק"מ'
+                            : item.type === 'products'
+                              ? 'מוצרים'
+                              : ''}
                     </Badge>
                     <span>{item.label}</span>
                   </div>
@@ -165,7 +207,9 @@ export default function CallPricingSection({ call, callId }) {
             <div className="border-t pt-3">
               <div className="flex justify-between items-center">
                 <span className="font-bold">סה"כ לחיוב:</span>
-                <span className="font-bold text-2xl text-[#111827]">₪{breakdown.total.toLocaleString()}</span>
+                <span className="font-bold text-2xl text-[#111827]">
+                  ₪{breakdown.total.toLocaleString()}
+                </span>
               </div>
               {breakdown.depositTotal > 0 && (
                 <div className="flex justify-between items-center text-sm text-gray-500 mt-1">
@@ -176,7 +220,9 @@ export default function CallPricingSection({ call, callId }) {
               {breakdown.depositTotal > 0 && (
                 <div className="flex justify-between items-center text-sm font-medium mt-1">
                   <span>יתרה לגבייה:</span>
-                  <span className="text-green-700">₪{Math.max(0, breakdown.total - breakdown.depositTotal).toLocaleString()}</span>
+                  <span className="text-green-700">
+                    ₪{Math.max(0, breakdown.total - breakdown.depositTotal).toLocaleString()}
+                  </span>
                 </div>
               )}
             </div>
