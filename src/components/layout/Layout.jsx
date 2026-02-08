@@ -145,6 +145,13 @@ function LayoutContent({ children, currentPageName }) {
       ],
     },
     {
+      title: 'כלכלה ותשלומים',
+      items: [
+        { name: 'קטלוג מוצרים', href: 'ProductCatalog' },
+        { name: 'תעריפון תפעול', href: 'OperationalRates' },
+      ],
+    },
+    {
       title: 'ניהול ונתונים',
       items: [
         { name: 'דוחות', href: 'Reports' },
