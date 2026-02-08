@@ -12,6 +12,21 @@ import { cn } from '@/lib/utils';
 import { Inbox, ChevronRight } from 'lucide-react';
 import EmptyState from './EmptyState';
 
+// Status-based row coloring map
+const statusRowColors = {
+  future_service: 'bg-violet-50/70 hover:bg-violet-100/70',
+  waiting_treatment: 'bg-emerald-50/60 hover:bg-emerald-100/60',
+  awaiting_assignment: 'bg-emerald-50/60 hover:bg-emerald-100/60',
+  assigning: 'bg-yellow-50/60 hover:bg-yellow-100/60',
+  vendor_enroute: 'bg-yellow-50/60 hover:bg-yellow-100/60',
+  vendor_arrived: 'bg-amber-50/70 hover:bg-amber-100/70',
+  in_progress: 'bg-blue-50/50 hover:bg-blue-100/50',
+  in_followup: 'bg-cyan-50/50 hover:bg-cyan-100/50',
+  in_storage: 'bg-stone-50/60 hover:bg-stone-100/60',
+  continued_treatment: 'bg-teal-50/50 hover:bg-teal-100/50',
+  awaiting_payment: 'bg-rose-50/50 hover:bg-rose-100/50',
+};
+
 export default function DataTable({
   columns,
   data,
@@ -20,6 +35,7 @@ export default function DataTable({
   emptyMessage = 'לא נמצאו רשומות',
   emptyPreset,
   onEmptyAction,
+  rowColorField = 'call_status',
   // Mobile card configuration
   mobileCardConfig = {
     titleAccessor: null, // Which field to show as card title
@@ -110,14 +126,17 @@ export default function DataTable({
     <>
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
-        {data.map((row, rowIdx) => (
+        {data.map((row, rowIdx) => {
+          const mobileStatusColor = rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
+          return (
           <div
             key={row.id || rowIdx}
             onClick={() => onRowClick?.(row)}
             className={cn(
               'card-base card-body transition-all',
               onRowClick &&
-                'cursor-pointer hover:border-neutral-soft-300 hover:shadow-md active:bg-neutral-soft-50'
+                'cursor-pointer hover:border-neutral-soft-300 hover:shadow-md active:bg-neutral-soft-50',
+              mobileStatusColor
             )}
           >
             {/* Card Header - Title & Badge */}
@@ -171,7 +190,8 @@ export default function DataTable({
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Desktop Table View */}
@@ -187,11 +207,13 @@ export default function DataTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row, rowIdx) => (
+            {data.map((row, rowIdx) => {
+              const rowStatusColor = rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
+              return (
               <TableRow
                 key={row.id || rowIdx}
                 onClick={() => onRowClick?.(row)}
-                className={cn('table-row', onRowClick && 'cursor-pointer')}
+                className={cn('table-row', onRowClick && 'cursor-pointer', rowStatusColor)}
               >
                 {columns.map((col, colIdx) => (
                   <TableCell key={colIdx} className={cn('table-cell', col.cellClassName)}>
@@ -199,7 +221,8 @@ export default function DataTable({
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </div>
