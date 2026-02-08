@@ -35,7 +35,7 @@ export default function DataTable({
   emptyMessage = 'לא נמצאו רשומות',
   emptyPreset,
   onEmptyAction,
-  rowColorField = 'call_status',
+  rowColorField = null,
   // Mobile card configuration
   mobileCardConfig = {
     titleAccessor: null, // Which field to show as card title
