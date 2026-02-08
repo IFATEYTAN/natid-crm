@@ -333,6 +333,7 @@ export default function Dashboard() {
                   (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
                 }
                 emptyMessage="אין קריאות בטיפול כרגע"
+                rowColorField="call_status"
               />
             </Suspense>
           </CollapsibleCard>
@@ -538,6 +539,7 @@ export default function Dashboard() {
                     (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
                   }
                   emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
+                  rowColorField="call_status"
                 />
               </Suspense>
           </CollapsibleCard>
