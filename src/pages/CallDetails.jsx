@@ -31,7 +31,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { ArrowRight, Truck, AlertTriangle, Pencil, Save, Navigation } from 'lucide-react';
+import { ArrowRight, Truck, AlertTriangle, Pencil, Save, Navigation, Ban, CalendarClock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { statusLabels, statusColors } from '@/components/call-details/callDetailsConstants';
@@ -45,6 +45,9 @@ const VendorLiveMap = React.lazy(() => import('@/components/maps/VendorLiveMap')
 const CallSummaryEditor = React.lazy(() => import('@/components/call/CallSummaryEditor'));
 const QuickCallSummary = React.lazy(() => import('@/components/ai/QuickCallSummary'));
 const VendorRecommendation = React.lazy(() => import('@/components/ai/VendorRecommendation'));
+const FutureServiceSection = React.lazy(() => import('@/components/call-details/FutureServiceSection'));
+const QualityControlSection = React.lazy(() => import('@/components/call-details/QualityControlSection'));
+const CancelCallDialog = React.lazy(() => import('@/components/call-details/CancelCallDialog'));
 
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();
@@ -56,6 +59,7 @@ export default function CallDetailsPage() {
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Permission & Audit
   const { currentUser, hasPermission } = usePermissions();
@@ -302,7 +306,7 @@ export default function CallDetailsPage() {
 
                 <PermissionGuard category="calls" permission="edit">
                   <Select value={call?.call_status} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-44">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -313,6 +317,13 @@ export default function CallDetailsPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </PermissionGuard>
+
+                <PermissionGuard category="calls" permission="edit">
+                  <Button variant="outline" className="gap-2 text-red-600 border-red-300 hover:bg-red-50" onClick={() => setShowCancelDialog(true)}>
+                    <Ban className="w-4 h-4" />
+                    ביטול
+                  </Button>
                 </PermissionGuard>
               </>
             )}
@@ -341,6 +352,21 @@ export default function CallDetailsPage() {
               <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
                 <QuickCallSummary callId={callId} />
               </Suspense>
+
+              {/* Quality Control */}
+              {call?.call_status === 'waiting_treatment' && (
+                <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                  <QualityControlSection call={call} callId={callId} currentUser={currentUser} />
+                </Suspense>
+              )}
+
+              {/* Future Service */}
+              {call?.call_status !== 'completed' && call?.call_status !== 'cancelled' && (
+                <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                  <FutureServiceSection call={call} callId={callId} onStatusChanged={() => queryClient.invalidateQueries({ queryKey: ['call', callId] })} />
+                </Suspense>
+              )}
+
               <Suspense fallback={<div className="h-40 w-full bg-gray-50" />}>
                 <CallDetailsInfoTab
                   call={call}
@@ -458,6 +484,16 @@ export default function CallDetailsPage() {
             </TabsContent>
           )}
         </Tabs>
+        {/* Cancel Dialog */}
+        <Suspense fallback={null}>
+          <CancelCallDialog
+            open={showCancelDialog}
+            onOpenChange={setShowCancelDialog}
+            call={call}
+            callId={callId}
+            currentUser={currentUser}
+          />
+        </Suspense>
       </div>
     </QueryStateWrapper>
   );
