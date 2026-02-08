@@ -88,6 +88,8 @@ import VendorDetails from './pages/VendorDetails';
 import VendorGuide from './pages/VendorGuide';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
+import OperationalRates from './pages/OperationalRates';
+import ProductCatalog from './pages/ProductCatalog';
 import __Layout from './Layout.jsx';
 
 
@@ -133,6 +135,8 @@ export const PAGES = {
     "VendorGuide": VendorGuide,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
+    "OperationalRates": OperationalRates,
+    "ProductCatalog": ProductCatalog,
 }
 
 export const pagesConfig = {
