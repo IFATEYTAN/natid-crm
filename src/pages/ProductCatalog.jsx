@@ -117,7 +117,7 @@ export default function ProductCatalogPage() {
 
       <div className="relative">
         <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="חיפוש לפי שם או מק\"ט..." className="pr-10" />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={'חיפוש לפי שם או מק"ט...'} className="pr-10" />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
