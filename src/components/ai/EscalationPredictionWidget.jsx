@@ -5,13 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Sparkles, Loader2, RefreshCw, AlertTriangle, Eye, ChevronDown, ChevronUp, ShieldAlert } from 'lucide-react';
+import {
+  Loader2,
+  RefreshCw,
+  AlertTriangle,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  ShieldAlert,
+} from 'lucide-react';
 
 const riskColors = {
   low: 'bg-green-100 text-green-700 border-green-200',
   medium: 'bg-yellow-100 text-yellow-700 border-yellow-200',
   high: 'bg-orange-100 text-orange-700 border-orange-200',
-  critical: 'bg-red-100 text-red-700 border-red-200'
+  critical: 'bg-red-100 text-red-700 border-red-200',
 };
 
 const riskLabels = { low: 'נמוך', medium: 'בינוני', high: 'גבוה', critical: 'קריטי' };
@@ -20,7 +28,7 @@ const riskBorderColors = {
   low: 'border-l-green-400',
   medium: 'border-l-yellow-400',
   high: 'border-l-orange-500',
-  critical: 'border-l-red-500'
+  critical: 'border-l-red-500',
 };
 
 export default function EscalationPredictionWidget() {
@@ -30,15 +38,21 @@ export default function EscalationPredictionWidget() {
 
   const analyze = async () => {
     setLoading(true);
-    const response = await base44.functions.invoke('analyzeHistoricalPatterns', { analysis_type: 'escalation_prediction' });
+    const response = await base44.functions.invoke('analyzeHistoricalPatterns', {
+      analysis_type: 'escalation_prediction',
+    });
     setResult(response.data);
     setLoading(false);
   };
 
-  const highRiskCount = result?.at_risk_calls?.filter(c => c.risk_level === 'high' || c.risk_level === 'critical').length || 0;
+  const highRiskCount =
+    result?.at_risk_calls?.filter((c) => c.risk_level === 'high' || c.risk_level === 'critical')
+      .length || 0;
 
   return (
-    <Card className={`${highRiskCount > 0 && result ? 'border-red-200 bg-red-50/20' : 'border-orange-200'}`}>
+    <Card
+      className={`${highRiskCount > 0 && result ? 'border-red-200 bg-red-50/20' : 'border-orange-200'}`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
@@ -52,12 +66,27 @@ export default function EscalationPredictionWidget() {
           </CardTitle>
           <div className="flex gap-1">
             {result && (
-              <Button size="sm" variant="ghost" onClick={() => setExpanded(!expanded)} className="h-7 w-7 p-0">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setExpanded(!expanded)}
+                className="h-7 w-7 p-0"
+              >
                 {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             )}
-            <Button size="sm" variant="outline" onClick={analyze} disabled={loading} className="gap-1 h-7 text-xs">
-              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={analyze}
+              disabled={loading}
+              className="gap-1 h-7 text-xs"
+            >
+              {loading ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3 h-3" />
+              )}
               {result ? 'רענן' : 'סרוק'}
             </Button>
           </div>
@@ -87,33 +116,46 @@ export default function EscalationPredictionWidget() {
             </div>
           )}
 
-          {result.at_risk_calls?.filter(c => c.risk_level !== 'low').map((call, i) => (
-            <div key={i} className={`bg-white rounded-lg p-3 border border-l-4 ${riskBorderColors[call.risk_level]}`}>
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className={`w-4 h-4 ${call.risk_level === 'critical' ? 'text-red-500' : call.risk_level === 'high' ? 'text-orange-500' : 'text-yellow-500'}`} />
-                  <span className="font-medium text-sm">{call.call_number || `#${call.call_id?.slice(-6)}`}</span>
+          {result.at_risk_calls
+            ?.filter((c) => c.risk_level !== 'low')
+            .map((call, i) => (
+              <div
+                key={i}
+                className={`bg-white rounded-lg p-3 border border-l-4 ${riskBorderColors[call.risk_level]}`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle
+                      className={`w-4 h-4 ${call.risk_level === 'critical' ? 'text-red-500' : call.risk_level === 'high' ? 'text-orange-500' : 'text-yellow-500'}`}
+                    />
+                    <span className="font-medium text-sm">
+                      {call.call_number || `#${call.call_id?.slice(-6)}`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={`text-[10px] ${riskColors[call.risk_level]}`}>
+                      {riskLabels[call.risk_level]}
+                    </Badge>
+                    <Link to={createPageUrl(`CallDetails?id=${call.call_id}`)}>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                        <Eye className="w-3 h-3" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge className={`text-[10px] ${riskColors[call.risk_level]}`}>
-                    {riskLabels[call.risk_level]}
-                  </Badge>
-                  <Link to={createPageUrl(`CallDetails?id=${call.call_id}`)}>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                      <Eye className="w-3 h-3" />
-                    </Button>
-                  </Link>
-                </div>
+                <p className="text-xs text-gray-600 mb-1">{call.risk_reason}</p>
+                <p className="text-xs text-blue-600 font-medium">💡 {call.recommended_action}</p>
+                {call.estimated_escalation_minutes && (
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    זמן משוער להסלמה: ~{call.estimated_escalation_minutes} דק'
+                  </p>
+                )}
               </div>
-              <p className="text-xs text-gray-600 mb-1">{call.risk_reason}</p>
-              <p className="text-xs text-blue-600 font-medium">💡 {call.recommended_action}</p>
-              {call.estimated_escalation_minutes && (
-                <p className="text-[10px] text-gray-400 mt-1">זמן משוער להסלמה: ~{call.estimated_escalation_minutes} דק'</p>
-              )}
-            </div>
-          ))}
+            ))}
 
-          <p className="text-[11px] text-gray-400 text-center">{result.total_open} קריאות פתוחות נסרקו</p>
+          <p className="text-[11px] text-gray-400 text-center">
+            {result.total_open} קריאות פתוחות נסרקו
+          </p>
         </CardContent>
       )}
 

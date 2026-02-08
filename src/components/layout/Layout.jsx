@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Menu, X, Plus, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
+import { Menu, X, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -309,7 +309,9 @@ function LayoutContent({ children, currentPageName }) {
                 alt="נתי"
                 className="h-10 w-auto object-contain"
               />
-              <span className="font-bold text-lg text-[#111827] hidden md:block">NatID 360 Control</span>
+              <span className="font-bold text-lg text-[#111827] hidden md:block">
+                NatID 360 Control
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -396,12 +398,7 @@ function LayoutContent({ children, currentPageName }) {
                   alt="נתי"
                   className="h-8 w-auto object-contain lg:hidden"
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => navigate(-1)}
-                >
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
                   <ChevronRight className="w-4 h-4" />
                   חזרה
                 </Button>
@@ -444,7 +441,9 @@ function LayoutContent({ children, currentPageName }) {
                         >
                           <div className="flex justify-between items-start mb-1">
                             <span className="text-xs text-gray-400">
-                              {notification.created_date ? format(parseISO(notification.created_date), 'HH:mm') : ''}
+                              {notification.created_date
+                                ? format(parseISO(notification.created_date), 'HH:mm')
+                                : ''}
                             </span>
                             {!notification.is_read && (
                               <span className="w-2 h-2 bg-blue-500 rounded-full mt-1" />
