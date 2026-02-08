@@ -573,7 +573,31 @@ export default function VendorGuide() {
         </Section>
       </motion.div>
 
-      {/* Section 5: FAQ */}
+      {/* Section 5: Communication */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+      >
+        <Section title="תקשורת עם המוקד" icon={Phone}>
+          <div className="space-y-3">
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <h4 className="font-bold text-sm text-blue-800 mb-1">צ'אט בתוך הקריאה</h4>
+              <p className="text-sm text-blue-700">כל קריאה מכילה צ'אט ישיר עם המוקד. עדכוני סטטוס (יצאת לדרך, הגעת, סיימת) נשלחים אוטומטית. תוכל לשלוח הודעות, תמונות ומסמכים.</p>
+            </div>
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <h4 className="font-bold text-sm text-blue-800 mb-1">הערות ספק</h4>
+              <p className="text-sm text-blue-700">לשונית "הערות" בעמוד ניהול הקריאה - מיועדת לרישום מידע חשוב. ההערות נשמרות ונראות למוקד.</p>
+            </div>
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <h4 className="font-bold text-sm text-blue-800 mb-1">משוב לאחר סיום</h4>
+              <p className="text-sm text-blue-700">לאחר סיום קריאה, לשונית "משוב" מופיעה - ניתן לתת דירוג ומשוב על הקריאה מנקודת המבט שלך כספק.</p>
+            </div>
+          </div>
+        </Section>
+      </motion.div>
+
+      {/* Section 6: FAQ */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
