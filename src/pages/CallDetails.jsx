@@ -47,6 +47,9 @@ const VendorRecommendation = React.lazy(() => import('@/components/ai/VendorReco
 const FutureServiceSection = React.lazy(() => import('@/components/call-details/FutureServiceSection'));
 const QualityControlSection = React.lazy(() => import('@/components/call-details/QualityControlSection'));
 const CancelCallDialog = React.lazy(() => import('@/components/call-details/CancelCallDialog'));
+const DepositSection = React.lazy(() => import('@/components/call-details/DepositSection'));
+const CallProductsSection = React.lazy(() => import('@/components/call-details/CallProductsSection'));
+const CallPricingSection = React.lazy(() => import('@/components/call-details/CallPricingSection'));
 
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();
@@ -334,6 +337,7 @@ export default function CallDetailsPage() {
         <Tabs defaultValue="details" className="space-y-4" dir="rtl">
           <TabsList>
             <TabsTrigger value="details">פרטים</TabsTrigger>
+            <TabsTrigger value="finance">כלכלה</TabsTrigger>
             <TabsTrigger value="map">מפה</TabsTrigger>
             <TabsTrigger value="chat">צ'אט</TabsTrigger>
             <TabsTrigger value="operatorNotes">הערות מוקדן</TabsTrigger>
@@ -376,6 +380,20 @@ export default function CallDetailsPage() {
                   setShowSignature={setShowSignature}
                   onSignatureSaved={handleSignatureSaved}
                 />
+              </Suspense>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="finance">
+            <div className="space-y-4">
+              <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                <DepositSection call={call} callId={callId} currentUser={currentUser} />
+              </Suspense>
+              <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                <CallProductsSection call={call} callId={callId} currentUser={currentUser} />
+              </Suspense>
+              <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                <CallPricingSection call={call} callId={callId} />
               </Suspense>
             </div>
           </TabsContent>
