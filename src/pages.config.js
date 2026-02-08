@@ -74,7 +74,10 @@ import MyVendorProfile from './pages/MyVendorProfile';
 import NewCase from './pages/NewCase';
 import NewVendor from './pages/NewVendor';
 import NotificationSettings from './pages/NotificationSettings';
+import OperationalRates from './pages/OperationalRates';
+import ProductCatalog from './pages/ProductCatalog';
 import QueueMonitor from './pages/QueueMonitor';
+import Reminders from './pages/Reminders';
 import Reports from './pages/Reports';
 import RoleManagement from './pages/RoleManagement';
 import ServiceProviders from './pages/ServiceProviders';
@@ -88,9 +91,6 @@ import VendorDetails from './pages/VendorDetails';
 import VendorGuide from './pages/VendorGuide';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
-import OperationalRates from './pages/OperationalRates';
-import ProductCatalog from './pages/ProductCatalog';
-import Reminders from './pages/Reminders';
 import __Layout from './Layout.jsx';
 
 
@@ -122,7 +122,10 @@ export const PAGES = {
     "NewCase": NewCase,
     "NewVendor": NewVendor,
     "NotificationSettings": NotificationSettings,
+    "OperationalRates": OperationalRates,
+    "ProductCatalog": ProductCatalog,
     "QueueMonitor": QueueMonitor,
+    "Reminders": Reminders,
     "Reports": Reports,
     "RoleManagement": RoleManagement,
     "ServiceProviders": ServiceProviders,
@@ -136,9 +139,6 @@ export const PAGES = {
     "VendorGuide": VendorGuide,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
-    "OperationalRates": OperationalRates,
-    "ProductCatalog": ProductCatalog,
-    "Reminders": Reminders,
 }
 
 export const pagesConfig = {
