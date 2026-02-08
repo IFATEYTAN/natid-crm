@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
-import { useCalls } from '@/components/hooks/useCalls';
 import { useVendors } from '@/components/hooks/useVendors';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
