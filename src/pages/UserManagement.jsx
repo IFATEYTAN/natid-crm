@@ -22,29 +22,48 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Users, UserPlus, Search, Mail, Shield, ShieldCheck, Key, Pencil } from 'lucide-react';
+import {
+  Users,
+  UserPlus,
+  Search,
+  Mail,
+  ShieldCheck,
+  Key,
+  Pencil,
+  Headphones,
+  Wrench,
+  Building2,
+} from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import ExportMenu from '@/components/ui/ExportMenu';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/queryKeys';
 import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const roleLabels = {
   admin: 'מנהל',
+  operator: 'מוקדן',
+  vendor: 'ספק',
+  agent: 'טכנאי',
   user: 'משתמש',
 };
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',
+  operator: 'bg-[#8b5cf6] text-white',
+  vendor: 'bg-[#f59e0b] text-white',
+  agent: 'bg-[#10b981] text-white',
   user: 'bg-[#f3f4f6] text-[#111827]',
 };
 
 export default function UserManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('user');
+  const [inviteRole, setInviteRole] = useState('operator');
   const [editUser, setEditUser] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -56,7 +75,7 @@ export default function UserManagementPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all(),
     queryFn: () => base44.entities.User.list('-created_date', 100),
   });
 
@@ -73,7 +92,7 @@ export default function UserManagementPage() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setInviteDialogOpen(false);
       setInviteEmail('');
-      setInviteRole('user');
+      setInviteRole('operator');
       showToast.success('ההזמנה נשלחה בהצלחה');
     },
     onError: (error) => {
@@ -116,15 +135,18 @@ export default function UserManagementPage() {
 
   const filteredUsers = users.filter(
     (user) =>
-      !searchQuery ||
-      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      (filterRole === 'all' || user.role === filterRole) &&
+      (!searchQuery ||
+        user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const stats = {
     total: users.length,
     admins: users.filter((u) => u.role === 'admin').length,
-    users: users.filter((u) => u.role === 'user').length,
+    operators: users.filter((u) => u.role === 'operator').length,
+    vendors: users.filter((u) => u.role === 'vendor').length,
+    agents: users.filter((u) => u.role === 'agent').length,
   };
 
   const handleInvite = () => {
@@ -204,8 +226,10 @@ export default function UserManagementPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">משתמש</SelectItem>
                         <SelectItem value="admin">מנהל</SelectItem>
+                        <SelectItem value="operator">מוקדן</SelectItem>
+                        <SelectItem value="vendor">ספק</SelectItem>
+                        <SelectItem value="agent">טכנאי</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -250,8 +274,10 @@ export default function UserManagementPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="user">משתמש</SelectItem>
                       <SelectItem value="admin">מנהל</SelectItem>
+                      <SelectItem value="operator">מוקדן</SelectItem>
+                      <SelectItem value="vendor">ספק</SelectItem>
+                      <SelectItem value="agent">טכנאי</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -268,7 +294,7 @@ export default function UserManagementPage() {
         </Dialog>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -277,7 +303,7 @@ export default function UserManagementPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-[#111827]">{stats.total}</div>
-                  <div className="text-sm text-[#6b7280]">סה"כ משתמשים</div>
+                  <div className="text-sm text-[#6b7280]">סה"כ</div>
                 </div>
               </div>
             </CardContent>
@@ -285,7 +311,7 @@ export default function UserManagementPage() {
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-[8px] bg-[#eff6ff] flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5 text-[#3b82f6]" />
                 </div>
                 <div>
@@ -298,29 +324,69 @@ export default function UserManagementPage() {
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-[#6b7280]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#f5f3ff] flex items-center justify-center">
+                  <Headphones className="w-5 h-5 text-[#8b5cf6]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.users}</div>
-                  <div className="text-sm text-[#6b7280]">משתמשים</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.operators}</div>
+                  <div className="text-sm text-[#6b7280]">מוקדנים</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border border-[#e5e7eb]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#f59e0b]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.vendors}</div>
+                  <div className="text-sm text-[#6b7280]">ספקים</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border border-[#e5e7eb]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-[#10b981]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.agents}</div>
+                  <div className="text-sm text-[#6b7280]">טכנאים</div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Search */}
+        {/* Search & Filter */}
         <Card className="bg-white border border-[#e5e7eb]">
           <CardContent className="p-3">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
-              <Input
-                placeholder="חיפוש לפי שם או אימייל..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10"
-              />
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
+                <Input
+                  placeholder="חיפוש לפי שם או אימייל..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pr-10"
+                />
+              </div>
+              <Select value={filterRole} onValueChange={setFilterRole}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="כל התפקידים" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל התפקידים</SelectItem>
+                  <SelectItem value="admin">מנהל</SelectItem>
+                  <SelectItem value="operator">מוקדן</SelectItem>
+                  <SelectItem value="vendor">ספק</SelectItem>
+                  <SelectItem value="agent">טכנאי</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
