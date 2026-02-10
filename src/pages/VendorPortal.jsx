@@ -8,17 +8,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
 const VendorNewCallAlertLazy = lazy(() => import('@/components/vendor/VendorNewCallAlert'));
 const VendorStatsLazy = lazy(() => import('@/components/vendor/VendorStats'));
-const VendorAvailabilityToggleLazy = lazy(() => import('@/components/vendor/VendorAvailabilityToggle'));
-
-
-
+const VendorAvailabilityToggleLazy = lazy(
+  () => import('@/components/vendor/VendorAvailabilityToggle')
+);
 
 import {
   Truck,
@@ -309,7 +314,16 @@ export default function VendorPortalPage() {
     );
   }
 
-
+  if (vendorQuery.isError || callsQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">
+          {vendorQuery.error?.message || callsQuery.error?.message || 'נסה לרענן את הדף'}
+        </p>
+      </div>
+    );
+  }
 
   // Admin columns for unified view
   const adminColumns = [
@@ -517,20 +531,30 @@ export default function VendorPortalPage() {
                   <TabsList>
                     <TabsTrigger value="all">כל הקריאות</TabsTrigger>
                     <TabsTrigger value="active">פעילות ({adminActiveCalls.length})</TabsTrigger>
-                    <TabsTrigger value="completed">הושלמו ({adminCompletedCalls.length})</TabsTrigger>
+                    <TabsTrigger value="completed">
+                      הושלמו ({adminCompletedCalls.length})
+                    </TabsTrigger>
                   </TabsList>
                   <TabsContent value="all" className="mt-4">
-                    <Suspense fallback={<Skeleton className="h-40" />}> 
-                      <DataTableLazy columns={adminColumns} data={adminCalls} emptyMessage="אין קריאות להצגה" />
+                    <Suspense fallback={<Skeleton className="h-40" />}>
+                      <DataTableLazy
+                        columns={adminColumns}
+                        data={adminCalls}
+                        emptyMessage="אין קריאות להצגה"
+                      />
                     </Suspense>
                   </TabsContent>
                   <TabsContent value="active" className="mt-4">
-                    <Suspense fallback={<Skeleton className="h-40" />}> 
-                      <DataTableLazy columns={adminColumns} data={adminActiveCalls} emptyMessage="אין קריאות פעילות" />
+                    <Suspense fallback={<Skeleton className="h-40" />}>
+                      <DataTableLazy
+                        columns={adminColumns}
+                        data={adminActiveCalls}
+                        emptyMessage="אין קריאות פעילות"
+                      />
                     </Suspense>
                   </TabsContent>
                   <TabsContent value="completed" className="mt-4">
-                    <Suspense fallback={<Skeleton className="h-40" />}> 
+                    <Suspense fallback={<Skeleton className="h-40" />}>
                       <DataTableLazy
                         columns={adminColumns}
                         data={adminCompletedCalls}
@@ -571,7 +595,9 @@ export default function VendorPortalPage() {
               {/* Header */}
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-[#172B4D]">שלום, {vendorProfile?.vendor_name}</h1>
+                  <h1 className="text-2xl font-bold text-[#172B4D]">
+                    שלום, {vendorProfile?.vendor_name}
+                  </h1>
                   {isAdmin && (
                     <p className="text-xs text-[#6B778C] mt-1">מציג בתור ספק (צפייה כאדמין)</p>
                   )}
@@ -589,6 +615,7 @@ export default function VendorPortalPage() {
                     size="sm"
                     onClick={() => callsQuery.refetch()}
                     className="gap-1"
+                    aria-label="רענן"
                   >
                     <RefreshCw className={cn('w-4 h-4', callsQuery.isFetching && 'animate-spin')} />
                   </Button>
@@ -596,7 +623,7 @@ export default function VendorPortalPage() {
               </div>
 
               {/* Availability Toggle - Prominent */}
-              <Suspense fallback={<div className="h-16" />}> 
+              <Suspense fallback={<div className="h-16" />}>
                 <VendorAvailabilityToggleLazy
                   vendor={vendorProfile}
                   isAvailable={isAvailable}
@@ -607,7 +634,7 @@ export default function VendorPortalPage() {
               </Suspense>
 
               {/* Stats */}
-              <Suspense fallback={<Skeleton className="h-32" />}> 
+              <Suspense fallback={<Skeleton className="h-32" />}>
                 <VendorStatsLazy vendor={vendorProfile} calls={calls} />
               </Suspense>
 
@@ -623,7 +650,10 @@ export default function VendorPortalPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {activeCalls.map((call) => (
-                        <div key={call.id} className="bg-white rounded-lg p-4 border border-orange-200">
+                        <div
+                          key={call.id}
+                          className="bg-white rounded-lg p-4 border border-orange-200"
+                        >
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="flex items-center gap-2 mb-1">
@@ -658,19 +688,24 @@ export default function VendorPortalPage() {
                             </div>
                           </div>
                           <div className="flex gap-2 mt-3">
-                            {(call.call_status === 'assigned' || call.call_status === 'assigning') && (
+                            {(call.call_status === 'assigned' ||
+                              call.call_status === 'assigning') && (
                               <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
                                 <Button className="bg-blue-600 hover:bg-blue-700">יצא לדרך</Button>
                               </Link>
                             )}
                             {call.call_status === 'vendor_enroute' && (
                               <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
-                                <Button className="bg-blue-600 hover:bg-blue-700">הגעתי למקום</Button>
+                                <Button className="bg-blue-600 hover:bg-blue-700">
+                                  הגעתי למקום
+                                </Button>
                               </Link>
                             )}
                             {call.call_status === 'in_progress' && (
                               <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
-                                <Button className="bg-[#f97316] hover:bg-[#ea580c]">סיים וחתם</Button>
+                                <Button className="bg-[#f97316] hover:bg-[#ea580c]">
+                                  סיים וחתם
+                                </Button>
                               </Link>
                             )}
                             <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)}>
@@ -694,17 +729,25 @@ export default function VendorPortalPage() {
                       <TabsTrigger value="completed">הושלמו ({completedCalls.length})</TabsTrigger>
                     </TabsList>
                     <TabsContent value="all" className="mt-4">
-                      <Suspense fallback={<Skeleton className="h-40" />}> 
-                        <DataTableLazy columns={columns} data={calls} emptyMessage="אין קריאות להצגה" />
+                      <Suspense fallback={<Skeleton className="h-40" />}>
+                        <DataTableLazy
+                          columns={columns}
+                          data={calls}
+                          emptyMessage="אין קריאות להצגה"
+                        />
                       </Suspense>
                     </TabsContent>
                     <TabsContent value="active" className="mt-4">
-                      <Suspense fallback={<Skeleton className="h-40" />}> 
-                        <DataTableLazy columns={columns} data={activeCalls} emptyMessage="אין קריאות פעילות" />
+                      <Suspense fallback={<Skeleton className="h-40" />}>
+                        <DataTableLazy
+                          columns={columns}
+                          data={activeCalls}
+                          emptyMessage="אין קריאות פעילות"
+                        />
                       </Suspense>
                     </TabsContent>
                     <TabsContent value="completed" className="mt-4">
-                      <Suspense fallback={<Skeleton className="h-40" />}> 
+                      <Suspense fallback={<Skeleton className="h-40" />}>
                         <DataTableLazy
                           columns={columns}
                           data={completedCalls}

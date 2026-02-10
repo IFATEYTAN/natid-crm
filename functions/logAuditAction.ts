@@ -9,6 +9,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Only admins and operators can create audit log entries
+    if (!['admin', 'operator'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { action, entity_type, entity_id, details, severity = 'info' } = body;
 

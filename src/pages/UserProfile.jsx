@@ -43,7 +43,7 @@ export default function UserProfilePage() {
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: (data) => {
       showToast.success('הפרופיל עודכן בהצלחה');
-      setCurrentUser(prev => ({ ...prev, ...data }));
+      setCurrentUser((prev) => ({ ...prev, ...data }));
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
     onError: () => {
@@ -53,9 +53,9 @@ export default function UserProfilePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateMutation.mutate({ 
+    updateMutation.mutate({
       full_name: formData.full_name,
-      profile_image: formData.profile_image
+      profile_image: formData.profile_image,
     });
   };
 
@@ -71,7 +71,7 @@ export default function UserProfilePage() {
     try {
       setUploading(true);
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setFormData(prev => ({ ...prev, profile_image: file_url }));
+      setFormData((prev) => ({ ...prev, profile_image: file_url }));
       showToast.success('התמונה הועלתה בהצלחה');
     } catch (error) {
       console.error('Upload error:', error);
@@ -108,9 +108,9 @@ export default function UserProfilePage() {
                 <div className="relative group">
                   <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
                     {formData.profile_image ? (
-                      <img 
-                        src={formData.profile_image} 
-                        alt="Profile" 
+                      <img
+                        src={formData.profile_image}
+                        alt="Profile"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -124,8 +124,8 @@ export default function UserProfilePage() {
                       </div>
                     )}
                   </div>
-                  <label 
-                    htmlFor="profile-upload" 
+                  <label
+                    htmlFor="profile-upload"
                     className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full text-white cursor-pointer hover:bg-blue-700 transition-colors shadow-sm"
                   >
                     <Camera className="w-4 h-4" />
@@ -150,7 +150,7 @@ export default function UserProfilePage() {
                     <Input
                       value={formData.full_name}
                       onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                      className="pr-10"
+                      className="pe-10"
                     />
                   </div>
                 </div>
@@ -159,12 +159,7 @@ export default function UserProfilePage() {
                   <Label>אימייל</Label>
                   <div className="relative">
                     <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
-                    <Input
-                      value={formData.email}
-                      disabled
-                      className="pr-10 bg-gray-50"
-                      dir="ltr"
-                    />
+                    <Input value={formData.email} disabled className="pe-10 bg-gray-50" dir="ltr" />
                   </div>
                   <p className="text-xs text-[#6b7280] mt-1">לא ניתן לשנות כתובת אימייל</p>
                 </div>
@@ -176,7 +171,7 @@ export default function UserProfilePage() {
                     <Input
                       value={formData.role === 'admin' ? 'מנהל מערכת' : 'משתמש'}
                       disabled
-                      className="pr-10 bg-gray-50"
+                      className="pe-10 bg-gray-50"
                     />
                   </div>
                 </div>
@@ -190,12 +185,12 @@ export default function UserProfilePage() {
                 >
                   {updateMutation.isPending ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                      <Loader2 className="w-4 h-4 animate-spin me-2" />
                       מעדכן...
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4 ml-2" />
+                      <Save className="w-4 h-4 me-2" />
                       עדכן פרטים
                     </>
                   )}

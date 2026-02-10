@@ -5,15 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Mail, AlertCircle, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 
 export default function CustomerDetails() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get('id');
 
-  const { data: customer, isLoading } = useQuery({
+  const {
+    data: customer,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['customer', id],
     enabled: !!id,
     queryFn: async () => {
@@ -41,6 +46,15 @@ export default function CustomerDetails() {
 
   if (isLoading) {
     return <PageLoader text="טוען פרטי לקוח..." />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
   }
 
   if (!customer) {
@@ -93,7 +107,9 @@ export default function CustomerDetails() {
             <div className="text-sm text-[#6b7280]">טלפון</div>
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-[#6b7280]" />
-              <a className="text-blue-600 hover:underline" href={`tel:${customer.phone || ''}`}>{customer.phone || '-'}</a>
+              <a className="text-blue-600 hover:underline" href={`tel:${customer.phone || ''}`}>
+                {customer.phone || '-'}
+              </a>
             </div>
           </div>
 
@@ -101,7 +117,9 @@ export default function CustomerDetails() {
             <div className="text-sm text-[#6b7280]">אימייל</div>
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-[#6b7280]" />
-              <a className="text-blue-600 hover:underline" href={`mailto:${customer.email || ''}`}>{customer.email || '-'}</a>
+              <a className="text-blue-600 hover:underline" href={`mailto:${customer.email || ''}`}>
+                {customer.email || '-'}
+              </a>
             </div>
           </div>
 
@@ -109,9 +127,7 @@ export default function CustomerDetails() {
             <div className="text-sm text-[#6b7280]">כתובת</div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#6b7280]" />
-              <span>
-                {(customer.address || '-') + (customer.city ? `, ${customer.city}` : '')}
-              </span>
+              <span>{(customer.address || '-') + (customer.city ? `, ${customer.city}` : '')}</span>
             </div>
           </div>
 

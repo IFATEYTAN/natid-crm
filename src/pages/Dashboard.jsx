@@ -1,7 +1,8 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { queryKeys } from '@/lib/queryKeys';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCalls } from '@/components/hooks/useCalls';
 import { useVendors } from '@/components/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
@@ -20,7 +21,7 @@ import {
   Users,
   Calendar,
   BarChart3,
-  BellRing
+  BellRing,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -63,10 +64,12 @@ const SmartAlertsTab = lazy(() => import('@/components/dashboard/SmartAlertsTab'
 const VendorMapWidget = lazy(() => import('@/components/dashboard/VendorMapWidget'));
 const EscalationPredictionWidget = lazy(() => import('@/components/ai/EscalationPredictionWidget'));
 const RecurringPatternsWidget = lazy(() => import('@/components/ai/RecurringPatternsWidget'));
-const ProactiveRecommendationsWidget = lazy(() => import('@/components/ai/ProactiveRecommendationsWidget'));
-
+const ProactiveRecommendationsWidget = lazy(
+  () => import('@/components/ai/ProactiveRecommendationsWidget')
+);
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -82,18 +85,39 @@ export default function Dashboard() {
   };
 
   const { data: workQueue = [] } = useQuery({
-    queryKey: ['workQueue'],
+    queryKey: queryKeys.queue.all(),
     queryFn: () => base44.entities.WorkQueue.list(),
   });
 
-  const { data: calls = [], isLoading: callsLoading } = useCalls();
-  const { data: vendors = [], isLoading: vendorsLoading } = useVendors();
+  const {
+    data: calls = [],
+    isLoading: callsLoading,
+    isError: callsError,
+    error: callsErrorData,
+  } = useCalls();
+  const {
+    data: vendors = [],
+    isLoading: vendorsLoading,
+    isError: vendorsError,
+    error: vendorsErrorData,
+  } = useVendors();
 
   const availableVendors = vendors.filter(
     (v) => v.is_active && v.availability_status === 'available'
   );
 
   const isLoading = callsLoading || vendorsLoading;
+
+  if (callsError || vendorsError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">
+          {callsErrorData?.message || vendorsErrorData?.message || 'נסה לרענן את הדף'}
+        </p>
+      </div>
+    );
+  }
 
   // Calculate stats
   const openCalls = calls.filter((c) => openStatuses.includes(c.call_status));
@@ -209,7 +233,7 @@ export default function Dashboard() {
           <PermissionGuard category="calls" permission="create">
             <Link to={createPageUrl('NewCase')}>
               <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-6 transition-all transform hover:scale-105">
-                <Plus className="w-5 h-5 ml-2" />
+                <Plus className="w-5 h-5 me-2" />
                 קריאה חדשה
               </Button>
             </Link>
@@ -319,7 +343,7 @@ export default function Dashboard() {
             headerRight={
               <Link to={createPageUrl('Calls')}>
                 <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                  לכל הקריאות <ChevronLeft className="w-4 h-4 mr-1" />
+                  לכל הקריאות <ChevronLeft className="w-4 h-4 ms-1" />
                 </Button>
               </Link>
             }
@@ -329,9 +353,7 @@ export default function Dashboard() {
                 columns={columns}
                 data={openCalls}
                 isLoading={isLoading}
-                onRowClick={(row) =>
-                  (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
-                }
+                onRowClick={(row) => navigate(createPageUrl(`CallDetails?id=${row.id}`))}
                 emptyMessage="אין קריאות בטיפול כרגע"
                 rowColorField="call_status"
               />
@@ -369,7 +391,7 @@ export default function Dashboard() {
                     <Clock className="w-7 h-7 text-blue-500 opacity-80" />
                     <div>
                       <span className="text-3xl font-bold text-gray-900">{avgEta || '—'}</span>
-                      <span className="text-sm text-gray-500 mr-1">דקות</span>
+                      <span className="text-sm text-gray-500 ms-1">דקות</span>
                     </div>
                   </div>
                   {recentCallsWithEta.length > 0 && (
@@ -392,7 +414,7 @@ export default function Dashboard() {
                       <span className="text-3xl font-bold text-gray-900">
                         {fieldResolutionRate || '—'}%
                       </span>
-                      <span className="text-sm text-gray-500 mr-1">ללא גרירה</span>
+                      <span className="text-sm text-gray-500 ms-1">ללא גרירה</span>
                     </div>
                   </div>
                   {recentCompleted.length > 0 && (
@@ -464,84 +486,82 @@ export default function Dashboard() {
             description="צפייה וסינון כלל הקריאות במערכת"
             headerRight={
               <Suspense fallback={<Skeleton className="w-24 h-10" />}>
-                <ExportMenu 
-                  data={filteredCalls} 
-                  columns={columns} 
-                  filename="dashboard_cases" 
+                <ExportMenu
+                  data={filteredCalls}
+                  columns={columns}
+                  filename="dashboard_cases"
                   title="דוח קריאות - לוח בקרה"
                 />
               </Suspense>
             }
           >
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="relative flex-1">
-                  <Input
-                    placeholder="חיפוש לפי שם, מספר קריאה או טלפון..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full md:w-48">
-                    <SelectValue placeholder="סינון לפי סטטוס" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הסטטוסים</SelectItem>
-                    <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
-                    <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
-                    <SelectItem value="assigning">בשיוך</SelectItem>
-                    <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
-                    <SelectItem value="in_progress">בטיפול</SelectItem>
-                    <SelectItem value="vendor_arrived">נותן השירות הגיע</SelectItem>
-                    <SelectItem value="future_service">שירות עתידי</SelectItem>
-                    <SelectItem value="in_followup">במעקב</SelectItem>
-                    <SelectItem value="in_storage">באחסנה</SelectItem>
-                    <SelectItem value="continued_treatment">המשך טיפול</SelectItem>
-                    <SelectItem value="awaiting_payment">המתנה לחיוב</SelectItem>
-                    <SelectItem value="completed">הושלם</SelectItem>
-                    <SelectItem value="cancelled">בוטל</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-100">
-                  <div className="text-2xl font-bold text-gray-900">{filteredCalls.length}</div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide">סה״כ רשומות</div>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {filteredCalls.filter((c) => openStatuses.includes(c.call_status)).length}
-                  </div>
-                  <div className="text-xs text-blue-500 uppercase tracking-wide">פתוחות</div>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
-                  <div className="text-2xl font-bold text-green-600">
-                    {filteredCalls.filter((c) => c.call_status === 'completed').length}
-                  </div>
-                  <div className="text-xs text-green-500 uppercase tracking-wide">הושלמו</div>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg text-center border border-red-100">
-                  <div className="text-2xl font-bold text-red-600">
-                    {filteredCalls.filter((c) => c.call_status === 'cancelled').length}
-                  </div>
-                  <div className="text-xs text-red-500 uppercase tracking-wide">בוטלו</div>
-                </div>
-              </div>
-
-              <Suspense fallback={<Skeleton className="h-40" />}>
-                <DataTableLazy
-                  columns={columns}
-                  data={filteredCalls}
-                  isLoading={callsLoading}
-                  onRowClick={(row) =>
-                    (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
-                  }
-                  emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
-                  rowColorField="call_status"
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="relative flex-1">
+                <Input
+                  placeholder="חיפוש לפי שם, מספר קריאה או טלפון..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
                 />
-              </Suspense>
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="סינון לפי סטטוס" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הסטטוסים</SelectItem>
+                  <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
+                  <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
+                  <SelectItem value="assigning">בשיוך</SelectItem>
+                  <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
+                  <SelectItem value="in_progress">בטיפול</SelectItem>
+                  <SelectItem value="vendor_arrived">נותן השירות הגיע</SelectItem>
+                  <SelectItem value="future_service">שירות עתידי</SelectItem>
+                  <SelectItem value="in_followup">במעקב</SelectItem>
+                  <SelectItem value="in_storage">באחסנה</SelectItem>
+                  <SelectItem value="continued_treatment">המשך טיפול</SelectItem>
+                  <SelectItem value="awaiting_payment">המתנה לחיוב</SelectItem>
+                  <SelectItem value="completed">הושלם</SelectItem>
+                  <SelectItem value="cancelled">בוטל</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-100">
+                <div className="text-2xl font-bold text-gray-900">{filteredCalls.length}</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wide">סה״כ רשומות</div>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
+                <div className="text-2xl font-bold text-blue-600">
+                  {filteredCalls.filter((c) => openStatuses.includes(c.call_status)).length}
+                </div>
+                <div className="text-xs text-blue-500 uppercase tracking-wide">פתוחות</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
+                <div className="text-2xl font-bold text-green-600">
+                  {filteredCalls.filter((c) => c.call_status === 'completed').length}
+                </div>
+                <div className="text-xs text-green-500 uppercase tracking-wide">הושלמו</div>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg text-center border border-red-100">
+                <div className="text-2xl font-bold text-red-600">
+                  {filteredCalls.filter((c) => c.call_status === 'cancelled').length}
+                </div>
+                <div className="text-xs text-red-500 uppercase tracking-wide">בוטלו</div>
+              </div>
+            </div>
+
+            <Suspense fallback={<Skeleton className="h-40" />}>
+              <DataTableLazy
+                columns={columns}
+                data={filteredCalls}
+                isLoading={callsLoading}
+                onRowClick={(row) => navigate(createPageUrl('CallDetails') + '?id=' + row.id)}
+                emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
+                rowColorField="call_status"
+              />
+            </Suspense>
           </CollapsibleCard>
         </TabsContent>
 
@@ -551,8 +571,6 @@ export default function Dashboard() {
             <DashboardTotalsTab calls={calls} callsLoading={callsLoading} />
           </Suspense>
         </TabsContent>
-
-
       </Tabs>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
 import { useWorkQueue } from '@/components/hooks/useWorkQueue';
@@ -55,6 +55,7 @@ const statusOptions = [
 ];
 
 export default function QueueMonitor() {
+  const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [seeding, setSeeding] = useState(false);
@@ -215,16 +216,14 @@ export default function QueueMonitor() {
       cell: (item) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-8 w-8 p-0" aria-label="פעולות נוספות">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>פעולות</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() =>
-                (window.location.href = createPageUrl(`CaseDetails?id=${item.call_id}`))
-              }
+              onClick={() => navigate(createPageUrl(`CaseDetails?id=${item.call_id}`))}
             >
               צפה בפרטים
             </DropdownMenuItem>
@@ -236,6 +235,17 @@ export default function QueueMonitor() {
       ),
     },
   ];
+
+  if (workQueueQuery.isError || callsQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">
+          {workQueueQuery.error?.message || callsQuery.error?.message || 'נסה לרענן את הדף'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -277,6 +287,7 @@ export default function QueueMonitor() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pr-10"
+                    aria-label="חיפוש בתור"
                   />
                 </div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>

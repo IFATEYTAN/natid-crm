@@ -130,6 +130,17 @@ export default function VendorTrackingPage() {
   // Israel center coordinates
   const defaultCenter = [31.7683, 35.2137];
 
+  if (vendorsQuery.isError || callsQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">
+          {vendorsQuery.error?.message || callsQuery.error?.message || 'נסה לרענן את הדף'}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -239,7 +250,7 @@ export default function VendorTrackingPage() {
                   placeholder="חיפוש..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-9 h-8 text-sm"
+                  className="pe-9 h-8 text-sm"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>

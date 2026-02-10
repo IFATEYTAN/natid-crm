@@ -121,6 +121,15 @@ export default function CalendarPage() {
     setSelectedDate(new Date());
   };
 
+  if (callsQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{callsQuery.error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}

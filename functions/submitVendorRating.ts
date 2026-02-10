@@ -24,9 +24,19 @@ Deno.serve(async (req) => {
     } = await req.json();
 
     if (!vendorId || !callId || !overallRating) {
-      return Response.json({ 
-        error: 'Missing required fields: vendorId, callId, overallRating' 
+      return Response.json({
+        error: 'Missing required fields: vendorId, callId, overallRating'
       }, { status: 400 });
+    }
+
+    // Validate rating range
+    if (overallRating < 1 || overallRating > 5) {
+      return Response.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
+    }
+
+    // Only admins/operators can rate freely; vendors cannot rate themselves or others
+    if (user.role === 'vendor') {
+      return Response.json({ error: 'Forbidden - vendors cannot submit ratings' }, { status: 403 });
     }
 
     // Get vendor and call details
@@ -42,6 +52,17 @@ Deno.serve(async (req) => {
 
     if (!call) {
       return Response.json({ error: 'Call not found' }, { status: 404 });
+    }
+
+    // Verify the call was actually assigned to this vendor
+    if (call.assigned_vendor_id !== vendorId) {
+      return Response.json({ error: 'This call is not assigned to the specified vendor' }, { status: 400 });
+    }
+
+    // Prevent duplicate ratings for the same call
+    const existingRatings = await base44.asServiceRole.entities.VendorRating.filter({ call_id: callId });
+    if (existingRatings.length > 0) {
+      return Response.json({ error: 'Rating already submitted for this call' }, { status: 409 });
     }
 
     // Create rating record

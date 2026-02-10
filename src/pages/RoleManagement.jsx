@@ -95,7 +95,12 @@ export default function RoleManagement() {
   const queryClient = useQueryClient();
   const { logCreate, logUpdate, logDelete, logPermissionChange } = useAuditLog();
 
-  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+  const {
+    data: roles = [],
+    isLoading: rolesLoading,
+    isError: rolesError,
+    error: rolesQueryError,
+  } = useQuery({
     queryKey: ['roles'],
     queryFn: () => base44.entities.Role.list(),
   });

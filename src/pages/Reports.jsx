@@ -1,6 +1,7 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { useCalls } from '@/components/hooks/useCalls';
 import { useVendors } from '@/components/hooks/useVendors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,9 +29,15 @@ const VendorPerformanceChart = React.lazy(() =>
   import('@/components/reports/ReportsCharts').then((m) => ({ default: m.VendorPerformanceChart }))
 );
 
-const OperationalEfficiencyReport = React.lazy(() => import('@/components/reports/OperationalEfficiencyReport.jsx'));
-const CustomerAnalysisReport = React.lazy(() => import('@/components/reports/CustomerAnalysisReport.jsx'));
-const VendorPerformanceReport = React.lazy(() => import('@/components/reports/VendorPerformanceReport.jsx'));
+const OperationalEfficiencyReport = React.lazy(
+  () => import('@/components/reports/OperationalEfficiencyReport.jsx')
+);
+const CustomerAnalysisReport = React.lazy(
+  () => import('@/components/reports/CustomerAnalysisReport.jsx')
+);
+const VendorPerformanceReport = React.lazy(
+  () => import('@/components/reports/VendorPerformanceReport.jsx')
+);
 const CompanyReport = React.lazy(() => import('@/components/reports/CompanyReport'));
 const FinancialReport = React.lazy(() => import('@/components/reports/FinancialReport'));
 const UsageReport = React.lazy(() => import('@/components/reports/UsageReport'));
@@ -72,7 +79,7 @@ export default function ReportsPage() {
 
   // Fetch ratings
   const ratingsQuery = useQuery({
-    queryKey: ['reportRatings'],
+    queryKey: queryKeys.reports.vendorRatings(),
     queryFn: () => base44.entities.VendorRating.filter({}, '-created_date', 200),
   });
 
@@ -288,6 +295,17 @@ export default function ReportsPage() {
 
   const isLoading = callsQuery.isLoading || vendorsQuery.isLoading;
 
+  if (callsQuery.isError || vendorsQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">
+          {callsQuery.error?.message || vendorsQuery.error?.message || 'נסה לרענן את הדף'}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -311,7 +329,7 @@ export default function ReportsPage() {
             </SelectContent>
           </Select>
           <PermissionGuard category="reports" permission="export">
-            <ExportMenu 
+            <ExportMenu
               data={filteredCalls}
               columns={[
                 { header: 'מספר קריאה', accessor: 'call_number' },
@@ -321,7 +339,7 @@ export default function ReportsPage() {
                 { header: 'סוג תקלה', accessor: 'issue_type' },
                 { header: 'סטטוס', accessor: 'call_status' },
                 { header: 'תאריך', accessor: 'created_date' },
-                { header: 'זמן טיפול (דק)', accessor: 'time_to_completion' }
+                { header: 'זמן טיפול (דק)', accessor: 'time_to_completion' },
               ]}
               filename={`reports_${dateRange}days`}
               title={`דוח ביצועים - ${dateRange} ימים אחרונים`}
@@ -482,7 +500,7 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </PermissionGuard>
-      
+
       {/* Advanced Reports Tabs */}
       <Tabs defaultValue="operational" className="mt-8">
         <TabsList className="w-full justify-start bg-white p-1 border border-[#e5e7eb] rounded-lg flex-wrap">
@@ -493,22 +511,22 @@ export default function ReportsPage() {
           <TabsTrigger value="financial">פיננסי</TabsTrigger>
           <TabsTrigger value="usage">שימושים</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="operational" className="mt-4">
           <Suspense fallback={<Skeleton className="h-[400px]" />}>
-             <OperationalEfficiencyReport calls={filteredCalls} />
+            <OperationalEfficiencyReport calls={filteredCalls} />
           </Suspense>
         </TabsContent>
-        
+
         <TabsContent value="vendors" className="mt-4">
           <Suspense fallback={<Skeleton className="h-[400px]" />}>
-             <VendorPerformanceReport vendors={vendors} calls={filteredCalls} ratings={ratings} />
+            <VendorPerformanceReport vendors={vendors} calls={filteredCalls} ratings={ratings} />
           </Suspense>
         </TabsContent>
-        
+
         <TabsContent value="customers" className="mt-4">
           <Suspense fallback={<Skeleton className="h-[400px]" />}>
-             <CustomerAnalysisReport calls={filteredCalls} />
+            <CustomerAnalysisReport calls={filteredCalls} />
           </Suspense>
         </TabsContent>
 

@@ -281,6 +281,7 @@ export default function ServiceProvidersPage() {
             checked={vendor.is_available_now}
             onCheckedChange={() => toggleAvailability(vendor)}
             className="data-[state=checked]:bg-green-500"
+            aria-label={`שנה זמינות ${vendor.vendor_name}`}
           />
         </div>
       ),
@@ -290,25 +291,25 @@ export default function ServiceProvidersPage() {
       cell: (vendor) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="פעולות נוספות">
               <MoreVertical className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
               <Link to={createPageUrl(`VendorDetails?id=${vendor.id}`)}>
-                <Eye className="w-4 h-4 ml-2" />
+                <Eye className="w-4 h-4 me-2" />
                 צפייה בפרטים
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to={createPageUrl(`EditVendor?id=${vendor.id}`)}>
-                <Pencil className="w-4 h-4 ml-2" />
+                <Pencil className="w-4 h-4 me-2" />
                 עריכה
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(vendor)}>
-              <Trash2 className="w-4 h-4 ml-2" />
+              <Trash2 className="w-4 h-4 me-2" />
               מחיקה
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -316,6 +317,15 @@ export default function ServiceProvidersPage() {
       ),
     },
   ];
+
+  if (vendorsQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{vendorsQuery.error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
+  }
 
   return (
     <SlideUp>
@@ -401,6 +411,7 @@ export default function ServiceProvidersPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pr-10"
+                  aria-label="חיפוש ספקים"
                 />
               </div>
               <Select value={typeFilter} onValueChange={setTypeFilter}>

@@ -39,7 +39,12 @@ export default function HistoricalDataAnalysisPage() {
   const [carTypeFilter, setCarTypeFilter] = useState('all');
   const [serveTypeFilter, setServeTypeFilter] = useState('all');
 
-  const { data: historicalData = [], isLoading } = useQuery({
+  const {
+    data: historicalData = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['historicalCallData'],
     queryFn: async () => {
       // Fetch all records in batches
@@ -96,7 +101,9 @@ export default function HistoricalDataAnalysisPage() {
     const nayedetFixed = filteredData.filter((d) => d.nayedet_fixed).length;
 
     // KPI: calls not from bot (bot_recommendation empty)
-    const nonBot = filteredData.filter((d) => !d?.bot_recommendation || String(d.bot_recommendation).trim() === '').length;
+    const nonBot = filteredData.filter(
+      (d) => !d?.bot_recommendation || String(d.bot_recommendation).trim() === ''
+    ).length;
 
     // Mutually exclusive breakdown (sums to 100%)
     const onlyBot = filteredData.filter((d) => d.bot_match && !d.nayedet_fixed).length;
@@ -160,30 +167,78 @@ export default function HistoricalDataAnalysisPage() {
 
   const displayCards = useMemo(() => {
     const base = [
-      { card_key: 'onlyBot', label: 'בוט בלבד', color: 'text-green-600', value: stats.onlyBotRate, count: stats.onlyBot, order: 0, visible: true },
-      { card_key: 'onlyManual', label: 'ידני בלבד', color: 'text-blue-600', value: stats.onlyManualRate, count: stats.onlyManual, order: 1, visible: true },
-      { card_key: 'both', label: 'גם וגם', color: 'text-purple-600', value: stats.bothRate, count: stats.both, order: 2, visible: true },
-      { card_key: 'none', label: 'לא טופל', color: 'text-gray-700', value: stats.noneRate, count: stats.none, order: 3, visible: true },
-      { card_key: 'kpi_nonBot', label: 'לא מהבוט', color: 'text-amber-600', value: stats.nonBotRate, count: stats.nonBot, order: 4, visible: true },
+      {
+        card_key: 'onlyBot',
+        label: 'בוט בלבד',
+        color: 'text-green-600',
+        value: stats.onlyBotRate,
+        count: stats.onlyBot,
+        order: 0,
+        visible: true,
+      },
+      {
+        card_key: 'onlyManual',
+        label: 'ידני בלבד',
+        color: 'text-blue-600',
+        value: stats.onlyManualRate,
+        count: stats.onlyManual,
+        order: 1,
+        visible: true,
+      },
+      {
+        card_key: 'both',
+        label: 'גם וגם',
+        color: 'text-purple-600',
+        value: stats.bothRate,
+        count: stats.both,
+        order: 2,
+        visible: true,
+      },
+      {
+        card_key: 'none',
+        label: 'לא טופל',
+        color: 'text-gray-700',
+        value: stats.noneRate,
+        count: stats.none,
+        order: 3,
+        visible: true,
+      },
+      {
+        card_key: 'kpi_nonBot',
+        label: 'לא מהבוט',
+        color: 'text-amber-600',
+        value: stats.nonBotRate,
+        count: stats.nonBot,
+        order: 4,
+        visible: true,
+      },
     ];
     const prefCards = displayPref?.cards || [];
     if (!prefCards.length) return base;
-    const prefMap = Object.fromEntries(prefCards.map(c => [c.card_key, c]));
+    const prefMap = Object.fromEntries(prefCards.map((c) => [c.card_key, c]));
     const merged = base.map((b, idx) => {
       const p = prefMap[b.card_key];
       return {
         ...b,
-        label: (p?.label?.trim?.() || b.label),
+        label: p?.label?.trim?.() || b.label,
         visible: typeof p?.visible === 'boolean' ? p.visible : b.visible,
         order: typeof p?.order === 'number' ? p.order : idx,
       };
     });
     const extras = prefCards
-      .filter(c => !merged.find(m => m.card_key === c.card_key))
-      .map(c => ({ card_key: c.card_key, label: c.label || c.card_key, color: 'text-gray-700', value: 0, count: 0, visible: !!c.visible, order: c.order ?? 99 }));
+      .filter((c) => !merged.find((m) => m.card_key === c.card_key))
+      .map((c) => ({
+        card_key: c.card_key,
+        label: c.label || c.card_key,
+        color: 'text-gray-700',
+        value: 0,
+        count: 0,
+        visible: !!c.visible,
+        order: c.order ?? 99,
+      }));
     return [...merged, ...extras]
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      .filter(c => c.visible);
+      .filter((c) => c.visible);
   }, [displayPref, stats]);
 
   // Export data to CSV
@@ -275,6 +330,15 @@ export default function HistoricalDataAnalysisPage() {
 
   if (isLoading) {
     return <PageLoader />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
   }
 
   if (historicalData.length === 0) {
@@ -421,13 +485,16 @@ export default function HistoricalDataAnalysisPage() {
       <Card className="bg-white border border-[#e5e7eb]">
         <CardContent className="p-4">
           <div className="text-xs text-gray-500 mb-3">
-            הבהרה: "דיוק הבוט" ו"תיקוני תפעול" הם מדדים חופפים ולכן אינם מסתכמים ל-100%. להלן חלוקה מלאה + KPI נוסף.
+            הבהרה: "דיוק הבוט" ו"תיקוני תפעול" הם מדדים חופפים ולכן אינם מסתכמים ל-100%. להלן חלוקה
+            מלאה + KPI נוסף.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             {displayCards.map((c) => (
               <div key={c.card_key} className="p-3 bg-gray-50 rounded-lg text-center">
                 <div className={`text-xl font-bold ${c.color}`}>{c.value}%</div>
-                <div className="text-xs text-gray-600">{c.label} ({c.count.toLocaleString()})</div>
+                <div className="text-xs text-gray-600">
+                  {c.label} ({c.count.toLocaleString()})
+                </div>
               </div>
             ))}
           </div>
@@ -445,7 +512,7 @@ export default function HistoricalDataAnalysisPage() {
                   placeholder="חיפוש לפי תיאור, רכב או אבחון..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
+                  className="pe-10"
                 />
               </div>
             </div>
@@ -489,13 +556,21 @@ export default function HistoricalDataAnalysisPage() {
           <CardContent>
             <div className="h-[380px] flex flex-col md:flex-row items-center gap-6">
               <div className="w-full md:w-1/2 h-[280px]">
-                <Suspense fallback={<div className="h-full flex items-center justify-center text-gray-400">טוען…</div>}>
+                <Suspense
+                  fallback={
+                    <div className="h-full flex items-center justify-center text-gray-400">
+                      טוען…
+                    </div>
+                  }
+                >
                   <ServeTypePie data={serveTypeDistribution.slice(0, 6)} colors={COLORS} />
                 </Suspense>
               </div>
               <div className="w-full md:w-1/2 space-y-3">
                 {(() => {
-                  const total = serveTypeDistribution.slice(0, 6).reduce((sum, i) => sum + i.value, 0);
+                  const total = serveTypeDistribution
+                    .slice(0, 6)
+                    .reduce((sum, i) => sum + i.value, 0);
                   return serveTypeDistribution.slice(0, 6).map((item, index) => (
                     <div
                       key={item.name}
@@ -509,7 +584,8 @@ export default function HistoricalDataAnalysisPage() {
                         <span className="font-medium">{item.name}</span>
                       </div>
                       <span className="font-bold text-gray-700">
-                        {item.value.toLocaleString()} ({total ? Math.round((item.value / total) * 100) : 0}%)
+                        {item.value.toLocaleString()} (
+                        {total ? Math.round((item.value / total) * 100) : 0}%)
                       </span>
                     </div>
                   ));
@@ -526,7 +602,11 @@ export default function HistoricalDataAnalysisPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[400px]">
-              <Suspense fallback={<div className="h-full flex items-center justify-center text-gray-400">טוען…</div>}>
+              <Suspense
+                fallback={
+                  <div className="h-full flex items-center justify-center text-gray-400">טוען…</div>
+                }
+              >
                 <CarTypeBar data={carTypeDistribution} />
               </Suspense>
             </div>
@@ -540,7 +620,11 @@ export default function HistoricalDataAnalysisPage() {
           </CardHeader>
           <CardContent>
             <div className="h-[350px]">
-              <Suspense fallback={<div className="h-full flex items-center justify-center text-gray-400">טוען…</div>}>
+              <Suspense
+                fallback={
+                  <div className="h-full flex items-center justify-center text-gray-400">טוען…</div>
+                }
+              >
                 <BotAccuracyBar data={botAccuracyByServeType} />
               </Suspense>
             </div>

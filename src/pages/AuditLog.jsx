@@ -182,6 +182,15 @@ export default function AuditLogPage() {
     link.click();
   };
 
+  if (auditQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{auditQuery.error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
+  }
+
   return (
     <RoleGuard allowedRoles={['admin']}>
       <div className="space-y-6">

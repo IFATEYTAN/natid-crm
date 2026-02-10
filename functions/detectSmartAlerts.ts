@@ -17,7 +17,9 @@ Deno.serve(async (req) => {
     const client = base44.asServiceRole;
 
     const admins = await client.entities.User.filter({ role: 'admin' });
-    if (!admins.length) return Response.json({ message: 'No admins to notify' });
+    const operators = await client.entities.User.filter({ role: 'operator' });
+    const notifyUsers = [...admins, ...operators];
+    if (!notifyUsers.length) return Response.json({ message: 'No users to notify' });
 
     const notifications = [];
     const now = new Date();
@@ -185,11 +187,11 @@ Deno.serve(async (req) => {
     for (const notif of notifications) {
         const key = `${notif.related_entity_id}_${notif.title}`;
         if (!recentAlertsMap.has(key)) {
-            // Notify all admins
-            for (const admin of admins) {
+            // Notify all admins and operators
+            for (const recipient of notifyUsers) {
                 await client.entities.Notification.create({
                     ...notif,
-                    user_id: admin.id
+                    user_id: recipient.id
                 });
             }
             createdCount++;

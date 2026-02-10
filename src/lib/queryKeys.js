@@ -43,6 +43,8 @@ export const queryKeys = {
     contracts: (vendorId) => ['vendors', vendorId, 'contracts'],
     locations: (vendorId) => ['vendors', vendorId, 'locations'],
     allLocations: () => ['vendors', 'locations', 'all'],
+    profile: (email) => ['vendors', 'profile', email],
+    scoped: (entityType) => ['vendors', 'scoped', entityType],
   },
 
   // Users/Agents feature
@@ -96,6 +98,47 @@ export const queryKeys = {
   // Service Providers (legacy/alias)
   serviceProviders: {
     available: () => ['serviceProviders', 'available'],
+  },
+
+  // Products feature
+  products: {
+    all: () => ['products'],
+    detail: (id) => ['products', id],
+  },
+
+  // Contracts feature
+  contracts: {
+    all: () => ['contracts'],
+    detail: (id) => ['contracts', id],
+  },
+
+  // Roles & Permissions
+  roles: {
+    all: () => ['roles'],
+    detail: (id) => ['roles', id],
+    permissions: () => ['roles', 'permissions'],
+  },
+
+  // Settings feature
+  settings: {
+    automation: () => ['settings', 'automation'],
+    notifications: () => ['settings', 'notifications'],
+    display: (userId, page) => ['settings', 'display', userId, page],
+  },
+
+  // Auth
+  auth: {
+    me: () => ['auth', 'me'],
+  },
+
+  // Audit Log
+  auditLog: {
+    all: () => ['auditLog'],
+  },
+
+  // Historical Data
+  historicalData: {
+    all: () => ['historicalData'],
   },
 };
 

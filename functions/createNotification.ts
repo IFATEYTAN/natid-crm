@@ -9,7 +9,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { 
+    // Only admin/operator can create notifications
+    if (!['admin', 'operator'].includes(user.role)) {
+      return Response.json({ error: 'Forbidden - admin or operator role required' }, { status: 403 });
+    }
+
+    const {
       user_ids, // Array of user IDs to notify, or 'all_admins' for all admins
       event_type, // The type of event (new_call, call_status_change, etc.)
       title,
@@ -24,9 +29,10 @@ Deno.serve(async (req) => {
     let targetUsers = [];
     
     if (user_ids === 'all_admins') {
-      // Get all admin users
-      const allUsers = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
-      targetUsers = allUsers;
+      // Get all admin and operator users
+      const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'operator' });
+      targetUsers = [...admins, ...operators];
     } else if (Array.isArray(user_ids)) {
       // Get specific users
       for (const userId of user_ids) {

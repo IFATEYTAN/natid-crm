@@ -78,7 +78,12 @@ const serviceTypeLabels = {
 export default function CoverageAreasPage() {
   const [selectedArea, setSelectedArea] = useState('all');
 
-  const { data: vendors = [], isLoading } = useQuery({
+  const {
+    data: vendors = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['vendors-coverage'],
     queryFn: () => base44.entities.Vendor.list('-updated_date', 500),
   });
@@ -146,6 +151,15 @@ export default function CoverageAreasPage() {
 
   if (isLoading) {
     return <PageLoader text="טוען אזורי כיסוי..." />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
   }
 
   return (

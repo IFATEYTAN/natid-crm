@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,8 +20,8 @@ export default function CustomerFeedbackPage() {
   const [wouldRecommend, setWouldRecommend] = useState(null);
 
   // Get token from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token');
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
 
   useEffect(() => {
     if (!token) {
@@ -291,7 +292,7 @@ export default function CustomerFeedbackPage() {
           >
             {submitting ? (
               <>
-                <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+                <Loader2 className="w-5 h-5 me-2 animate-spin" />
                 שולח...
               </>
             ) : (
