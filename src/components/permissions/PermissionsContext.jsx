@@ -20,6 +20,23 @@ const DEFAULT_OPERATOR_PERMISSIONS = {
   monitoring: { live_map: true, tracking: true, queue: true },
 };
 
+// הגדרות הרשאות ברירת מחדל לטכנאי (agent) - הרשאות מצומצמות
+const DEFAULT_AGENT_PERMISSIONS = {
+  calls: { view: true, create: false, edit: false, delete: false, assign: false },
+  vendors: { view: false, create: false, edit: false, delete: false, manage_contracts: false },
+  customers: { view: false, create: false, edit: false, delete: false },
+  reports: { view: false, export: false, financial: false, performance: false, historical: false },
+  system: {
+    users: false,
+    roles: false,
+    settings: false,
+    automations: false,
+    integrations: false,
+    audit_log: false,
+  },
+  monitoring: { live_map: false, tracking: false, queue: false },
+};
+
 // מיפוי דפים להרשאות גרנולריות (category/permission)
 // הערה: הרשאות ברמת דף (role-based) מוגדרות ב-src/config/permissions.js
 // המיפוי הזה משמש לבדיקות גרנולריות בתוך דפים שכבר עברו בדיקת role
@@ -108,7 +125,15 @@ export function PermissionsProvider({ children }) {
         return userPermissions.roleData.permissions[category][permission];
       }
 
-      // ברירת מחדל - מוקדן
+      // ברירת מחדל לפי תפקיד
+      if (currentUser?.role === 'agent') {
+        return DEFAULT_AGENT_PERMISSIONS[category]?.[permission] ?? false;
+      }
+      if (currentUser?.role === 'vendor') {
+        // ספקים - אין הרשאות ברירת מחדל (הכל דרך דפי vendor)
+        return false;
+      }
+      // מוקדן - ברירת מחדל
       return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
     },
     [currentUser, userPermissions]
@@ -197,4 +222,4 @@ export function usePermissions() {
 }
 
 // ייצוא קבועים לשימוש במקומות אחרים
-export { PAGE_GRANULAR_PERMISSIONS, DEFAULT_OPERATOR_PERMISSIONS };
+export { PAGE_GRANULAR_PERMISSIONS, DEFAULT_OPERATOR_PERMISSIONS, DEFAULT_AGENT_PERMISSIONS };

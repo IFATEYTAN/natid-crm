@@ -5,10 +5,11 @@ import { createPageUrl } from '@/components/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShieldAlert, Home } from 'lucide-react';
+import { VALID_ROLES } from '@/config/permissions';
 
 /**
  * RoleGuard - Protects content based on user role
- * @param {string[]} allowedRoles - Array of allowed roles ['admin', 'operator', 'vendor']
+ * @param {string[]} allowedRoles - Array of allowed roles ['admin', 'operator', 'vendor', 'agent']
  * @param {React.ReactNode} children - Content to render if authorized
  * @param {React.ReactNode} fallback - Optional fallback content
  */
@@ -30,7 +31,10 @@ export default function RoleGuard({
 
         // Check if user's role is in allowed roles
         // Admin always has access
-        const hasAccess = currentUser?.role === 'admin' || allowedRoles.includes(currentUser?.role);
+        // Unknown roles are denied by default for security
+        const userRole = currentUser?.role;
+        const isKnownRole = VALID_ROLES.includes(userRole);
+        const hasAccess = userRole === 'admin' || (isKnownRole && allowedRoles.includes(userRole));
         setAuthorized(hasAccess);
       } catch (error) {
         setAuthorized(false);
@@ -131,6 +135,7 @@ export function useCurrentUserRole() {
     isAdmin: user?.role === 'admin',
     isOperator: user?.role === 'operator' || user?.role === 'admin',
     isVendor: user?.role === 'vendor',
+    isAgent: user?.role === 'agent',
     role: user?.role,
   };
 }

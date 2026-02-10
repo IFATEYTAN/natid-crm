@@ -44,6 +44,7 @@ export const queryKeys = {
     locations: (vendorId) => ['vendors', vendorId, 'locations'],
     allLocations: () => ['vendors', 'locations', 'all'],
     profile: (email) => ['vendors', 'profile', email],
+    scoped: (entityType) => ['vendors', 'scoped', entityType],
   },
 
   // Users/Agents feature

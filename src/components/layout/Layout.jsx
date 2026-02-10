@@ -203,6 +203,14 @@ function LayoutContent({ children, currentPageName }) {
   return (
     <AuthProvider>
       <div dir="rtl" className="min-h-screen bg-[#FAFAFA]">
+        {/* Skip to main content link - visible on keyboard focus */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-red-600 focus:font-medium"
+        >
+          דלג לתוכן הראשי
+        </a>
+
         <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
         
@@ -502,7 +510,13 @@ function LayoutContent({ children, currentPageName }) {
           </Suspense>
 
           {/* Page Content */}
-          <main ref={mainContentRef} className="p-4 md:p-6">
+          <main
+            id="main-content"
+            ref={mainContentRef}
+            role="main"
+            aria-live="polite"
+            className="p-4 md:p-6"
+          >
             {children}
           </main>
 

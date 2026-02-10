@@ -1,7 +1,7 @@
 /**
  * Page-level permissions configuration.
  *
- * Roles: 'admin', 'operator', 'vendor'
+ * Roles: 'admin', 'operator', 'vendor', 'agent'
  * Admin always has access to all pages (enforced by RoleGuard).
  * Pages not listed here are accessible to all authenticated users.
  */
@@ -38,6 +38,10 @@ export const PAGE_PERMISSIONS = {
   Agents: ['admin', 'operator'],
   CustomerFeedback: ['admin', 'operator'],
 
+  // Agent (טכנאי) - field technician with limited access
+  AgentDashboard: ['agent'],
+  AgentCallManagement: ['agent'],
+
   // Vendor only
   VendorPortal: ['vendor'],
   VendorCallManagement: ['vendor'],
@@ -45,9 +49,15 @@ export const PAGE_PERMISSIONS = {
   VendorGuide: ['vendor'],
 
   // All roles
-  MyNotificationSettings: ['admin', 'operator', 'vendor'],
-  UserGuide: ['admin', 'operator', 'vendor'],
+  MyNotificationSettings: ['admin', 'operator', 'vendor', 'agent'],
+  UserGuide: ['admin', 'operator', 'vendor', 'agent'],
 };
+
+/**
+ * Valid roles in the system.
+ * Used to validate role assignments and prevent unknown roles from getting default access.
+ */
+export const VALID_ROLES = ['admin', 'operator', 'vendor', 'agent'];
 
 /**
  * Get allowed roles for a page.
@@ -55,4 +65,11 @@ export const PAGE_PERMISSIONS = {
  */
 export function getPageRoles(pageName) {
   return PAGE_PERMISSIONS[pageName] || null;
+}
+
+/**
+ * Check if a role is valid.
+ */
+export function isValidRole(role) {
+  return VALID_ROLES.includes(role);
 }
