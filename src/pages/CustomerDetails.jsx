@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Mail, AlertCircle, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 
 export default function CustomerDetails() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get('id');
 
   const { data: customer, isLoading } = useQuery({
     queryKey: ['customer', id],
@@ -93,7 +93,9 @@ export default function CustomerDetails() {
             <div className="text-sm text-[#6b7280]">טלפון</div>
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-[#6b7280]" />
-              <a className="text-blue-600 hover:underline" href={`tel:${customer.phone || ''}`}>{customer.phone || '-'}</a>
+              <a className="text-blue-600 hover:underline" href={`tel:${customer.phone || ''}`}>
+                {customer.phone || '-'}
+              </a>
             </div>
           </div>
 
@@ -101,7 +103,9 @@ export default function CustomerDetails() {
             <div className="text-sm text-[#6b7280]">אימייל</div>
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-[#6b7280]" />
-              <a className="text-blue-600 hover:underline" href={`mailto:${customer.email || ''}`}>{customer.email || '-'}</a>
+              <a className="text-blue-600 hover:underline" href={`mailto:${customer.email || ''}`}>
+                {customer.email || '-'}
+              </a>
             </div>
           </div>
 
@@ -109,9 +113,7 @@ export default function CustomerDetails() {
             <div className="text-sm text-[#6b7280]">כתובת</div>
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#6b7280]" />
-              <span>
-                {(customer.address || '-') + (customer.city ? `, ${customer.city}` : '')}
-              </span>
+              <span>{(customer.address || '-') + (customer.city ? `, ${customer.city}` : '')}</span>
             </div>
           </div>
 

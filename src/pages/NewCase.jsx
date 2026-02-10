@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Button } from '@/components/ui/button';
@@ -76,7 +77,7 @@ export default function NewCase() {
   const [touched, setTouched] = useState({});
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
-    queryKey: ['customers'],
+    queryKey: queryKeys.customers.all(),
     queryFn: () => base44.entities.Customer.list(),
   });
 
@@ -380,7 +381,7 @@ export default function NewCase() {
                   locationCity={formData.location_city}
                   vehicleType={formData.vehicle_type}
                   onApply={({ service_type, priority }) => {
-                    setFormData(prev => ({ ...prev, service_type, priority }));
+                    setFormData((prev) => ({ ...prev, service_type, priority }));
                   }}
                 />
               </div>

@@ -3,10 +3,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
+
+    // Verify webhook secret to prevent unauthorized call creation
+    const webhookSecret = req.headers.get('x-webhook-secret');
+    const savedSecret = Deno.env.get('BOT_WEBHOOK_SECRET');
+
+    if (!savedSecret || webhookSecret !== savedSecret) {
+      return Response.json({
+        success: false,
+        error: 'Invalid or missing webhook secret'
+      }, { status: 401 });
+    }
+
     // Parse incoming webhook data from bot
     const data = await req.json();
-    
+
     // Validate required fields
     if (!data.customer_name || !data.customer_phone || !data.pickup_location_address) {
       return Response.json({

@@ -30,15 +30,22 @@ Deno.serve(async (req) => {
     }
     const vendor = vendors[0];
 
+    // Ownership check: vendors can only update their own status
+    if (user.role === 'vendor' && vendor.email !== user.email) {
+      return Response.json({ error: 'Forbidden - can only update your own status' }, { status: 403 });
+    }
+
     // Update status
     await base44.entities.Vendor.update(vendor_id, {
       availability_status: status,
       last_location_update: new Date().toISOString() // refresh timestamp
     });
 
-    // Notify operators
-    const operators = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
-    
+    // Fetch admins and operators for notifications
+    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+    const operators = await base44.asServiceRole.entities.User.filter({ role: 'operator' });
+    const notifyUsers = [...admins, ...operators];
+
     let title = 'עדכון סטטוס ספק';
     let message = '';
     let type = 'info';
@@ -57,7 +64,7 @@ Deno.serve(async (req) => {
       type = 'warning';
     }
 
-    for (const op of operators) {
+    for (const op of notifyUsers) {
       await base44.asServiceRole.entities.Notification.create({
         user_id: op.id,
         title,

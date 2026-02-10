@@ -35,6 +35,14 @@ Deno.serve(async (req) => {
     }
     const attempt = attempts[0];
 
+    // Ownership check: vendors can only respond to their own assignments
+    if (user.role === 'vendor') {
+      const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ email: user.email });
+      if (!vendorRecords.length || vendorRecords[0].id !== attempt.vendor_id) {
+        return Response.json({ error: 'Forbidden - this assignment belongs to another vendor' }, { status: 403 });
+      }
+    }
+
     // Check if already processed
     if (attempt.status !== 'pending') {
       return Response.json({ 
@@ -109,11 +117,12 @@ Deno.serve(async (req) => {
         changed_by: user?.email || 'system'
       });
 
-      // Notify operators
-      const operators = await base44.asServiceRole.entities.User.filter({ role: 'admin' }); // Also notify operators if role exists
-      // Note: In a real app we'd filter for operators too, assuming 'admin' for now or fetch both
-      
-      for (const op of operators) {
+      // Fetch admins and operators for notifications
+      const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'operator' });
+      const notifyUsers = [...admins, ...operators];
+
+      for (const op of notifyUsers) {
         await base44.asServiceRole.entities.Notification.create({
           user_id: op.id,
           title: 'ספק אישר קריאה',
@@ -150,11 +159,13 @@ Deno.serve(async (req) => {
         changed_by: user?.email || 'system'
       });
 
-      // Notify operators
-      const operators = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      // Fetch admins and operators for notifications
+      const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'operator' });
+      const notifyUsers = [...admins, ...operators];
       const vendorName = (await base44.asServiceRole.entities.Vendor.filter({ id: attempt.vendor_id }))[0]?.vendor_name || 'ספק';
 
-      for (const op of operators) {
+      for (const op of notifyUsers) {
         await base44.asServiceRole.entities.Notification.create({
           user_id: op.id,
           title: 'ספק דחה קריאה',

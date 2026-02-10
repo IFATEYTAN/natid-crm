@@ -297,18 +297,18 @@ export default function ServiceProvidersPage() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
               <Link to={createPageUrl(`VendorDetails?id=${vendor.id}`)}>
-                <Eye className="w-4 h-4 ml-2" />
+                <Eye className="w-4 h-4 me-2" />
                 צפייה בפרטים
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to={createPageUrl(`EditVendor?id=${vendor.id}`)}>
-                <Pencil className="w-4 h-4 ml-2" />
+                <Pencil className="w-4 h-4 me-2" />
                 עריכה
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(vendor)}>
-              <Trash2 className="w-4 h-4 ml-2" />
+              <Trash2 className="w-4 h-4 me-2" />
               מחיקה
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -30,7 +30,16 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { ArrowRight, Truck, AlertTriangle, Pencil, Save, Navigation, Ban, CalendarClock } from 'lucide-react';
+import {
+  ArrowRight,
+  Truck,
+  AlertTriangle,
+  Pencil,
+  Save,
+  Navigation,
+  Ban,
+  CalendarClock,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { statusLabels, statusColors } from '@/components/call-details/callDetailsConstants';
@@ -44,13 +53,21 @@ const VendorLiveMap = React.lazy(() => import('@/components/maps/VendorLiveMap')
 const CallSummaryEditor = React.lazy(() => import('@/components/call/CallSummaryEditor'));
 const QuickCallSummary = React.lazy(() => import('@/components/ai/QuickCallSummary'));
 const VendorRecommendation = React.lazy(() => import('@/components/ai/VendorRecommendation'));
-const FutureServiceSection = React.lazy(() => import('@/components/call-details/FutureServiceSection'));
-const QualityControlSection = React.lazy(() => import('@/components/call-details/QualityControlSection'));
+const FutureServiceSection = React.lazy(
+  () => import('@/components/call-details/FutureServiceSection')
+);
+const QualityControlSection = React.lazy(
+  () => import('@/components/call-details/QualityControlSection')
+);
 const CancelCallDialog = React.lazy(() => import('@/components/call-details/CancelCallDialog'));
 const DepositSection = React.lazy(() => import('@/components/call-details/DepositSection'));
-const CallProductsSection = React.lazy(() => import('@/components/call-details/CallProductsSection'));
+const CallProductsSection = React.lazy(
+  () => import('@/components/call-details/CallProductsSection')
+);
 const CallPricingSection = React.lazy(() => import('@/components/call-details/CallPricingSection'));
-const EligibilityCheckSection = React.lazy(() => import('@/components/call-details/EligibilityCheckSection'));
+const EligibilityCheckSection = React.lazy(
+  () => import('@/components/call-details/EligibilityCheckSection')
+);
 const RemindersList = React.lazy(() => import('@/components/reminders/RemindersList'));
 
 export default function CallDetailsPage() {
@@ -144,13 +161,21 @@ export default function CallDetailsPage() {
 
     await base44.entities.Call.update(callId, updates);
     queryClient.invalidateQueries({ queryKey: ['call', callId] });
-    logAction('status_change', 'Call', callId, call?.call_number, `Status: ${call?.call_status} → ${newStatus}`, call?.call_status, newStatus);
+    logAction(
+      'status_change',
+      'Call',
+      callId,
+      call?.call_number,
+      `Status: ${call?.call_status} → ${newStatus}`,
+      call?.call_status,
+      newStatus
+    );
 
     if (newStatus === 'completed') {
       try {
         await base44.functions.invoke('generateCallSummary', { call_id: callId });
-      } catch (e) {
-        console.log('Auto summary generation failed:', e);
+      } catch {
+        // Auto summary generation failed silently
       }
     }
 
@@ -271,7 +296,9 @@ export default function CallDetailsPage() {
                         <DialogDescription>בחר ספק זמין לטיפול בקריאה</DialogDescription>
                       </DialogHeader>
                       <div className="py-4 space-y-4">
-                        <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
+                        <Suspense
+                          fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}
+                        >
                           <VendorRecommendation
                             callDetails={call}
                             onSelectVendor={(vendor) => setSelectedVendor(vendor.id)}
@@ -325,7 +352,11 @@ export default function CallDetailsPage() {
                 </PermissionGuard>
 
                 <PermissionGuard category="calls" permission="edit">
-                  <Button variant="outline" className="gap-2 text-red-600 border-red-300 hover:bg-red-50" onClick={() => setShowCancelDialog(true)}>
+                  <Button
+                    variant="outline"
+                    className="gap-2 text-red-600 border-red-300 hover:bg-red-50"
+                    onClick={() => setShowCancelDialog(true)}
+                  >
                     <Ban className="w-4 h-4" />
                     ביטול
                   </Button>
@@ -370,7 +401,13 @@ export default function CallDetailsPage() {
               {/* Future Service */}
               {call?.call_status !== 'completed' && call?.call_status !== 'cancelled' && (
                 <Suspense fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}>
-                  <FutureServiceSection call={call} callId={callId} onStatusChanged={() => queryClient.invalidateQueries({ queryKey: ['call', callId] })} />
+                  <FutureServiceSection
+                    call={call}
+                    callId={callId}
+                    onStatusChanged={() =>
+                      queryClient.invalidateQueries({ queryKey: ['call', callId] })
+                    }
+                  />
                 </Suspense>
               )}
 

@@ -35,7 +35,7 @@ import {
   Upload,
   Pencil,
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -86,11 +86,11 @@ export default function VendorCallManagementPage() {
   const navigate = useNavigate();
 
   // Get call id from URL
+  const [searchParams] = useSearchParams();
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
+    const id = searchParams.get('id');
     if (id) setSelectedCallId(id);
-  }, []);
+  }, [searchParams]);
 
   // Get current user
   useEffect(() => {

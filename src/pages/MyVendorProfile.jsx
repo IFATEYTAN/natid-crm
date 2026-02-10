@@ -158,6 +158,15 @@ export default function MyVendorProfilePage() {
     return <PageLoader text="טוען פרופיל..." />;
   }
 
+  if (vendorQuery.isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{vendorQuery.error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
+  }
+
   if (!vendor) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -184,9 +193,7 @@ export default function MyVendorProfilePage() {
         <VendorGPSTracker
           vendorId={vendor?.id}
           vendorProfile={vendor}
-          onLocationUpdate={(location) => {
-            console.log('Location updated:', location);
-          }}
+          onLocationUpdate={() => {}}
           onError={(error) => {
             showToast.error(error);
           }}

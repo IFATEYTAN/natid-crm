@@ -65,6 +65,8 @@ export default function CallsPage() {
   const {
     data: calls = [],
     isLoading,
+    isError,
+    error: callsError,
     refetch,
     isFetching,
   } = useCalls();
@@ -206,6 +208,15 @@ export default function CallsPage() {
     },
   ];
 
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{callsError?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -215,10 +226,10 @@ export default function CallsPage() {
           <p className="text-[#6B778C] text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
         <div className="flex items-center gap-3">
-          <ExportMenu 
-            data={filteredCalls} 
-            columns={columns} 
-            filename="calls_export" 
+          <ExportMenu
+            data={filteredCalls}
+            columns={columns}
+            filename="calls_export"
             title="דוח קריאות שירות"
           />
           <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">

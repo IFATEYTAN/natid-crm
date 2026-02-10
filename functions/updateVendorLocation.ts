@@ -43,6 +43,11 @@ Deno.serve(async (req) => {
     }
     const vendor = vendors[0];
 
+    // Ownership check: vendors can only update their own location
+    if (user.role === 'vendor' && vendor.email !== user.email) {
+      return Response.json({ error: 'Forbidden - can only update your own location' }, { status: 403 });
+    }
+
     // Check if location sharing is enabled
     if (!vendor.is_location_sharing_enabled) {
       return Response.json({ 

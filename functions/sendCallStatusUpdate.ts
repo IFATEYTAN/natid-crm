@@ -35,6 +35,14 @@ Deno.serve(async (req) => {
     }
     const call = calls[0];
 
+    // Ownership check: vendors can only update calls assigned to them
+    if (user.role === 'vendor') {
+      const vendorRecords = await base44.entities.Vendor.filter({ email: user.email });
+      if (!vendorRecords.length || call.assigned_vendor_id !== vendorRecords[0].id) {
+        return Response.json({ error: 'Forbidden - this call is not assigned to you' }, { status: 403 });
+      }
+    }
+
     // Determine message to send
     let messageText = custom_message || STATUS_MESSAGES[status];
     if (!messageText) {
@@ -58,8 +66,11 @@ Deno.serve(async (req) => {
 
     // Notify operators about significant status changes
     if (['in_progress', 'completed', 'cancelled', 'on_site'].includes(status)) {
-      const operators = await base44.asServiceRole.entities.User.filter({ role: 'admin' }); // And operators
-      
+      // Fetch admins and operators for notifications
+      const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'operator' });
+      const notifyUsers = [...admins, ...operators];
+
       const titleMap = {
         in_progress: 'טיפול החל',
         completed: 'טיפול הושלם',
@@ -67,7 +78,7 @@ Deno.serve(async (req) => {
         on_site: 'ספק הגיע'
       };
 
-      for (const op of operators) {
+      for (const op of notifyUsers) {
         await base44.asServiceRole.entities.Notification.create({
           user_id: op.id,
           title: titleMap[status] || 'עדכון סטטוס',

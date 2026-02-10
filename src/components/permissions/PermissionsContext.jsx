@@ -20,8 +20,10 @@ const DEFAULT_OPERATOR_PERMISSIONS = {
   monitoring: { live_map: true, tracking: true, queue: true },
 };
 
-// מיפוי דפים להרשאות
-const PAGE_PERMISSIONS = {
+// מיפוי דפים להרשאות גרנולריות (category/permission)
+// הערה: הרשאות ברמת דף (role-based) מוגדרות ב-src/config/permissions.js
+// המיפוי הזה משמש לבדיקות גרנולריות בתוך דפים שכבר עברו בדיקת role
+const PAGE_GRANULAR_PERMISSIONS = {
   Dashboard: { category: 'monitoring', permission: 'queue' },
   NewCase: { category: 'calls', permission: 'create' },
   CallDetails: { category: 'calls', permission: 'view' },
@@ -122,7 +124,7 @@ export function PermissionsProvider({ children }) {
         return false;
       }
 
-      const pageConfig = PAGE_PERMISSIONS[pageName];
+      const pageConfig = PAGE_GRANULAR_PERMISSIONS[pageName];
       if (!pageConfig) return true; // דפים ללא הגדרה - מותרים לכולם
 
       return hasPermission(pageConfig.category, pageConfig.permission);
@@ -195,4 +197,4 @@ export function usePermissions() {
 }
 
 // ייצוא קבועים לשימוש במקומות אחרים
-export { PAGE_PERMISSIONS, DEFAULT_OPERATOR_PERMISSIONS };
+export { PAGE_GRANULAR_PERMISSIONS, DEFAULT_OPERATOR_PERMISSIONS };
