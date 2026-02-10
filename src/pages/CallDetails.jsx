@@ -263,7 +263,7 @@ export default function CallDetailsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
               <ArrowRight className="w-5 h-5" />
             </Button>
             <div>
@@ -499,6 +499,7 @@ export default function CallDetailsPage() {
                     placeholder="הקלד הערות חופשיות..."
                     className="min-h-[140px]"
                     disabled={!canEdit}
+                    aria-label="הערות מוקדן"
                   />
                   <div className="flex justify-end">
                     <PermissionGuard category="calls" permission="edit">

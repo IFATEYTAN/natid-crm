@@ -2,7 +2,7 @@ import React, { useState, Suspense, lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCalls } from '@/components/hooks/useCalls';
 import { useVendors } from '@/components/hooks/useVendors';
 import { createPageUrl } from '@/components/utils';
@@ -69,6 +69,7 @@ const ProactiveRecommendationsWidget = lazy(
 );
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -352,9 +353,7 @@ export default function Dashboard() {
                 columns={columns}
                 data={openCalls}
                 isLoading={isLoading}
-                onRowClick={(row) =>
-                  (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))
-                }
+                onRowClick={(row) => navigate(createPageUrl(`CallDetails?id=${row.id}`))}
                 emptyMessage="אין קריאות בטיפול כרגע"
                 rowColorField="call_status"
               />
@@ -558,9 +557,7 @@ export default function Dashboard() {
                 columns={columns}
                 data={filteredCalls}
                 isLoading={callsLoading}
-                onRowClick={(row) =>
-                  (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
-                }
+                onRowClick={(row) => navigate(createPageUrl('CallDetails') + '?id=' + row.id)}
                 emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
                 rowColorField="call_status"
               />

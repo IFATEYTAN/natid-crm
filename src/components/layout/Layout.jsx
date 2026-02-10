@@ -318,6 +318,7 @@ function LayoutContent({ children, currentPageName }) {
               size="icon"
               className="lg:hidden"
               onClick={() => setSidebarOpen(false)}
+              aria-label="סגור תפריט"
             >
               <X className="w-5 h-5 text-[#616161]" />
             </Button>
@@ -389,6 +390,7 @@ function LayoutContent({ children, currentPageName }) {
                 size="icon"
                 className="lg:hidden w-10 h-10 hover:bg-[rgba(0,0,0,0.04)] active:bg-[rgba(0,0,0,0.08)] transition-colors rounded-full"
                 onClick={() => setSidebarOpen(true)}
+                aria-label="תפריט"
               >
                 <Menu className="w-6 h-6 text-[#616161]" strokeWidth={2} />
               </Button>
@@ -409,7 +411,7 @@ function LayoutContent({ children, currentPageName }) {
               {/* Notifications */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
+                  <Button variant="ghost" size="icon" className="relative" aria-label="התראות">
                     <Bell className="w-5 h-5 text-[#616161]" />
                     {unreadCount > 0 && (
                       <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />

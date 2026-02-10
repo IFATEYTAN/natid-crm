@@ -50,7 +50,12 @@ export default function UserManagementPage() {
   const queryClient = useQueryClient();
   const { logCreate, logUpdate } = useAuditLog();
 
-  const { data: users = [], isLoading } = useQuery({
+  const {
+    data: users = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['users'],
     queryFn: () => base44.entities.User.list('-created_date', 100),
   });
@@ -140,71 +145,80 @@ export default function UserManagementPage() {
     return <PageLoader text="טוען משתמשים..." />;
   }
 
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
+  }
+
   return (
     <SlideUp>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#111827]">ניהול משתמשים</h1>
-          <p className="text-[#6b7280] text-sm">ניהול והזמנת משתמשים למערכת</p>
-        </div>
-        <div className="flex gap-2">
-          <ExportMenu 
-            data={users}
-            columns={[
-              { header: 'שם מלא', accessor: 'full_name' },
-              { header: 'אימייל', accessor: 'email' },
-              { header: 'תפקיד', accessor: 'role' },
-              { header: 'תאריך הצטרפות', accessor: 'created_date' }
-            ]}
-            filename="users_list"
-            title="רשימת משתמשים"
-          />
-          <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2">
-                <UserPlus className="w-4 h-4" />
-                הזמן משתמש
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>הזמנת משתמש חדש</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label>כתובת אימייל</Label>
-                  <Input
-                    type="email"
-                    placeholder="email@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    dir="ltr"
-                  />
-                </div>
-                <div>
-                  <Label>תפקיד</Label>
-                  <Select value={inviteRole} onValueChange={setInviteRole}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">משתמש</SelectItem>
-                      <SelectItem value="admin">מנהל</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  className="w-full bg-[#3b82f6] hover:bg-[#2563eb]"
-                  onClick={handleInvite}
-                  disabled={inviteMutation.isPending}
-                >
-                  {inviteMutation.isPending ? 'שולח...' : 'שלח הזמנה'}
+          <div>
+            <h1 className="text-2xl font-bold text-[#111827]">ניהול משתמשים</h1>
+            <p className="text-[#6b7280] text-sm">ניהול והזמנת משתמשים למערכת</p>
+          </div>
+          <div className="flex gap-2">
+            <ExportMenu
+              data={users}
+              columns={[
+                { header: 'שם מלא', accessor: 'full_name' },
+                { header: 'אימייל', accessor: 'email' },
+                { header: 'תפקיד', accessor: 'role' },
+                { header: 'תאריך הצטרפות', accessor: 'created_date' },
+              ]}
+              filename="users_list"
+              title="רשימת משתמשים"
+            />
+            <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2">
+                  <UserPlus className="w-4 h-4" />
+                  הזמן משתמש
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>הזמנת משתמש חדש</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div>
+                    <Label>כתובת אימייל</Label>
+                    <Input
+                      type="email"
+                      placeholder="email@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <Label>תפקיד</Label>
+                    <Select value={inviteRole} onValueChange={setInviteRole}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">משתמש</SelectItem>
+                        <SelectItem value="admin">מנהל</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    className="w-full bg-[#3b82f6] hover:bg-[#2563eb]"
+                    onClick={handleInvite}
+                    disabled={inviteMutation.isPending}
+                  >
+                    {inviteMutation.isPending ? 'שולח...' : 'שלח הזמנה'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -224,17 +238,12 @@ export default function UserManagementPage() {
                 </div>
                 <div>
                   <Label>אימייל</Label>
-                  <Input
-                    value={editUser.email}
-                    disabled
-                    className="bg-gray-50"
-                    dir="ltr"
-                  />
+                  <Input value={editUser.email} disabled className="bg-gray-50" dir="ltr" />
                 </div>
                 <div>
                   <Label>תפקיד</Label>
-                  <Select 
-                    value={editUser.role} 
+                  <Select
+                    value={editUser.role}
                     onValueChange={(val) => setEditUser({ ...editUser, role: val })}
                   >
                     <SelectTrigger>
@@ -350,9 +359,9 @@ export default function UserManagementPage() {
                       {roleLabels[user.role] || user.role}
                     </Badge>
                     <div className="flex gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="gap-1 text-xs hover:bg-blue-50 text-blue-600"
                         onClick={() => {
                           setEditUser(user);

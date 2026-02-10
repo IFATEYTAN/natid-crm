@@ -283,7 +283,8 @@ export default function CallsPage() {
                 placeholder="חיפוש לפי מספר קריאה, שם לקוח, טלפון או מספר רכב..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-9"
+                className="pe-9"
+                aria-label="חיפוש קריאות"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>

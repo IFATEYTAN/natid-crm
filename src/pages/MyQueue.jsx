@@ -44,12 +44,7 @@ export default function MyQueuePage() {
     fetchUser();
   }, []);
 
-  const {
-    data: allCalls = [],
-    isLoading,
-    refetch,
-    isFetching,
-  } = useCalls();
+  const { data: allCalls = [], isLoading, isError, error, refetch, isFetching } = useCalls();
 
   // Filter calls assigned to current user (by created_by or assigned operator)
   const myCalls = useMemo(() => {
@@ -169,6 +164,15 @@ export default function MyQueuePage() {
       ),
     },
   ];
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

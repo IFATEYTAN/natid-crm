@@ -8,10 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Package, Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -27,8 +35,16 @@ const categoryLabels = {
 };
 
 const emptyForm = {
-  name: '', sku: '', category: 'other', unit_price: '', cost_price: '',
-  stock_quantity: 0, is_active: true, description: '', supplier: '', vat_included: true,
+  name: '',
+  sku: '',
+  category: 'other',
+  unit_price: '',
+  cost_price: '',
+  stock_quantity: 0,
+  is_active: true,
+  description: '',
+  supplier: '',
+  vat_included: true,
 };
 
 export default function ProductCatalogPage() {
@@ -44,8 +60,8 @@ export default function ProductCatalogPage() {
     queryFn: () => base44.entities.Product.list(),
   });
 
-  const filtered = products.filter(p =>
-    !search || p.name?.includes(search) || p.sku?.includes(search)
+  const filtered = products.filter(
+    (p) => !search || p.name?.includes(search) || p.sku?.includes(search)
   );
 
   const openCreate = () => {
@@ -117,11 +133,16 @@ export default function ProductCatalogPage() {
 
       <div className="relative">
         <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={'חיפוש לפי שם או מק"ט...'} className="pr-10" />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={'חיפוש לפי שם או מק"ט...'}
+          className="pe-10"
+        />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map(product => (
+        {filtered.map((product) => (
           <Card key={product.id} className={`bg-white ${!product.is_active ? 'opacity-60' : ''}`}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-2">
@@ -129,18 +150,32 @@ export default function ProductCatalogPage() {
                   <h3 className="font-semibold text-sm">{product.name}</h3>
                   {product.sku && <p className="text-xs text-gray-400">מק"ט: {product.sku}</p>}
                 </div>
-                <Badge className="bg-gray-100 text-gray-700 text-xs">{categoryLabels[product.category] || product.category}</Badge>
+                <Badge className="bg-gray-100 text-gray-700 text-xs">
+                  {categoryLabels[product.category] || product.category}
+                </Badge>
               </div>
               <div className="flex items-center justify-between mt-3">
                 <div>
                   <span className="font-bold text-lg">₪{product.unit_price?.toLocaleString()}</span>
-                  {product.cost_price && <span className="text-xs text-gray-400 mr-2">עלות: ₪{product.cost_price}</span>}
+                  {product.cost_price && (
+                    <span className="text-xs text-gray-400 me-2">עלות: ₪{product.cost_price}</span>
+                  )}
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(product)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => openEdit(product)}
+                  >
                     <Pencil className="w-3 h-3" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => handleDelete(product.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-red-400"
+                    onClick={() => handleDelete(product.id)}
+                  >
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
@@ -163,63 +198,103 @@ export default function ProductCatalogPage() {
       {/* Product Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editingProduct ? 'עריכת מוצר' : 'מוצר חדש'}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingProduct ? 'עריכת מוצר' : 'מוצר חדש'}</DialogTitle>
+          </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>שם מוצר</Label>
-                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                <Input
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
               </div>
               <div>
                 <Label>מק"ט</Label>
-                <Input value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} />
+                <Input
+                  value={form.sku}
+                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>קטגוריה</Label>
-                <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={form.category}
+                  onValueChange={(v) => setForm({ ...form, category: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {Object.entries(categoryLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                      <SelectItem key={k} value={k}>
+                        {v}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>כמות במלאי</Label>
-                <Input type="number" value={form.stock_quantity} onChange={e => setForm({ ...form, stock_quantity: e.target.value })} />
+                <Input
+                  type="number"
+                  value={form.stock_quantity}
+                  onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>מחיר מכירה (₪)</Label>
-                <Input type="number" value={form.unit_price} onChange={e => setForm({ ...form, unit_price: e.target.value })} />
+                <Input
+                  type="number"
+                  value={form.unit_price}
+                  onChange={(e) => setForm({ ...form, unit_price: e.target.value })}
+                />
               </div>
               <div>
                 <Label>מחיר עלות (₪)</Label>
-                <Input type="number" value={form.cost_price} onChange={e => setForm({ ...form, cost_price: e.target.value })} />
+                <Input
+                  type="number"
+                  value={form.cost_price}
+                  onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
+                />
               </div>
             </div>
             <div>
               <Label>ספק</Label>
-              <Input value={form.supplier} onChange={e => setForm({ ...form, supplier: e.target.value })} />
+              <Input
+                value={form.supplier}
+                onChange={(e) => setForm({ ...form, supplier: e.target.value })}
+              />
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Switch checked={form.is_active} onCheckedChange={v => setForm({ ...form, is_active: v })} />
+                <Switch
+                  checked={form.is_active}
+                  onCheckedChange={(v) => setForm({ ...form, is_active: v })}
+                />
                 <Label className="mb-0">פעיל</Label>
               </div>
               <div className="flex items-center gap-2">
-                <Switch checked={form.vat_included} onCheckedChange={v => setForm({ ...form, vat_included: v })} />
+                <Switch
+                  checked={form.vat_included}
+                  onCheckedChange={(v) => setForm({ ...form, vat_included: v })}
+                />
                 <Label className="mb-0">כולל מע"מ</Label>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>ביטול</Button>
-            <Button onClick={handleSave} isLoading={saving}>{editingProduct ? 'עדכן' : 'צור'}</Button>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>
+              ביטול
+            </Button>
+            <Button onClick={handleSave} isLoading={saving}>
+              {editingProduct ? 'עדכן' : 'צור'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

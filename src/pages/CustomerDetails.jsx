@@ -13,7 +13,12 @@ export default function CustomerDetails() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get('id');
 
-  const { data: customer, isLoading } = useQuery({
+  const {
+    data: customer,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['customer', id],
     enabled: !!id,
     queryFn: async () => {
@@ -41,6 +46,15 @@ export default function CustomerDetails() {
 
   if (isLoading) {
     return <PageLoader text="טוען פרטי לקוח..." />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
+        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
+      </div>
+    );
   }
 
   if (!customer) {

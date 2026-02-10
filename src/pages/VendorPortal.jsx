@@ -615,6 +615,7 @@ export default function VendorPortalPage() {
                     size="sm"
                     onClick={() => callsQuery.refetch()}
                     className="gap-1"
+                    aria-label="רענן"
                   >
                     <RefreshCw className={cn('w-4 h-4', callsQuery.isFetching && 'animate-spin')} />
                   </Button>
