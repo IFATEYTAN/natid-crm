@@ -86,14 +86,14 @@
 - CRUD + פורטל ספק ייעודי
 - מעקב GPS בזמן אמת (watchPosition, עדכון כל 30 שניות)
 - מפת ספקים חיה (Leaflet + OpenStreetMap)
-- אלגוריתם שיבוץ אוטומטי (ניקוד עד 105 נקודות: מרחק 40, סוג שירות 20, דירוג 20, זמן תגובה 10, שיעור השלמה 10, בונוס רכב 5)
+- אלגוריתם שיבוץ אוטומטי (ניקוד עד 110 נקודות: מרחק 40, סוג שירות 20, דירוג 20, זמן תגובה 10, שיעור השלמה 10, בונוס רכב 5, איזון עומסים +5/-5)
 - תשלומים ודוחות ביצועים
 - חוזים וסטטוס זמינות
 - חתימה דיגיטלית בסיום קריאה
 
 #### תור עבודה (queue)
-- תצוגת "התור שלי" לטכנאים (רענון כל 30 שניות)
-- מוניטור תור למנהלים (רענון כל 15 שניות)
+- תצוגת "התור שלי" לטכנאים (ללא polling אוטומטי - רענון ידני בלבד)
+- מוניטור תור למנהלים (feature version: polling כל 5-10 שניות, page version: 30 שניות)
 - העברת קריאות בין מוקדנים
 - איזון עומסים (מקסימום 5 קריאות למוקדן)
 - ניקוד עדיפויות אוטומטי
@@ -333,8 +333,7 @@
 | 10 | 5 פונקציות תקשורת לא מחוברות | notifications | sendCallStatusUpdate, sendNotification, createNotification, checkAndSendNotifications, botWebhook |
 | 11 | 3 cron jobs ללא scheduler | scheduling | checkAndSendNotifications, checkContractExpiry, detectSmartAlerts |
 | 12 | 2 רשומות phantom ב-permissions | permissions | AgentDashboard, AgentCallManagement רשומים ב-PAGE_PERMISSIONS אך **לא קיימים כעמודים** |
-| 13 | CoverageAreas = placeholder | vendors | 21 שורות, "Coming soon" |
-| 14 | Agents page = stub | agents | "Coming Soon" - עמוד AI agents |
+| 13 | Agents page = stub | agents | "Coming Soon" - עמוד AI agents |
 
 ### בינוני (שיפור לפני GA)
 
@@ -344,19 +343,18 @@
 | 16 | Triple AuthProvider | auth | 3 ספקי auth נפרדים - בלבול ו-redundancy |
 | 17 | Dead code: 4 פונקציות backend | backend | analyzeCallPatterns, submitVendorRating, getVendorScopedData, botWebhook - קיימות אך אף אחד לא קורא להן |
 | 18 | ETA calculation בסיסי | vendors | Haversine distance / 40 קמ"ש כברירת מחדל |
-| 19 | Dashboard metrics hardcoded | dashboard | חלק מ-KPIs hardcoded ולא מחושבים מנתונים אמיתיים |
-| 20 | usePermissions fallback לא בטוח | permissions | `canAccessPage` מחזיר `true` אם נקרא מחוץ ל-Provider (אם כי לא משפיע על RoleGuard) |
-| 21 | API keys ב-localStorage | settings | IntegrationSettings שומר API keys/webhook secrets בטקסט גלוי ב-localStorage |
+| 19 | usePermissions fallback לא בטוח | permissions | `canAccessPage` מחזיר `true` אם נקרא מחוץ ל-Provider (אם כי לא משפיע על RoleGuard) |
+| 20 | API keys ב-localStorage | settings | IntegrationSettings שומר API keys/webhook secrets בטקסט גלוי ב-localStorage |
 
 ### נמוך (שיפור מתמשך)
 
 | # | פער | מודול | תיאור |
 |---|---|---|---|
-| 22 | אין מנגנון העברת קריאות בין ספקים | calls | ספק לא יכול להעביר קריאה לספק אחר |
-| 23 | אין ניהול "הפסקה" לספק | vendors | אין סטטוס break מובנה |
-| 24 | ספק לא רואה דירוג עצמי | vendors | דירוג מחושב אך לא מוצג לספק |
-| 25 | אין זיהוי חפיפה בשיבוצים | assignments | ספק יכול להיות משובץ ל-2 קריאות במקביל |
-| 26 | AppAccessDeniedError באנגלית | UI | שאר המערכת בעברית |
+| 21 | אין מנגנון העברת קריאות בין ספקים | calls | ספק לא יכול להעביר קריאה לספק אחר |
+| 22 | אין ניהול "הפסקה" לספק | vendors | אין סטטוס break מובנה |
+| 23 | ספק לא רואה דירוג עצמי | vendors | דירוג מחושב אך לא מוצג לספק |
+| 24 | אין זיהוי חפיפה בשיבוצים | assignments | ספק יכול להיות משובץ ל-2 קריאות במקביל |
+| 25 | AppAccessDeniedError באנגלית | UI | שאר המערכת בעברית |
 
 ---
 
@@ -421,7 +419,7 @@
 | VendorContracts | admin, operator | 479 |
 | VendorTracking | admin, operator | 335 |
 | AllVendorsMap | admin, operator | 329 |
-| CoverageAreas | admin, operator | 349 |
+| CoverageAreas | admin, operator | 350 |
 | EditVendor | **לא מוגדר** | 409 |
 | NewVendor | admin, operator | 435 |
 | MyQueue | admin, operator | 287 |
