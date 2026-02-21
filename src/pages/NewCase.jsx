@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
@@ -16,7 +16,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, User, Car, MapPin, Wrench, AlertTriangle, Save, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  ArrowRight,
+  User,
+  Car,
+  MapPin,
+  Wrench,
+  AlertTriangle,
+  Save,
+  Loader2,
+  Truck,
+  Zap,
+  Info,
+} from 'lucide-react';
 import {
   validators,
   validateForm,
@@ -25,6 +38,8 @@ import {
 } from '@/components/forms/FormValidation';
 import { showToast } from '@/components/ui/FeedbackToast';
 import AICategorization from '@/components/ai/AICategorization';
+
+const TechnicalQuestionnaire = lazy(() => import('@/components/calls/TechnicalQuestionnaire'));
 
 const newCaseSchema = createValidationSchema({
   caller_name: { label: 'שם המתקשר', validators: [validators.required] },
@@ -65,6 +80,7 @@ export default function NewCase() {
     vehicle_type: 'car',
     vehicle_model: '',
     service_type: 'towing',
+    dispatch_type: '', // 'mobile_unit' or 'tow_truck' - auto-recommended based on service_type
     location_address: '',
     location_city: '',
     destination_address: '',
@@ -72,6 +88,8 @@ export default function NewCase() {
     priority: 'normal',
     problem_description: '',
     internal_notes: '',
+    questionnaire_answers: {},
+    customer_source: 'phone', // 'phone' or 'bot'
   });
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -332,7 +350,20 @@ export default function NewCase() {
                 <Label>סוג שירות *</Label>
                 <Select
                   value={formData.service_type}
-                  onValueChange={(value) => setFormData({ ...formData, service_type: value })}
+                  onValueChange={(value) => {
+                    // Auto-recommend dispatch type based on service type
+                    const mobileUnitTypes = ['battery', 'fuel'];
+                    const towTruckTypes = ['towing', 'accident'];
+                    let recommendedDispatch = formData.dispatch_type;
+                    if (mobileUnitTypes.includes(value)) recommendedDispatch = 'mobile_unit';
+                    else if (towTruckTypes.includes(value)) recommendedDispatch = 'tow_truck';
+                    setFormData({
+                      ...formData,
+                      service_type: value,
+                      dispatch_type: recommendedDispatch,
+                      questionnaire_answers: {},
+                    });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -343,6 +374,52 @@ export default function NewCase() {
                         {label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>סוג שיגור</Label>
+                <Select
+                  value={formData.dispatch_type}
+                  onValueChange={(value) => setFormData({ ...formData, dispatch_type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר סוג שיגור" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mobile_unit">
+                      <span className="flex items-center gap-2">
+                        <Zap className="w-3 h-3 text-blue-500" />
+                        ניידת (שירותי דרך)
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="tow_truck">
+                      <span className="flex items-center gap-2">
+                        <Truck className="w-3 h-3 text-orange-500" />
+                        גרר
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {formData.dispatch_type === 'mobile_unit' && (
+                  <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    ניידת עדיפה כשמדובר בבעיית מצבר/טעינה - עלות נמוכה יותר
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label>מקור לקוח</Label>
+                <Select
+                  value={formData.customer_source}
+                  onValueChange={(value) => setFormData({ ...formData, customer_source: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="phone">טלפוני (שיחת סגירה)</SelectItem>
+                    <SelectItem value="bot">בוט WhatsApp (סקר אוטומטי 48 שעות)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -397,6 +474,15 @@ export default function NewCase() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Technical Questionnaire */}
+        <Suspense fallback={null}>
+          <TechnicalQuestionnaire
+            serviceType={formData.service_type}
+            answers={formData.questionnaire_answers}
+            onChange={(answers) => setFormData({ ...formData, questionnaire_answers: answers })}
+          />
+        </Suspense>
 
         {/* Actions */}
         <div className="flex justify-end gap-3">

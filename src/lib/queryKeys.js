@@ -140,6 +140,27 @@ export const queryKeys = {
   historicalData: {
     all: () => ['historicalData'],
   },
+
+  // Fleet Management (צי רכב - גררים וניידות פנימיים)
+  fleet: {
+    all: () => ['fleet'],
+    detail: (id) => ['fleet', id],
+    list: (filters) => ['fleet', { filters }],
+    active: () => ['fleet', 'active'],
+  },
+
+  // Vendor Pricing (הסכמי תמחור ספקים)
+  vendorPricing: {
+    all: () => ['vendorPricing'],
+    detail: (id) => ['vendorPricing', id],
+    byVendor: (vendorId) => ['vendorPricing', 'vendor', vendorId],
+  },
+
+  // Technical Questionnaires (שאלונים טכניים)
+  questionnaires: {
+    all: () => ['questionnaires'],
+    byServiceType: (serviceType) => ['questionnaires', serviceType],
+  },
 };
 
 export default queryKeys;
