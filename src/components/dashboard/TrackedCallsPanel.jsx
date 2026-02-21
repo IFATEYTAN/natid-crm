@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -91,6 +92,8 @@ function getSlaRowClass(minutes) {
 }
 
 export default function TrackedCallsPanel({ calls = [], isLoading, onCallClick }) {
+  const { isAdmin } = usePermissions();
+
   const activeCalls = useMemo(
     () => calls.filter((c) => ACTIVE_STATUSES.includes(c.call_status)),
     [calls]

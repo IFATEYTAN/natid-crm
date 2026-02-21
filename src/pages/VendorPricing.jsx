@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useCurrentUserRole } from '@/components/auth/RoleGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +74,7 @@ function isAgreementExpired(validUntil) {
 }
 
 export default function VendorPricingPage() {
+  const { isAdmin, loading: roleLoading } = useCurrentUserRole();
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
   const [editingAgreement, setEditingAgreement] = useState(null);
@@ -296,6 +298,18 @@ export default function VendorPricingPage() {
       ),
     },
   ];
+
+  if (roleLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null; // Route-level RoleGuard handles the access denied UI
+  }
 
   return (
     <div className="space-y-6">

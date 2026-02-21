@@ -20,9 +20,22 @@ export default function InvoicesPage() {
     }
   }, []);
 
+  const isValidUrl = (url) => {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    } catch {
+      return false;
+    }
+  };
+
   const handleSaveUrl = () => {
     if (!urlInput.trim()) {
       toast.error('יש להזין כתובת URL');
+      return;
+    }
+    if (!isValidUrl(urlInput.trim())) {
+      toast.error('כתובת URL לא תקינה - יש להזין כתובת המתחילה ב-https://');
       return;
     }
     setCrmUrl(urlInput.trim());
@@ -62,11 +75,13 @@ export default function InvoicesPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {crmUrl ? (
+              {crmUrl && isValidUrl(crmUrl) ? (
                 <iframe
                   src={crmUrl}
                   title="CRM חשבוניות"
                   className="w-full min-h-[600px] rounded-lg border border-[#e5e7eb]"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  referrerPolicy="no-referrer"
                   allow="fullscreen"
                 />
               ) : (

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useCurrentUserRole } from '@/components/auth/RoleGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,6 +78,7 @@ const emptyForm = {
 };
 
 export default function FleetManagementPage() {
+  const { isAdmin, loading: roleLoading } = useCurrentUserRole();
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
@@ -180,8 +182,12 @@ export default function FleetManagementPage() {
     }
   };
 
-  if (isLoading) {
+  if (roleLoading || isLoading) {
     return <PageLoader text="טוען צי רכב..." />;
+  }
+
+  if (!isAdmin) {
+    return null; // Route-level RoleGuard handles the access denied UI
   }
 
   if (isError) {

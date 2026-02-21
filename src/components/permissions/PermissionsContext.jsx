@@ -66,6 +66,9 @@ const PAGE_GRANULAR_PERMISSIONS = {
   NotificationSettings: { category: 'system', permission: 'settings' },
   ImportHistoricalData: { category: 'system', permission: 'settings' },
   Agents: { category: 'system', permission: 'automations' },
+  FleetManagement: { category: 'system', permission: 'settings' },
+  VendorPricing: { category: 'vendors', permission: 'manage_contracts' },
+  Invoices: { category: 'reports', permission: 'financial' },
 };
 
 export function PermissionsProvider({ children }) {
