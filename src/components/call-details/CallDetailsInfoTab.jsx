@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react';
-import { User, Car, MapPin, Truck, PenTool, CheckCircle } from 'lucide-react';
+import { User, Car, MapPin, Truck, PenTool, CheckCircle, Mic, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/components/utils';
 import { issueTypeLabels } from './callDetailsConstants';
 
@@ -134,6 +135,71 @@ export default function CallDetailsInfoTab({
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Recording & Questionnaire Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Call Recording */}
+        <Card className="bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Mic className="w-4 h-4 text-[#6B778C]" />
+              הקלטת שיחה
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {call?.recording_url ? (
+              <div className="space-y-2">
+                <a
+                  href={call.recording_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  האזנה להקלטה
+                </a>
+                {call.closing_call_done && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    שיחת סגירה בוצעה
+                  </Badge>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-[#6B778C]">
+                <Mic className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p>אין הקלטה זמינה</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Technical Questionnaire Answers */}
+        {call?.questionnaire_answers && Object.keys(call.questionnaire_answers).length > 0 && (
+          <Card className="bg-white">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-[#6B778C]" />
+                שאלון טכני
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {Object.entries(call.questionnaire_answers).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0"
+                  >
+                    <span className="text-sm text-[#6B778C]">{key}</span>
+                    <span className="text-sm font-medium">
+                      {typeof value === 'boolean' ? (value ? 'כן' : 'לא') : value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Signature Section */}

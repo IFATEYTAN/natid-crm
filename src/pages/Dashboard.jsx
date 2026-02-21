@@ -62,6 +62,7 @@ const DashboardOperatorTab = lazy(() => import('@/components/dashboard/Dashboard
 const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
 const SmartAlertsTab = lazy(() => import('@/components/dashboard/SmartAlertsTab'));
 const VendorMapWidget = lazy(() => import('@/components/dashboard/VendorMapWidget'));
+const TrackedCallsPanel = lazy(() => import('@/components/dashboard/TrackedCallsPanel'));
 const EscalationPredictionWidget = lazy(() => import('@/components/ai/EscalationPredictionWidget'));
 const RecurringPatternsWidget = lazy(() => import('@/components/ai/RecurringPatternsWidget'));
 const ProactiveRecommendationsWidget = lazy(
@@ -327,6 +328,15 @@ export default function Dashboard() {
             </Suspense>
           </div>
 
+          {/* קריאות במעקב - פאנל קריאות פעילות מעל המפה */}
+          <Suspense fallback={<Skeleton className="h-64" />}>
+            <TrackedCallsPanel
+              calls={calls}
+              isLoading={isLoading}
+              onCallClick={(callId) => navigate(createPageUrl(`CallDetails?id=${callId}`))}
+            />
+          </Suspense>
+
           {/* מעקב GPS ספקים */}
           <Suspense fallback={<Skeleton className="h-[350px]" />}>
             <VendorMapWidget />
@@ -336,29 +346,6 @@ export default function Dashboard() {
           <Suspense fallback={<Skeleton className="h-64" />}>
             <WorkQueueOverview calls={calls} isLoading={isLoading} />
           </Suspense>
-
-          {/* קריאות במעקב - רק קריאות בטיפול פעיל */}
-          <CollapsibleCard
-            title="קריאות במעקב"
-            headerRight={
-              <Link to={createPageUrl('Calls')}>
-                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                  לכל הקריאות <ChevronLeft className="w-4 h-4 ms-1" />
-                </Button>
-              </Link>
-            }
-          >
-            <Suspense fallback={<Skeleton className="h-40" />}>
-              <DataTableLazy
-                columns={columns}
-                data={openCalls}
-                isLoading={isLoading}
-                onRowClick={(row) => navigate(createPageUrl(`CallDetails?id=${row.id}`))}
-                emptyMessage="אין קריאות בטיפול כרגע"
-                rowColorField="call_status"
-              />
-            </Suspense>
-          </CollapsibleCard>
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">

@@ -137,17 +137,22 @@ function LayoutContent({ children, currentPageName }) {
       title: 'ניהול ספקים',
       items: [
         { name: 'נותני שירות', href: 'ServiceProviders' },
+        { name: 'הסכמי תמחור', href: 'VendorPricing' },
         { name: 'חוזי ספקים', href: 'VendorContracts' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
-
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
       ],
     },
     {
+      title: 'צי רכב',
+      items: [{ name: 'ניהול צי רכב', href: 'FleetManagement' }],
+    },
+    {
       title: 'כלכלה ותשלומים',
       items: [
         { name: 'תעריפון תפעול', href: 'OperationalRates' },
+        { name: 'חשבוניות', href: 'Invoices' },
         { name: 'קטלוג מוצרים', href: 'ProductCatalog' },
         { name: 'תזכורות', href: 'Reminders' },
       ],
