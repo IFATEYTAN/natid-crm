@@ -396,8 +396,8 @@ function TowTruckSVG({ isTalking }) {
           cx="63"
           cy="49"
           rx="2.5"
-          ry="1.5"
           fill="#7F1D1D"
+          initial={{ ry: 1.5 }}
           animate={{ ry: [1, 2, 1] }}
           transition={{ duration: 0.3, repeat: Infinity }}
         />
