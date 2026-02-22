@@ -155,25 +155,34 @@ export function PermissionsProvider({ children }) {
         return userPermissions.custom_permissions[category][permission];
       }
 
-      // בדיקת הרשאות מהתפקיד (מה-Role entity)
+      // בדיקת הרשאות מהתפקיד (מה-Role entity) - this is the primary source of truth
       if (userPermissions?.roleData?.permissions?.[category]?.[permission] !== undefined) {
         return userPermissions.roleData.permissions[category][permission];
       }
 
-      // ברירת מחדל לפי שם תפקיד אפקטיבי
-      if (effectiveRoleName === 'manager') {
-        // מנהל תפעול - גישה רחבה מלבד ניהול מערכת
+      // Fallback: use roleData.name if available, otherwise use effectiveRoleName
+      const roleName = userPermissions?.roleData?.name || effectiveRoleName;
+      
+      if (roleName === 'manager') {
         return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
       }
-      if (effectiveRoleName === 'agent') {
+      if (roleName === 'agent') {
         return DEFAULT_AGENT_PERMISSIONS[category]?.[permission] ?? false;
       }
-      if (effectiveRoleName === 'vendor') {
+      if (roleName === 'vendor') {
         return false;
       }
-      if (effectiveRoleName === 'operator') {
+      if (roleName === 'operator') {
         return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
       }
+      
+      // If platform role is 'user' but we have userPermissions, allow basic access
+      // This handles the case where role_name is a Hebrew display name that doesn't match
+      if (roleName === 'user' && userPermissions) {
+        // User has a UserPermission record but role couldn't be matched - grant agent-level defaults
+        return DEFAULT_AGENT_PERMISSIONS[category]?.[permission] ?? false;
+      }
+      
       // ברירת מחדל - אין גישה
       return false;
     },
