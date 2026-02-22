@@ -161,15 +161,15 @@ export default function CallDetailsPage() {
 
     await base44.entities.Call.update(callId, updates);
     queryClient.invalidateQueries({ queryKey: ['call', callId] });
-    logAction(
-      'status_change',
-      'Call',
-      callId,
-      call?.call_number,
-      `Status: ${call?.call_status} → ${newStatus}`,
-      call?.call_status,
-      newStatus
-    );
+    logAction({
+      action: 'status_change',
+      entity_type: 'Call',
+      entity_id: callId,
+      entity_name: call?.call_number,
+      details: `Status: ${call?.call_status} → ${newStatus}`,
+      old_value: call?.call_status,
+      new_value: newStatus,
+    });
 
     if (newStatus === 'completed') {
       try {
@@ -214,7 +214,13 @@ export default function CallDetailsPage() {
     });
     queryClient.invalidateQueries({ queryKey: ['call', callId] });
 
-    logAction('assign', 'Call', callId, call?.call_number, `Assigned to ${vendor?.vendor_name}`);
+    logAction({
+      action: 'assign',
+      entity_type: 'Call',
+      entity_id: callId,
+      entity_name: call?.call_number,
+      details: `Assigned to ${vendor?.vendor_name}`,
+    });
 
     base44.entities.CallHistory.create({
       call_id: callId,

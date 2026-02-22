@@ -7,7 +7,7 @@ import { Sparkles, Trophy, MapPin, Clock } from 'lucide-react';
 
 export default function VendorRecommendation({ callDetails, onSelectVendor }) {
   const { data, isLoading } = useQuery({
-    queryKey: ['vendor-recommendation', callDetails.id],
+    queryKey: ['vendor-recommendation', callDetails?.id],
     queryFn: () =>
       base44.functions
         .invoke('recommendVendor', { call_details: callDetails })
@@ -46,7 +46,7 @@ export default function VendorRecommendation({ callDetails, onSelectVendor }) {
           <div
             key={rec.vendor_id}
             className="group relative bg-white border border-gray-200 rounded-lg p-3 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer"
-            onClick={() => onSelectVendor && onSelectVendor(rec.vendor)}
+            onClick={() => onSelectVendor && rec.vendor && onSelectVendor(rec.vendor)}
           >
             {index === 0 && (
               <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
@@ -57,15 +57,15 @@ export default function VendorRecommendation({ callDetails, onSelectVendor }) {
 
             <div className="flex justify-between items-start mb-2">
               <div>
-                <h5 className="font-semibold text-gray-900">{rec.vendor.vendor_name}</h5>
+                <h5 className="font-semibold text-gray-900">{rec.vendor?.vendor_name || '-'}</h5>
                 <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {rec.vendor.coverage_areas?.slice(0, 2).join(', ')}
+                    {rec.vendor?.coverage_areas?.slice(0, 2).join(', ') || '-'}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {rec.vendor.average_response_time
+                    {rec.vendor?.average_response_time
                       ? `~${Math.round(rec.vendor.average_response_time)} דק'`
                       : '-'}
                   </span>

@@ -93,8 +93,17 @@ function LayoutContent({ children, currentPageName }) {
 
     if (!canAccessPage(currentPageName)) {
       hasRedirected.current = true;
-      // Find the first accessible page for this user
-      const fallbackPages = ['Calls', 'Dashboard', 'QueueMonitor', 'Calendar', 'UserProfile'];
+      // Find the first accessible page – covers all roles
+      const fallbackPages = [
+        'Dashboard',
+        'Calls',
+        'QueueMonitor',
+        'Calendar',
+        'VendorPortal',
+        'VendorCallManagement',
+        'UserProfile',
+        'FormView',
+      ];
       const firstAccessible = fallbackPages.find((p) => canAccessPage(p));
       if (firstAccessible) {
         navigate(createPageUrl(firstAccessible), { replace: true });

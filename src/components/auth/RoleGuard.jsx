@@ -1,14 +1,23 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ShieldAlert, Home } from 'lucide-react';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
+
+/**
+ * Default pages per role – used when redirecting after access denied.
+ * First accessible page wins.
+ */
+const ROLE_DEFAULT_PAGES = {
+  operator: ['Dashboard', 'Calls', 'QueueMonitor', 'Calendar'],
+  vendor: ['VendorPortal', 'VendorCallManagement', 'MyVendorProfile'],
+  agent: ['UserProfile', 'FormView', 'UserGuide'],
+};
 
 /**
  * RoleGuard - Protects content based on user role
  * Uses effectiveRole from PermissionsContext (resolves Base44 platform role to app role)
+ * When access is denied and showAccessDenied is true, automatically redirects to the
+ * user's default page instead of showing an error card.
  * @param {string[]} allowedRoles - Array of allowed roles ['admin', 'operator', 'vendor', 'agent']
  * @param {React.ReactNode} children - Content to render if authorized
  * @param {React.ReactNode} fallback - Optional fallback content
@@ -19,7 +28,19 @@ export default function RoleGuard({
   fallback = null,
   showAccessDenied = true,
 }) {
-  const { effectiveRole, isLoading } = usePermissions();
+  const { effectiveRole, canAccessPage, isLoading } = usePermissions();
+  const navigate = useNavigate();
+
+  const hasAccess = !isLoading && (effectiveRole === 'admin' || allowedRoles.includes(effectiveRole));
+
+  // Redirect to the user's default accessible page when access is denied
+  useEffect(() => {
+    if (isLoading || hasAccess || fallback || !showAccessDenied) return;
+
+    const candidates = ROLE_DEFAULT_PAGES[effectiveRole] || [];
+    const target = candidates.find((p) => canAccessPage(p)) || 'UserProfile';
+    navigate(createPageUrl(target), { replace: true });
+  }, [isLoading, hasAccess, effectiveRole, canAccessPage, navigate, fallback, showAccessDenied]);
 
   if (isLoading) {
     return (
@@ -29,33 +50,15 @@ export default function RoleGuard({
     );
   }
 
-  const hasAccess = effectiveRole === 'admin' || allowedRoles.includes(effectiveRole);
-
   if (!hasAccess) {
     if (fallback) return fallback;
 
-    if (showAccessDenied) {
-      return (
-        <Card className="max-w-md mx-auto mt-12">
-          <CardContent className="pt-6 text-center">
-            <ShieldAlert className="w-16 h-16 mx-auto text-red-500 mb-4" />
-            <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין הרשאה</h2>
-            <p className="text-[#6B778C] mb-6">
-              אין לך הרשאה לצפות בתוכן זה.
-              {effectiveRole && <span className="block mt-1">התפקיד שלך: {effectiveRole}</span>}
-            </p>
-            <Link to={createPageUrl('Dashboard')}>
-              <Button className="gap-2">
-                <Home className="w-4 h-4" />
-                חזרה לדשבורד
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return null;
+    // Show spinner while the redirect effect fires
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return children;
