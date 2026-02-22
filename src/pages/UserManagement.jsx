@@ -82,14 +82,29 @@ export default function UserManagementPage() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: ({ email, role }) => base44.users.inviteUser(email, role),
+    mutationFn: async ({ email, role }) => {
+      // Platform only supports "admin" or "user" - map app roles accordingly
+      const platformRole = role === 'admin' ? 'admin' : 'user';
+      await base44.users.inviteUser(email, platformRole);
+      
+      // Find the matching Role entity for this app role
+      const allRoles = await base44.entities.Role.list();
+      const matchedRole = allRoles.find(r => r.name === role);
+      
+      // Create UserPermission record with the app-specific role
+      await base44.entities.UserPermission.create({
+        user_id: '', // will be updated when user logs in
+        user_email: email,
+        role_id: matchedRole?.id || '',
+        role_name: matchedRole?.display_name || role,
+      });
+    },
     onSuccess: (_, variables) => {
-      // Log to audit
       logCreate(
         'User',
         null,
         variables.email,
-        `הוזמן משתמש חדש: ${variables.email} בתפקיד ${variables.role}`
+        `הוזמן משתמש חדש: ${variables.email} בתפקיד ${roleLabels[variables.role] || variables.role}`
       );
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setInviteDialogOpen(false);
