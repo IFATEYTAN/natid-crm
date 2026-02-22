@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { sanitizeVendorCreate } from '@/lib/schemas/vendor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -147,27 +148,12 @@ export default function NewVendorPage() {
       return;
     }
 
-    // Build clean data object with only valid Vendor entity fields
-    const data = {
-      vendor_name: formData.vendor_name,
-      contact_person: formData.contact_person,
-      phone: formData.phone,
-      phone_2: formData.phone_2,
-      email: formData.email,
-      service_type: formData.service_type,
-      coverage_areas: formData.coverage_areas,
-      works_24_7: formData.works_24_7,
-      working_hours_start: formData.working_hours_start,
-      working_hours_end: formData.working_hours_end,
-      payment_rate_per_call: formData.payment_rate_per_call
-        ? Number(formData.payment_rate_per_call)
-        : null,
-      notes: formData.notes,
-      is_active: formData.is_active,
-      availability_status: formData.availability_status,
-    };
-
-    createMutation.mutate(data);
+    try {
+      const data = sanitizeVendorCreate(formData);
+      createMutation.mutate(data);
+    } catch (validationError) {
+      showToast.error(validationError.message);
+    }
   };
 
   return (

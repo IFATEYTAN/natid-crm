@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { base44 } from '@/lib/api';
+import { sanitizeVendorCreate, sanitizeVendorUpdate } from '@/lib/schemas/vendor';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ExportMenu from '@/components/ui/ExportMenu';
@@ -177,17 +178,16 @@ export default function ServiceProviders() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const data = {
-      ...formData,
-      payment_rate_per_call: formData.payment_rate_per_call
-        ? Number(formData.payment_rate_per_call)
-        : null,
-    };
-
-    if (editingProvider) {
-      updateMutation.mutate({ id: editingProvider.id, data });
-    } else {
-      createMutation.mutate(data);
+    try {
+      if (editingProvider) {
+        const data = sanitizeVendorUpdate(formData);
+        updateMutation.mutate({ id: editingProvider.id, data });
+      } else {
+        const data = sanitizeVendorCreate(formData);
+        createMutation.mutate(data);
+      }
+    } catch (validationError) {
+      toast.error(validationError.message);
     }
   };
 
