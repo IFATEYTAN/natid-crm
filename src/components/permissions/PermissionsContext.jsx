@@ -212,7 +212,8 @@ export function PermissionsProvider({ children }) {
     canAccessReport,
     hasAnyPermission,
     hasAllPermissions,
-    isAdmin: currentUser?.role === 'admin',
+    isAdmin: isEffectiveAdmin,
+    effectiveRoleName,
     isLoading,
   };
 
