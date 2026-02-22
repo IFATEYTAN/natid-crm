@@ -120,34 +120,40 @@ export function PermissionsProvider({ children }) {
     loadUserAndPermissions();
   }, []);
 
+  // זיהוי תפקיד אפקטיבי - מבוסס על UserPermission/Role ולא על role הפלטפורמה
+  const effectiveRoleName = userPermissions?.roleData?.name || userPermissions?.role_name || currentUser?.role;
+  const isEffectiveAdmin = effectiveRoleName === 'admin' || currentUser?.role === 'admin';
+
   // בדיקת הרשאה
   const hasPermission = useCallback(
     (category, permission) => {
-      // אדמינים מקבלים הכל
-      if (currentUser?.role === 'admin') return true;
+      // אדמינים (לפי role של הפלטפורמה או לפי תפקיד מנהל מערכת) מקבלים הכל
+      if (isEffectiveAdmin) return true;
 
       // בדיקת הרשאות מותאמות אישית (עוקפות את התפקיד)
       if (userPermissions?.custom_permissions?.[category]?.[permission] !== undefined) {
         return userPermissions.custom_permissions[category][permission];
       }
 
-      // בדיקת הרשאות מהתפקיד
+      // בדיקת הרשאות מהתפקיד (מה-Role entity)
       if (userPermissions?.roleData?.permissions?.[category]?.[permission] !== undefined) {
         return userPermissions.roleData.permissions[category][permission];
       }
 
-      // ברירת מחדל לפי תפקיד
-      if (currentUser?.role === 'agent') {
+      // ברירת מחדל לפי שם תפקיד אפקטיבי
+      if (effectiveRoleName === 'agent') {
         return DEFAULT_AGENT_PERMISSIONS[category]?.[permission] ?? false;
       }
-      if (currentUser?.role === 'vendor') {
-        // ספקים - אין הרשאות ברירת מחדל (הכל דרך דפי vendor)
+      if (effectiveRoleName === 'vendor') {
         return false;
       }
-      // מוקדן - ברירת מחדל
-      return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
+      if (effectiveRoleName === 'operator') {
+        return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
+      }
+      // ברירת מחדל - אין גישה
+      return false;
     },
-    [currentUser, userPermissions]
+    [isEffectiveAdmin, effectiveRoleName, userPermissions]
   );
 
   // בדיקת גישה לדף
