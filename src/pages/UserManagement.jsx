@@ -509,8 +509,8 @@ export default function UserManagementPage() {
                         <span dir="ltr">{user.email}</span>
                       </div>
                     </div>
-                    <Badge className={cn('text-xs', roleBadgeColors[user.role])}>
-                      {roleLabels[user.role] || user.role}
+                    <Badge className={cn('text-xs', roleBadgeColors[getEffectiveRole(user)])}>
+                      {roleLabels[getEffectiveRole(user)] || getEffectiveRole(user)}
                     </Badge>
                     <div className="flex gap-1">
                       <Button
