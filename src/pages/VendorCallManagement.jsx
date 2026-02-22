@@ -119,18 +119,22 @@ export default function VendorCallManagementPage() {
     enabled: !!currentUser?.email,
   });
 
-  // Get call details
+  // Get call details - verify ownership by vendor
   const callQuery = useQuery({
-    queryKey: ['vendorCall', selectedCallId],
+    queryKey: ['vendorCall', selectedCallId, vendorProfile?.id],
     queryFn: async () => {
       const calls = await base44.entities.Call.filter({ id: selectedCallId });
       if (calls.length > 0) {
+        // Verify this call belongs to the logged-in vendor
+        if (vendorProfile && calls[0].assigned_vendor_id !== vendorProfile.id) {
+          return null;
+        }
         setVendorNotes(calls[0].vendor_notes || '');
         return calls[0];
       }
       return null;
     },
-    enabled: !!selectedCallId,
+    enabled: !!selectedCallId && !!vendorProfile?.id,
   });
 
   // Get call photos
@@ -326,7 +330,8 @@ export default function VendorCallManagementPage() {
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
-            <h2 className="text-xl font-bold mb-2">קריאה לא נמצאה</h2>
+            <h2 className="text-xl font-bold mb-2">הקריאה לא נמצאה או שאין לך הרשאה לצפות בה</h2>
+            <p className="text-[#6B778C] mb-4">ניתן לגשת רק לקריאות שהוקצו אליך</p>
             <Link to={createPageUrl('VendorPortal')}>
               <Button className="bg-[#3b82f6]">חזרה לפורטל</Button>
             </Link>
