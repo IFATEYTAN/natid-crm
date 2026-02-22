@@ -76,6 +76,11 @@ function LayoutContent({ children, currentPageName }) {
     }
   }, [isLoadingAuth, currentUser, currentPageName, navigate]);
 
+  // Reset redirect flag when page changes
+  useEffect(() => {
+    hasRedirected.current = false;
+  }, [currentPageName]);
+
   // Auto-redirect when user lands on a page they cannot access
   useEffect(() => {
     if (isLoadingAuth || !currentUser || hasRedirected.current) return;
