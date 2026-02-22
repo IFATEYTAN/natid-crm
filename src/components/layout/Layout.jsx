@@ -76,6 +76,24 @@ function LayoutContent({ children, currentPageName }) {
     }
   }, [isLoadingAuth, currentUser, currentPageName, navigate]);
 
+  // Auto-redirect when user lands on a page they cannot access
+  useEffect(() => {
+    if (isLoadingAuth || !currentUser || hasRedirected.current) return;
+    if (currentPageName === 'LandingPage') return;
+    
+    if (!canAccessPage(currentPageName)) {
+      hasRedirected.current = true;
+      // Find the first accessible page for this user
+      const fallbackPages = ['Calls', 'Dashboard', 'QueueMonitor', 'Calendar', 'UserProfile'];
+      const firstAccessible = fallbackPages.find(p => canAccessPage(p));
+      if (firstAccessible) {
+        navigate(createPageUrl(firstAccessible), { replace: true });
+      } else {
+        navigate(createPageUrl('UserProfile'), { replace: true });
+      }
+    }
+  }, [isLoadingAuth, currentUser, currentPageName, canAccessPage, navigate]);
+
   // Auto-redirect when visiting /login (builder preview link) to the official Base44 login flow
   useEffect(() => {
     if (typeof window !== 'undefined') {
