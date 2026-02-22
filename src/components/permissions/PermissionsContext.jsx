@@ -141,6 +141,8 @@ export function PermissionsProvider({ children }) {
   // IMPORTANT: userPermissions?.role_name may be a display_name like "נציג שטח", so prefer roleData.name
   const effectiveRoleName = userPermissions?.roleData?.name || currentUser?.role;
   const isEffectiveAdmin = effectiveRoleName === 'admin' || currentUser?.role === 'admin';
+  
+  console.log('[Permissions] effectiveRoleName:', effectiveRoleName, 'isAdmin:', isEffectiveAdmin, 'roleData:', userPermissions?.roleData?.name, 'platformRole:', currentUser?.role);
 
   // בדיקת הרשאה
   const hasPermission = useCallback(
