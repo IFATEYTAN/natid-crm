@@ -518,7 +518,7 @@ export default function UserManagementPage() {
                         size="sm"
                         className="gap-1 text-xs hover:bg-blue-50 text-blue-600"
                         onClick={() => {
-                          setEditUser(user);
+                          setEditUser({ ...user, role: getEffectiveRole(user) });
                           setEditDialogOpen(true);
                         }}
                       >
