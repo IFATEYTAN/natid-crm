@@ -193,9 +193,13 @@ export function PermissionsProvider({ children }) {
       const pageConfig = PAGE_GRANULAR_PERMISSIONS[pageName];
       if (!pageConfig) return true; // דפים ללא הגדרה - מותרים לכולם
 
-      return hasPermission(pageConfig.category, pageConfig.permission);
+      const result = hasPermission(pageConfig.category, pageConfig.permission);
+      if (pageName === 'Dashboard' || !result) {
+        console.log('[Permissions] canAccessPage:', pageName, '→', result, 'config:', pageConfig, 'effectiveRole:', effectiveRoleName);
+      }
+      return result;
     },
-    [currentUser, userPermissions, hasPermission]
+    [currentUser, userPermissions, hasPermission, isEffectiveAdmin, effectiveRoleName]
   );
 
   // בדיקת גישה לדוח
