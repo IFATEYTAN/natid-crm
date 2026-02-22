@@ -32,10 +32,11 @@ const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaste
 
 function LayoutContent({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { currentUser, canAccessPage, isLoading: isLoadingAuth } = usePermissions();
+  const { currentUser, canAccessPage, isLoading: isLoadingAuth, effectiveRoleName } = usePermissions();
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const hasRedirected = useRef(false);
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
