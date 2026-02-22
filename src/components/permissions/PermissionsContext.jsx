@@ -84,32 +84,26 @@ export function PermissionsProvider({ children }) {
         setCurrentUser(user);
 
         if (user?.id) {
-          // Load roles first
+          // Load roles and permissions in parallel
           let allRoles = [];
-          try {
-            allRoles = await base44.entities.Role.list();
-          } catch (e) {
-            console.error('Failed to load roles:', e);
-          }
-
-          // חיפוש לפי user_id או לפי user_email
           let permissions = [];
-          try {
-            permissions = await base44.entities.UserPermission.filter({ user_id: user.id });
-          } catch (e) {
-            console.error('Failed to filter by user_id:', e);
-          }
+          
+          const [rolesResult, permByIdResult] = await Promise.allSettled([
+            base44.entities.Role.list(),
+            base44.entities.UserPermission.filter({ user_id: user.id })
+          ]);
+          
+          if (rolesResult.status === 'fulfilled') allRoles = rolesResult.value;
+          if (permByIdResult.status === 'fulfilled') permissions = permByIdResult.value;
+          
+          // Fallback: try by email if no results by user_id
           if (permissions.length === 0 && user.email) {
             try {
               permissions = await base44.entities.UserPermission.filter({ user_email: user.email });
             } catch (e) {
-              console.error('Failed to filter by user_email:', e);
+              // silently ignore - user might not have query permissions
             }
           }
-          
-          console.log('[Permissions] User:', user.email, 'role:', user.role, 'id:', user.id);
-          console.log('[Permissions] Found permissions:', permissions.length, permissions.length > 0 ? JSON.stringify({role_id: permissions[0].role_id, role_name: permissions[0].role_name}) : 'none');
-          console.log('[Permissions] Available roles:', allRoles.map(r => r.name + '/' + r.id).join(', '));
           
           if (permissions.length > 0) {
             const perm = permissions[0];
@@ -120,11 +114,22 @@ export function PermissionsProvider({ children }) {
             if (!matchedRole && perm.role_name) {
               matchedRole = allRoles.find(r => r.display_name === perm.role_name || r.name === perm.role_name);
             }
-            console.log('[Permissions] Matched role:', matchedRole ? matchedRole.name : 'NONE');
             if (matchedRole) {
               setUserPermissions({ ...perm, roleData: matchedRole });
             } else {
               setUserPermissions(perm);
+            }
+          } else if (allRoles.length > 0 && user.role === 'user') {
+            // No UserPermission found but user exists - create a synthetic permission
+            // based on the default 'agent' role so they're not locked out
+            const defaultRole = allRoles.find(r => r.name === 'agent') || allRoles.find(r => r.name === 'operator');
+            if (defaultRole) {
+              setUserPermissions({ 
+                user_id: user.id, 
+                user_email: user.email, 
+                role_name: defaultRole.display_name,
+                roleData: defaultRole 
+              });
             }
           }
         }
