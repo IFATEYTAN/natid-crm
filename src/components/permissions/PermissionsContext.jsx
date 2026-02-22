@@ -84,29 +84,46 @@ export function PermissionsProvider({ children }) {
         setCurrentUser(user);
 
         if (user?.id) {
-          // חיפוש לפי user_id או לפי user_email
-          let permissions = await base44.entities.UserPermission.filter({ user_id: user.id });
-          if (permissions.length === 0 && user.email) {
-            permissions = await base44.entities.UserPermission.filter({ user_email: user.email });
+          // Load roles first
+          let allRoles = [];
+          try {
+            allRoles = await base44.entities.Role.list();
+          } catch (e) {
+            console.error('Failed to load roles:', e);
           }
+
+          // חיפוש לפי user_id או לפי user_email
+          let permissions = [];
+          try {
+            permissions = await base44.entities.UserPermission.filter({ user_id: user.id });
+          } catch (e) {
+            console.error('Failed to filter by user_id:', e);
+          }
+          if (permissions.length === 0 && user.email) {
+            try {
+              permissions = await base44.entities.UserPermission.filter({ user_email: user.email });
+            } catch (e) {
+              console.error('Failed to filter by user_email:', e);
+            }
+          }
+          
+          console.log('[Permissions] User:', user.email, 'role:', user.role, 'id:', user.id);
+          console.log('[Permissions] Found permissions:', permissions.length, permissions.length > 0 ? JSON.stringify({role_id: permissions[0].role_id, role_name: permissions[0].role_name}) : 'none');
+          console.log('[Permissions] Available roles:', allRoles.map(r => r.name + '/' + r.id).join(', '));
+          
           if (permissions.length > 0) {
             const perm = permissions[0];
-            // Try to find role data by role_id or role_name
-            try {
-              let allRoles = await base44.entities.Role.list();
-              let matchedRole = null;
-              if (perm.role_id) {
-                matchedRole = allRoles.find(r => r.id === perm.role_id);
-              }
-              if (!matchedRole && perm.role_name) {
-                matchedRole = allRoles.find(r => r.display_name === perm.role_name || r.name === perm.role_name);
-              }
-              if (matchedRole) {
-                setUserPermissions({ ...perm, roleData: matchedRole });
-              } else {
-                setUserPermissions(perm);
-              }
-            } catch (e) {
+            let matchedRole = null;
+            if (perm.role_id) {
+              matchedRole = allRoles.find(r => r.id === perm.role_id);
+            }
+            if (!matchedRole && perm.role_name) {
+              matchedRole = allRoles.find(r => r.display_name === perm.role_name || r.name === perm.role_name);
+            }
+            console.log('[Permissions] Matched role:', matchedRole ? matchedRole.name : 'NONE');
+            if (matchedRole) {
+              setUserPermissions({ ...perm, roleData: matchedRole });
+            } else {
               setUserPermissions(perm);
             }
           }
