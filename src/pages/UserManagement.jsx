@@ -43,18 +43,20 @@ import { queryKeys } from '@/lib/queryKeys';
 import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const roleLabels = {
-  admin: 'מנהל',
+  admin: 'מנהל מערכת',
+  manager: 'מנהל תפעול',
   operator: 'מוקדן',
-  vendor: 'ספק',
-  agent: 'טכנאי',
+  agent: 'נציג שטח',
+  vendor: 'ספק שירות',
   user: 'משתמש',
 };
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',
+  manager: 'bg-[#6366f1] text-white',
   operator: 'bg-[#8b5cf6] text-white',
-  vendor: 'bg-[#f59e0b] text-white',
   agent: 'bg-[#10b981] text-white',
+  vendor: 'bg-[#f59e0b] text-white',
   user: 'bg-[#f3f4f6] text-[#111827]',
 };
 
@@ -144,9 +146,10 @@ export default function UserManagementPage() {
   const stats = {
     total: users.length,
     admins: users.filter((u) => u.role === 'admin').length,
+    managers: users.filter((u) => u.role === 'manager').length,
     operators: users.filter((u) => u.role === 'operator').length,
-    vendors: users.filter((u) => u.role === 'vendor').length,
     agents: users.filter((u) => u.role === 'agent').length,
+    vendors: users.filter((u) => u.role === 'vendor').length,
   };
 
   const handleInvite = () => {
@@ -226,10 +229,11 @@ export default function UserManagementPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">מנהל</SelectItem>
+                        <SelectItem value="admin">מנהל מערכת</SelectItem>
+                        <SelectItem value="manager">מנהל תפעול</SelectItem>
                         <SelectItem value="operator">מוקדן</SelectItem>
-                        <SelectItem value="vendor">ספק</SelectItem>
-                        <SelectItem value="agent">טכנאי</SelectItem>
+                        <SelectItem value="agent">נציג שטח</SelectItem>
+                        <SelectItem value="vendor">ספק שירות</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -274,10 +278,11 @@ export default function UserManagementPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">מנהל</SelectItem>
+                      <SelectItem value="admin">מנהל מערכת</SelectItem>
+                      <SelectItem value="manager">מנהל תפעול</SelectItem>
                       <SelectItem value="operator">מוקדן</SelectItem>
-                      <SelectItem value="vendor">ספק</SelectItem>
-                      <SelectItem value="agent">טכנאי</SelectItem>
+                      <SelectItem value="agent">נציג שטח</SelectItem>
+                      <SelectItem value="vendor">ספק שירות</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -381,10 +386,11 @@ export default function UserManagementPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">כל התפקידים</SelectItem>
-                  <SelectItem value="admin">מנהל</SelectItem>
+                  <SelectItem value="admin">מנהל מערכת</SelectItem>
+                  <SelectItem value="manager">מנהל תפעול</SelectItem>
                   <SelectItem value="operator">מוקדן</SelectItem>
-                  <SelectItem value="vendor">ספק</SelectItem>
-                  <SelectItem value="agent">טכנאי</SelectItem>
+                  <SelectItem value="agent">נציג שטח</SelectItem>
+                  <SelectItem value="vendor">ספק שירות</SelectItem>
                 </SelectContent>
               </Select>
             </div>

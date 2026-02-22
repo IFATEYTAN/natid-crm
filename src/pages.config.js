@@ -1,29 +1,29 @@
 /**
  * pages.config.js - Page routing configuration
- *
+ * 
  * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
  * Pages are auto-registered when you create files in the ./pages/ folder.
- *
+ * 
  * THE ONLY EDITABLE VALUE: mainPage
  * This controls which page is the landing page (shown when users visit the app).
- *
+ * 
  * Example file structure:
- *
+ * 
  *   import HomePage from './pages/HomePage';
  *   import Dashboard from './pages/Dashboard';
  *   import Settings from './pages/Settings';
- *
+ *   
  *   export const PAGES = {
  *       "HomePage": HomePage,
  *       "Dashboard": Dashboard,
  *       "Settings": Settings,
  *   }
- *
+ *   
  *   export const pagesConfig = {
  *       mainPage: "HomePage",
  *       Pages: PAGES,
  *   };
- *
+ * 
  * Example with Layout (wraps all pages):
  *
  *   import Home from './pages/Home';
@@ -91,63 +91,64 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorDetails from './pages/VendorDetails';
 import VendorGuide from './pages/VendorGuide';
-import VendorPricing from './pages/VendorPricing';
 import VendorPortal from './pages/VendorPortal';
+import VendorPricing from './pages/VendorPricing';
 import VendorTracking from './pages/VendorTracking';
 import __Layout from './Layout.jsx';
 
+
 export const PAGES = {
-  AdminDisplaySettings: AdminDisplaySettings,
-  AdvancedExport: AdvancedExport,
-  Agents: Agents,
-  AllVendorsMap: AllVendorsMap,
-  AuditLog: AuditLog,
-  AutomationSettings: AutomationSettings,
-  Calendar: Calendar,
-  CallDetails: CallDetails,
-  Calls: Calls,
-  CoverageAreas: CoverageAreas,
-  CustomerDetails: CustomerDetails,
-  CustomerFeedback: CustomerFeedback,
-  Customers: Customers,
-  Dashboard: Dashboard,
-  EditVendor: EditVendor,
-  FeedbackManagement: FeedbackManagement,
-  FleetManagement: FleetManagement,
-  FormView: FormView,
-  HistoricalDataAnalysis: HistoricalDataAnalysis,
-  ImportHistoricalData: ImportHistoricalData,
-  IntegrationSettings: IntegrationSettings,
-  Invoices: Invoices,
-  LandingPage: LandingPage,
-  MyNotificationSettings: MyNotificationSettings,
-  MyQueue: MyQueue,
-  MyVendorProfile: MyVendorProfile,
-  NewCase: NewCase,
-  NewVendor: NewVendor,
-  NotificationSettings: NotificationSettings,
-  OperationalRates: OperationalRates,
-  ProductCatalog: ProductCatalog,
-  QueueMonitor: QueueMonitor,
-  Reminders: Reminders,
-  Reports: Reports,
-  RoleManagement: RoleManagement,
-  ServiceProviders: ServiceProviders,
-  Settings: Settings,
-  UserGuide: UserGuide,
-  UserManagement: UserManagement,
-  UserProfile: UserProfile,
-  VendorCallManagement: VendorCallManagement,
-  VendorContracts: VendorContracts,
-  VendorDetails: VendorDetails,
-  VendorGuide: VendorGuide,
-  VendorPortal: VendorPortal,
-  VendorPricing: VendorPricing,
-  VendorTracking: VendorTracking,
-};
+    "AdminDisplaySettings": AdminDisplaySettings,
+    "AdvancedExport": AdvancedExport,
+    "Agents": Agents,
+    "AllVendorsMap": AllVendorsMap,
+    "AuditLog": AuditLog,
+    "AutomationSettings": AutomationSettings,
+    "Calendar": Calendar,
+    "CallDetails": CallDetails,
+    "Calls": Calls,
+    "CoverageAreas": CoverageAreas,
+    "CustomerDetails": CustomerDetails,
+    "CustomerFeedback": CustomerFeedback,
+    "Customers": Customers,
+    "Dashboard": Dashboard,
+    "EditVendor": EditVendor,
+    "FeedbackManagement": FeedbackManagement,
+    "FleetManagement": FleetManagement,
+    "FormView": FormView,
+    "HistoricalDataAnalysis": HistoricalDataAnalysis,
+    "ImportHistoricalData": ImportHistoricalData,
+    "IntegrationSettings": IntegrationSettings,
+    "Invoices": Invoices,
+    "LandingPage": LandingPage,
+    "MyNotificationSettings": MyNotificationSettings,
+    "MyQueue": MyQueue,
+    "MyVendorProfile": MyVendorProfile,
+    "NewCase": NewCase,
+    "NewVendor": NewVendor,
+    "NotificationSettings": NotificationSettings,
+    "OperationalRates": OperationalRates,
+    "ProductCatalog": ProductCatalog,
+    "QueueMonitor": QueueMonitor,
+    "Reminders": Reminders,
+    "Reports": Reports,
+    "RoleManagement": RoleManagement,
+    "ServiceProviders": ServiceProviders,
+    "Settings": Settings,
+    "UserGuide": UserGuide,
+    "UserManagement": UserManagement,
+    "UserProfile": UserProfile,
+    "VendorCallManagement": VendorCallManagement,
+    "VendorContracts": VendorContracts,
+    "VendorDetails": VendorDetails,
+    "VendorGuide": VendorGuide,
+    "VendorPortal": VendorPortal,
+    "VendorPricing": VendorPricing,
+    "VendorTracking": VendorTracking,
+}
 
 export const pagesConfig = {
-  mainPage: 'Dashboard',
-  Pages: PAGES,
-  Layout: __Layout,
+    mainPage: "Dashboard",
+    Pages: PAGES,
+    Layout: __Layout,
 };
