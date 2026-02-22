@@ -218,8 +218,11 @@ export default function FleetManagementPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-white border border-[#e5e7eb]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4" dir="rtl">
+          <Card
+            className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterType === 'all' && filterStatus === 'all' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'}`}
+            onClick={() => { setFilterType('all'); setFilterStatus('all'); }}
+          >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
@@ -232,7 +235,10 @@ export default function FleetManagementPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
+          <Card
+            className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterType === 'tow_truck' && filterStatus === 'active' ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]' : 'border-[#e5e7eb] hover:border-[#f59e0b]'}`}
+            onClick={() => { setFilterType('tow_truck'); setFilterStatus('active'); }}
+          >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
@@ -245,7 +251,10 @@ export default function FleetManagementPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
+          <Card
+            className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterType === 'mobile_unit' && filterStatus === 'active' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'}`}
+            onClick={() => { setFilterType('mobile_unit'); setFilterStatus('active'); }}
+          >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[8px] bg-[#eff6ff] flex items-center justify-center">
@@ -258,7 +267,10 @@ export default function FleetManagementPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
+          <Card
+            className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterStatus === 'inactive' && filterType === 'all' ? 'border-[#ef4444] ring-1 ring-[#ef4444]' : 'border-[#e5e7eb] hover:border-[#ef4444]'}`}
+            onClick={() => { setFilterType('all'); setFilterStatus('inactive'); }}
+          >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[8px] bg-[#fef2f2] flex items-center justify-center">
