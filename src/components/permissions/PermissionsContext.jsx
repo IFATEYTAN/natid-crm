@@ -177,7 +177,7 @@ export function PermissionsProvider({ children }) {
   // בדיקת גישה לדוח
   const canAccessReport = useCallback(
     (reportType) => {
-      if (currentUser?.role === 'admin') return true;
+      if (isEffectiveAdmin) return true;
 
       if (userPermissions?.allowed_reports?.length > 0) {
         return userPermissions.allowed_reports.includes(reportType);
