@@ -84,7 +84,11 @@ export function PermissionsProvider({ children }) {
         setCurrentUser(user);
 
         if (user?.id) {
-          const permissions = await base44.entities.UserPermission.filter({ user_id: user.id });
+          // חיפוש לפי user_id או לפי user_email
+          let permissions = await base44.entities.UserPermission.filter({ user_id: user.id });
+          if (permissions.length === 0 && user.email) {
+            permissions = await base44.entities.UserPermission.filter({ user_email: user.email });
+          }
           if (permissions.length > 0) {
             const perm = permissions[0];
             if (perm.role_id) {
