@@ -2,7 +2,7 @@
 ## מערכת ניהול קריאות שירות ונותני שירות
 
 **תאריך עדכון אחרון:** פברואר 2026
-**גרסה:** 1.1
+**גרסה:** 2.0
 
 ---
 
@@ -10,31 +10,37 @@
 
 1. [סקירה כללית](#סקירה-כללית)
 2. [ארכיטקטורה טכנית](#ארכיטקטורה-טכנית)
-3. [מודולים ופיצ'רים](#מודולים-ופיצ'רים)
-4. [ישויות נתונים (Entities)](#ישויות-נתונים)
-5. [אינטגרציות](#אינטגרציות)
-6. [מערכת הרשאות ותפקידים](#מערכת-הרשאות-ותפקידים)
-7. [סטטוס פיתוח](#סטטוס-פיתוח)
-8. [פיצ'רים חסרים ועבודה עתידית](#פיצ'רים-חסרים-ועבודה-עתידית)
+3. [מודולים ומסכים](#מודולים-ומסכים)
+4. [מערכת הרשאות ותפקידים](#מערכת-הרשאות-ותפקידים)
+5. [ישויות נתונים](#ישויות-נתונים)
+6. [פונקציות Backend](#פונקציות-backend)
+7. [אינטגרציות](#אינטגרציות)
+8. [הבהרות אפיון](#הבהרות-אפיון-פברואר-2026)
+9. [סטטוס פיתוח](#סטטוס-פיתוח)
+10. [פיצ'רים חסרים](#פיצרים-שעדיין-חסרים)
 
 ---
 
 ## סקירה כללית
 
 ### תיאור המערכת
-מערכת NatID CRM היא מערכת לניהול קריאות שירות (Service Calls) המיועדת לחברות שמספקות שירותי תחזוקה, תיקונים והתקנות. המערכת מאפשרת ניהול מלא של:
+מערכת NatID CRM היא מערכת לניהול קריאות שירות (Service Calls) המיועדת לחברת נתי גרופ. המערכת מאפשרת ניהול מלא של:
 - לקוחות וכתובות
-- נותני שירות (טכנאים/קבלני משנה)
+- נותני שירות (גררים, ניידות, ספקים חיצוניים)
 - קריאות שירות מהפתיחה ועד הסגירה
-- תזמון ושיבוץ אוטומטי
-- מעקב בזמן אמת
-- דוחות וניתוחים
+- צי רכב פנימי (גררים וניידות)
+- שיבוץ אוטומטי וידני עם תמחור ספקים
+- מעקב GPS בזמן אמת
+- דוחות, ניתוחים ובינה מלאכותית
+- תקשורת צ'אט בתוך קריאות
+- חשבוניות (iFrame ל-CRM קיים)
+- סקרי שביעות רצון ומשובים
 
-### קהל יעד
-1. **מנהלי מערכת (Admin)** - ניהול מלא של כל המערכת
-2. **מוקדנים** - פתיחת קריאות, ניהול לקוחות, שיבוץ טכנאים
-3. **טכנאים** - צפייה בתור עבודה, עדכון סטטוס קריאות
-4. **ספקים חיצוניים (Vendors)** - פורטל ייעודי לקבלני משנה
+### קהל יעד (4 תפקידים)
+1. **מנהלי מערכת (Admin)** - ניהול מלא של כל המערכת כולל דוחות פיננסיים
+2. **מתפעלים (Operator)** - פתיחת קריאות, שיבוץ ספקים, ניהול תפעולי
+3. **טכנאים (Agent)** - עבודה בשטח, עדכון סטטוס קריאות
+4. **ספקים (Vendor)** - פורטל ייעודי לקבלת ועדכון קריאות
 
 ---
 
@@ -45,16 +51,21 @@
 | רכיב | טכנולוגיה | גרסה |
 |------|-----------|------|
 | Frontend Framework | React | 18.2.0 |
-| Build Tool | Vite | 4.4.5 |
-| UI Components | Radix UI | Latest |
-| Styling | Tailwind CSS | 3.4.1 |
-| State Management | React Context | Built-in |
-| Routing | React Router DOM | 6.15.0 |
-| Charts | Recharts | 2.15.3 |
-| Icons | Lucide React | 0.263.1 |
-| Date Handling | date-fns | 2.30.0 |
-| Backend/API | Base44 Platform | Custom |
-| Maps | Google Maps API | - |
+| Build Tool | Vite | 6.1.0 |
+| UI Components | Radix UI (shadcn/ui) | Latest |
+| Styling | Tailwind CSS | 3.4.17 |
+| State Management | React Context + React Query | 5.84.1 |
+| Routing | React Router DOM | 6.26.0 |
+| Charts | Recharts | 2.15.4 |
+| Icons | Lucide React | 0.475.0 |
+| Date Handling | date-fns | 3.6.0 |
+| Backend/API | Base44 Platform (@base44/sdk) | 0.8.3 |
+| Maps | Leaflet + OpenStreetMap + react-leaflet | 4.2.1 |
+| Animation | Framer Motion | 11.16.4 |
+| SMS | Twilio | Backend function |
+| PWA | Vite PWA Plugin + Workbox | 1.2.0 |
+| PDF Export | jspdf + html2canvas | 2.5.2 |
+| Forms | React Hook Form + Zod | 7.54.2 / 3.24.2 |
 
 ### מבנה תיקיות
 
@@ -62,373 +73,346 @@
 src/
 ├── api/                    # חיבור ל-API
 │   └── base44Client.js     # קליינט Base44
-├── components/             # רכיבי UI
-│   ├── ui/                 # רכיבים בסיסיים (85+ קבצים)
-│   ├── call/               # רכיבי קריאות שירות
-│   ├── customer/           # רכיבי לקוחות
-│   └── service-provider/   # רכיבי נותני שירות
-├── hooks/                  # Custom Hooks
-│   ├── useRealtimeUpdates.js
-│   └── use-toast.js
-├── lib/                    # ספריות עזר
-│   ├── AuthContext.jsx     # ניהול אותנטיקציה
-│   └── utils.js
-├── pages/                  # דפי האפליקציה
-│   ├── Dashboard.jsx
-│   ├── Customers.jsx
-│   ├── ServiceProviders.jsx
-│   ├── Calls.jsx
-│   ├── CaseDetails.jsx
-│   ├── NewCase.jsx
-│   ├── MyQueue.jsx
-│   ├── Reports.jsx
-│   ├── VendorPortal.jsx
-│   ├── Settings.jsx
-│   └── UserManagement.jsx
-├── services/               # שירותים
-│   └── distanceMatrix.js   # חישוב מרחקים
+├── components/             # רכיבי UI (26 קטגוריות)
+│   ├── ui/                 # רכיבים בסיסיים (85+)
+│   ├── ai/                 # רכיבי בינה מלאכותית
+│   ├── auth/               # הרשאות ו-RoleGuard
+│   ├── call-details/       # טאבים של פרטי קריאה
+│   ├── calls/              # רכיבי קריאות (שאלון טכני)
+│   ├── chat/               # צ'אט בתוך קריאות
+│   ├── contracts/          # חוזי ספקים
+│   ├── dashboard/          # ווידג'טים של דשבורד
+│   ├── feedback/           # משובים ודירוגים
+│   ├── files/              # העלאת קבצים
+│   ├── layout/             # Layout ראשי וניווט
+│   ├── maps/               # מפות Leaflet
+│   ├── notifications/      # התראות ו-Push
+│   ├── permissions/        # PermissionsContext
+│   ├── pwa/                # PWA (Install, Offline, Update)
+│   ├── reports/            # גרפי דוחות
+│   ├── signature/          # חתימה דיגיטלית
+│   └── vendor/             # רכיבי ספקים
+├── config/                 # הגדרות הרשאות
+│   └── permissions.js      # PAGE_PERMISSIONS, REPORT_PERMISSIONS
+├── features/               # 10 מודולים עם hooks
+│   ├── agents/             # ניהול סוכנים (useUsers)
+│   ├── calls/              # קריאות (useCalls)
+│   ├── cases/              # תיקים (useCases)
+│   ├── customers/          # לקוחות (useCustomers)
+│   ├── dashboard/          # דשבורד
+│   ├── operators/          # מתפעלים
+│   ├── queue/              # תורים (useQueue)
+│   ├── reports/            # דוחות (useReports)
+│   ├── settings/           # הגדרות (useSettings)
+│   └── vendors/            # ספקים (useVendors)
+├── hooks/                  # Custom Hooks משותפים
+├── lib/                    # ספריות עזר, queryKeys
+├── pages/                  # 47 דפי אפליקציה
+├── providers/              # React Context Providers
+├── services/               # שירותים (חישוב מרחקים)
 ├── utils/                  # פונקציות עזר
-├── design-system.js        # מערכת עיצוב RTL
-├── Layout.jsx              # תבנית ראשית
-└── App.jsx                 # נקודת כניסה
+├── App.jsx                 # ניתוב ראשי + RoleGuard
+├── Layout.jsx              # Layout wrapper
+└── design-system.js        # מערכת עיצוב RTL
+functions/                  # 30 פונקציות TypeScript serverless
+docs/                       # תיעוד פרויקט (עברית)
 ```
 
 ---
 
-## מודולים ופיצ'רים
+## מודולים ומסכים
 
-### 1. דשבורד (Dashboard) ✅ הושלם
+המערכת כוללת **47 מסכים** מסודרים ב-7 קבוצות ניווט:
 
-**קובץ:** `src/pages/Dashboard.jsx` (769 שורות)
+### קבוצה 1: תפעול יומי
 
-#### פיצ'רים מומשים:
-- **סטטיסטיקות כלליות:**
-  - סה"כ קריאות פתוחות
-  - קריאות חדשות היום
-  - קריאות בטיפול
-  - קריאות שהושלמו
-  - אחוז השלמה
-  - קריאות דחופות
+#### LandingPage - מסך הבית
+דף נחיתה ציבורי עם כניסה למערכת.
 
-- **תרשימים ויזואליים:**
-  - גרף עמודות - קריאות לפי סטטוס
-  - גרף עוגה - התפלגות לפי קטגוריה
-  - גרף קווי - מגמות שבועיות
-  - גרף עמודות - ביצועי טכנאים
+#### Dashboard - לוח בקרה ✅
+מרכז הפיקוד הראשי. כולל:
+- **כרטיסי סטטיסטיקות** - קריאות פעילות, ממתינות, הושלמו היום, ספקים זמינים
+- **TrackedCallsPanel** - פאנל קריאות במעקב בזמן אמת (lazy loaded)
+- **מפת GPS ספקים** - VendorMapWidget עם מיקומי ספקים חיים
+- **4 טאבים:** דשבורד כללי, מתפעלים, סיכומים, התראות חכמות
+- **ווידג'טים AI:** EscalationPredictionWidget, RecurringPatternsWidget, ProactiveRecommendationsWidget, AIInsightsWidget
+- **גרפים:** CallsTrendChart, StatusDistributionChart, WorkQueueOverview
+- **ייצוא נתונים:** ExportMenu
 
-- **טבלאות:**
-  - קריאות דחופות (פתוחות יותר מ-24 שעות)
-  - קריאות אחרונות
-  - טכנאים מובילים
+#### Calls - רשימת קריאות ✅
+טבלה מתקדמת של כל קריאות השירות. חיפוש, סינון לפי סטטוס/עדיפות/ספק/טווח תאריכים, מיון, pagination.
 
-- **עיצוב:**
-  - תמיכה מלאה ב-RTL
-  - Design System מותאם
-  - Responsive לכל המכשירים
+#### Calendar - לוח שנה ✅
+תצוגת לוח שנה חודשית/שבועית של קריאות מתוזמנות.
+
+#### QueueMonitor - ניטור תורים ✅
+מעקב בזמן אמת אחרי תור העבודה ושיבוצי ספקים.
 
 ---
 
-### 2. ניהול לקוחות (Customers) ✅ הושלם
+### קבוצה 2: ניהול ספקים
 
-**קובץ:** `src/pages/Customers.jsx` (484 שורות)
+#### ServiceProviders - נותני שירות ✅
+רשימת ספקים עם תצוגת Grid/Table, חיפוש, סינון לפי סטטוס וזמינות, הוספת ספק חדש.
 
-#### פיצ'רים מומשים:
-- **רשימת לקוחות:**
-  - טבלה עם עמודות: שם, טלפון, אימייל, כתובת, סטטוס
-  - חיפוש חופשי
-  - סינון לפי סטטוס (פעיל/לא פעיל)
-  - מיון לפי כל עמודה
-  - Pagination
+#### VendorPricing - הסכמי תמחור ✅ (Admin בלבד)
+ניהול הסכמי מחיר של ספקים: ספק, סוג שירות, אזור, מחיר, תוקף הסכם. משמש לבחירת הספק הזול ביותר.
 
-- **יצירת לקוח חדש:**
-  - שם מלא
-  - מספר טלפון (עם ולידציה)
-  - אימייל
-  - כתובת מלאה (רחוב, עיר, מיקוד)
-  - הערות
+#### VendorContracts - חוזי ספקים ✅
+ניהול חוזים עם ספקים - יצירה, עריכה, מעקב תוקף.
 
-- **עריכת לקוח:**
-  - עריכה של כל השדות
-  - שינוי סטטוס פעיל/לא פעיל
+#### AllVendorsMap - מפת ספקים ✅
+מפה אינטראקטיבית של כל הספקים עם מיקום GPS חי.
 
-- **צפייה בפרטי לקוח:**
-  - כל המידע
-  - היסטוריית קריאות של הלקוח
-  - יכולת פתיחת קריאה חדשה ישירות
+#### CoverageAreas - אזורי כיסוי ✅
+הגדרת וניהול אזורי כיסוי גיאוגרפיים של ספקים.
+
+#### VendorPortal - פורטל ספקים ✅ (Vendor בלבד)
+ממשק ייעודי לספקים: קבלת/דחיית קריאות, עדכון סטטוס, צפייה בקריאות משובצות. **מסונן** - ספק רואה רק קריאות שלו.
 
 ---
 
-### 3. ניהול נותני שירות (ServiceProviders) ✅ הושלם
+### קבוצה 3: צי רכב
 
-**קובץ:** `src/pages/ServiceProviders.jsx` (686 שורות)
-
-#### פיצ'רים מומשים:
-- **רשימת נותני שירות:**
-  - טבלה מתקדמת
-  - חיפוש לפי שם/טלפון/התמחות
-  - סינון לפי סטטוס (פעיל/לא פעיל)
-  - סינון לפי זמינות (זמין/לא זמין)
-  - מיון מתקדם
-
-- **כרטיס נותן שירות:**
-  - תמונה (עם אפשרות העלאה)
-  - שם מלא
-  - מספר טלפון
-  - אימייל
-  - כתובת בסיס
-  - אזורי שירות (מרובים)
-  - התמחויות (מרובות)
-  - זמינות (זמין/לא זמין)
-  - דירוג (1-5 כוכבים)
-
-- **תצוגת Grid/Table:**
-  - מעבר בין תצוגות
-  - כרטיסים עם תמונה
-
-- **פיצ'רים מתקדמים:**
-  - העלאת תמונת פרופיל
-  - בחירה מרובה של אזורי שירות
-  - בחירה מרובה של התמחויות
-  - חישוב מרחק מהלקוח (אינטגרציה עם Google Maps)
+#### FleetManagement - ניהול צי רכב ✅ (Admin בלבד)
+ניהול גררים וניידות פנימיים של נתי. רשימת כלי רכב, סטטוסים, סוג (גרר/ניידת), שיוך לאזור.
 
 ---
 
-### 4. ניהול קריאות שירות (Calls) ✅ הושלם
+### קבוצה 4: כלכלה ותשלומים
 
-**קובץ:** `src/pages/Calls.jsx` (573 שורות)
+#### OperationalRates - תעריפון תפעול ✅
+הגדרת תעריפי שירות ומחירונים.
 
-#### פיצ'רים מומשים:
-- **רשימת קריאות:**
-  - טבלה מפורטת
-  - מספר קריאה ייחודי
-  - שם לקוח
-  - קטגוריה ותת-קטגוריה
-  - סטטוס (קידוד צבע)
-  - עדיפות (רגיל/גבוה/דחוף)
-  - טכנאי משובץ
-  - תאריך יצירה
-  - תאריך עדכון
+#### Invoices - חשבוניות ✅ (Admin בלבד)
+ניהול חשבוניות (iFrame ל-CRM קיים). יצירה, צפייה, סינון.
 
-- **סינון מתקדם:**
-  - חיפוש חופשי
-  - סינון לפי סטטוס (פתוח/בטיפול/הושלם/מבוטל)
-  - סינון לפי עדיפות
-  - סינון לפי טכנאי
-  - סינון לפי טווח תאריכים
+#### ProductCatalog - קטלוג מוצרים ✅
+ניהול מוצרים ושירותים (מצברים, חלפים וכו').
 
-- **פעולות:**
-  - פתיחת קריאה חדשה
-  - צפייה בפרטי קריאה
-  - עריכה מהירה
-  - שיבוץ טכנאי
-
-- **סטטוסים:**
-  - `new` - חדש (כחול)
-  - `assigned` - שובץ טכנאי (סגול)
-  - `in_progress` - בטיפול (כתום)
-  - `pending_parts` - ממתין לחלקים (צהוב)
-  - `completed` - הושלם (ירוק)
-  - `cancelled` - בוטל (אפור)
+#### Reminders - תזכורות ✅
+ניהול תזכורות מערכת - יצירה, השלמה, מעקב.
 
 ---
 
-### 5. פרטי קריאה (CaseDetails) ✅ הושלם
+### קבוצה 5: ניהול ונתונים
 
-**קובץ:** `src/pages/CaseDetails.jsx` (728 שורות)
+#### Reports - דוחות ✅
+מערכת דוחות מתקדמת עם:
+- **דוחות תפעוליים:** ביצועי ספקים, איחורים, דירוגים (admin + operator)
+- **דוחות פיננסיים:** חשבוניות, תמחור, סיכום פיננסי (admin בלבד)
+- סינון, ייצוא Excel/PDF, גרפים
+- הרשאות: `canAccessReport()` מפריד בין דוחות תפעוליים לפיננסיים
 
-#### פיצ'רים מומשים:
-- **מידע כללי:**
-  - מספר קריאה
-  - סטטוס נוכחי
-  - עדיפות
-  - תאריך יצירה
-  - תאריך עדכון אחרון
+#### HistoricalDataAnalysis - ניתוח נתונים היסטוריים ✅
+ניתוח מגמות וטרנדים מנתוני קריאות היסטוריים.
 
-- **פרטי לקוח:**
-  - שם
-  - טלפון (לחיץ להתקשרות)
-  - כתובת (לחיצה לניווט)
-  - אימייל
+#### AdvancedExport - ייצוא מתקדם ✅
+ייצוא נתונים בפורמטים שונים עם סינון מתקדם.
 
-- **פרטי הקריאה:**
-  - קטגוריה ראשית
-  - תת-קטגוריה
-  - תיאור הבעיה
-  - הערות פנימיות
+#### Customers - לקוחות ✅
+CRUD מלא: רשימה, חיפוש, הוספה/עריכה, צפייה בהיסטוריית קריאות.
 
-- **שיבוץ טכנאי:**
-  - בחירת טכנאי מרשימה
-  - תצוגת מרחק מהלקוח
-  - תצוגת זמינות
-  - תצוגת דירוג
-  - המלצה אוטומטית (לפי מרחק והתמחות)
+#### CustomerDetails - פרטי לקוח ✅
+פרופיל לקוח מלא עם היסטוריית קריאות ופרטי התקשרות.
 
-- **היסטוריית עדכונים:**
-  - Timeline מלא
-  - כל שינוי סטטוס
-  - הערות של טכנאים
-  - חותמות זמן
+#### FeedbackManagement - ניהול משובים ✅
+צפייה וניהול משובי לקוחות, דירוגים וסקרי שביעות רצון.
 
-- **פעולות:**
-  - עדכון סטטוס
-  - הוספת הערה
-  - שיבוץ/שינוי טכנאי
-  - סגירת קריאה
-  - ביטול קריאה
+#### UserProfile - הפרופיל שלי ✅
+פרופיל אישי של המשתמש המחובר.
 
 ---
 
-### 6. פתיחת קריאה חדשה (NewCase) ✅ הושלם
+### קבוצה 6: כלים
 
-**קובץ:** `src/pages/NewCase.jsx` (381 שורות)
-
-#### פיצ'רים מומשים:
-- **טופס מובנה:**
-  - בחירת לקוח קיים (Autocomplete)
-  - יצירת לקוח חדש תוך כדי
-  - כתובת (עם אפשרות לשימוש בכתובת הלקוח)
-
-- **פרטי הקריאה:**
-  - קטגוריה ראשית (Dropdown)
-  - תת-קטגוריה (דינמי לפי קטגוריה)
-  - עדיפות
-  - תיאור הבעיה
-  - הערות פנימיות
-
-- **תבניות קריאה:**
-  - טעינת תבנית מוגדרת מראש
-  - מילוי אוטומטי של שדות
-
-- **שיבוץ אוטומטי:**
-  - המלצה על טכנאי מתאים
-  - לפי מרחק
-  - לפי התמחות
-  - לפי זמינות
+#### Agents - סוכנים ✅
+ניהול סוכנים/טכנאים וכלי בינה מלאכותית.
 
 ---
 
-### 7. התור שלי (MyQueue) ✅ הושלם
+### קבוצה 7: מערכת (Admin)
 
-**קובץ:** `src/pages/MyQueue.jsx` (410 שורות)
+#### UserManagement - ניהול משתמשים ✅ (Admin בלבד)
+CRUD מלא: רשימה, הוספה/עריכה/מחיקה, שיוך תפקיד.
 
-#### פיצ'רים מומשים:
-- **תצוגת קריאות אישיות:**
-  - קריאות משובצות לטכנאי המחובר
-  - מיון לפי עדיפות
-  - מיון לפי תאריך
+#### RoleManagement - ניהול תפקידים ✅ (Admin בלבד)
+הגדרת תפקידים ועריכת הרשאות.
 
-- **פעולות מהירות:**
-  - עדכון סטטוס
-  - הוספת הערה
-  - סימון כהושלם
-  - ניווט לכתובת הלקוח
+#### AuditLog - יומן פעולות ✅ (Admin בלבד)
+מעקב אחרי כל פעולות המשתמשים במערכת עם סינון.
 
-- **סטטיסטיקות אישיות:**
-  - קריאות שהושלמו היום
-  - קריאות פתוחות
-  - ממוצע זמן טיפול
+#### AutomationSettings - אוטומציה ✅ (Admin בלבד)
+הגדרת כללי אוטומציה ו-workflows.
 
----
+#### IntegrationSettings - אינטגרציות CRM ✅ (Admin בלבד)
+הגדרת חיבורים למערכות חיצוניות ו-webhooks.
 
-### 8. דוחות (Reports) ✅ הושלם
+#### NotificationSettings - הגדרות התראות ✅
+הגדרת התראות מערכתיות וטריגרים.
 
-**קובץ:** `src/pages/Reports.jsx` (581 שורות)
+#### AdminDisplaySettings - הגדרות תצוגה ✅ (Admin בלבד)
+התאמת תצוגת המערכת.
 
-#### פיצ'רים מומשים:
-- **דוח קריאות:**
-  - סינון לפי טווח תאריכים
-  - סינון לפי סטטוס
-  - סינון לפי טכנאי
-  - סינון לפי קטגוריה
-
-- **דוח ביצועי טכנאים:**
-  - מספר קריאות לטכנאי
-  - ממוצע זמן טיפול
-  - אחוז השלמה
-  - דירוג לקוחות
-
-- **דוח לקוחות:**
-  - לקוחות עם הכי הרבה קריאות
-  - לקוחות לפי אזור
-
-- **תרשימים:**
-  - התפלגות קריאות לפי חודש
-  - התפלגות לפי קטגוריה
-  - מגמות זמן
-
-- **ייצוא:**
-  - ייצוא ל-Excel
-  - ייצוא ל-PDF
+#### Settings - הגדרות מערכת ✅ (Admin בלבד)
+הגדרות כלליות: שם חברה, לוגו, קטגוריות, סטטוסים.
 
 ---
 
-### 9. פורטל ספקים (VendorPortal) ✅ הושלם
+### מסכים נוספים (לא בתפריט ניווט)
 
-**קובץ:** `src/pages/VendorPortal.jsx` (358 שורות)
-
-#### פיצ'רים מומשים:
-- **תצוגה מותאמת לספקים:**
-  - רק קריאות רלוונטיות לספק
-  - ממשק מופשט
-
-- **פעולות:**
-  - קבלת קריאה
-  - דחיית קריאה
-  - עדכון סטטוס
-  - הוספת הערות
-
-- **מידע:**
-  - פרטי קריאה
-  - פרטי לקוח
-  - כתובת וניווט
-
----
-
-### 10. הגדרות מערכת (Settings) ⚠️ בסיסי
-
-**קובץ:** `src/pages/Settings.jsx` (140 שורות)
-
-#### פיצ'רים מומשים:
-- **הגדרות כלליות:**
-  - שם החברה
-  - לוגו
-  - פרטי התקשרות
-
-- **הגדרות קריאות:**
-  - קטגוריות ותת-קטגוריות
-  - סטטוסים מותאמים
-
-#### חסר:
-- ניהול תבניות קריאה מתקדם
-- הגדרות התראות
-- הגדרות אינטגרציות
+| מסך | תיאור | הרשאה |
+|-----|--------|-------|
+| CallDetails | פרטי קריאה מלאים עם טאבים | admin, operator |
+| NewCase | טופס פתיחת קריאה חדשה | admin, operator |
+| NewVendor | יצירת ספק חדש | admin, operator |
+| EditVendor | עריכת פרופיל ספק | admin, operator |
+| VendorDetails | פרטי ספק מלאים | admin, operator |
+| VendorTracking | מעקב GPS ספק | admin, operator |
+| VendorCallManagement | ניהול קריאה ע"י ספק | vendor |
+| MyVendorProfile | פרופיל הספק שלי | vendor |
+| VendorGuide | מדריך לספקים | vendor |
+| MyQueue | התור שלי | admin, operator |
+| MyNotificationSettings | הגדרות התראות אישיות | כל התפקידים |
+| UserGuide | מדריך למשתמש | כל התפקידים |
+| CustomerFeedback | משובי לקוחות | admin, operator |
+| ImportHistoricalData | ייבוא נתונים היסטוריים | admin |
+| FormView | תצוגת טופס גנרית | - |
 
 ---
 
-### 11. ניהול משתמשים (UserManagement) ✅ הושלם
+### טופס קריאה חדשה (NewCase) - שדות
 
-**קובץ:** `src/pages/UserManagement.jsx` (532 שורות)
+```javascript
+{
+  // לקוח
+  customer_name: String,           // שם לקוח
+  customer_phone: String,          // טלפון (חובה, ולידציה)
+  insurance_company: String,       // חברת ביטוח
+  membership_package: String,      // חבילת חברות
 
-#### פיצ'רים מומשים:
-- **רשימת משתמשים:**
-  - טבלה מלאה
-  - חיפוש
-  - סינון לפי תפקיד
+  // רכב
+  vehicle_plate: String,           // מספר רכב
+  vehicle_type: String,            // סוג רכב
+  vehicle_model: String,           // דגם
 
-- **יצירת משתמש:**
-  - שם מלא
-  - אימייל
-  - סיסמה
-  - תפקיד (Admin/Technician/Vendor)
-  - שיוך לנותן שירות (לטכנאים)
+  // סוג שירות
+  service_type: String,            // סוג שירות (גרירה/פנצ'ר/מצבר/...)
+  issue_type: String,              // סוג תקלה → טוען שאלון טכני
+  issue_description: String,       // תיאור התקלה
+  dispatch_type: 'mobile_unit' | 'tow_truck',  // ניידת או גרר
+  customer_source: 'phone' | 'bot',            // מקור הלקוח
 
-- **עריכת משתמש:**
-  - כל השדות
-  - איפוס סיסמה
-  - שינוי תפקיד
+  // מיקום
+  pickup_location_address: String, // כתובת איסוף (חובה)
+  pickup_location_city: String,    // עיר איסוף
+  pickup_location_lat: Number,     // קו רוחב
+  pickup_location_lng: Number,     // קו אורך
+  dropoff_location_address: String,// כתובת יעד
+  dropoff_location_city: String,   // עיר יעד
+  dropoff_location_lat: Number,
+  dropoff_location_lng: Number,
 
-- **מחיקת משתמש:**
-  - עם אישור
+  // נוסף
+  priority: 'low' | 'normal' | 'high' | 'urgent',
+  internal_notes: String,          // הערות פנימיות
+  questionnaire_answers: Object    // תשובות שאלון טכני דינמי
+}
+```
+
+### פרטי קריאה (CallDetails) - טאבים
+
+**InfoTab:**
+- פרטי לקוח (שם, טלפון, ביטוח)
+- פרטי רכב (לוחית, דגם, סוג)
+- מיקום (איסוף, יעד, ניווט)
+- ספק משובץ
+- **הקלטת שיחה** - קישור להקלטה (`recording_url`) + סטטוס שיחת סגירה
+- **תשובות שאלון טכני** - הצגת `questionnaire_answers`
+- **חתימה דיגיטלית** - SignaturePad
+
+**HistoryTab:** Timeline עדכונים
+**ChatTab:** צ'אט עם ספק/מתפעל
+**FilesTab:** העלאת קבצים ותמונות
+
+---
+
+## מערכת הרשאות ותפקידים
+
+### 4 תפקידים (Roles)
+
+| תפקיד | מזהה | תיאור |
+|--------|------|--------|
+| **מנהל** | `admin` | גישה מלאה לכל המערכת כולל דוחות פיננסיים והגדרות |
+| **מתפעל** | `operator` | תפעול קריאות, שיבוץ, ניהול לקוחות (ללא דוחות פיננסיים) |
+| **טכנאי** | `agent` | עבודה בשטח, דשבורד טכנאי, ניהול קריאות אישי |
+| **ספק** | `vendor` | פורטל ספקים בלבד, קבלה/דחייה/עדכון קריאות |
+
+### מטריצת הרשאות - מסכים
+
+| מסך | Admin | Operator | Agent | Vendor |
+|-----|-------|----------|-------|--------|
+| Dashboard | ✅ | ✅ | ❌ | ❌ |
+| Calls | ✅ | ✅ | ❌ | ❌ |
+| CallDetails | ✅ | ✅ | ❌ | ❌ |
+| NewCase | ✅ | ✅ | ❌ | ❌ |
+| Calendar | ✅ | ✅ | ❌ | ❌ |
+| QueueMonitor | ✅ | ✅ | ❌ | ❌ |
+| MyQueue | ✅ | ✅ | ❌ | ❌ |
+| Customers | ✅ | ✅ | ❌ | ❌ |
+| ServiceProviders | ✅ | ✅ | ❌ | ❌ |
+| Reports | ✅ | ✅ | ❌ | ❌ |
+| AllVendorsMap | ✅ | ✅ | ❌ | ❌ |
+| CoverageAreas | ✅ | ✅ | ❌ | ❌ |
+| VendorContracts | ✅ | ✅ | ❌ | ❌ |
+| VendorTracking | ✅ | ✅ | ❌ | ❌ |
+| Agents | ✅ | ✅ | ❌ | ❌ |
+| AdvancedExport | ✅ | ✅ | ❌ | ❌ |
+| HistoricalDataAnalysis | ✅ | ✅ | ❌ | ❌ |
+| NotificationSettings | ✅ | ✅ | ❌ | ❌ |
+| CustomerFeedback | ✅ | ✅ | ❌ | ❌ |
+| **VendorPricing** | ✅ | ❌ | ❌ | ❌ |
+| **FleetManagement** | ✅ | ❌ | ❌ | ❌ |
+| **Invoices** | ✅ | ❌ | ❌ | ❌ |
+| **UserManagement** | ✅ | ❌ | ❌ | ❌ |
+| **RoleManagement** | ✅ | ❌ | ❌ | ❌ |
+| **AuditLog** | ✅ | ❌ | ❌ | ❌ |
+| **AutomationSettings** | ✅ | ❌ | ❌ | ❌ |
+| **IntegrationSettings** | ✅ | ❌ | ❌ | ❌ |
+| **Settings** | ✅ | ❌ | ❌ | ❌ |
+| **ImportHistoricalData** | ✅ | ❌ | ❌ | ❌ |
+| VendorPortal | ❌ | ❌ | ❌ | ✅ |
+| VendorCallManagement | ❌ | ❌ | ❌ | ✅ |
+| MyVendorProfile | ❌ | ❌ | ❌ | ✅ |
+| VendorGuide | ❌ | ❌ | ❌ | ✅ |
+| AgentDashboard | ❌ | ❌ | ✅ | ❌ |
+| AgentCallManagement | ❌ | ❌ | ✅ | ❌ |
+| MyNotificationSettings | ✅ | ✅ | ✅ | ✅ |
+| UserGuide | ✅ | ✅ | ✅ | ✅ |
+
+### הרשאות דוחות (REPORT_PERMISSIONS)
+
+| דוח | Admin | Operator |
+|-----|-------|----------|
+| invoices_report | ✅ | ❌ |
+| vendor_pricing_report | ✅ | ❌ |
+| financial_summary | ✅ | ❌ |
+| delays_report | ✅ | ✅ |
+| ratings_report | ✅ | ✅ |
+| performance_report | ✅ | ✅ |
+| vendor_delays_report | ✅ | ✅ |
+
+### מנגנון אכיפה (3 שכבות)
+
+1. **שכבת Route (App.jsx):** כל דף עובר `getPageRoles()` → `RoleGuard` - חוסם גישה לפני רנדור
+2. **שכבת Navigation (Layout.jsx):** `canAccessPage(item.href)` מסתיר פריטים מהתפריט
+3. **שכבת Page (בתוך המסך):** `PermissionGuard` ו-`useCurrentUserRole` לבדיקות פנימיות
+
+**אבטחה נוספת:**
+- VendorCallManagement מוודא בעלות: `call.assigned_vendor_id === vendorProfile.id`
+- VendorPortal מסנן: `Call.filter({ assigned_vendor_id: vendorProfile.id })`
+- דוחות פיננסיים: `PermissionGuard category="reports" permission="financial"`
+- Role נקבע מ-backend: `base44.auth.me()` - לא ניתן לזיוף בצד לקוח
 
 ---
 
@@ -450,202 +434,237 @@ src/
 }
 ```
 
-### ServiceProvider (נותן שירות)
+### ServiceCall (קריאת שירות)
 ```javascript
 {
   id: String,
-  name: String,              // שם מלא
-  phone: String,             // טלפון
-  email: String,             // אימייל
-  address: String,           // כתובת בסיס
-  service_areas: [String],   // אזורי שירות
-  specializations: [String], // התמחויות
-  availability: Boolean,     // זמינות
-  rating: Number,            // דירוג 1-5
-  image_url: String,         // תמונת פרופיל
-  status: String,            // active/inactive
+  call_number: String,           // מספר קריאה ייחודי
+  customer_name: String,
+  customer_phone: String,
+  insurance_company: String,
+  membership_package: String,
+  vehicle_plate: String,
+  vehicle_type: String,
+  vehicle_model: String,
+  service_type: String,          // סוג שירות
+  issue_type: String,            // סוג תקלה
+  issue_description: String,
+  dispatch_type: String,         // mobile_unit / tow_truck
+  customer_source: String,       // phone / bot
+  pickup_location_address: String,
+  pickup_location_city: String,
+  pickup_location_lat: Number,
+  pickup_location_lng: Number,
+  dropoff_location_address: String,
+  dropoff_location_city: String,
+  call_status: String,           // new/assigned/vendor_enroute/in_progress/completed/cancelled
+  priority: String,              // low/normal/high/urgent
+  assigned_vendor_id: String,
+  internal_notes: String,
+  vendor_notes: String,
+  questionnaire_answers: Object, // תשובות שאלון טכני דינמי
+  recording_url: String,         // קישור להקלטת שיחה
+  closing_call_done: Boolean,    // שיחת סגירה בוצעה
+  vendor_arrival_time_actual: DateTime,
+  closed_at: DateTime,
+  closed_by: String,
   created_date: DateTime,
   updated_date: DateTime
 }
 ```
 
-### ServiceCall (קריאת שירות)
+### Vendor (ספק/נותן שירות)
 ```javascript
 {
   id: String,
-  call_number: String,       // מספר קריאה ייחודי
-  customer_id: String,       // קישור ללקוח
-  service_provider_id: String, // קישור לטכנאי
-  category: String,          // קטגוריה ראשית
-  sub_category: String,      // תת-קטגוריה
-  description: String,       // תיאור הבעיה
-  status: String,            // סטטוס
-  priority: String,          // עדיפות (normal/high/urgent)
-  address: String,           // כתובת הקריאה
-  internal_notes: String,    // הערות פנימיות
-  customer_notes: String,    // הערות לקוח
-  created_date: DateTime,
-  updated_date: DateTime,
-  scheduled_date: DateTime,  // תאריך מתוכנן
-  completed_date: DateTime   // תאריך סיום
+  vendor_name: String,
+  email: String,
+  phone: String,
+  address: String,
+  service_areas: [String],
+  specializations: [String],
+  availability: Boolean,
+  rating: Number,               // 1-5
+  vendor_type: String,          // internal/external
+  status: String,               // active/inactive
+  current_lat: Number,          // GPS latitude
+  current_lng: Number,          // GPS longitude
+  image_url: String
 }
 ```
 
-### CallUpdate (עדכון קריאה)
+### Fleet (צי רכב)
 ```javascript
 {
   id: String,
-  call_id: String,           // קישור לקריאה
-  user_id: String,           // מי עדכן
-  update_type: String,       // סוג העדכון
-  old_value: String,         // ערך קודם
-  new_value: String,         // ערך חדש
-  notes: String,             // הערות
-  created_date: DateTime
+  vehicle_number: String,       // מספר ספק
+  vehicle_type: String,         // tow_truck / mobile_unit
+  name: String,
+  status: String,               // active/inactive
+  area: String,                 // אזור שיוך
+  assigned_vendor_id: String    // שיוך לספק
 }
 ```
 
-### CallTemplate (תבנית קריאה)
+### VendorPricing (הסכמי תמחור)
 ```javascript
 {
   id: String,
-  name: String,              // שם התבנית
-  category: String,          // קטגוריה
-  sub_category: String,      // תת-קטגוריה
-  description: String,       // תיאור ברירת מחדל
-  priority: String,          // עדיפות ברירת מחדל
+  vendor_id: String,
+  service_type: String,
+  area: String,
+  price: Number,
+  agreement_start: DateTime,
+  agreement_end: DateTime,
   is_active: Boolean
 }
 ```
 
-### User (משתמש)
-```javascript
-{
-  id: String,
-  email: String,
-  full_name: String,
-  role: String,              // admin/technician/vendor
-  service_provider_id: String, // קישור לנותן שירות (אופציונלי)
-  is_active: Boolean,
-  created_date: DateTime,
-  last_login: DateTime
-}
-```
+### ישויות נוספות
+- **CallHistory** - היסטוריית שינויים בקריאה
+- **CallPhoto** - תמונות וקבצים מצורפים לקריאה
+- **CallTemplate** - תבניות קריאה
+- **Message** - הודעות צ'אט בתוך קריאה
+- **User** - משתמשי מערכת (id, email, role, full_name)
+- **Company** - פרטי חברה
+- **SystemSettings** - הגדרות מערכת
+- **Notification** - התראות
+- **Contract** - חוזי ספקים
+- **Product** - קטלוג מוצרים
+- **AuditLog** - יומן פעולות
 
-### Company (חברה)
-```javascript
-{
-  id: String,
-  name: String,
-  logo_url: String,
-  phone: String,
-  email: String,
-  address: String
-}
-```
+---
 
-### SystemSettings (הגדרות מערכת)
-```javascript
-{
-  id: String,
-  categories: [Object],      // קטגוריות קריאות
-  statuses: [Object],        // סטטוסים מותאמים
-  priorities: [Object],      // רמות עדיפות
-  notifications: Object      // הגדרות התראות
-}
-```
+## פונקציות Backend
+
+30 פונקציות TypeScript serverless בתיקיית `functions/`:
+
+### שיבוץ וניתוב
+| פונקציה | תיאור |
+|---------|--------|
+| autoAssignVendor | שיבוץ אוטומטי - אלגוריתם ניקוד (מרחק, זמינות, דירוג, מחיר) |
+| calculateDistanceAndETA | חישוב מרחק וזמן הגעה משוער |
+| handleAssignmentResponse | עיבוד קבלה/דחייה של ספק |
+| recommendVendor | המלצת ספק מבוססת AI |
+
+### ניתוח AI
+| פונקציה | תיאור |
+|---------|--------|
+| generateCallSummary | סיכום אוטומטי של קריאה שהושלמה |
+| quickCallSummary | סיכום מהיר |
+| analyzeCallPatterns | ניתוח דפוסי קריאות |
+| analyzeHistoricalPatterns | ניתוח מגמות היסטוריות |
+| categorizeCall | קטגוריזציה אוטומטית של קריאה |
+| detectSmartAlerts | זיהוי חריגות והתראות חכמות |
+| predictCallTimes | חיזוי זמני טיפול |
+
+### ניהול ספקים
+| פונקציה | תיאור |
+|---------|--------|
+| analyzeVendorPerformance | חישוב מדדי ביצוע ספק |
+| updateVendorLocation | עדכון GPS ספק |
+| updateVendorStatus | עדכון סטטוס זמינות |
+| getVendorScopedData | שליפת נתונים בהיקף ספק |
+| submitVendorRating | שמירת דירוג ספק |
+
+### התראות ותקשורת
+| פונקציה | תיאור |
+|---------|--------|
+| sendNotification | שליחת התראה in-app |
+| createNotification | יצירת רשומת התראה |
+| checkAndSendNotifications | בדיקה ושליחת התראות תקופתית |
+| sendSMS | שליחת SMS דרך Twilio |
+| sendFeedbackSMS | שליחת סקר שביעות רצון ב-SMS |
+| sendCallStatusUpdate | שליחת עדכון סטטוס ללקוח |
+
+### משובים
+| פונקציה | תיאור |
+|---------|--------|
+| createFeedbackToken | יצירת טוקן מאובטח לסקר |
+| getFeedbackTokenInfo | שליפת מידע טוקן |
+| validateAndSubmitFeedback | ולידציה ושמירת משוב |
+
+### אינטגרציות
+| פונקציה | תיאור |
+|---------|--------|
+| 99digitalBot | אינטגרציה עם בוט WhatsApp של 99Digital |
+| botWebhook | Webhook לקבלת נתונים מהבוט |
+| externalCrmWebhook | Webhook ל-CRM חיצוני |
+
+### כלים
+| פונקציה | תיאור |
+|---------|--------|
+| logAuditAction | תיעוד פעולות ביומן |
+| checkContractExpiry | מעקב וזיהוי חוזים שפגו |
 
 ---
 
 ## אינטגרציות
 
-### 1. Google Maps Distance Matrix API ✅ מומש
+### 1. Base44 Platform ✅
+Backend מלא: CRUD, Authentication, File Upload, Real-time Subscriptions.
 
-**קובץ:** `src/services/distanceMatrix.js` (282 שורות)
+### 2. Leaflet + OpenStreetMap ✅
+מפות: מיקומי ספקים, מעקב GPS, ניתוב, אזורי כיסוי.
 
-#### פונקציונליות:
-- חישוב מרחק בין שתי כתובות
-- חישוב זמן נסיעה משוער
-- Cache לתוצאות (חיסכון בקריאות API)
-- Batch calculations למספר כתובות
-- Geocoding כתובות
+### 3. Twilio SMS ✅
+שליחת SMS: עדכוני סטטוס, סקרי שביעות רצון.
 
-#### שימוש במערכת:
-- המלצה על טכנאי קרוב
-- תצוגת מרחק בשיבוץ
-- מיון טכנאים לפי מרחק
+### 4. 99Digital Bot ✅
+בוט WhatsApp לקליטת קריאות: שם לקוח, טלפון, כתובת, פרטי רכב, שאלון בטיחות.
 
-#### סטטוס:
-- ✅ לוגיקה מומשת
-- ⚠️ צריך להגדיר API Key אמיתי
+### 5. iFrame CRM ✅
+חשבוניות מנוהלות ב-CRM קיים. המערכת מציגה iFrame.
 
----
+### 6. PWA ✅
+Progressive Web App: התקנה, עבודה offline, Push Notifications, Service Worker.
 
-### 2. Base44 Backend Platform ✅ מומש
-
-**קובץ:** `src/api/base44Client.js`
-
-#### פונקציונליות:
-- CRUD operations לכל הישויות
-- Authentication
-- File upload
-- Real-time subscriptions
-
-#### Entities מוגדרים:
-- Customer
-- ServiceProvider
-- ServiceCall
-- CallTemplate
-- CallUpdate
-- User
-- Company
-- SystemSettings
+### 7. Real-time Updates ✅
+Polling-based updates: עדכוני סטטוס בזמן אמת, סנכרון בין משתמשים.
 
 ---
 
-### 3. Real-time Updates System ✅ מומש
+## הבהרות אפיון (פברואר 2026)
 
-**קובץ:** `src/hooks/useRealtimeUpdates.js` (453 שורות)
+סעיף זה מתעד הבהרות שהתקבלו מהלקוח (נתי גרופ) במהלך שלב האפיון.
 
-#### פונקציונליות:
-- Polling-based updates
-- Optimistic updates
-- Conflict resolution
-- Auto-retry on failure
-- Debouncing
+### 1. צי רכב ✅ מומש
+**הגדרה:** רשימת גררים וניידות פנימיים של חברת נתי.
+**סטטוס:** מסך FleetManagement מומש. ישות Fleet קיימת. עדיפות שיבוץ לספקים פנימיים.
 
-#### שימוש:
-- עדכוני סטטוס קריאות בזמן אמת
-- סנכרון בין משתמשים
-- התראות על שינויים
+### 2. ניידת ✅ מומש
+**הגדרה:** כלי רכב שירות לשירותי דרך (מצבר, טעינה).
+**סטטוס:** שדה `dispatch_type` (mobile_unit/tow_truck) בטופס NewCase עם המלצה אוטומטית לפי סוג תקלה.
 
----
+### 3. התראות ללקוחות ✅ מומש חלקית
+**ערוץ ראשי:** WhatsApp (דרך בוט 99Digital).
+**סטטוס:** SMS דרך Twilio קיים. WhatsApp API - דרך הבוט. שדה `customer_source` (phone/bot) מבדיל תהליך סגירה.
 
-## מערכת הרשאות ותפקידים
+### 4. חשבוניות ✅ מומש
+**ארכיטקטורה:** iFrame ל-CRM קיים (לא מערכת עצמאית).
+**סטטוס:** מסך Invoices מומש.
 
-### תפקידים (Roles)
+### 5. תפקידים והרשאות ✅ מומש
+**עדכון:** 4 תפקידים (admin, operator, agent, vendor) עם מטריצת הרשאות מלאה.
+**סטטוס:** PAGE_PERMISSIONS, REPORT_PERMISSIONS, RoleGuard, PermissionGuard - הכל מומש.
 
-| תפקיד | תיאור | הרשאות |
-|-------|-------|--------|
-| **admin** | מנהל מערכת | גישה מלאה לכל המערכת |
-| **technician** | טכנאי/מוקדן | ניהול קריאות, לקוחות, צפייה בדוחות |
-| **vendor** | ספק חיצוני | גישה רק לפורטל ספקים |
+### 6. התראות בזמן אמת ✅ מומש חלקית
+**סטטוס:** SmartAlertsTab בדשבורד, detectSmartAlerts function. ממתינים להגדרות ספים מפורטות מאילנית.
 
-### מטריצת הרשאות
+### 7. תמחור ספק ✅ מומש
+**סטטוס:** מסך VendorPricing מומש. ישות VendorPricing קיימת.
 
-| מודול | Admin | Technician | Vendor |
-|-------|-------|------------|--------|
-| Dashboard | ✅ מלא | ✅ מלא | ❌ |
-| Customers | ✅ מלא | ✅ צפייה+עריכה | ❌ |
-| Service Providers | ✅ מלא | ✅ צפייה | ❌ |
-| Calls | ✅ מלא | ✅ מלא | ❌ |
-| Case Details | ✅ מלא | ✅ מלא | ✅ מוגבל |
-| New Case | ✅ | ✅ | ❌ |
-| My Queue | ✅ | ✅ | ❌ |
-| Reports | ✅ מלא | ✅ צפייה | ❌ |
-| Vendor Portal | ❌ | ❌ | ✅ מלא |
-| Settings | ✅ מלא | ❌ | ❌ |
-| User Management | ✅ מלא | ❌ | ❌ |
+### 8. דוחות ✅ מומש חלקית
+**סטטוס:** 7 סוגי דוחות מוגדרים. ייצוא Excel/PDF. ממתינים לאפיון מפורט מדורית ואילנית.
+
+### 9. שיחות סגירה ✅ מומש
+**סטטוס:** שדה `recording_url` + `closing_call_done` בקריאה. הצגת הקלטה ב-CallDetailsInfoTab.
+
+### 10. שאלון טכני דינמי ✅ מומש
+**סטטוס:** TechnicalQuestionnaire component ב-NewCase. שדה `questionnaire_answers` נשמר בקריאה ומוצג ב-CallDetailsInfoTab.
+
+### 11. קריאות במעקב ✅ מומש
+**סטטוס:** TrackedCallsPanel מומש בדשבורד (lazy loaded). מוצג מעל המפה.
 
 ---
 
@@ -655,493 +674,85 @@ src/
 
 | קטגוריה | מומש | חלקי | חסר |
 |---------|------|------|-----|
-| מודולים | 10 | 1 | 0 |
-| אינטגרציות | 2 | 1 | 2 |
-| UI/UX | ✅ | - | - |
-| RTL Support | ✅ | - | - |
+| מסכים | 47 | 0 | 0 |
+| פונקציות Backend | 30 | 0 | 0 |
+| Feature Modules | 10 | 0 | 0 |
+| אינטגרציות | 7 | 0 | 1 |
+| UI/UX + RTL | ✅ | - | - |
 | Responsive | ✅ | - | - |
 | Authentication | ✅ | - | - |
-| Authorization | ✅ | - | - |
+| Authorization (4 roles) | ✅ | - | - |
+| PWA | ✅ | - | - |
+| Code Splitting | ✅ | - | - |
 
-### פירוט מודולים
+### הבהרות אפיון - סטטוס
 
-| מודול | סטטוס | הערות |
-|-------|-------|-------|
-| Dashboard | ✅ 100% | מלא עם גרפים וסטטיסטיקות |
-| Customers | ✅ 100% | CRUD מלא |
-| Service Providers | ✅ 100% | כולל העלאת תמונות |
-| Calls | ✅ 100% | ניהול מלא |
-| Case Details | ✅ 100% | עם Timeline |
-| New Case | ✅ 100% | כולל תבניות |
-| My Queue | ✅ 100% | תור אישי |
-| Reports | ✅ 95% | חסר ייצוא PDF |
-| Vendor Portal | ✅ 100% | פורטל ספקים |
-| Settings | ⚠️ 60% | בסיסי, חסר הרבה |
-| User Management | ✅ 100% | ניהול משתמשים מלא |
+| # | הבהרה | סטטוס |
+|---|-------|-------|
+| 1 | צי רכב | ✅ מומש |
+| 2 | ניידת | ✅ מומש |
+| 3 | התראות ללקוחות | ⚠️ חלקי (SMS קיים, WhatsApp דרך בוט) |
+| 4 | חשבוניות | ✅ מומש (iFrame) |
+| 5 | תפקידים והרשאות | ✅ מומש |
+| 6 | התראות בזמן אמת | ⚠️ חלקי (בסיסי קיים, ממתין לספים) |
+| 7 | תמחור ספק | ✅ מומש |
+| 8 | דוחות | ⚠️ חלקי (תשתית קיימת, ממתין לאפיון) |
+| 9 | שיחות סגירה | ✅ מומש |
+| 10 | שאלון טכני | ✅ מומש |
+| 11 | קריאות במעקב | ✅ מומש |
 
 ---
 
-## פיצ'רים חסרים ועבודה עתידית
+## פיצ'רים שעדיין חסרים
 
 ### עדיפות גבוהה 🔴
 
-1. **התראות והודעות**
-   - Email notifications
-   - SMS notifications (Twilio/MessageBird)
-   - Push notifications
-   - In-app notifications center
+1. **WhatsApp Business API ישיר** - כיום עובד דרך בוט 99Digital. נדרשת אינטגרציה ישירה לשליחת הודעות ללקוחות.
 
-2. **יומן ותזמון**
-   - Calendar view לקריאות
-   - תזמון חכם אוטומטי
-   - התנגשויות תזמון
-   - אינטגרציה עם Google Calendar
+2. **ספים וטריגרים מפורטים להתראות** - ממתינים להגדרות מאילנית: כמה זמן לפני שמתריעים על איחור, SLA חורג, וכו'.
 
-3. **אפליקציית מובייל**
-   - PWA או React Native
-   - עבודה offline
-   - GPS tracking לטכנאים
+3. **דוחות מפורטים** - ממתינים לאפיון מדורית ואילנית: דוח איחורים, דוח דירוגים, דוח ביצועים, דוח חשבוניות מאושרות.
+
+4. **דפי Agent** - `AgentDashboard` ו-`AgentCallManagement` מוגדרים בהרשאות אבל עדיין לא ממומשים כדפים.
 
 ### עדיפות בינונית 🟡
 
-4. **דוחות מתקדמים**
-   - ייצוא PDF מעוצב
-   - דוחות מותאמים אישית (Report Builder)
-   - Dashboard מותאם אישית
-   - KPIs מותאמים
+5. **אפליקציית מובייל מותאמת** - PWA קיים אבל חוויית מובייל ייעודית יכולה להשתפר.
 
-5. **ניהול מלאי וחלקים**
-   - מעקב חלקי חילוף
-   - הזמנות רכש
-   - ניהול מחסן
+6. **תזמון חכם** - Calendar קיים אבל חסר: התנגשויות תזמון, תזמון אוטומטי לפי עומס.
 
-6. **חתימה דיגיטלית**
-   - חתימת לקוח על סיום עבודה
-   - אישור תנאים
-
-7. **צילום ותיעוד**
-   - העלאת תמונות לקריאות
-   - תיעוד לפני/אחרי
-   - גלריית תמונות
+7. **סטטוס "הפסקה" לספק** - ספק לא יכול לסמן שהוא בהפסקה (רק זמין/לא זמין).
 
 ### עדיפות נמוכה 🟢
 
-8. **אינטגרציות נוספות**
-   - WhatsApp Business API
-   - חשבוניות (חשבונית ירוקה/Invoice4U)
-   - ERP integration
-   - Zapier/Make webhooks
-
-9. **אוטומציות**
-   - כללי אוטומציה מותאמים
-   - Workflow builder
-   - SLA monitoring
-
-10. **BI ואנליטיקס**
-    - חיבור ל-Power BI
-    - Export לאנליטיקס
-    - Machine Learning להמלצות
+8. **ERP Integration** - סנכרון עם מערכות ארגוניות.
+9. **BI ואנליטיקס** - חיבור ל-Power BI, דשבורד מותאם אישית.
 
 ---
 
-## אינטגרציות חסרות
-
-| אינטגרציה | תיאור | עדיפות |
-|-----------|-------|--------|
-| SMS Gateway | שליחת SMS ללקוחות וטכנאים | 🔴 גבוהה |
-| Email Service | שליחת מיילים אוטומטית | 🔴 גבוהה |
-| WhatsApp Business | תקשורת עם לקוחות | 🟡 בינונית |
-| Payment Gateway | תשלומים ב-CC | 🟡 בינונית |
-| Invoice System | הפקת חשבוניות | 🟡 בינונית |
-| Calendar Sync | סנכרון יומנים | 🟡 בינונית |
-| ERP | סנכרון עם מערכות ארגוניות | 🟢 נמוכה |
-
----
-
-## הבהרות אפיון (פברואר 2026)
-
-סעיף זה מתעד הבהרות שהתקבלו מהלקוח (נתי גרופ) במהלך שלב האפיון, על מנת להגדיר מסגרת ברורה להצעת מחיר ולפיתוח.
-
-### 1. צי רכב
-
-**הגדרה:** צי הרכב הוא רשימת **גררים וניידות פנימיים** של חברת נתי - מגויסים ומועסקים ע"י נתי (לא ספקים חיצוניים).
-
-**מאפיינים:**
-- רשימת גררים וניידות פעילים שמנוהלת במערכת
-- לכל רכב יש: מספר ספק, סוג (גרר/ניידת), שם, סטטוס (פעיל/לא פעיל)
-- הגררים והניידות של נתי מקבלים **עדיפות בשיבוץ** על פני ספקים חיצוניים
-
-**שימוש בתהליך העבודה:**
-- לאחר פתיחת קריאה ואישור שיבוץ (עומדת בכת"ש), המתפעל בוחר ספק
-- **עדיפות ראשונה:** ספקי נתי (גררים וניידות פנימיים)
-- **עדיפות שנייה:** ספקים חיצוניים (אם ספקי נתי לא זמינים)
-- סטטוס "פעיל" במערכת הוא תנאי הכרחי לשיבוץ
-
-**השלכות על המערכת:**
-- יש להוסיף ישות `Fleet` (צי רכב) עם שדות: מספר, סוג (גרר/ניידת), שם, סטטוס, שיוך לאזור
-- אלגוריתם שיבוץ צריך להעדיף ספקי צי רכב פנימי על פני ספקים חיצוניים
-- מסך ניהול צי רכב עם רשימת כלי רכב, סטטוסים ושיוכים
-
----
-
-### 2. ניידת
-
-**הגדרה:** ניידת היא כלי רכב שירות של נתי למתן **שירותי דרך** - מטרתה להביא את הרכב למצב נסיעה ולשלוח למוסך, ללא צורך בגרירה.
-
-**מתי משתמשים:**
-- בעיקר כשרכב **לא מניע בחניה** ומדובר בבעיית מצבר או טעינה
-- ניידת **עדיפה על גרר** כי היא זולה יותר
-
-**תרחישי שימוש:**
-1. **מכירת מצבר** - הניידת מגיעה, מאבחנת בעיית מצבר, ומוכרת מצבר חדש ללקוח
-2. **טעינת מצבר** - הניידת נותנת טעינה ושולחת את הלקוח למוסך להמשך בדיקה וטיפול
-
-**שיקולים לשיבוץ ניידת:**
-- סוג התקלה (בעיית מצבר/טעינה = ניידת, תקלה שמונעת נסיעה = גרר)
-- עלות (ניידת זולה יותר מגרר)
-- מיקום הרכב (חניה vs כביש)
-
-**רשימת ניידות:**
-- קיימת רשימה מסודרת של ניידות עם נתונים וסטטוסים
-- משתמשים בהן **רק כאשר הסטטוס שלהן פעיל** במערכת
-
-**השלכות על המערכת:**
-- בטופס קריאה חדשה: שדה לסוג שירות נדרש (ניידת/גרר) עם המלצה אוטומטית לפי סוג תקלה
-- בניידת: אפשרות לתעד מכירת מצבר/טעינה כפעולה שבוצעה
-- סטטוסי סגירה ייחודיים: "ניידת טיפלה", "ניידת לא סייעה - הועבר לגרר"
-
----
-
-### 3. התראות ללקוחות
-
-**ערוץ תקשורת ראשי: WhatsApp** (לא SMS כפי שתואר קודם)
-
-**התראות אוטומטיות ללקוח:**
-- **פתיחת קריאה** - הודעת WhatsApp ללקוח
-- **שינוי סטטוס** - הודעת WhatsApp ללקוח
-- כל ההודעות והטריגרים מפורטים באפיון של דורית
-
-**סקר שביעות רצון - מופרד לפי סוג לקוח:**
-
-| סוג לקוח | סקר | אופן | תזמון |
-|-----------|-----|------|-------|
-| לקוח בוט (WhatsApp) | סקר WhatsApp | אוטומטי | 48 שעות מפתיחת הקריאה |
-| לקוח רגיל (טלפוני) | שיחת סגירה | ידני ע"י נציג | לפי שיקול דעת |
-
-**שיחות סגירה:**
-- **כל השיחות מוקלטות** ללא יוצא מן הכלל, כולל שיחות סגירה
-
-**השלכות על המערכת:**
-- אינטגרציית WhatsApp Business API כערוץ ראשי (לא SMS)
-- מנגנון סקר אוטומטי ב-WhatsApp עם טיימר של 48 שעות ללקוחות בוט
-- סימון סוג לקוח (בוט/רגיל) לקביעת תהליך הסגירה
-- שדה "שיחת סגירה בוצעה" + קישור להקלטה (אופציונלי)
-
----
-
-### 4. חשבוניות
-
-**ארכיטקטורה:** חשבוניות **לא מנוהלות** במערכת החדשה - נשארות במערכת CRM הקיימת.
-
-**אינטגרציה:**
-- המערכת החדשה תכלול **iFrame** שמציג את מערכת ה-CRM הקיימת
-- כאשר יש רכישה (מצבר, חלפים) או צורך בלקיחת עירבון - התהליך ממשיך רגיל ב-CRM הקיים
-- החשבונית יוצאת מה-CRM הקיים
-
-**תהליך רכישה:**
-1. מתפעל מבצע רכישה (למשל מכירת מצבר)
-2. לוקחים מייל מהלקוח
-3. חשבונית נשלחת ללקוח מיידית למייל
-4. החשבונית נשמרת במודול "ניהול לקוחות" ב-CRM הקיים
-
-**השלכות על המערכת:**
-- מודול iFrame לחשבוניות/CRM הקיים
-- **לא נדרש** פיתוח מערכת חשבוניות עצמאית
-- אינטגרציית API בין המערכת החדשה ל-CRM הקיים לסנכרון נתונים בסיסי
-
----
-
-### 5. תפקידים, משתמשים והרשאות
-
-**עדכון מבנה התפקידים:**
-
-| תפקיד | תיאור | גישה לדשבורד | גישה לדוחות | פעולות |
-|--------|-------|---------------|-------------|--------|
-| **מנהל (Admin)** | ניהול מלא | ✅ | ✅ כולל דוחות פיננסיים | הכל |
-| **מתפעל (Operator)** | תפעול קריאות | ✅ | ❌ או מוגבל | שיבוץ, עדכון סטטוס, סגירה |
-| **ספק (Vendor)** | נותן שירות | ❌ פורטל בלבד | ❌ | קבלה/דחייה, עדכון סטטוס |
-
-**דגשים חשובים:**
-- **רק לאחר אישור שיבוץ** (עומד בכת"ש) הקריאה נכנסת לדשבורד
-- **בדשבורד עובדים רק:** מתפעלים ומנהלים
-- **ההבדל העיקרי** בין מנהל למתפעל: גישה לדוחות (במיוחד פיננסיים)
-- הגדרת ההרשאות המדויקת תתבהר לאחר שהמערכת תהיה פעילה
-
-**השלכות על המערכת:**
-- עדכון מערכת ההרשאות: הפרדה ברורה בין "מנהל" ל"מתפעל"
-- מתפעל: ממשק תפעולי בלבד (ללא דוחות מתקדמים)
-- מנהל: גישה מלאה כולל דוחות פיננסיים ודוחות ביצועים
-
----
-
-### 6. התראות ועדכונים בזמן אמת (תפעול פנימי)
-
-**מצב קיים:**
-- קיימת רק התראה ("צ'קלאקה") אחרי **שעתיים** מפתיחת קריאה
-- אין התראות אחרות למתפעלים
-
-**מצב נדרש:**
-- התראות זמן שעבר למניעת **איחורים**
-- הגדרה מדויקת של ספים וטריגרים תבוצע ע"י אילנית
-
-**אירועים קריטיים מוצעים:**
-- קריאה חדשה שלא שובצה (X דקות)
-- קריאה שלא טופלה בזמן (SLA)
-- ספק באיחור (יחסית ל-ETA)
-- קריאה תקועה בסטטוס מסוים יותר מדי זמן
-
-**השלכות על המערכת:**
-- מנגנון התראות מבוסס זמן (time-based alerts) עם ספים מותאמים
-- ממתינים להגדרות מפורטות מאילנית
-- הקוד הקיים כבר תומך בהתראות SLA (10 דק' ו-15 דק') - יש להרחיב
-
----
-
-### 7. תמחור ספק וסחורה בהעברה
-
-#### 7.1 סחורה בהעברה
-**פחות רלוונטי למערכת החדשה.**
-- הסכם ביטוח שנתי שמגיע מהספק החיצוני
-- מועלה למערכת הקיימת
-- מכסה נזק לסחורה שהספק מעמיס
-
-#### 7.2 תמחור ספק
-**רלוונטי מאוד למערכת.**
-
-**הגדרה:** העלאת הסכמי מחיר של ספקים למערכת, כך שבמעמד שיבוץ ספק לקריאה:
-1. המערכת מציגה את **המחיר לקריאה** לפי ההסכם
-2. המערכת יכולה **לבחור אוטומטית את הספק הזול ביותר**
-
-**השלכות על המערכת:**
-- ישות `VendorPricing` / `VendorAgreement` עם: ספק, סוג שירות, אזור, מחיר, תוקף הסכם
-- באלגוריתם שיבוץ: שקלול מחיר כפרמטר (ספק זול יותר = ניקוד גבוה יותר)
-- מסך ניהול הסכמי ספקים למנהלים
-- תצוגת מחיר משוער בעת שיבוץ ידני
-
----
-
-### 8. דוחות
-
-**מצב נוכחי:** בשלב הגדרה - דורית ואילנית מאפיינות את הדוחות.
-
-**דוחות שנדרש אישור/דיוק:**
-1. **ניהול איחורים טווח ספק** - ממתין להגדרה
-2. **דוח איחורים** - ממתין להגדרה
-3. **דוח דירוגים** - ממתין להגדרה
-4. **דוח ביצועים** - ממתין להגדרה
-5. **דוח חשבוניות מאושרות ע"י ספק** - ממתין להגדרה
-
-**דוחות קיימים שנדרשים מהמערכת החדשה:** יתווספו לאחר הפגישה.
-
-**השלכות על המערכת:**
-- תשתית Report Builder גמישה שתאפשר הוספת דוחות חדשים
-- ממתינים לאפיון מלא מדורית ואילנית
-
----
-
-### 9. שיחות סגירה
-
-**הבהרה:** כל השיחות במערכת מוקלטות ללא יוצא מן הכלל, כולל שיחות סגירה.
-
-**השלכות על המערכת:**
-- שדה קישור להקלטת שיחה בישות הקריאה
-- אפשרות האזנה להקלטה מתוך פרטי הקריאה (אם ההקלטה נגישה דרך API)
-
----
-
-### 10. שאלון טכני על פי תקלה מוגדרת
-
-**מצב קיים:** ⚠️ מומש חלקית - רק שאלון בטיחות מהבוט
-
-כיום קיים **רק** שאלון בטיחות בסיסי שמגיע מהבוט של 99Digital (WhatsApp), הכולל 8 שאלות קבועות:
-- הכביש נגיש? | חניון תת-קרקעי? | הילוך סרק? | הגה נעול?
-- בלם יד משוחרר? | כביש אגרה? | לקוח ליד הרכב? | יש מפתח?
-
-**מה חסר - שאלון טכני דינמי:**
-
-הרעיון הוא שאלון שמשתנה **לפי סוג התקלה המוגדרת**, כך שניתן לאסוף מידע טכני רלוונטי עוד לפני שיבוץ ספק:
-
-| סוג תקלה | שאלות לדוגמה |
-|-----------|-------------|
-| **בעיית מצבר** | האם הרכב מנסה להניע? אורות לוח מכוונים דולקים? כמה זמן הרכב עומד? |
-| **פנצ'ר** | באיזה גלגל? יש גלגל חילוף? האם הרכב על שול הכביש? |
-| **תקלה מכנית** | מה הסימפטומים? האם יש רעשים חריגים? האם הרכב מניע? |
-| **תאונה** | האם יש נפגעים? האם הרכב ניתן לנסיעה? האם דווח למשטרה? |
-
-**השלכות על המערכת:**
-- ישות `TechnicalQuestionnaire` עם: סוג תקלה, רשימת שאלות, סדר, חובה/אופציונלי
-- מנגנון שאלון דינמי בטופס פתיחת קריאה: כשנבחר סוג תקלה → מוצגות שאלות רלוונטיות
-- תשובות השאלון נשמרות בקריאה ומועברות לספק המשובץ
-- מסך ניהול שאלונים (Admin): הגדרת שאלות לפי סוגי תקלות
-- **נדרש אפיון מפורט:** אילו שאלות לכל סוג תקלה (מדורית/אילנית)
-
----
-
-### 11. קריאות במעקב לפני המפה
-
-**מצב קיים:** ⚠️ לא מומש
-
-כיום הדשבורד מציג:
-1. כרטיסי סטטיסטיקות (קריאות פעילות, ממתינות לשיבוץ, הושלמו היום)
-2. מפת GPS ספקים
-
-**חסר: פאנל "קריאות במעקב"** - רשימת קריאות בתהליך שמוצגת **מעל המפה**.
-
-**מה הפאנל צריך להציג:**
-- רשימת כל הקריאות **הפעילות** בזמן אמת (ספק בדרך, בטיפול, ממתין לשיבוץ)
-- לכל קריאה: מספר קריאה, שם לקוח, סוג שירות, ספק משובץ, סטטוס, זמן שעבר
-- **התראות צבעוניות:** סימון קריאות שחורגות מה-SLA או שזמן הטיפול ארוך
-- **פעולות מהירות:** שיבוץ מחדש, יצירת קשר עם ספק/לקוח, עדכון סטטוס
-- **קישור למפה:** לחיצה על קריאה מדגישה את מיקום הספק במפה שמתחת
-
-**Layout מוצע לדשבורד:**
-```
-┌─────────────────────────────────────────┐
-│  כרטיסי סטטיסטיקות (קריאות פעילות...)  │
-├─────────────────────────────────────────┤
-│  📋 קריאות במעקב                        │
-│  ┌─────┬──────┬──────┬────────┬───────┐ │
-│  │ #   │ לקוח │ ספק  │ סטטוס  │ זמן   │ │
-│  ├─────┼──────┼──────┼────────┼───────┤ │
-│  │ 101 │ כהן  │ נתי1 │ בדרך   │ 15 דק │ │
-│  │ 102 │ לוי  │  -   │ ממתין  │ 8 דק  │ │
-│  │ 103 │ אבי  │ נתי3 │ בטיפול │ 45 דק │ │
-│  └─────┴──────┴──────┴────────┴───────┘ │
-├─────────────────────────────────────────┤
-│  🗺️ מפת GPS ספקים                       │
-│  [מפה עם מיקומי ספקים בזמן אמת]        │
-└─────────────────────────────────────────┘
-```
-
-**השלכות על המערכת:**
-- רכיב `TrackedCallsPanel` חדש בדשבורד, ממוקם בין הסטטיסטיקות למפה
-- שאילתה בזמן אמת (polling כל 15 שניות) לקריאות פעילות
-- אינטראקציה עם המפה: בחירת קריאה מדגישה ספק על המפה
-- סינון: לפי סטטוס, ספק, זמן, SLA
-
----
-
-### סיכום הבהרות - השפעה על ארכיטקטורה
-
-#### ישויות חדשות נדרשות:
-1. **Fleet (צי רכב)** - ניהול גררים וניידות פנימיים
-2. **VendorAgreement (הסכמי ספקים)** - תמחור ומחירונים
-3. **TechnicalQuestionnaire (שאלון טכני)** - שאלות דינמיות לפי סוג תקלה
-
-#### עדכונים לישויות קיימות:
-1. **ServiceProvider** - הבחנה בין ספק פנימי (צי רכב) לחיצוני
-2. **ServiceCall** - שדה סוג שירות (ניידת/גרר), שדה הקלטת שיחה, תשובות שאלון טכני
-3. **User** - הפרדה בין מנהל למתפעל בהרשאות
-
-#### רכיבי UI חדשים:
-1. **TrackedCallsPanel** - פאנל קריאות במעקב בדשבורד (מעל המפה)
-2. **TechnicalQuestionnaireForm** - שאלון דינמי בטופס פתיחת קריאה
-3. **QuestionnaireManager** - מסך ניהול שאלונים (Admin)
-
-#### אינטגרציות מעודכנות:
-1. **WhatsApp Business API** - ערוץ ראשי (עדיפות גבוהה, לא בינונית)
-2. **iFrame CRM** - חשבוניות דרך CRM קיים (לא מערכת חשבוניות חדשה)
-3. **מערכת הקלטות** - גישה להקלטות שיחה (API)
-
----
-
-## סיכום טכני
-
-### מה עובד מעולה:
-1. ✅ מערכת CRM מלאה ופונקציונלית
-2. ✅ UI/UX מודרני ומותאם RTL
-3. ✅ ניהול קריאות מקצה לקצה
-4. ✅ שיבוץ טכנאים עם המלצות
-5. ✅ דוחות וסטטיסטיקות
-6. ✅ מערכת הרשאות
-7. ✅ פורטל ספקים
-
-### מה צריך שיפור:
-1. ⚠️ הגדרות מערכת (Settings) - בסיסי מאוד
-2. ⚠️ Google Maps API Key - צריך להגדיר
-3. ⚠️ ייצוא PDF בדוחות
-
-### מה חסר לחלוטין:
-1. ❌ מערכת התראות (Email/SMS/Push)
-2. ❌ יומן ותזמון גרפי
-3. ❌ אפליקציית מובייל
-4. ❌ ניהול מלאי
-5. ❌ חתימה דיגיטלית
-6. ❌ העלאת תמונות לקריאות
-7. ❌ שאלון טכני דינמי לפי סוג תקלה (ראו סעיף 10 בהבהרות אפיון)
-8. ❌ פאנל קריאות במעקב בדשבורד (ראו סעיף 11 בהבהרות אפיון)
-
----
-
-## נספח: רכיבי UI
-
-### רכיבים בסיסיים (85+)
-המערכת כוללת ספריית רכיבים מלאה מבוססת Radix UI:
-
-- Accordion
-- Alert / AlertDialog
-- Avatar
-- Badge
-- Breadcrumb
-- Button
-- Calendar
-- Card
-- Carousel
-- Checkbox
-- Collapsible
-- Command
-- Context Menu
-- Data Table
-- Dialog
-- Drawer
-- Dropdown Menu
-- Form
-- Hover Card
-- Input / Input OTP
-- Label
-- Menubar
-- Navigation Menu
-- Pagination
-- Popover
-- Progress
-- Radio Group
-- Resizable
-- Scroll Area
-- Select
-- Separator
-- Sheet
-- Skeleton
-- Slider
-- Sonner (Toasts)
-- Switch
-- Table
-- Tabs
-- Textarea
-- Toggle / Toggle Group
-- Tooltip
-
-### Design System
-**קובץ:** `src/design-system.js` (260 שורות)
-
-- צבעים מותאמים
-- Typography RTL
-- Spacing system
-- Shadow system
-- Border radius
-- Animation presets
+## נספח: Performance Optimization
+
+### Bundle Splitting (Code Splitting)
+
+המערכת משתמשת ב-Rollup `manualChunks` לפיצול ה-bundle:
+
+| Chunk | גודל | תוכן |
+|-------|------|-------|
+| vendor-react | 164KB | React, React DOM, React Router |
+| vendor-radix | 148KB | כל רכיבי Radix UI |
+| vendor-maps | 155KB | Leaflet, React-Leaflet |
+| vendor-motion | 114KB | Framer Motion |
+| vendor-charts | 431KB | Recharts |
+| vendor-pdf | 562KB | jspdf, html2canvas |
+| vendor-icons | 57KB | Lucide React |
+| vendor-query | 40KB | React Query |
+| vendor-date | 27KB | date-fns |
+| index (app) | 797KB | קוד האפליקציה |
+
+**Lazy Loading:** 15+ קומפוננטות טעונות דינמית (TrackedCallsPanel, TechnicalQuestionnaire, AI widgets, דוחות ועוד).
 
 ---
 
 **סוף מסמך**
 
-*מסמך זה מתאר את מצב המערכת נכון לפברואר 2026. יש לעדכן אותו בכל שינוי משמעותי.*
+*מסמך זה מתאר את מצב המערכת נכון לפברואר 2026. גרסה 2.0 - עדכון מלא של כל 47 המסכים, 4 תפקידים, 30 פונקציות backend.*
