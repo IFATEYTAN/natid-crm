@@ -201,20 +201,24 @@ export default function UserManagementPage() {
   };
 
   const filteredUsers = users.filter(
-    (user) =>
-      (filterRole === 'all' || user.role === filterRole) &&
-      (!searchQuery ||
-        user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+    (user) => {
+      const effRole = getEffectiveRole(user);
+      return (
+        (filterRole === 'all' || effRole === filterRole) &&
+        (!searchQuery ||
+          user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
   );
 
   const stats = {
     total: users.length,
-    admins: users.filter((u) => u.role === 'admin').length,
-    managers: users.filter((u) => u.role === 'manager').length,
-    operators: users.filter((u) => u.role === 'operator').length,
-    agents: users.filter((u) => u.role === 'agent').length,
-    vendors: users.filter((u) => u.role === 'vendor').length,
+    admins: users.filter((u) => getEffectiveRole(u) === 'admin').length,
+    managers: users.filter((u) => getEffectiveRole(u) === 'manager').length,
+    operators: users.filter((u) => getEffectiveRole(u) === 'operator').length,
+    agents: users.filter((u) => getEffectiveRole(u) === 'agent').length,
+    vendors: users.filter((u) => getEffectiveRole(u) === 'vendor').length,
   };
 
   const handleInvite = () => {
