@@ -19,7 +19,7 @@ import {
   Mail,
   Truck,
   MapPin,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
@@ -145,7 +145,24 @@ export default function EditVendorPage() {
       showToast.error('נא למלא שם ספק וטלפון');
       return;
     }
-    updateMutation.mutate(formData);
+
+    // Build clean data object with only valid Vendor entity fields
+    const data = {
+      vendor_name: formData.vendor_name,
+      contact_person: formData.contact_person,
+      phone: formData.phone,
+      phone_2: formData.phone_2,
+      email: formData.email,
+      service_type: formData.service_type,
+      coverage_areas: formData.coverage_areas,
+      works_24_7: formData.works_24_7,
+      working_hours_start: formData.working_hours_start,
+      working_hours_end: formData.working_hours_end,
+      notes: formData.notes,
+      is_active: formData.is_active,
+    };
+
+    updateMutation.mutate(data);
   };
 
   if (isLoading) {
@@ -160,9 +177,7 @@ export default function EditVendorPage() {
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-bold mb-4">הספק לא נמצא</h2>
-        <Button onClick={() => navigate(createPageUrl('ServiceProviders'))}>
-          חזרה לרשימה
-        </Button>
+        <Button onClick={() => navigate(createPageUrl('ServiceProviders'))}>חזרה לרשימה</Button>
       </div>
     );
   }
