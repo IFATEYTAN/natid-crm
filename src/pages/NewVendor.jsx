@@ -89,7 +89,7 @@ export default function NewVendorPage() {
       // Send invite email if requested
       if (sendInvite && data.email) {
         try {
-          await base44.users.inviteUser(data.email, 'user');
+          await base44.users.inviteUser(data.email, 'vendor');
           showToast.success('הזמנה נשלחה לספק');
         } catch (e) {
           console.error('Failed to send invite:', e);
