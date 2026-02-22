@@ -6,6 +6,52 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig({
   logLevel: 'error', // Suppress warnings, only show errors
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React runtime
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // UI primitives (Radix)
+          'vendor-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-label',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-radio-group',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-collapsible',
+            '@radix-ui/react-progress',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-toggle',
+            '@radix-ui/react-toggle-group',
+          ],
+          // Date utilities
+          'vendor-date': ['date-fns'],
+          // Data fetching
+          'vendor-query': ['@tanstack/react-query'],
+          // Maps
+          'vendor-maps': ['leaflet', 'react-leaflet'],
+          // Animation
+          'vendor-motion': ['framer-motion'],
+          // Charts (recharts)
+          'vendor-charts': ['recharts'],
+          // PDF export (used only in export flows)
+          'vendor-pdf': ['jspdf', 'html2canvas'],
+          // Icons
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
   plugins: [
     base44({
       // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.
