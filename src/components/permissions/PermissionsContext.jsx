@@ -121,7 +121,8 @@ export function PermissionsProvider({ children }) {
   }, []);
 
   // זיהוי תפקיד אפקטיבי - מבוסס על UserPermission/Role ולא על role הפלטפורמה
-  const effectiveRoleName = userPermissions?.roleData?.name || userPermissions?.role_name || currentUser?.role;
+  // IMPORTANT: userPermissions?.role_name may be a display_name like "נציג שטח", so prefer roleData.name
+  const effectiveRoleName = userPermissions?.roleData?.name || currentUser?.role;
   const isEffectiveAdmin = effectiveRoleName === 'admin' || currentUser?.role === 'admin';
 
   // בדיקת הרשאה
