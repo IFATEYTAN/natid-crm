@@ -159,7 +159,7 @@ export function PermissionsProvider({ children }) {
   // בדיקת גישה לדף
   const canAccessPage = useCallback(
     (pageName) => {
-      if (currentUser?.role === 'admin') return true;
+      if (isEffectiveAdmin) return true;
 
       // בדיקת דפים מוגבלים למשתמש ספציפי
       if (userPermissions?.restricted_pages?.includes(pageName)) {
