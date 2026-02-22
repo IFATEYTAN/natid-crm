@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const results = [];
     for (const email of emails) {
       try {
-        await base44.asServiceRole.users.inviteUser(email, 'user');
+        await base44.users.inviteUser(email, 'user');
         results.push({ email, status: 'invited' });
       } catch (err) {
         results.push({ email, status: 'error', message: err.message });
