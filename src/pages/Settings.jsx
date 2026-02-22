@@ -10,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Settings as SettingsIcon, Building2, Clock, Save } from 'lucide-react';
+import { Settings as SettingsIcon, Building2, Clock, Save, Database, Loader2 } from 'lucide-react';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
+import { base44 } from '@/api/base44Client';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -22,6 +23,8 @@ export default function SettingsPage() {
     workingHoursStart: '08:00',
     workingHoursEnd: '22:00',
   });
+  const [seeding, setSeeding] = useState(false);
+  const [seedResult, setSeedResult] = useState(null);
 
   const handleSave = () => {
     // In a real app, this would save to backend
@@ -35,6 +38,36 @@ export default function SettingsPage() {
       setSettings(JSON.parse(saved));
     }
   }, []);
+
+  const handleSeedDemoData = async () => {
+    if (
+      !window.confirm('פעולה זו תיצור נתוני דמו במערכת (משתמשים, לקוחות, ספקים, קריאות). להמשיך?')
+    ) {
+      return;
+    }
+    setSeeding(true);
+    setSeedResult(null);
+    try {
+      const result = await base44.functions.invoke('seedDemoData', {
+        seed_users: true,
+        seed_customers: true,
+        seed_vendors: true,
+        seed_calls: true,
+        seed_history: true,
+        seed_ratings: true,
+        seed_notifications: true,
+        seed_queue: true,
+        clear_existing: false,
+      });
+      setSeedResult(result);
+      showToast.success('נתוני דמו נוצרו בהצלחה');
+    } catch (e) {
+      console.error('Seed failed:', e);
+      showToast.error('שגיאה ביצירת נתוני דמו: ' + (e.message || 'שגיאה לא ידועה'));
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   return (
     <SlideUp>
@@ -138,6 +171,38 @@ export default function SettingsPage() {
             שמור הגדרות
           </Button>
         </div>
+
+        {/* Demo Data */}
+        <Card className="bg-white border border-[#e5e7eb] border-dashed">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Database className="w-5 h-5 text-[#f59e0b]" />
+              נתוני דמו
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-[#6b7280]">
+              יצירת נתוני דמו למערכת: משתמשים (12), לקוחות, ספקים (10), קריאות (30), דירוגים, התראות
+              ועוד. לשימוש בסביבת בדיקות בלבד.
+            </p>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={handleSeedDemoData}
+                disabled={seeding}
+                className="gap-2 border-[#f59e0b] text-[#f59e0b] hover:bg-[#fef3c7]"
+              >
+                {seeding ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Database className="w-4 h-4" />
+                )}
+                {seeding ? 'יוצר נתוני דמו...' : 'טען נתוני דמו'}
+              </Button>
+              {seedResult && <span className="text-sm text-green-600">נתוני דמו נוצרו בהצלחה</span>}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </SlideUp>
   );

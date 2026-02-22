@@ -32,7 +32,12 @@ const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaste
 
 function LayoutContent({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { currentUser, canAccessPage, isLoading: isLoadingAuth, effectiveRoleName } = usePermissions();
+  const {
+    currentUser,
+    canAccessPage,
+    isLoading: isLoadingAuth,
+    effectiveRoleName,
+  } = usePermissions();
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -85,12 +90,12 @@ function LayoutContent({ children, currentPageName }) {
   useEffect(() => {
     if (isLoadingAuth || !currentUser || hasRedirected.current) return;
     if (currentPageName === 'LandingPage') return;
-    
+
     if (!canAccessPage(currentPageName)) {
       hasRedirected.current = true;
       // Find the first accessible page for this user
       const fallbackPages = ['Calls', 'Dashboard', 'QueueMonitor', 'Calendar', 'UserProfile'];
-      const firstAccessible = fallbackPages.find(p => canAccessPage(p));
+      const firstAccessible = fallbackPages.find((p) => canAccessPage(p));
       if (firstAccessible) {
         navigate(createPageUrl(firstAccessible), { replace: true });
       } else {

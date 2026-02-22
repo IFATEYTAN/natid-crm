@@ -88,7 +88,7 @@ export default function UserManagementPage() {
 
   // Map user permissions by email for quick lookup
   const permByEmail = {};
-  userPermissions.forEach(p => {
+  userPermissions.forEach((p) => {
     permByEmail[p.user_email] = p;
   });
 
@@ -97,8 +97,8 @@ export default function UserManagementPage() {
     const perm = permByEmail[user.email];
     if (perm?.role_name) {
       // Try to match role_name to a known role key
-      const roleEntry = Object.entries(roleLabels).find(([key, label]) => 
-        label === perm.role_name || key === perm.role_name
+      const roleEntry = Object.entries(roleLabels).find(
+        ([key, label]) => label === perm.role_name || key === perm.role_name
       );
       if (roleEntry) return roleEntry[0];
     }
@@ -112,11 +112,11 @@ export default function UserManagementPage() {
       // Platform only supports "admin" or "user" - map app roles accordingly
       const platformRole = role === 'admin' ? 'admin' : 'user';
       await base44.users.inviteUser(email, platformRole);
-      
+
       // Find the matching Role entity for this app role
       const allRoles = await base44.entities.Role.list();
-      const matchedRole = allRoles.find(r => r.name === role);
-      
+      const matchedRole = allRoles.find((r) => r.name === role);
+
       // Create UserPermission record with the app-specific role
       await base44.entities.UserPermission.create({
         user_id: '', // will be updated when user logs in
@@ -167,10 +167,10 @@ export default function UserManagementPage() {
 
   const handleUpdateUser = async () => {
     if (!editUser) return;
-    
+
     // Platform role: admin stays admin, everything else is "user"
     const platformRole = editUser.role === 'admin' ? 'admin' : 'user';
-    
+
     updateMutation.mutate({
       id: editUser.id,
       data: {
@@ -181,9 +181,11 @@ export default function UserManagementPage() {
 
     // Also update UserPermission with the app-specific role
     const allRoles = await base44.entities.Role.list();
-    const matchedRole = allRoles.find(r => r.name === editUser.role);
-    
-    const existingPerms = await base44.entities.UserPermission.filter({ user_email: editUser.email });
+    const matchedRole = allRoles.find((r) => r.name === editUser.role);
+
+    const existingPerms = await base44.entities.UserPermission.filter({
+      user_email: editUser.email,
+    });
     if (existingPerms.length > 0) {
       await base44.entities.UserPermission.update(existingPerms[0].id, {
         role_id: matchedRole?.id || '',
@@ -200,17 +202,15 @@ export default function UserManagementPage() {
     }
   };
 
-  const filteredUsers = users.filter(
-    (user) => {
-      const effRole = getEffectiveRole(user);
-      return (
-        (filterRole === 'all' || effRole === filterRole) &&
-        (!searchQuery ||
-          user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    }
-  );
+  const filteredUsers = users.filter((user) => {
+    const effRole = getEffectiveRole(user);
+    return (
+      (filterRole === 'all' || effRole === filterRole) &&
+      (!searchQuery ||
+        user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  });
 
   const stats = {
     total: users.length,
