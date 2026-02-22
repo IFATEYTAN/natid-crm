@@ -73,13 +73,39 @@ export default function UserManagementPage() {
 
   const {
     data: users = [],
-    isLoading,
+    isLoading: isLoadingUsers,
     isError,
     error,
   } = useQuery({
     queryKey: queryKeys.users.all(),
     queryFn: () => base44.entities.User.list('-created_date', 100),
   });
+
+  const { data: userPermissions = [] } = useQuery({
+    queryKey: ['userPermissions'],
+    queryFn: () => base44.entities.UserPermission.list(),
+  });
+
+  // Map user permissions by email for quick lookup
+  const permByEmail = {};
+  userPermissions.forEach(p => {
+    permByEmail[p.user_email] = p;
+  });
+
+  // Get effective role for a user (from UserPermission, not platform role)
+  const getEffectiveRole = (user) => {
+    const perm = permByEmail[user.email];
+    if (perm?.role_name) {
+      // Try to match role_name to a known role key
+      const roleEntry = Object.entries(roleLabels).find(([key, label]) => 
+        label === perm.role_name || key === perm.role_name
+      );
+      if (roleEntry) return roleEntry[0];
+    }
+    return user.role === 'admin' ? 'admin' : 'agent';
+  };
+
+  const isLoading = isLoadingUsers;
 
   const inviteMutation = useMutation({
     mutationFn: async ({ email, role }) => {
