@@ -139,15 +139,39 @@ export default function UserManagementPage() {
     },
   });
 
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (!editUser) return;
+    
+    // Platform role: admin stays admin, everything else is "user"
+    const platformRole = editUser.role === 'admin' ? 'admin' : 'user';
+    
     updateMutation.mutate({
       id: editUser.id,
       data: {
         full_name: editUser.full_name,
-        role: editUser.role,
+        role: platformRole,
       },
     });
+
+    // Also update UserPermission with the app-specific role
+    const allRoles = await base44.entities.Role.list();
+    const matchedRole = allRoles.find(r => r.name === editUser.role);
+    
+    const existingPerms = await base44.entities.UserPermission.filter({ user_email: editUser.email });
+    if (existingPerms.length > 0) {
+      await base44.entities.UserPermission.update(existingPerms[0].id, {
+        role_id: matchedRole?.id || '',
+        role_name: matchedRole?.display_name || editUser.role,
+        user_id: editUser.id,
+      });
+    } else {
+      await base44.entities.UserPermission.create({
+        user_id: editUser.id,
+        user_email: editUser.email,
+        role_id: matchedRole?.id || '',
+        role_name: matchedRole?.display_name || editUser.role,
+      });
+    }
   };
 
   const filteredUsers = users.filter(
