@@ -91,8 +91,8 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorDetails from './pages/VendorDetails';
 import VendorGuide from './pages/VendorGuide';
-import VendorPricing from './pages/VendorPricing';
 import VendorPortal from './pages/VendorPortal';
+import VendorPricing from './pages/VendorPricing';
 import VendorTracking from './pages/VendorTracking';
 import __Layout from './Layout.jsx';
 

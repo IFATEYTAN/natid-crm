@@ -43,18 +43,20 @@ import { queryKeys } from '@/lib/queryKeys';
 import { useAuditLog } from '@/components/hooks/useAuditLog';
 
 const roleLabels = {
-  admin: 'מנהל',
+  admin: 'מנהל מערכת',
+  manager: 'מנהל תפעול',
   operator: 'מוקדן',
-  vendor: 'ספק',
-  agent: 'טכנאי',
+  agent: 'נציג שטח',
+  vendor: 'ספק שירות',
   user: 'משתמש',
 };
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',
+  manager: 'bg-[#6366f1] text-white',
   operator: 'bg-[#8b5cf6] text-white',
-  vendor: 'bg-[#f59e0b] text-white',
   agent: 'bg-[#10b981] text-white',
+  vendor: 'bg-[#f59e0b] text-white',
   user: 'bg-[#f3f4f6] text-[#111827]',
 };
 
@@ -71,7 +73,7 @@ export default function UserManagementPage() {
 
   const {
     data: users = [],
-    isLoading,
+    isLoading: isLoadingUsers,
     isError,
     error,
   } = useQuery({
@@ -79,15 +81,56 @@ export default function UserManagementPage() {
     queryFn: () => base44.entities.User.list('-created_date', 100),
   });
 
+  const { data: userPermissions = [] } = useQuery({
+    queryKey: ['userPermissions'],
+    queryFn: () => base44.entities.UserPermission.list(),
+  });
+
+  // Map user permissions by email for quick lookup
+  const permByEmail = {};
+  userPermissions.forEach((p) => {
+    permByEmail[p.user_email] = p;
+  });
+
+  // Get effective role for a user (from UserPermission, not platform role)
+  const getEffectiveRole = (user) => {
+    const perm = permByEmail[user.email];
+    if (perm?.role_name) {
+      // Try to match role_name to a known role key
+      const roleEntry = Object.entries(roleLabels).find(
+        ([key, label]) => label === perm.role_name || key === perm.role_name
+      );
+      if (roleEntry) return roleEntry[0];
+    }
+    return user.role === 'admin' ? 'admin' : 'agent';
+  };
+
+  const isLoading = isLoadingUsers;
+
   const inviteMutation = useMutation({
-    mutationFn: ({ email, role }) => base44.users.inviteUser(email, role),
+    mutationFn: async ({ email, role }) => {
+      // Platform only supports "admin" or "user" - map app roles accordingly
+      const platformRole = role === 'admin' ? 'admin' : 'user';
+      await base44.users.inviteUser(email, platformRole);
+
+      // Find the matching Role entity for this app role
+      const allRoles = await base44.entities.Role.list();
+      const matchedRole = allRoles.find((r) => r.name === role);
+
+      // Create UserPermission record with the app-specific role
+      await base44.entities.UserPermission.create({
+        user_id: '', // will be updated when user logs in
+        user_email: email,
+        role_id: matchedRole?.id || '',
+        role_name: matchedRole?.display_name || role,
+      });
+    },
     onSuccess: (_, variables) => {
-      // Log to audit
       logCreate(
         'User',
         null,
         variables.email,
-        `הוזמן משתמש חדש: ${variables.email} בתפקיד ${variables.role}`
+        `הוזמן משתמש חדש: ${variables.email} בתפקיד ${roleLabels[variables.role] || variables.role}`
       );
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setInviteDialogOpen(false);
@@ -122,31 +165,60 @@ export default function UserManagementPage() {
     },
   });
 
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (!editUser) return;
+
+    // Platform role: admin stays admin, everything else is "user"
+    const platformRole = editUser.role === 'admin' ? 'admin' : 'user';
+
     updateMutation.mutate({
       id: editUser.id,
       data: {
         full_name: editUser.full_name,
-        role: editUser.role,
+        role: platformRole,
       },
     });
+
+    // Also update UserPermission with the app-specific role
+    const allRoles = await base44.entities.Role.list();
+    const matchedRole = allRoles.find((r) => r.name === editUser.role);
+
+    const existingPerms = await base44.entities.UserPermission.filter({
+      user_email: editUser.email,
+    });
+    if (existingPerms.length > 0) {
+      await base44.entities.UserPermission.update(existingPerms[0].id, {
+        role_id: matchedRole?.id || '',
+        role_name: matchedRole?.display_name || editUser.role,
+        user_id: editUser.id,
+      });
+    } else {
+      await base44.entities.UserPermission.create({
+        user_id: editUser.id,
+        user_email: editUser.email,
+        role_id: matchedRole?.id || '',
+        role_name: matchedRole?.display_name || editUser.role,
+      });
+    }
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
-      (filterRole === 'all' || user.role === filterRole) &&
+  const filteredUsers = users.filter((user) => {
+    const effRole = getEffectiveRole(user);
+    return (
+      (filterRole === 'all' || effRole === filterRole) &&
       (!searchQuery ||
         user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+    );
+  });
 
   const stats = {
     total: users.length,
-    admins: users.filter((u) => u.role === 'admin').length,
-    operators: users.filter((u) => u.role === 'operator').length,
-    vendors: users.filter((u) => u.role === 'vendor').length,
-    agents: users.filter((u) => u.role === 'agent').length,
+    admins: users.filter((u) => getEffectiveRole(u) === 'admin').length,
+    managers: users.filter((u) => getEffectiveRole(u) === 'manager').length,
+    operators: users.filter((u) => getEffectiveRole(u) === 'operator').length,
+    agents: users.filter((u) => getEffectiveRole(u) === 'agent').length,
+    vendors: users.filter((u) => getEffectiveRole(u) === 'vendor').length,
   };
 
   const handleInvite = () => {
@@ -226,10 +298,11 @@ export default function UserManagementPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">מנהל</SelectItem>
+                        <SelectItem value="admin">מנהל מערכת</SelectItem>
+                        <SelectItem value="manager">מנהל תפעול</SelectItem>
                         <SelectItem value="operator">מוקדן</SelectItem>
-                        <SelectItem value="vendor">ספק</SelectItem>
-                        <SelectItem value="agent">טכנאי</SelectItem>
+                        <SelectItem value="agent">נציג שטח</SelectItem>
+                        <SelectItem value="vendor">ספק שירות</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -274,10 +347,11 @@ export default function UserManagementPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">מנהל</SelectItem>
+                      <SelectItem value="admin">מנהל מערכת</SelectItem>
+                      <SelectItem value="manager">מנהל תפעול</SelectItem>
                       <SelectItem value="operator">מוקדן</SelectItem>
-                      <SelectItem value="vendor">ספק</SelectItem>
-                      <SelectItem value="agent">טכנאי</SelectItem>
+                      <SelectItem value="agent">נציג שטח</SelectItem>
+                      <SelectItem value="vendor">ספק שירות</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -294,7 +368,7 @@ export default function UserManagementPage() {
         </Dialog>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -316,7 +390,20 @@ export default function UserManagementPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-[#111827]">{stats.admins}</div>
-                  <div className="text-sm text-[#6b7280]">מנהלים</div>
+                  <div className="text-sm text-[#6b7280]">מנהלי מערכת</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border border-[#e5e7eb]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[8px] bg-[#eef2ff] flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#6366f1]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.managers}</div>
+                  <div className="text-sm text-[#6b7280]">מנהלי תפעול</div>
                 </div>
               </div>
             </CardContent>
@@ -337,12 +424,12 @@ export default function UserManagementPage() {
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-[#f59e0b]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-[#10b981]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.vendors}</div>
-                  <div className="text-sm text-[#6b7280]">ספקים</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.agents}</div>
+                  <div className="text-sm text-[#6b7280]">נציגי שטח</div>
                 </div>
               </div>
             </CardContent>
@@ -350,12 +437,12 @@ export default function UserManagementPage() {
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
-                  <Wrench className="w-5 h-5 text-[#10b981]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#f59e0b]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.agents}</div>
-                  <div className="text-sm text-[#6b7280]">טכנאים</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.vendors}</div>
+                  <div className="text-sm text-[#6b7280]">ספקי שירות</div>
                 </div>
               </div>
             </CardContent>
@@ -381,10 +468,11 @@ export default function UserManagementPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">כל התפקידים</SelectItem>
-                  <SelectItem value="admin">מנהל</SelectItem>
+                  <SelectItem value="admin">מנהל מערכת</SelectItem>
+                  <SelectItem value="manager">מנהל תפעול</SelectItem>
                   <SelectItem value="operator">מוקדן</SelectItem>
-                  <SelectItem value="vendor">ספק</SelectItem>
-                  <SelectItem value="agent">טכנאי</SelectItem>
+                  <SelectItem value="agent">נציג שטח</SelectItem>
+                  <SelectItem value="vendor">ספק שירות</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -421,8 +509,8 @@ export default function UserManagementPage() {
                         <span dir="ltr">{user.email}</span>
                       </div>
                     </div>
-                    <Badge className={cn('text-xs', roleBadgeColors[user.role])}>
-                      {roleLabels[user.role] || user.role}
+                    <Badge className={cn('text-xs', roleBadgeColors[getEffectiveRole(user)])}>
+                      {roleLabels[getEffectiveRole(user)] || getEffectiveRole(user)}
                     </Badge>
                     <div className="flex gap-1">
                       <Button
@@ -430,7 +518,7 @@ export default function UserManagementPage() {
                         size="sm"
                         className="gap-1 text-xs hover:bg-blue-50 text-blue-600"
                         onClick={() => {
-                          setEditUser(user);
+                          setEditUser({ ...user, role: getEffectiveRole(user) });
                           setEditDialogOpen(true);
                         }}
                       >

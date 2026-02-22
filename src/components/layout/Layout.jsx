@@ -32,10 +32,16 @@ const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaste
 
 function LayoutContent({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { currentUser, canAccessPage, isLoading: isLoadingAuth } = usePermissions();
+  const {
+    currentUser,
+    canAccessPage,
+    isLoading: isLoadingAuth,
+    effectiveRoleName,
+  } = usePermissions();
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const hasRedirected = useRef(false);
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
@@ -74,6 +80,29 @@ function LayoutContent({ children, currentPageName }) {
       navigate('/LandingPage');
     }
   }, [isLoadingAuth, currentUser, currentPageName, navigate]);
+
+  // Reset redirect flag when page changes
+  useEffect(() => {
+    hasRedirected.current = false;
+  }, [currentPageName]);
+
+  // Auto-redirect when user lands on a page they cannot access
+  useEffect(() => {
+    if (isLoadingAuth || !currentUser || hasRedirected.current) return;
+    if (currentPageName === 'LandingPage') return;
+
+    if (!canAccessPage(currentPageName)) {
+      hasRedirected.current = true;
+      // Find the first accessible page for this user
+      const fallbackPages = ['Calls', 'Dashboard', 'QueueMonitor', 'Calendar', 'UserProfile'];
+      const firstAccessible = fallbackPages.find((p) => canAccessPage(p));
+      if (firstAccessible) {
+        navigate(createPageUrl(firstAccessible), { replace: true });
+      } else {
+        navigate(createPageUrl('UserProfile'), { replace: true });
+      }
+    }
+  }, [isLoadingAuth, currentUser, currentPageName, canAccessPage, navigate]);
 
   // Auto-redirect when visiting /login (builder preview link) to the official Base44 login flow
   useEffect(() => {

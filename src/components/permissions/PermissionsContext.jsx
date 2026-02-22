@@ -11,6 +11,7 @@ const APP_ROLE_MAP = {
   operator: 'operator',
   agent: 'agent',
   vendor: 'vendor',
+  manager: 'operator',
   // עברית (מ-UserPermission.role_name או מ-Role.display_name)
   מנהל: 'admin',
   'מנהל מערכת': 'admin',
@@ -158,22 +159,56 @@ export function PermissionsProvider({ children }) {
 
         let perm = null;
         if (user?.id) {
-          // חיפוש לפי user_id או לפי user_email
-          let permissions = await base44.entities.UserPermission.filter({ user_id: user.id });
+          // טעינה מקבילית של תפקידים והרשאות
+          let allRoles = [];
+          let permissions = [];
+
+          const [rolesResult, permByIdResult] = await Promise.allSettled([
+            base44.entities.Role.list(),
+            base44.entities.UserPermission.filter({ user_id: user.id }),
+          ]);
+
+          if (rolesResult.status === 'fulfilled') allRoles = rolesResult.value;
+          if (permByIdResult.status === 'fulfilled') permissions = permByIdResult.value;
+
+          // חיפוש חלופי לפי email
           if (permissions.length === 0 && user.email) {
-            permissions = await base44.entities.UserPermission.filter({ user_email: user.email });
+            try {
+              permissions = await base44.entities.UserPermission.filter({
+                user_email: user.email,
+              });
+            } catch (e) {
+              // silently ignore
+            }
           }
+
           if (permissions.length > 0) {
             perm = permissions[0];
+            // חיפוש Role תואם - לפי role_id או לפי role_name
+            let matchedRole = null;
             if (perm.role_id) {
-              try {
-                const roles = await base44.entities.Role.filter({ id: perm.role_id });
-                if (roles.length > 0) {
-                  perm = { ...perm, roleData: roles[0] };
-                }
-              } catch (e) {
-                // keep perm without roleData
-              }
+              matchedRole = allRoles.find((r) => r.id === perm.role_id);
+            }
+            if (!matchedRole && perm.role_name) {
+              matchedRole = allRoles.find(
+                (r) => r.display_name === perm.role_name || r.name === perm.role_name
+              );
+            }
+            if (matchedRole) {
+              perm = { ...perm, roleData: matchedRole };
+            }
+          } else if (allRoles.length > 0 && user.role === 'user') {
+            // אין UserPermission אבל המשתמש קיים - יצירת הרשאה סינתטית
+            const defaultRole =
+              allRoles.find((r) => r.name === 'agent') ||
+              allRoles.find((r) => r.name === 'operator');
+            if (defaultRole) {
+              perm = {
+                user_id: user.id,
+                user_email: user.email,
+                role_name: defaultRole.display_name,
+                roleData: defaultRole,
+              };
             }
           }
           setUserPermissions(perm);
@@ -201,7 +236,7 @@ export function PermissionsProvider({ children }) {
         return userPermissions.custom_permissions[category][permission];
       }
 
-      // בדיקת הרשאות מהתפקיד
+      // בדיקת הרשאות מהתפקיד (מה-Role entity)
       if (userPermissions?.roleData?.permissions?.[category]?.[permission] !== undefined) {
         return userPermissions.roleData.permissions[category][permission];
       }
