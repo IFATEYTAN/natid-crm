@@ -91,18 +91,22 @@ export function PermissionsProvider({ children }) {
           }
           if (permissions.length > 0) {
             const perm = permissions[0];
-            if (perm.role_id) {
-              try {
-                const roles = await base44.entities.Role.filter({ id: perm.role_id });
-                if (roles.length > 0) {
-                  setUserPermissions({ ...perm, roleData: roles[0] });
-                } else {
-                  setUserPermissions(perm);
-                }
-              } catch (e) {
+            // Try to find role data by role_id or role_name
+            try {
+              let allRoles = await base44.entities.Role.list();
+              let matchedRole = null;
+              if (perm.role_id) {
+                matchedRole = allRoles.find(r => r.id === perm.role_id);
+              }
+              if (!matchedRole && perm.role_name) {
+                matchedRole = allRoles.find(r => r.display_name === perm.role_name || r.name === perm.role_name);
+              }
+              if (matchedRole) {
+                setUserPermissions({ ...perm, roleData: matchedRole });
+              } else {
                 setUserPermissions(perm);
               }
-            } else {
+            } catch (e) {
               setUserPermissions(perm);
             }
           }
