@@ -141,6 +141,10 @@ export function PermissionsProvider({ children }) {
       }
 
       // ברירת מחדל לפי שם תפקיד אפקטיבי
+      if (effectiveRoleName === 'manager') {
+        // מנהל תפעול - גישה רחבה מלבד ניהול מערכת
+        return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
+      }
       if (effectiveRoleName === 'agent') {
         return DEFAULT_AGENT_PERMISSIONS[category]?.[permission] ?? false;
       }
