@@ -299,7 +299,7 @@ export default function UserManagementPage() {
         </Dialog>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -321,7 +321,20 @@ export default function UserManagementPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-[#111827]">{stats.admins}</div>
-                  <div className="text-sm text-[#6b7280]">מנהלים</div>
+                  <div className="text-sm text-[#6b7280]">מנהלי מערכת</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border border-[#e5e7eb]">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[8px] bg-[#eef2ff] flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#6366f1]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.managers}</div>
+                  <div className="text-sm text-[#6b7280]">מנהלי תפעול</div>
                 </div>
               </div>
             </CardContent>
@@ -342,12 +355,12 @@ export default function UserManagementPage() {
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-[#f59e0b]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-[#10b981]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.vendors}</div>
-                  <div className="text-sm text-[#6b7280]">ספקים</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.agents}</div>
+                  <div className="text-sm text-[#6b7280]">נציגי שטח</div>
                 </div>
               </div>
             </CardContent>
@@ -355,12 +368,12 @@ export default function UserManagementPage() {
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
-                  <Wrench className="w-5 h-5 text-[#10b981]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-[#f59e0b]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.agents}</div>
-                  <div className="text-sm text-[#6b7280]">טכנאים</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.vendors}</div>
+                  <div className="text-sm text-[#6b7280]">ספקי שירות</div>
                 </div>
               </div>
             </CardContent>
