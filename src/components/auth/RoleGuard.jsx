@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShieldAlert, Home } from 'lucide-react';
-import { VALID_ROLES } from '@/config/permissions';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 /**
  * RoleGuard - Protects content based on user role
+ * Uses effectiveRole from PermissionsContext (resolves Base44 platform role to app role)
  * @param {string[]} allowedRoles - Array of allowed roles ['admin', 'operator', 'vendor', 'agent']
  * @param {React.ReactNode} children - Content to render if authorized
  * @param {React.ReactNode} fallback - Optional fallback content
@@ -19,34 +19,9 @@ export default function RoleGuard({
   fallback = null,
   showAccessDenied = true,
 }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const { effectiveRole, isLoading } = usePermissions();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-
-        // Check if user's role is in allowed roles
-        // Admin always has access
-        // Unknown roles are denied by default for security
-        const userRole = currentUser?.role;
-        const isKnownRole = VALID_ROLES.includes(userRole);
-        const hasAccess = userRole === 'admin' || (isKnownRole && allowedRoles.includes(userRole));
-        setAuthorized(hasAccess);
-      } catch (error) {
-        setAuthorized(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [allowedRoles]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-32">
         <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
@@ -54,7 +29,9 @@ export default function RoleGuard({
     );
   }
 
-  if (!authorized) {
+  const hasAccess = effectiveRole === 'admin' || allowedRoles.includes(effectiveRole);
+
+  if (!hasAccess) {
     if (fallback) return fallback;
 
     if (showAccessDenied) {
@@ -65,7 +42,7 @@ export default function RoleGuard({
             <h2 className="text-xl font-bold text-[#172B4D] mb-2">אין הרשאה</h2>
             <p className="text-[#6B778C] mb-6">
               אין לך הרשאה לצפות בתוכן זה.
-              {user?.role && <span className="block mt-1">התפקיד שלך: {user.role}</span>}
+              {effectiveRole && <span className="block mt-1">התפקיד שלך: {effectiveRole}</span>}
             </p>
             <Link to={createPageUrl('Dashboard')}>
               <Button className="gap-2">
@@ -85,57 +62,29 @@ export default function RoleGuard({
 }
 
 /**
- * Hook to check if user has specific role
+ * Hook to check if user has specific role (uses effectiveRole)
  */
 export function useHasRole(roles = []) {
-  const [hasRole, setHasRole] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const user = await base44.auth.me();
-        setHasRole(user?.role === 'admin' || roles.includes(user?.role));
-      } catch {
-        setHasRole(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-    check();
-  }, [roles]);
-
-  return { hasRole, loading };
+  const { effectiveRole, isLoading } = usePermissions();
+  return {
+    hasRole: effectiveRole === 'admin' || roles.includes(effectiveRole),
+    loading: isLoading,
+  };
 }
 
 /**
- * Hook to get current user with role
+ * Hook to get current user with effective role
  */
 export function useCurrentUserRole() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, []);
+  const { currentUser, effectiveRole, isLoading } = usePermissions();
 
   return {
-    user,
-    loading,
-    isAdmin: user?.role === 'admin',
-    isOperator: user?.role === 'operator' || user?.role === 'admin',
-    isVendor: user?.role === 'vendor',
-    isAgent: user?.role === 'agent',
-    role: user?.role,
+    user: currentUser,
+    loading: isLoading,
+    isAdmin: effectiveRole === 'admin',
+    isOperator: effectiveRole === 'operator' || effectiveRole === 'admin',
+    isVendor: effectiveRole === 'vendor',
+    isAgent: effectiveRole === 'agent',
+    role: effectiveRole,
   };
 }
