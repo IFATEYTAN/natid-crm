@@ -361,19 +361,25 @@ export default function CallDetailsPage() {
                     </SelectContent>
                   </Select>
                 </PermissionGuard>
-
-                <PermissionGuard category="calls" permission="edit">
-                  <Button
-                    variant="outline"
-                    className="gap-2 text-red-600 border-red-300 hover:bg-red-50"
-                    onClick={() => setShowCancelDialog(true)}
-                  >
-                    <Ban className="w-4 h-4" />
-                    ביטול
-                  </Button>
-                </PermissionGuard>
               </>
             )}
+
+            <CallActionsMenu
+              call={call}
+              callId={callId}
+              canEdit={canEdit}
+              canAssign={canAssign}
+              onStatusChange={handleStatusChange}
+              onOpenAssignDialog={() => setShowAssignDialog(true)}
+              onOpenCancelDialog={() => setShowCancelDialog(true)}
+              onNavigateToReminders={() => {
+                const tabsList = document.querySelector('[role="tablist"]');
+                if (tabsList) {
+                  const remindersTab = tabsList.querySelector('[value="reminders"]');
+                  if (remindersTab) remindersTab.click();
+                }
+              }}
+            />
           </div>
         </div>
 
