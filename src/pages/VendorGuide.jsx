@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -405,6 +405,7 @@ function FaqItem({ question, answer }) {
 
 /* ──────── Main Page ──────── */
 export default function VendorGuide() {
+  const navigate = useNavigate();
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12" dir="rtl">
       {/* Hero */}
@@ -428,12 +429,10 @@ export default function VendorGuide() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <Link to={createPageUrl('VendorPortal')}>
-          <Button variant="outline" className="gap-2">
-            <ArrowRight className="w-4 h-4" />
-            חזרה לפורטל
-          </Button>
-        </Link>
+        <Button variant="outline" className="gap-2" onClick={() => navigate(-1)}>
+          <ArrowRight className="w-4 h-4" />
+          חזרה
+        </Button>
       </motion.div>
 
       {/* Section 1: Getting Started */}
@@ -619,12 +618,10 @@ export default function VendorGuide() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
       >
-        <Link to={createPageUrl('VendorPortal')}>
-          <Button className="bg-red-600 hover:bg-red-700 gap-2 px-8 py-3">
-            <ArrowRight className="w-4 h-4" />
-            חזרה לפורטל הספקים
-          </Button>
-        </Link>
+        <Button className="bg-red-600 hover:bg-red-700 gap-2 px-8 py-3" onClick={() => navigate(-1)}>
+          <ArrowRight className="w-4 h-4" />
+          חזרה
+        </Button>
       </motion.div>
     </div>
   );
