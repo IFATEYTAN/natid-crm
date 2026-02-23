@@ -159,6 +159,12 @@ export default function QueueMonitor() {
     }
   };
 
+  const handleRemoveFromQueue = async (item) => {
+    if (!window.confirm('האם להסיר את הקריאה מהתור?')) return;
+    await base44.entities.WorkQueue.delete(item.id);
+    queryClient.invalidateQueries({ queryKey: ['workQueue'] });
+  };
+
   const columns = [
     {
       header: 'קריאה',
@@ -191,6 +197,8 @@ export default function QueueMonitor() {
           assigned_to_agent: { label: 'משובץ לנציג', color: 'bg-blue-100 text-blue-800' },
           in_progress: { label: 'בטיפול', color: 'bg-indigo-100 text-indigo-800' },
           completed: { label: 'הושלם', color: 'bg-green-100 text-green-800' },
+          transferred: { label: 'הועבר', color: 'bg-purple-100 text-purple-800' },
+          rejected: { label: 'נדחה', color: 'bg-red-100 text-red-800' },
         };
         const conf = statusMap[item.queue_status] || {
           label: item.queue_status,
@@ -207,7 +215,7 @@ export default function QueueMonitor() {
       header: 'עדיפות',
       accessor: 'priority_score',
       cell: (item) => (
-        <Badge variant={item.priority_score > 80 ? 'destructive' : 'secondary'}>
+        <Badge variant={item.priority_score > 80 ? 'destructive' : item.priority_score > 60 ? 'default' : 'secondary'}>
           {item.priority_score}
         </Badge>
       ),
@@ -215,34 +223,88 @@ export default function QueueMonitor() {
     {
       header: 'נציג מטפל',
       accessor: 'assigned_to_agent',
-      cell: (item) => item.assigned_to_agent || '-',
+      cell: (item) => item.assigned_to_agent ? (
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-bold">
+            {item.assigned_to_agent.charAt(0).toUpperCase()}
+          </div>
+          <span className="text-sm">{item.assigned_to_agent}</span>
+        </div>
+      ) : (
+        <span className="text-gray-400 text-sm">לא משובץ</span>
+      ),
     },
     {
       header: 'זמן בתור',
       accessor: 'added_to_queue_at',
-      cell: (item) => formatDateTime(item.added_to_queue_at),
+      cell: (item) => {
+        if (!item.added_to_queue_at) return '-';
+        const mins = Math.round((Date.now() - new Date(item.added_to_queue_at).getTime()) / 60000);
+        const display = mins < 60 ? `${mins} דק׳` : `${Math.floor(mins / 60)} שע׳ ${mins % 60} דק׳`;
+        return (
+          <div>
+            <div className={`text-sm font-medium ${mins > 30 ? 'text-red-600' : ''}`}>{display}</div>
+            <div className="text-[10px] text-gray-400">{formatDateTime(item.added_to_queue_at)}</div>
+          </div>
+        );
+      },
     },
     {
-      header: '',
+      header: 'פעולות',
       cell: (item) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0" aria-label="פעולות נוספות">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>פעולות</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigate(createPageUrl(`CaseDetails?id=${item.call_id}`))}
+        <div className="flex items-center gap-1">
+          {(!item.assigned_to_agent && item.queue_status === 'waiting_in_queue') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              onClick={() => setAssignDialog({ open: true, item, mode: 'assign' })}
             >
-              צפה בפרטים
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>שנה עדיפות</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">הסר מהתור</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <UserPlus className="w-3 h-3" />
+              שבץ
+            </Button>
+          )}
+          {item.assigned_to_agent && item.queue_status !== 'completed' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+              onClick={() => setAssignDialog({ open: true, item, mode: 'transfer' })}
+            >
+              <ArrowLeftRight className="w-3 h-3" />
+              העבר
+            </Button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-7 w-7 p-0" aria-label="פעולות נוספות">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>פעולות</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => navigate(createPageUrl(`CaseDetails?id=${item.call_id}`))}
+              >
+                צפה בפרטים
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setPriorityDialog({ open: true, item })}>
+                <Gauge className="w-4 h-4 ml-2" />
+                שנה עדיפות
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setAssignDialog({ open: true, item, mode: item.assigned_to_agent ? 'transfer' : 'assign' })}>
+                <UserPlus className="w-4 h-4 ml-2" />
+                {item.assigned_to_agent ? 'העבר לנציג אחר' : 'שבץ לנציג'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600" onClick={() => handleRemoveFromQueue(item)}>
+                <Trash2 className="w-4 h-4 ml-2" />
+                הסר מהתור
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     },
   ];
