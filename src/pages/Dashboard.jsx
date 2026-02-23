@@ -87,7 +87,7 @@ export default function Dashboard() {
   };
 
   const { data: workQueue = [] } = useQuery({
-    queryKey: queryKeys.queue.all(),
+    queryKey: ['workQueue'],
     queryFn: () => base44.entities.WorkQueue.list(),
   });
 
