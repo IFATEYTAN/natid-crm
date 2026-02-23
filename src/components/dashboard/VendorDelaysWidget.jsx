@@ -263,7 +263,8 @@ export default function VendorDelaysWidget({ calls, isLoading, compact = false }
             )}
           </div>
         )}
-      </CardContent>}
+      </CardContent>
+      )}
     </Card>
   );
 }
