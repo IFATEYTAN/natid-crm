@@ -329,6 +329,11 @@ export default function Dashboard() {
             </Suspense>
           </div>
 
+          {/* ניהול איחורים */}
+          <Suspense fallback={<Skeleton className="h-48" />}>
+            <VendorDelaysWidget calls={calls} isLoading={isLoading} />
+          </Suspense>
+
           {/* קריאות במעקב - פאנל קריאות פעילות מעל המפה */}
           <Suspense fallback={<Skeleton className="h-64" />}>
             <TrackedCallsPanel
