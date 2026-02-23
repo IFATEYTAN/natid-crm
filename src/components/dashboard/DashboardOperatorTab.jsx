@@ -22,6 +22,7 @@ const StatCard = lazy(() => import('@/components/ui/StatCard'));
 const StatusBadge = lazy(() => import('@/components/ui/StatusBadge'));
 const AvatarStack = lazy(() => import('@/components/ui/AvatarStack'));
 const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
+const VendorDelaysWidget = lazy(() => import('@/components/dashboard/VendorDelaysWidget'));
 
 export default function DashboardOperatorTab({
   myOpenCalls,
