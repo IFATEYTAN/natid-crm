@@ -348,11 +348,9 @@ export default function VendorCallManagementPage() {
     <div className="space-y-4 pb-24">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link to={createPageUrl('VendorPortal')}>
-          <Button variant="ghost" size="icon">
-            <ArrowRight className="w-5 h-5" />
-          </Button>
-        </Link>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ArrowRight className="w-5 h-5" />
+        </Button>
         <div>
           <h1 className="text-xl font-bold text-[#172B4D]">קריאה {call.call_number}</h1>
           <p className="text-sm text-[#6B778C]">

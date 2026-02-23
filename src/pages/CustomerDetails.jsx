@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Mail, AlertCircle, ArrowRight } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 
 export default function CustomerDetails() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const id = searchParams.get('id');
 
   const {
@@ -81,11 +82,9 @@ export default function CustomerDetails() {
           <h1 className="text-2xl font-bold">פרטי לקוח</h1>
           <p className="text-sm text-[#6b7280]">צפייה ופרטי בסיס</p>
         </div>
-        <Link to={createPageUrl('Customers')}>
-          <Button variant="outline" className="gap-1">
-            <ArrowRight className="w-4 h-4" /> חזרה
-          </Button>
-        </Link>
+        <Button variant="outline" className="gap-1" onClick={() => navigate(-1)}>
+          <ArrowRight className="w-4 h-4" /> חזרה
+        </Button>
       </div>
 
       <Card>

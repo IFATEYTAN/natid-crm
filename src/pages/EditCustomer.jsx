@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils';
@@ -42,6 +42,7 @@ const contractTypeLabels = {
 
 export default function EditCustomer() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const id = searchParams.get('id');
   const queryClient = useQueryClient();
   const [form, setForm] = useState(null);
@@ -121,11 +122,9 @@ export default function EditCustomer() {
           <h1 className="text-2xl font-bold">עריכת לקוח</h1>
           <p className="text-sm text-[#6b7280]">{customer.name}</p>
         </div>
-        <Link to={createPageUrl(`CustomerDetails?id=${id}`)}>
-          <Button variant="outline" className="gap-1">
-            <ArrowRight className="w-4 h-4" /> חזרה לפרטים
-          </Button>
-        </Link>
+        <Button variant="outline" className="gap-1" onClick={() => navigate(-1)}>
+          <ArrowRight className="w-4 h-4" /> חזרה
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -237,9 +236,7 @@ export default function EditCustomer() {
         </Card>
 
         <div className="flex gap-3 justify-end">
-          <Link to={createPageUrl(`CustomerDetails?id=${id}`)}>
-            <Button type="button" variant="outline">ביטול</Button>
-          </Link>
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>ביטול</Button>
           <Button type="submit" className="gap-2" isLoading={updateMutation.isPending}>
             <Save className="w-4 h-4" />
             שמור שינויים
