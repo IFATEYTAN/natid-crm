@@ -34,6 +34,7 @@ export default function DashboardOperatorTab({
   callsLoading,
   vendorsLoading,
   setActiveTab,
+  allCalls = [],
 }) {
   const operatorCallColumns = getOperatorCallColumns();
   const vendorColumns = getVendorColumns();
