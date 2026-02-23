@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Clock, AlertTriangle, Timer, Eye, TrendingDown } from 'lucide-react';
+import { Clock, AlertTriangle, Timer, Eye, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
