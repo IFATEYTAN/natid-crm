@@ -153,6 +153,11 @@ export default function DashboardOperatorTab({
         </CardContent>
       </Card>
 
+      {/* ניהול איחורים */}
+      <Suspense fallback={<Skeleton className="h-48" />}>
+        <VendorDelaysWidget calls={allCalls} isLoading={callsLoading} compact />
+      </Suspense>
+
       {/* Urgent Calls Alert */}
       {urgentCalls.length > 0 && (
         <Card className="border-r-4 border-r-red-500 bg-red-50/30">
