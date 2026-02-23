@@ -63,6 +63,7 @@ const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTo
 const SmartAlertsTab = lazy(() => import('@/components/dashboard/SmartAlertsTab'));
 const VendorMapWidget = lazy(() => import('@/components/dashboard/VendorMapWidget'));
 const TrackedCallsPanel = lazy(() => import('@/components/dashboard/TrackedCallsPanel'));
+const VendorDelaysWidget = lazy(() => import('@/components/dashboard/VendorDelaysWidget'));
 const EscalationPredictionWidget = lazy(() => import('@/components/ai/EscalationPredictionWidget'));
 const RecurringPatternsWidget = lazy(() => import('@/components/ai/RecurringPatternsWidget'));
 const ProactiveRecommendationsWidget = lazy(
