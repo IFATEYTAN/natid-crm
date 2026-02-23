@@ -83,6 +83,7 @@ export default function CallDetailsPage() {
   const [selectedVendor, setSelectedVendor] = useState('');
   const [showFeedback, setShowFeedback] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Permission & Audit
   const { currentUser, hasPermission } = usePermissions();
