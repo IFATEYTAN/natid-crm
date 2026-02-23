@@ -346,10 +346,14 @@ export default function QueueMonitor() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="queue">
+        <TabsContent value="queue" className="space-y-4">
+          <Suspense fallback={<Skeleton className="h-24" />}>
+            <QueueStatsBar queueItems={enrichedItems} />
+          </Suspense>
+
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle>רשימת המתנה</CardTitle>
+              <CardTitle>רשימת המתנה ({filteredItems.length})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4 mb-6">
