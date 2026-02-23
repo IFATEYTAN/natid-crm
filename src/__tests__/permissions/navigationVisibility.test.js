@@ -38,7 +38,7 @@ describe('Navigation visibility by role', () => {
     it('should see financial items', () => {
       expect(visible).toContain('חשבוניות');
       expect(visible).toContain('תעריפון תפעול');
-      expect(visible).toContain('הסכמי תמחור');
+      expect(visible).toContain('חוזים ותמחור');
     });
 
     it('should see vendor portal', () => {
@@ -60,9 +60,9 @@ describe('Navigation visibility by role', () => {
       expect(visible).toContain('ניטור תורים');
     });
 
-    it('should see vendor management items (except pricing)', () => {
+    it('should see vendor management items', () => {
       expect(visible).toContain('נותני שירות');
-      expect(visible).toContain('חוזי ספקים');
+      expect(visible).toContain('חוזים ותמחור');
       expect(visible).toContain('מפת ספקים');
       expect(visible).toContain('אזורי כיסוי');
     });
@@ -86,7 +86,6 @@ describe('Navigation visibility by role', () => {
     it('should NOT see financial items (admin-only)', () => {
       expect(blocked).toContain('חשבוניות');
       expect(blocked).toContain('תעריפון תפעול');
-      expect(blocked).toContain('הסכמי תמחור');
     });
 
     it('should NOT see vendor portal (vendor-only)', () => {
@@ -122,7 +121,7 @@ describe('Navigation visibility by role', () => {
 
     it('should NOT see vendor management items (admin+operator manage vendors, vendors use portal)', () => {
       expect(blocked).toContain('נותני שירות');
-      expect(blocked).toContain('חוזי ספקים');
+      expect(blocked).toContain('חוזים ותמחור');
       expect(blocked).toContain('מפת ספקים');
     });
 

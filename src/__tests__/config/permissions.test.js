@@ -56,7 +56,6 @@ describe('PAGE_PERMISSIONS structure', () => {
     'RoleManagement',
     'Settings',
     'UserManagement',
-    'VendorPricing',
   ];
 
   it.each(adminOnlyPages)('"%s" should be admin-only', (page) => {

@@ -175,8 +175,7 @@ function LayoutContent({ children, currentPageName }) {
       title: 'ניהול ספקים',
       items: [
         { name: 'נותני שירות', href: 'ServiceProviders' },
-        { name: 'הסכמי תמחור', href: 'VendorPricing' },
-        { name: 'חוזי ספקים', href: 'VendorContracts' },
+        { name: 'חוזים ותמחור', href: 'VendorContracts' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },

@@ -116,7 +116,6 @@ const PAGE_GRANULAR_PERMISSIONS = {
   NewVendor: { category: 'vendors', permission: 'create' },
   EditVendor: { category: 'vendors', permission: 'edit' },
   VendorContracts: { category: 'vendors', permission: 'manage_contracts' },
-  VendorPricing: { category: 'vendors', permission: 'manage_contracts' },
 
   // ניטור
   AllVendorsMap: { category: 'monitoring', permission: 'live_map' },

@@ -23,8 +23,6 @@ export const PAGE_PERMISSIONS = {
   RoleManagement: ['admin'],
   Settings: ['admin'],
   UserManagement: ['admin'],
-  VendorPricing: ['admin'],
-
   // Admin + Operator - daily operations
   AdvancedExport: ['admin', 'operator'],
   Agents: ['admin', 'operator'],

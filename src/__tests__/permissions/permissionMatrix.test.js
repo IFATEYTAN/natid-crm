@@ -140,7 +140,6 @@ describe('Operator role - operational access', () => {
     'RoleManagement',
     'Invoices',
     'AuditLog',
-    'VendorPricing',
     'FleetManagement',
     'AutomationSettings',
     'IntegrationSettings',
