@@ -152,12 +152,16 @@ export default function CallDetailsPage() {
     queryClient.invalidateQueries({ queryKey: ['callMessages', targetCallId] });
   };
 
-  const handleStatusChange = async (newStatus) => {
+  const handleStatusChange = async (newStatus, reason) => {
     if (!canEdit) return;
 
     const updates = { call_status: newStatus };
     if (newStatus === 'completed') {
       updates.closed_at = new Date().toISOString();
+    }
+    if (newStatus === 'waiting_treatment' && reason) {
+      updates.closed_at = null;
+      updates.closed_by = null;
     }
 
     await base44.entities.Call.update(callId, updates);
