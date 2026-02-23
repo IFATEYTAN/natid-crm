@@ -64,9 +64,12 @@ const statusOptions = [
 
 export default function QueueMonitor() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [seeding, setSeeding] = useState(false);
+  const [assignDialog, setAssignDialog] = useState({ open: false, item: null, mode: 'assign' });
+  const [priorityDialog, setPriorityDialog] = useState({ open: false, item: null });
 
   const workQueueQuery = useWorkQueue();
   const callsQuery = useCalls();
