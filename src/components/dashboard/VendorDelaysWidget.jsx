@@ -164,19 +164,29 @@ export default function VendorDelaysWidget({ calls, isLoading, compact = false }
               <Badge className="bg-orange-500 text-white mr-2">{delayedCalls.length}</Badge>
             )}
           </CardTitle>
-          {delayedCalls.length > 0 && (
-            <div className="flex gap-2">
-              {criticalCount > 0 && (
-                <Badge className="bg-red-600 text-white text-xs">{criticalCount} קריטי</Badge>
-              )}
-              {highCount > 0 && (
-                <Badge className="bg-orange-500 text-white text-xs">{highCount} גבוה</Badge>
-              )}
-              {mediumCount > 0 && (
-                <Badge className="bg-yellow-500 text-white text-xs">{mediumCount} בינוני</Badge>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {delayedCalls.length > 0 && !isCollapsed && (
+              <div className="flex gap-2">
+                {criticalCount > 0 && (
+                  <Badge className="bg-red-600 text-white text-xs">{criticalCount} קריטי</Badge>
+                )}
+                {highCount > 0 && (
+                  <Badge className="bg-orange-500 text-white text-xs">{highCount} גבוה</Badge>
+                )}
+                {mediumCount > 0 && (
+                  <Badge className="bg-yellow-500 text-white text-xs">{mediumCount} בינוני</Badge>
+                )}
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+            >
+              {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
