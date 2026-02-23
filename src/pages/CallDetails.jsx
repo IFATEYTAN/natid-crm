@@ -43,6 +43,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { statusLabels, statusColors } from '@/components/call-details/callDetailsConstants';
+import CallActionsMenu from '@/components/call-details/CallActionsMenu';
 
 const CallDetailsInfoTab = React.lazy(() => import('@/components/call-details/CallDetailsInfoTab'));
 const CallChatTab = React.lazy(() => import('@/components/call-details/CallChatTab'));
