@@ -48,9 +48,18 @@ export default function CallDetailsInfoTab({
   showSignature,
   setShowSignature,
   onSignatureSaved,
+  onEditCall,
 }) {
   return (
     <div className="space-y-4">
+      {onEditCall && (
+        <div className="flex justify-end">
+          <Button variant="outline" className="gap-2" onClick={onEditCall}>
+            <Pencil className="w-4 h-4" />
+            ערוך את כל הפרטים
+          </Button>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Customer Info */}
         <Card className="bg-white">
