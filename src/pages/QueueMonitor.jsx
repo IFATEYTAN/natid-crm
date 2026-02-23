@@ -397,6 +397,21 @@ export default function QueueMonitor() {
           </Suspense>
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <Suspense fallback={null}>
+        <AssignAgentDialog
+          open={assignDialog.open}
+          onOpenChange={(open) => setAssignDialog(prev => ({ ...prev, open }))}
+          queueItem={assignDialog.item}
+          mode={assignDialog.mode}
+        />
+        <ChangePriorityDialog
+          open={priorityDialog.open}
+          onOpenChange={(open) => setPriorityDialog(prev => ({ ...prev, open }))}
+          queueItem={priorityDialog.item}
+        />
+      </Suspense>
     </div>
   );
 }
