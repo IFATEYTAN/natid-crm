@@ -366,6 +366,13 @@ export default function CallDetailsPage() {
               </>
             )}
 
+            <PermissionGuard category="calls" permission="edit">
+              <Button variant="outline" className="gap-2" onClick={() => setShowEditDialog(true)}>
+                <Pencil className="w-4 h-4" />
+                ערוך קריאה
+              </Button>
+            </PermissionGuard>
+
             <CallActionsMenu
               call={call}
               callId={callId}
