@@ -123,6 +123,7 @@ function formatDelay(minutes) {
 }
 
 export default function VendorDelaysWidget({ calls, isLoading, compact = false }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const delayedCalls = useMemo(() => {
     if (!calls || calls.length === 0) return [];
 
