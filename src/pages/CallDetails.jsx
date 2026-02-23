@@ -70,6 +70,7 @@ const EligibilityCheckSection = React.lazy(
   () => import('@/components/call-details/EligibilityCheckSection')
 );
 const RemindersList = React.lazy(() => import('@/components/reminders/RemindersList'));
+const CallEditDialog = React.lazy(() => import('@/components/call-details/CallEditDialog'));
 
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();
