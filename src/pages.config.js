@@ -94,6 +94,7 @@ import VendorGuide from './pages/VendorGuide';
 import VendorPortal from './pages/VendorPortal';
 import VendorPricing from './pages/VendorPricing';
 import VendorTracking from './pages/VendorTracking';
+import EditCustomer from './pages/EditCustomer';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +146,7 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "VendorPricing": VendorPricing,
     "VendorTracking": VendorTracking,
+    "EditCustomer": EditCustomer,
 }
 
 export const pagesConfig = {
