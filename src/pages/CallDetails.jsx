@@ -445,6 +445,7 @@ export default function CallDetailsPage() {
                   showSignature={showSignature}
                   setShowSignature={setShowSignature}
                   onSignatureSaved={handleSignatureSaved}
+                  onEditCall={canEdit ? () => setShowEditDialog(true) : undefined}
                 />
               </Suspense>
             </div>
