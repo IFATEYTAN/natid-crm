@@ -131,7 +131,7 @@ export default function CallDetailsInfoTab({
             <InfoField label="נפתחה על ידי" value={call?.created_by} />
             <InfoField label="תאריך פתיחה" value={formatDateTime(call?.created_date)} />
             {call?.closed_at && <InfoField label="תאריך סגירה" value={formatDateTime(call?.closed_at)} />}
-            {call?.closed_by && <InfoField label="נסגרה ע"י" value={call?.closed_by} />}
+            {call?.closed_by && <InfoField label={'נסגרה ע"י'} value={call?.closed_by} />}
             {call?.sla_status && (
               <div>
                 <Label className="text-xs text-[#6B778C]">סטטוס SLA</Label>
