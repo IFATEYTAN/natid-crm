@@ -578,6 +578,17 @@ export default function CallDetailsPage() {
             </TabsContent>
           )}
         </Tabs>
+        {/* Edit Dialog */}
+        <Suspense fallback={null}>
+          <CallEditDialog
+            open={showEditDialog}
+            onOpenChange={setShowEditDialog}
+            call={call}
+            callId={callId}
+            currentUser={currentUser}
+          />
+        </Suspense>
+
         {/* Cancel Dialog */}
         <Suspense fallback={null}>
           <CancelCallDialog
