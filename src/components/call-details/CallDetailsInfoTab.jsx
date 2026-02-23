@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { User, Car, MapPin, Truck, PenTool, CheckCircle, Mic, ExternalLink, Shield, FileText, Clock, Key, Warehouse } from 'lucide-react';
+import { User, Car, MapPin, Truck, PenTool, CheckCircle, Mic, ExternalLink, Shield, FileText, Clock, Key, Warehouse, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
