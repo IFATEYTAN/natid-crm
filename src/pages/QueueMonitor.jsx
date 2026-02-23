@@ -48,6 +48,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ShiftScheduleTab = lazy(() => import('@/components/queue/ShiftScheduleTab'));
+const QueueStatsBar = lazy(() => import('@/components/queue/QueueStatsBar'));
+const AssignAgentDialog = lazy(() => import('@/components/queue/AssignAgentDialog'));
+const ChangePriorityDialog = lazy(() => import('@/components/queue/ChangePriorityDialog'));
 
 const statusOptions = [
   { value: 'all', label: 'הכל' },
