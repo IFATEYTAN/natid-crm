@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
 import { useWorkQueue } from '@/components/hooks/useWorkQueue';
 import { useCalls } from '@/components/hooks/useCalls';
+import { useQueryClient } from '@tanstack/react-query';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import {
   ArrowRight,
@@ -17,6 +18,10 @@ import {
   MoreVertical,
   CalendarDays,
   ListChecks,
+  UserPlus,
+  ArrowLeftRight,
+  Trash2,
+  Gauge,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
