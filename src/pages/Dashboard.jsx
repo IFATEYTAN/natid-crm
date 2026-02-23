@@ -468,6 +468,7 @@ export default function Dashboard() {
               callsLoading={callsLoading}
               vendorsLoading={vendorsLoading}
               setActiveTab={setActiveTab}
+              allCalls={calls}
             />
           </Suspense>
         </TabsContent>
