@@ -134,7 +134,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto text-right" dir="rtl">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div>
@@ -164,8 +164,8 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
             </div>
           </DialogHeader>
 
-          <Tabs defaultValue="details" className="w-full mt-4">
-            <TabsList>
+          <Tabs defaultValue="details" className="w-full mt-4" dir="rtl">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="details">פרטים</TabsTrigger>
               <TabsTrigger value="pricing">תמחור</TabsTrigger>
               <TabsTrigger value="coverage">כיסוי ו-SLA</TabsTrigger>
