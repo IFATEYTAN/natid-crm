@@ -231,31 +231,23 @@ export default function ImportHistoricalDataPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {callFields.map((dbField) => (
-                    <div key={dbField} className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        {dbField}
-                      </label>
-                      <select
-                        value={columnMapping[dbField] || ''}
-                        onChange={(e) =>
-                          setColumnMapping({
-                            ...columnMapping,
-                            [dbField]: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-900">
+                    ✅ <strong>כל העמודות</strong> מהקובץ יועלו בדיוק כמו שהן. אין צורך במיפוי.
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-3">עמודות שיעלו:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {availableColumns.map((col) => (
+                      <span
+                        key={col}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
                       >
-                        <option value="">-- בחר עמודה --</option>
-                        {currentSheet.headers.map((header) => (
-                          <option key={header} value={header}>
-                            {header}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
+                        {col}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
