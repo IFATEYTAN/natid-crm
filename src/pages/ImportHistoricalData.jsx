@@ -79,14 +79,24 @@ export default function ImportHistoricalDataPage() {
 
         let sheets = [];
         if (extractResult.status === 'success' && extractResult.output) {
-          sheets = Array.isArray(extractResult.output.sheets) ? extractResult.output.sheets : [extractResult.output];
+          sheets = Array.isArray(extractResult.output.sheets) 
+            ? extractResult.output.sheets 
+            : [{ name: 'Sheet1', headers: Object.keys(extractResult.output[0] || {}), rows: Array.isArray(extractResult.output) ? extractResult.output : [extractResult.output] }];
         }
 
+        // Ensure each sheet has headers and rows
+        sheets = sheets.map(sheet => ({
+          name: sheet.name || 'Sheet',
+          headers: Array.isArray(sheet.headers) ? sheet.headers : Object.keys(sheet.rows?.[0] || {}),
+          rows: Array.isArray(sheet.rows) ? sheet.rows : []
+        })).filter(sheet => sheet.rows.length > 0);
+
         if (!sheets || sheets.length === 0) {
-          throw new Error('לא נמצאו גיליונות בקובץ');
+          throw new Error('לא נמצאו גיליונות עם נתונים בקובץ');
         }
 
         setFilePreview({ sheets, url: file_url });
+        setSelectedSheet(0);
         toast.success('הקובץ טופל בהצלחה');
       }
     } catch (error) {
