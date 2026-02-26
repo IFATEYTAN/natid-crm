@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarStack from '@/components/ui/AvatarStack';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function UserManagement() {
   const [search, setSearch] = useState('');
@@ -55,10 +56,7 @@ export default function UserManagement() {
     queryFn: () => base44.entities.User.list('-created_date'),
   });
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser } = usePermissions();
 
   const inviteMutation = useMutation({
     mutationFn: ({ email, role }) => base44.users.inviteUser(email, role),

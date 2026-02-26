@@ -19,6 +19,7 @@ L.Icon.Default.mergeOptions({
 });
 
 import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 // Custom marker icons by status
 const createMarkerIcon = (status) => {
@@ -62,10 +63,7 @@ export default function VendorMap() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapCenter, setMapCenter] = useState([31.7683, 35.2137]); // Jerusalem default
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],

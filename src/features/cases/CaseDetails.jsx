@@ -40,6 +40,7 @@ import { he } from 'date-fns/locale';
 import { triggerNotification } from '@/components/NotificationsUtils';
 import CallChat from '@/components/chat/CallChat';
 import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 const statusOptions = [
   { value: 'new', label: 'חדש' },
@@ -56,6 +57,7 @@ export default function CaseDetails() {
   const caseId = urlParams.get('id');
 
   const queryClient = useQueryClient();
+  const { currentUser } = usePermissions();
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editData, setEditData] = useState({});
@@ -159,7 +161,6 @@ export default function CaseDetails() {
     });
 
     // Trigger Notification
-    const user = await base44.auth.me();
     await triggerNotification(
       'call_status_change',
       {
@@ -171,7 +172,7 @@ export default function CaseDetails() {
         id: caseId,
         entityType: 'case',
       },
-      user
+      currentUser
     );
 
     // Send SMS notification to customer
@@ -221,7 +222,6 @@ export default function CaseDetails() {
     });
 
     // Trigger Notification
-    const user = await base44.auth.me();
     await triggerNotification(
       'call_assigned',
       {
@@ -232,7 +232,7 @@ export default function CaseDetails() {
         id: caseId,
         entityType: 'case',
       },
-      user
+      currentUser
     );
 
     // Update provider status

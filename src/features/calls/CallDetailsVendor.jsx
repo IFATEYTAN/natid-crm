@@ -23,6 +23,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function CallDetailsVendor() {
   const navigate = useNavigate();
@@ -39,10 +40,7 @@ export default function CallDetailsVendor() {
     select: (data) => data[0],
   });
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],

@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { statusLabels, statusColors } from '@/components/call-details/callDetailsConstants';
+import { statusLabels, statusColors } from '@/config/labels';
 import CallActionsMenu from '@/components/call-details/CallActionsMenu';
 
 const CallDetailsInfoTab = React.lazy(() => import('@/components/call-details/CallDetailsInfoTab'));

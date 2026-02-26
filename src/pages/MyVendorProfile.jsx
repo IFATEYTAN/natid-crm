@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,7 +57,7 @@ const coverageAreas = [
 ];
 
 export default function MyVendorProfilePage() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = usePermissions();
   const [formData, setFormData] = useState({
     vendor_name: '',
     contact_person: '',
@@ -76,17 +77,6 @@ export default function MyVendorProfilePage() {
   });
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (e) {
-        console.error('Failed to fetch user:', e);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const vendorQuery = useQuery({
     queryKey: ['myVendorProfile', currentUser?.email],

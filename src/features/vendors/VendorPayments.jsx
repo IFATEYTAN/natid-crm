@@ -18,6 +18,7 @@ import { he } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ImportExport from '@/components/ImportExport';
 import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 const monthNames = [
   'ינואר',
@@ -40,10 +41,7 @@ export default function VendorPayments() {
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const tableRef = useRef(null);
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],

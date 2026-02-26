@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { issueTypeLabels } from '@/config/labels';
@@ -39,7 +40,7 @@ const photoCategories = [
 ];
 
 export default function VendorCallManagementPage() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = usePermissions();
   const [vendorProfile, setVendorProfile] = useState(null);
   const [selectedCallId, setSelectedCallId] = useState(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
@@ -57,17 +58,6 @@ export default function VendorCallManagementPage() {
     if (id) setSelectedCallId(id);
   }, [searchParams]);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (e) {
-        console.error('Failed to fetch user:', e);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const vendorQuery = useQuery({
     queryKey: ['vendorProfile', currentUser?.email],

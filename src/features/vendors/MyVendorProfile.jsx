@@ -35,6 +35,7 @@ import { he } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { getCoverageLabel } from '@/config/coverageConstants';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function MyVendorProfile() {
   const queryClient = useQueryClient();
@@ -42,10 +43,7 @@ export default function MyVendorProfile() {
   const [editForm, setEditForm] = useState({});
 
   // 1. Get Current User
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   // 2. Get Vendor associated with user email
   const { data: vendor, isLoading: vendorLoading } = useQuery({

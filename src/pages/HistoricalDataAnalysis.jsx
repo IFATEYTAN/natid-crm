@@ -31,6 +31,7 @@ import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { toast } from 'sonner';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -147,10 +148,7 @@ export default function HistoricalDataAnalysisPage() {
   };
 
   // User display preferences
-  const { data: currentUser } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser } = usePermissions();
 
   const { data: displayPref } = useQuery({
     queryKey: ['userDisplayPref', currentUser?.id, 'HistoricalDataAnalysis'],

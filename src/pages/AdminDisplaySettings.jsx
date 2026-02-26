@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,11 +27,7 @@ export default function AdminDisplaySettings() {
   const qc = useQueryClient();
   const [selectedPage, setSelectedPage] = useState(PAGES[0].value);
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => setUser(null));
-  }, []);
+  const { currentUser: user } = usePermissions();
 
   useEffect(() => {
     if (user && !selectedUserId) setSelectedUserId(user.id);

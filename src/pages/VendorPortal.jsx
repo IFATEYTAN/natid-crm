@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,30 +32,18 @@ import { showToast } from '@/components/ui/FeedbackToast';
 import { issueTypeLabels } from '@/config/labels';
 
 export default function VendorPortalPage() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser, effectiveRole } = usePermissions();
   const [vendorProfile, setVendorProfile] = useState(null);
   const [isAvailable, setIsAvailable] = useState(false);
   const [pendingCall, setPendingCall] = useState(null);
   const [showNewCallAlert, setShowNewCallAlert] = useState(false);
   const queryClient = useQueryClient();
 
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = effectiveRole === 'admin';
   const [activeTab, setActiveTab] = useState('vendor');
   useEffect(() => {
     if (isAdmin) setActiveTab('admin');
   }, [isAdmin]);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (e) {
-        console.error('Failed to fetch user:', e);
-      }
-    };
-    fetchUser();
-  }, []);
 
   const vendorQuery = useQuery({
     queryKey: ['vendorProfile', currentUser?.email],

@@ -10,16 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListTodo, Clock, CheckCircle2, Timer, Phone, Play, X } from 'lucide-react';
 import { parseISO, differenceInMinutes } from 'date-fns';
 import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function MyQueue() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('my-queue');
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: queueItems = [], isLoading } = useQuery({
     queryKey: ['myQueue', user?.email],

@@ -19,6 +19,7 @@ import { Search, Phone, MapPin, Navigation, Eye } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 const statusOptions = [
   { value: 'all', label: 'כל הסטטוסים' },
@@ -36,10 +37,7 @@ export default function MyCallsVendor() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],

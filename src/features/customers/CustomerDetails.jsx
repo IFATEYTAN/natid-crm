@@ -29,11 +29,13 @@ import { Phone, Mail, MapPin, MessageSquare, Plus, ArrowRight, Calendar, User } 
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 import { triggerNotification } from '@/components/NotificationsUtils';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function CustomerDetails() {
   const [searchParams] = useSearchParams();
   const customerId = searchParams.get('id');
   const queryClient = useQueryClient();
+  const { currentUser } = usePermissions();
 
   const [isInteractionDialogOpen, setIsInteractionDialogOpen] = useState(false);
   const [interactionForm, setInteractionForm] = useState({
@@ -79,11 +81,10 @@ export default function CustomerDetails() {
   // Create Interaction Mutation
   const createInteractionMutation = useMutation({
     mutationFn: async (data) => {
-      const user = await base44.auth.me();
       return base44.entities.CustomerInteraction.create({
         ...data,
         customer_id: customerId,
-        performed_by: user?.full_name || 'System',
+        performed_by: currentUser?.full_name || 'System',
       });
     },
     onSuccess: async (data) => {
@@ -99,7 +100,6 @@ export default function CustomerDetails() {
       toast.success('האינטראקציה נשמרה בהצלחה');
 
       // Trigger Notification
-      const user = await base44.auth.me();
       await triggerNotification(
         'new_interaction',
         {
@@ -110,7 +110,7 @@ export default function CustomerDetails() {
           id: customerId,
           entityType: 'customer',
         },
-        user
+        currentUser
       );
     },
     onError: (error) => toast.error('שגיאה בשמירת האינטראקציה: ' + error.message),
