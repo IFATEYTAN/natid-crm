@@ -41,8 +41,8 @@ const VendorPerformanceReport = React.lazy(
 const CompanyReport = React.lazy(() => import('@/components/reports/CompanyReport'));
 const FinancialReport = React.lazy(() => import('@/components/reports/FinancialReport'));
 const UsageReport = React.lazy(() => import('@/components/reports/UsageReport'));
-const Annual2025Report = React.lazy(() => import('@/components/reports/Annual2025Report'));
-const Fleet2025Report = React.lazy(() => import('@/components/reports/Fleet2025Report'));
+const Annual2025Report = React.lazy(() => import('@/components/reports/Annual2025Report.jsx'));
+const Fleet2025Report = React.lazy(() => import('@/components/reports/Fleet2025Report.jsx'));
 
 import ExportMenu from '@/components/ui/ExportMenu';
 import {
