@@ -18,7 +18,7 @@ export default function ImportHistoricalDataPage() {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       const fileName = selectedFile.name.toLowerCase();
-      const isValidExtension = fileName.endsWith('.csv');
+      const isValidExtension = fileName.endsWith('.csv') || fileName.endsWith('.xlsx');
 
       if (isValidExtension) {
         setFile(selectedFile);
@@ -27,7 +27,7 @@ export default function ImportHistoricalDataPage() {
         setColumnMapping({});
         previewFile(selectedFile);
       } else {
-        toast.error('כרגע תומך רק בקבצי CSV');
+        toast.error('נא לבחור קובץ CSV או XLSX');
       }
     }
   };
