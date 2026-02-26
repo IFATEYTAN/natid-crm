@@ -167,7 +167,6 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'מסך הבית', href: 'LandingPage' },
         { name: 'לוח בקרה', href: 'Dashboard' },
         { name: 'רשימת קריאות', href: 'Calls' },
-        { name: 'לוח שנה', href: 'Calendar' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
       ],
     },
@@ -207,7 +206,10 @@ function LayoutContent({ children, currentPageName }) {
     },
     {
       title: 'כלים',
-      items: [{ name: 'סוכנים', href: 'Agents' }],
+      items: [
+        { name: 'סוכנים', href: 'Agents' },
+        { name: 'לוח שנה', href: 'Calendar' },
+      ],
     },
     {
       title: 'מערכת',
