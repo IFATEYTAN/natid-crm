@@ -188,8 +188,8 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid grid-cols-4 w-full">
+          <Tabs defaultValue="basic" className="w-full" dir="rtl">
+            <TabsList className="grid grid-cols-4 w-full" dir="rtl">
               <TabsTrigger value="basic">פרטים בסיסיים</TabsTrigger>
               <TabsTrigger value="pricing">תמחור</TabsTrigger>
               <TabsTrigger value="coverage">כיסוי</TabsTrigger>
