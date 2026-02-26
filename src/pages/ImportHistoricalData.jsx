@@ -35,12 +35,10 @@ export default function ImportHistoricalDataPage() {
   const previewFile = async (selectedFile) => {
     try {
       toast.loading('עיבוד הקובץ...');
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
       const fileName = selectedFile.name.toLowerCase();
 
       if (fileName.endsWith('.csv')) {
-        const response = await fetch(file_url);
-        const csvText = await response.text();
+        const csvText = await selectedFile.text();
         
         // Parse CSV properly, handling quoted values
         const parseCSV = (text) => {
@@ -108,10 +106,40 @@ export default function ImportHistoricalDataPage() {
           return row;
         });
         
-        setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: file_url });
+        setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: null });
         toast.success('הקובץ טופל בהצלחה');
+      } else if (fileName.endsWith('.xlsx')) {
+        // Parse Excel file using XLSX library
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        
+        const sheets = workbook.SheetNames.map((sheetName) => {
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            header: 1,
+            defval: ''
+          });
+          
+          if (jsonData.length === 0) {
+            return { name: sheetName, headers: [], rows: [] };
+          }
+          
+          const headers = jsonData[0].map(h => String(h || '').trim());
+          const rows = jsonData.slice(1).map((row) => {
+            const rowObj = {};
+            headers.forEach((header, idx) => {
+              rowObj[header] = String(row[idx] || '').trim();
+            });
+            return rowObj;
+          });
+          
+          return { name: sheetName, headers, rows };
+        });
+        
+        setFilePreview({ sheets, url: null });
+        toast.success(`הקובץ טופל בהצלחה (${sheets.length} גליונות)`);
       } else {
-        throw new Error('כרגע תומך רק בקבצי CSV');
+        throw new Error('נא לבחור קובץ CSV או XLSX');
       }
     } catch (error) {
       console.error('Preview error:', error);
