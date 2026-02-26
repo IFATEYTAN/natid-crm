@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { coverageLabels as areaLabels } from '@/config/coverageConstants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,13 +78,13 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   const queryClient = useQueryClient();
 
   const vendorsQuery = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
   // Get contract history (all contracts for this vendor)
   const historyQuery = useQuery({
-    queryKey: ['vendorContractHistory', contract?.vendor_id],
+    queryKey: queryKeys.vendors.contractHistory(contract?.vendor_id),
     queryFn: () =>
       base44.entities.VendorContract.filter({ vendor_id: contract.vendor_id }, '-created_date'),
     enabled: !!contract?.vendor_id,
@@ -92,7 +93,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.VendorContract.update(contract.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendorContracts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContracts.all() });
       onUpdate?.();
     },
   });
@@ -134,7 +135,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto text-right" dir="rtl">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div>
@@ -164,15 +165,15 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
             </div>
           </DialogHeader>
 
-          <Tabs defaultValue="details" className="w-full mt-4">
-            <TabsList>
+          <Tabs defaultValue="details" className="w-full mt-4" dir="rtl">
+            <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="details">פרטים</TabsTrigger>
               <TabsTrigger value="pricing">תמחור</TabsTrigger>
               <TabsTrigger value="coverage">כיסוי ו-SLA</TabsTrigger>
               <TabsTrigger value="history">היסטוריה ({history.length})</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="space-y-4 mt-4">
+            <TabsContent value="details" className="space-y-4 mt-4 text-right" dir="rtl">
               {/* Vendor Info */}
               <div className="p-4 bg-gray-50 rounded-lg flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -286,7 +287,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="pricing" className="space-y-4 mt-4">
+            <TabsContent value="pricing" className="space-y-4 mt-4 text-right" dir="rtl">
               {/* Main Rate */}
               <div className="p-4 bg-blue-50 rounded-lg">
                 <div className="flex items-center gap-2 text-blue-800 mb-2">
@@ -351,7 +352,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="coverage" className="space-y-4 mt-4">
+            <TabsContent value="coverage" className="space-y-4 mt-4 text-right" dir="rtl">
               {/* Coverage Areas */}
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
@@ -421,7 +422,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="history" className="mt-4">
+            <TabsContent value="history" className="mt-4 text-right" dir="rtl">
               <div className="space-y-3">
                 {history.map((item, idx) => (
                   <div

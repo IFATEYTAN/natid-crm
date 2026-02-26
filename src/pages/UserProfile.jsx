@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,33 +20,25 @@ export default function UserProfilePage() {
     profile_image: '',
   });
   const [uploading, setUploading] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = usePermissions();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-        setFormData({
-          full_name: user.full_name || '',
-          email: user.email || '',
-          role: user.role || 'user',
-          profile_image: user.profile_image || '',
-        });
-      } catch (e) {
-        console.error('Failed to fetch user:', e);
-      }
-    };
-    fetchUser();
-  }, []);
+    if (currentUser) {
+      setFormData({
+        full_name: currentUser.full_name || '',
+        email: currentUser.email || '',
+        role: currentUser.role || 'user',
+        profile_image: currentUser.profile_image || '',
+      });
+    }
+  }, [currentUser]);
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: (data) => {
+    onSuccess: () => {
       showToast.success('הפרופיל עודכן בהצלחה');
-      setCurrentUser((prev) => ({ ...prev, ...data }));
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
     },
     onError: () => {
       showToast.error('שגיאה בעדכון הפרופיל');

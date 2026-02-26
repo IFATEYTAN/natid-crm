@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -109,7 +110,7 @@ export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
     if (!editPhoto) return;
     setSaving(true);
     await base44.entities.CallPhoto.update(editPhoto.id, editForm);
-    queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(callId) });
     toast.success('הקובץ עודכן');
     setSaving(false);
     setEditPhoto(null);
@@ -118,7 +119,7 @@ export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
   const handleDelete = async (photo) => {
     if (!confirm(`למחוק את ${photo.file_name || 'הקובץ'}?`)) return;
     await base44.entities.CallPhoto.update(photo.id, { is_deleted: true });
-    queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(callId) });
     toast.success('הקובץ נמחק');
   };
 

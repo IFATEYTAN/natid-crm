@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useCalls } from '@/components/hooks/useCalls';
-import { base44 } from '@/api/base44Client';
+import { useCalls } from '@/features/calls/hooks/useCalls';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,17 +14,7 @@ import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'רכב לא נוסע',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'מצבר',
-  locked_keys: 'מפתחות נעולים',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 const priorityColors = {
   normal: 'bg-gray-100 text-gray-800',
@@ -33,16 +23,8 @@ const priorityColors = {
 };
 
 export default function MyQueuePage() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = usePermissions();
   const [activeTab, setActiveTab] = useState('active');
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const user = await base44.auth.me();
-      setCurrentUser(user);
-    };
-    fetchUser();
-  }, []);
 
   const { data: allCalls = [], isLoading, isError, error, refetch, isFetching } = useCalls();
 

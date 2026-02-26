@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,13 +10,13 @@ import { ChevronLeft, Users, CheckCircle2 } from 'lucide-react';
 
 export default function WorkQueueOverview({ calls = [], isLoading }) {
   const { data: queueItems = [] } = useQuery({
-    queryKey: ['dashboardQueue'],
+    queryKey: queryKeys.queue.dashboard(),
     queryFn: () => base44.entities.WorkQueue.list(),
     refetchInterval: 15000,
   });
 
   const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
+    queryKey: queryKeys.users.agents(),
     queryFn: async () => {
       const users = await base44.entities.User.list();
       return users.filter((u) => u.role === 'user');

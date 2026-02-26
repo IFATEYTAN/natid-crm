@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -199,7 +200,7 @@ export default function AdvancedExport() {
 
   // Fetch data for preview counts
   const { data: calls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ['calls-export-preview', callsDateRange, callsStatus],
+    queryKey: queryKeys.exports.calls(callsDateRange, callsStatus),
     queryFn: async () => {
       const allCalls = await base44.entities.Call.list('-created_date', 1000);
       return allCalls.filter((call) => {
@@ -217,7 +218,7 @@ export default function AdvancedExport() {
   });
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
-    queryKey: ['customers-export-preview', customersDateRange, customersStatus],
+    queryKey: queryKeys.exports.customers(customersDateRange, customersStatus),
     queryFn: async () => {
       const allCustomers = await base44.entities.Customer.list('-created_date', 1000);
       return allCustomers.filter((customer) => {

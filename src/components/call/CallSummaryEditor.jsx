@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -59,7 +60,7 @@ export default function CallSummaryEditor({
     onSuccess: () => {
       setIsEditing(false);
       toast.success('הסיכום נשמר');
-      queryClient.invalidateQueries({ queryKey: ['call', callId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
     },
     onError: () => {
       toast.error('שגיאה בשמירת הסיכום');

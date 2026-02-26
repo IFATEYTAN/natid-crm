@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +25,7 @@ export default function SmartAlertsTab({ currentUser }) {
   const [expanded, setExpanded] = React.useState(false);
 
   const { data: alerts = [], isLoading } = useQuery({
-    queryKey: ['smartAlerts', currentUser?.id],
+    queryKey: queryKeys.smartAlerts.byUser(currentUser?.id),
     queryFn: async () => {
       // Fetch smart alerts for current user
       return await base44.entities.Notification.filter(
@@ -43,7 +44,7 @@ export default function SmartAlertsTab({ currentUser }) {
   const markAsReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['smartAlerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.smartAlerts.byUser(currentUser?.id) });
       showToast.success('התראה סומנה כנקראה');
     },
   });
@@ -51,7 +52,7 @@ export default function SmartAlertsTab({ currentUser }) {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['smartAlerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.smartAlerts.byUser(currentUser?.id) });
       showToast.success('התראה נמחקה');
     },
   });
@@ -64,7 +65,7 @@ export default function SmartAlertsTab({ currentUser }) {
       for (const alert of alerts) {
         await base44.entities.Notification.update(alert.id, { is_read: true });
       }
-      queryClient.invalidateQueries({ queryKey: ['smartAlerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.smartAlerts.byUser(currentUser?.id) });
       showToast.success('כל ההתראות סומנו כנקראו');
     } catch (e) {
       console.error(e);

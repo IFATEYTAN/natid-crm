@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +44,7 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
   });
 
   const { data: checks = [] } = useQuery({
-    queryKey: ['eligibilityChecks', callId],
+    queryKey: queryKeys.eligibilityChecks.byCall(callId),
     queryFn: () => base44.entities.EligibilityCheck.filter({ call_id: callId }, '-created_date'),
     enabled: !!callId,
   });
@@ -67,7 +68,7 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
       checked_by: currentUser?.full_name || 'מוקדן',
       notes: form.notes,
     });
-    queryClient.invalidateQueries({ queryKey: ['eligibilityChecks', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.eligibilityChecks.byCall(callId) });
     setShowDialog(false);
     setForm({ check_type: 'general', question: '', answer: '', result: 'pending_review', reason: '', notes: '' });
     setSaving(false);
@@ -79,7 +80,7 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
       result: newResult,
       approved_by: currentUser?.full_name,
     });
-    queryClient.invalidateQueries({ queryKey: ['eligibilityChecks', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.eligibilityChecks.byCall(callId) });
     toast.success('תוצאה עודכנה');
   };
 

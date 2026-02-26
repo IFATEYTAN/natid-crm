@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,7 +114,7 @@ export default function NotificationSettings() {
 
   // Fetch settings from DB
   const { data: dbSettings, isLoading } = useQuery({
-    queryKey: ['notification-settings'],
+    queryKey: queryKeys.notifications.settings(),
     queryFn: () => base44.entities.NotificationSetting.list(),
   });
 
@@ -135,7 +136,7 @@ export default function NotificationSettings() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.settings() });
       toast.success('ההתראה נשמרה');
       setIsDialogOpen(false);
       setEditingNotification(null);
@@ -145,7 +146,7 @@ export default function NotificationSettings() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.NotificationSetting.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.settings() });
       toast.success('ההתראה נמחקה');
     },
   });

@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ImportHistoricalDataPage() {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [selectedSheet, setSelectedSheet] = useState(0);
+  const [columnMapping, setColumnMapping] = useState({});
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -20,77 +23,48 @@ export default function ImportHistoricalDataPage() {
       if (isValidExtension) {
         setFile(selectedFile);
         setImportResult(null);
+        setFilePreview(null);
+        setColumnMapping({});
+        previewFile(selectedFile);
       } else {
         toast.error('נא להעלות קובץ אקסל (.xlsx, .xls) או CSV בלבד');
       }
     }
   };
 
-  const handleImport = async () => {
-    if (!file) {
-      toast.error('נא לבחור קובץ להעלאה');
-      return;
-    }
-
-    setIsUploading(true);
-    setImportResult(null);
-
+  const previewFile = async (selectedFile) => {
     try {
-      // Upload file first
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
-      // Check file extension
-      const fileName = file.name.toLowerCase();
-      let data;
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
+      const fileName = selectedFile.name.toLowerCase();
 
       if (fileName.endsWith('.csv')) {
-        // For CSV files, fetch and parse manually
         const response = await fetch(file_url);
         const csvText = await response.text();
-
-        // Parse CSV
         const lines = csvText.split('\n').filter((line) => line.trim());
-        if (lines.length < 2) {
-          throw new Error('הקובץ ריק או לא מכיל נתונים');
-        }
-
-        // Get headers from first line
         const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
-
-        // Parse data rows
-        data = [];
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
-          if (values.length >= headers.length) {
-            const row = {};
-            headers.forEach((header, idx) => {
-              row[header] = values[idx] || '';
-            });
-            data.push(row);
-          }
-        }
+        const dataRows = lines.slice(1, 4).map((line) => {
+          const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+          const row = {};
+          headers.forEach((header, idx) => {
+            row[header] = values[idx] || '';
+          });
+          return row;
+        });
+        setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: file_url });
       } else {
-        // For other files, use ExtractDataFromUploadedFile
         const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
           file_url,
           json_schema: {
             type: 'object',
             properties: {
-              records: {
+              sheets: {
                 type: 'array',
                 items: {
                   type: 'object',
                   properties: {
-                    id: { type: 'string' },
-                    serve_type: { type: 'string' },
-                    car_type: { type: 'string' },
-                    car_name: { type: 'string' },
-                    car_year: { type: 'number' },
-                    description: { type: 'string' },
-                    bot_recommendation: { type: 'string' },
-                    bot_match: { type: 'string' },
-                    nayedet_fixed: { type: 'string' },
-                    diagnose: { type: 'string' },
+                    name: { type: 'string' },
+                    headers: { type: 'array', items: { type: 'string' } },
+                    rows: { type: 'array', items: { type: 'object' } },
                   },
                 },
               },
@@ -98,53 +72,61 @@ export default function ImportHistoricalDataPage() {
           },
         });
 
-        if (extractResult.status === 'error') {
-          throw new Error(extractResult.details || 'שגיאה בחילוץ הנתונים מהקובץ');
+        if (extractResult.status === 'success' && extractResult.output) {
+          setFilePreview({ sheets: extractResult.output.sheets || [], url: file_url });
         }
+      }
+    } catch (error) {
+      console.error('Preview error:', error);
+    }
+  };
 
-        data = extractResult.output?.records || extractResult.output;
+  const handleImport = async () => {
+    if (!file || !filePreview) {
+      toast.error('נא לבחור קובץ להעלאה');
+      return;
+    }
+
+    const currentSheet = filePreview.sheets[selectedSheet];
+    if (!currentSheet || currentSheet.rows.length === 0) {
+      toast.error('הגיליון הנבחר ריק');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Import all rows as-is from the sheet, removing null values
+      const recordsToInsert = currentSheet.rows
+        .map((row) => {
+          const record = {};
+          currentSheet.headers.forEach((header) => {
+            const value = row[header];
+            // Only include non-null/non-empty values
+            if (value !== null && value !== undefined && value !== '') {
+              record[header] = value;
+            }
+          });
+          return record;
+        })
+        .filter((record) => Object.keys(record).length > 0); // Filter out empty records
+
+      if (recordsToInsert.length === 0) {
+        throw new Error('לא נמצאו רשומות עם נתונים לייבוא');
       }
 
-      if (!data || data.length === 0) {
-        throw new Error('לא נמצאו נתונים בקובץ');
-      }
-
-      // Transform and insert data
-      const recordsToInsert = data.map((row) => ({
-        external_id: row.id?.toString() || '',
-        serve_type: row.serve_type || '',
-        car_type: row.car_type || '',
-        car_name: row.car_name || '',
-        car_year: row.car_year ? Number(row.car_year) : null,
-        description: row.description || '',
-        bot_recommendation: row.bot_recommendation || '',
-        bot_match:
-          row.bot_match === true ||
-          row.bot_match === 'true' ||
-          row.bot_match === 'כן' ||
-          row.bot_match === 'yes' ||
-          row.bot_match === '1' ||
-          row.bot_match === 1,
-        nayedet_fixed:
-          row.nayedet_fixed === true ||
-          row.nayedet_fixed === 'true' ||
-          row.nayedet_fixed === 'כן' ||
-          row.nayedet_fixed === 'yes' ||
-          row.nayedet_fixed === '1' ||
-          row.nayedet_fixed === 1,
-        diagnose: row.diagnose || '',
-      }));
-
-      // Bulk create records
-      await base44.entities.HistoricalCallData.bulkCreate(recordsToInsert);
+      // Bulk create records directly
+      await base44.entities.Call.bulkCreate(recordsToInsert);
 
       setImportResult({
         success: true,
         count: recordsToInsert.length,
+        sheet: currentSheet.name,
       });
 
-      toast.success(`יובאו ${recordsToInsert.length} רשומות בהצלחה`);
+      toast.success(`יובאו ${recordsToInsert.length} רשומות מגיליון "${currentSheet.name}" בהצלחה`);
       setFile(null);
+      setFilePreview(null);
     } catch (error) {
       console.error('Import error:', error);
       setImportResult({
@@ -157,20 +139,20 @@ export default function ImportHistoricalDataPage() {
     }
   };
 
+  const currentSheet = filePreview?.sheets[selectedSheet];
+  // Get all available column headers from the current sheet
+  const availableColumns = currentSheet?.headers || [];
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold text-[#172B4D] mb-6">ייבוא נתוני קריאות היסטוריים</h1>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-blue-600" />
-            העלאת קובץ אקסל
+            שלב 1: בחר קובץ
           </CardTitle>
-          <CardDescription>
-            העלה קובץ אקסל עם נתוני הקריאות. הקובץ צריך לכלול את העמודות: id, serve_type, car_type,
-            car_name, car_year, description, bot_recommendation, bot_match, nayedet_fixed, diagnose
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div
@@ -202,33 +184,124 @@ export default function ImportHistoricalDataPage() {
               )}
             </label>
           </div>
+        </CardContent>
+      </Card>
 
-          <Button
-            onClick={handleImport}
-            disabled={!file || isUploading}
-            className="w-full bg-blue-600 hover:bg-blue-700"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                מייבא נתונים...
-              </>
-            ) : (
-              <>
-                <Upload className="w-4 h-4 ml-2" />
-                ייבא נתונים
-              </>
-            )}
-          </Button>
+      {filePreview && (
+        <>
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>שלב 2: בחר גיליון</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2 flex-wrap">
+                {filePreview.sheets.map((sheet, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedSheet(idx)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      selectedSheet === idx
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                    }`}
+                  >
+                    {sheet.name} ({sheet.rows?.length || 0} רשומות)
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {currentSheet && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>שלב 3: מיפוי עמודות</CardTitle>
+                <CardDescription>
+                  בחר איזו עמודה מהקובץ מתאימה לכל שדה בדאטאבייס
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-900">
+                    ✅ <strong>כל העמודות</strong> מהקובץ יועלו בדיוק כמו שהן. אין צורך במיפוי.
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-3">עמודות שיעלו:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {availableColumns.map((col) => (
+                      <span
+                        key={col}
+                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      >
+                        {col}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">תצוגה מקדימה:</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-blue-100">
+                        <tr>
+                          {currentSheet.headers.slice(0, 5).map((h) => (
+                            <th key={h} className="px-2 py-1 text-right">{h}</th>
+                          ))}
+                          {currentSheet.headers.length > 5 && (
+                            <th className="px-2 py-1 text-right">...</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentSheet.rows.slice(0, 3).map((row, idx) => (
+                          <tr key={idx} className="border-t">
+                            {currentSheet.headers.slice(0, 5).map((h) => (
+                              <td key={h} className="px-2 py-1 text-right text-gray-600">
+                                {row[h]?.toString().substring(0, 30)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <Button
+                onClick={handleImport}
+                disabled={!currentSheet || isUploading || Object.values(columnMapping).filter(Boolean).length === 0}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                    מייבא נתונים...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 ml-2" />
+                    ייבא {currentSheet?.rows.length || 0} רשומות
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
 
           {importResult && (
             <div
-              className={`p-4 rounded-lg ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
+              className={`p-4 rounded-lg mt-6 ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
             >
               {importResult.success ? (
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle className="w-5 h-5" />
-                  <span>יובאו {importResult.count} רשומות בהצלחה!</span>
+                  <span>יובאו {importResult.count} רשומות מ-"{importResult.sheet}" בהצלחה! ✅</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-700">
@@ -238,8 +311,8 @@ export default function ImportHistoricalDataPage() {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   );
 }

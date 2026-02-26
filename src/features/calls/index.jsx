@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { motion } from 'framer-motion';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
@@ -44,18 +45,7 @@ import {
 import { format, parseISO, differenceInMinutes } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { PageTransition } from '@/components/animations/AnimatedComponents';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 const statusOptions = [
   { value: 'all', label: 'כל הסטטוסים' },
@@ -80,12 +70,12 @@ export default function Calls() {
   const rowsPerPage = 20;
 
   const { data: calls = [], isLoading } = useQuery({
-    queryKey: ['calls'],
+    queryKey: queryKeys.calls.all(),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
   });
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 

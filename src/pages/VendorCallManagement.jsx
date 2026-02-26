@@ -1,68 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Phone,
-  MapPin,
-  Navigation,
-  Clock,
   Camera,
-  CheckCircle,
   AlertCircle,
   ArrowRight,
   Loader2,
-  Car,
-  User,
   FileText,
   Image,
   MessageSquare,
-  Send,
-  X,
-  Upload,
-  Pencil,
 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { format } from 'date-fns';
-import { he } from 'date-fns/locale';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
+import { issueTypeLabels } from '@/config/labels';
 import SignaturePad from '@/components/signature/SignaturePad';
 import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'רכב לא נוסע',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'מצבר',
-  locked_keys: 'מפתחות נעולים',
-  other: 'אחר',
-};
-
-const statusSteps = [
-  { key: 'assigned', label: 'שובץ', icon: CheckCircle },
-  { key: 'vendor_enroute', label: 'בדרך', icon: Navigation },
-  { key: 'in_progress', label: 'בטיפול', icon: Clock },
-  { key: 'completed', label: 'הושלם', icon: CheckCircle },
-];
+import VendorCallStatusProgress from '@/components/vendor/VendorCallStatusProgress';
+import VendorCallCustomerInfo from '@/components/vendor/VendorCallCustomerInfo';
+import VendorCallVehicleInfo from '@/components/vendor/VendorCallVehicleInfo';
+import VendorCallActionBar from '@/components/vendor/VendorCallActionBar';
 
 const photoCategories = [
   { key: 'before_treatment', label: 'לפני טיפול' },
@@ -73,7 +41,7 @@ const photoCategories = [
 ];
 
 export default function VendorCallManagementPage() {
-  const [currentUser, setCurrentUser] = useState(null);
+  const { currentUser } = usePermissions();
   const [vendorProfile, setVendorProfile] = useState(null);
   const [selectedCallId, setSelectedCallId] = useState(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
@@ -85,29 +53,15 @@ export default function VendorCallManagementPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Get call id from URL
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const id = searchParams.get('id');
     if (id) setSelectedCallId(id);
   }, [searchParams]);
 
-  // Get current user
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
-      } catch (e) {
-        console.error('Failed to fetch user:', e);
-      }
-    };
-    fetchUser();
-  }, []);
 
-  // Get vendor profile
   const vendorQuery = useQuery({
-    queryKey: ['vendorProfile', currentUser?.email],
+    queryKey: queryKeys.vendors.profile(currentUser?.email),
     queryFn: async () => {
       const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
       if (vendors.length > 0) {
@@ -119,13 +73,11 @@ export default function VendorCallManagementPage() {
     enabled: !!currentUser?.email,
   });
 
-  // Get call details - verify ownership by vendor
   const callQuery = useQuery({
-    queryKey: ['vendorCall', selectedCallId, vendorProfile?.id],
+    queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
     queryFn: async () => {
       const calls = await base44.entities.Call.filter({ id: selectedCallId });
       if (calls.length > 0) {
-        // Verify this call belongs to the logged-in vendor
         if (vendorProfile && calls[0].assigned_vendor_id !== vendorProfile.id) {
           return null;
         }
@@ -137,55 +89,35 @@ export default function VendorCallManagementPage() {
     enabled: !!selectedCallId && !!vendorProfile?.id,
   });
 
-  // Get call photos
   const photosQuery = useQuery({
-    queryKey: ['callPhotos', selectedCallId],
+    queryKey: queryKeys.callPhotos.byCall(selectedCallId),
     queryFn: () => base44.entities.CallPhoto.filter({ call_id: selectedCallId, is_deleted: false }),
     enabled: !!selectedCallId,
   });
 
-  // Get call messages
-  const messagesQuery = useQuery({
-    queryKey: ['callMessages', selectedCallId],
-    queryFn: () => base44.entities.Message.filter({ call_id: selectedCallId }, 'created_date'),
-    enabled: !!selectedCallId,
-  });
-
-  // Update call mutation
   const updateCallMutation = useMutation({
     mutationFn: (data) => base44.entities.Call.update(selectedCallId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendorCall', selectedCallId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id) });
       showToast.success('הקריאה עודכנה בהצלחה');
     },
   });
 
-  // Add photo mutation
   const addPhotoMutation = useMutation({
     mutationFn: (data) => base44.entities.CallPhoto.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['callPhotos', selectedCallId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(selectedCallId) });
       showToast.success('התמונה נוספה בהצלחה');
       setShowPhotoDialog(false);
     },
   });
 
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: (data) => base44.entities.Message.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['callMessages', selectedCallId] });
-    },
-  });
-
-  // Add history mutation
   const addHistoryMutation = useMutation({
     mutationFn: (data) => base44.entities.CallHistory.create(data),
   });
 
   const call = callQuery.data;
   const photos = photosQuery.data || [];
-  const messages = messagesQuery.data || [];
 
   const handleStatusUpdate = async (newStatus) => {
     const updateData = { call_status: newStatus };
@@ -198,16 +130,13 @@ export default function VendorCallManagementPage() {
       changed_by: vendorProfile?.vendor_name || 'ספק',
     };
 
-    // Status messages for chat
     const statusMessages = {
       vendor_enroute: `הספק ${vendorProfile?.vendor_name || ''} יצא לדרך`,
       in_progress: 'הספק הגיע למקום ומתחיל בטיפול',
       completed: 'הטיפול הושלם בהצלחה!',
     };
 
-    if (newStatus === 'vendor_enroute') {
-      // Starting route
-    } else if (newStatus === 'in_progress') {
+    if (newStatus === 'in_progress') {
       updateData.vendor_arrival_time_actual = new Date().toISOString();
       historyData.notes = 'הספק הגיע למקום';
     } else if (newStatus === 'completed') {
@@ -219,7 +148,6 @@ export default function VendorCallManagementPage() {
     updateCallMutation.mutate(updateData);
     addHistoryMutation.mutate(historyData);
 
-    // Send automatic status update to chat
     if (statusMessages[newStatus]) {
       await sendStatusMessage(selectedCallId, statusMessages[newStatus]);
     }
@@ -236,7 +164,6 @@ export default function VendorCallManagementPage() {
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
       addPhotoMutation.mutate({
         call_id: selectedCallId,
         uploaded_by: vendorProfile?.vendor_name || 'ספק',
@@ -256,11 +183,9 @@ export default function VendorCallManagementPage() {
   const handleSignatureSave = async (signatureDataUrl) => {
     setUploading(true);
     try {
-      // Convert data URL to blob
       const response = await fetch(signatureDataUrl);
       const blob = await response.blob();
       const file = new File([blob], 'signature.png', { type: 'image/png' });
-
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       addPhotoMutation.mutate({
@@ -271,7 +196,6 @@ export default function VendorCallManagementPage() {
         category: 'customer_signature',
         is_deleted: false,
       });
-
       setShowSignatureDialog(false);
     } catch (error) {
       showToast.error('שגיאה בשמירת החתימה');
@@ -281,7 +205,6 @@ export default function VendorCallManagementPage() {
   };
 
   const handleCompleteCall = () => {
-    // Check if signature exists
     const hasSignature = photos.some((p) => p.category === 'customer_signature');
     if (!hasSignature) {
       showToast.error('יש לקבל חתימת לקוח לפני סיום הקריאה');
@@ -289,18 +212,6 @@ export default function VendorCallManagementPage() {
       return;
     }
     handleStatusUpdate('completed');
-  };
-
-  const getCurrentStepIndex = () => {
-    if (!call) return 0;
-    const statusMap = {
-      assigned: 0,
-      assigning: 0,
-      vendor_enroute: 1,
-      in_progress: 2,
-      completed: 3,
-    };
-    return statusMap[call.call_status] ?? 0;
   };
 
   if (!selectedCallId) {
@@ -341,7 +252,6 @@ export default function VendorCallManagementPage() {
     );
   }
 
-  const currentStep = getCurrentStepIndex();
   const isCompleted = call.call_status === 'completed';
 
   return (
@@ -359,149 +269,10 @@ export default function VendorCallManagementPage() {
         </div>
       </div>
 
-      {/* Status Progress */}
-      <Card className="bg-white">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            {statusSteps.map((step, idx) => {
-              const Icon = step.icon;
-              const isActive = idx === currentStep;
-              const isDone = idx < currentStep;
-              return (
-                <React.Fragment key={step.key}>
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        isDone
-                          ? 'bg-green-500 text-white'
-                          : isActive
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-200 text-gray-500'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span
-                      className={`text-xs mt-1 ${isActive ? 'font-bold text-blue-600' : 'text-gray-500'}`}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                  {idx < statusSteps.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 ${idx < currentStep ? 'bg-green-500' : 'bg-gray-200'}`}
-                    />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Customer & Location Info */}
-      <Card className="bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <User className="w-4 h-4" />
-            פרטי לקוח ומיקום
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">{call.customer_name}</div>
-              <div className="text-sm text-[#6B778C]" dir="ltr">
-                {call.customer_phone}
-              </div>
-            </div>
-            <a href={`tel:${call.customer_phone}`}>
-              <Button size="sm" variant="outline" className="gap-1">
-                <Phone className="w-4 h-4" />
-                התקשר
-              </Button>
-            </a>
-          </div>
-
-          <div className="border-t pt-3">
-            <div className="flex items-start gap-2 mb-2">
-              <MapPin className="w-4 h-4 text-red-500 mt-0.5" />
-              <div>
-                <div className="text-sm font-medium">כתובת איסוף</div>
-                <div className="text-sm text-[#6B778C]">{call.pickup_location_address}</div>
-                {call.pickup_location_city && (
-                  <div className="text-sm text-[#6B778C]">{call.pickup_location_city}</div>
-                )}
-              </div>
-            </div>
-            <a
-              href={`https://waze.com/ul?ll=${call.pickup_location_lat},${call.pickup_location_lon}&navigate=yes`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button className="w-full bg-[#33ccff] hover:bg-[#00b8f0] text-black gap-2">
-                <Navigation className="w-4 h-4" />
-                נווט עם Waze
-              </Button>
-            </a>
-          </div>
-
-          {call.dropoff_location_address && (
-            <div className="border-t pt-3">
-              <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-green-500 mt-0.5" />
-                <div>
-                  <div className="text-sm font-medium">כתובת יעד</div>
-                  <div className="text-sm text-[#6B778C]">{call.dropoff_location_address}</div>
-                  {call.dropoff_garage_name && (
-                    <div className="text-sm text-[#6B778C]">מוסך: {call.dropoff_garage_name}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Vehicle Info */}
-      <Card className="bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Car className="w-4 h-4" />
-            פרטי רכב
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-[#6B778C]">מספר רכב:</span>
-              <div className="font-medium" dir="ltr">
-                {call.vehicle_plate || '-'}
-              </div>
-            </div>
-            <div>
-              <span className="text-[#6B778C]">דגם:</span>
-              <div className="font-medium">{call.vehicle_model || '-'}</div>
-            </div>
-            <div>
-              <span className="text-[#6B778C]">סוג תקלה:</span>
-              <div className="font-medium">
-                {issueTypeLabels[call.issue_type] || call.issue_type}
-              </div>
-            </div>
-            <div>
-              <span className="text-[#6B778C]">דלק:</span>
-              <div className="font-medium">{call.fuel_type || '-'}</div>
-            </div>
-          </div>
-          {call.issue_description && (
-            <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-              <div className="text-sm font-medium text-yellow-800 mb-1">תיאור התקלה:</div>
-              <div className="text-sm text-yellow-700">{call.issue_description}</div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Extracted components */}
+      <VendorCallStatusProgress callStatus={call.call_status} />
+      <VendorCallCustomerInfo call={call} />
+      <VendorCallVehicleInfo call={call} />
 
       {/* Tabs for Photos, Notes, Messages */}
       <Tabs defaultValue="photos" className="w-full">
@@ -616,48 +387,13 @@ export default function VendorCallManagementPage() {
       </Tabs>
 
       {/* Fixed Action Buttons */}
-      {!isCompleted && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex gap-3">
-          {call.call_status === 'assigned' || call.call_status === 'assigning' ? (
-            <Button
-              className="flex-1 bg-blue-600 hover:bg-blue-700 h-12"
-              onClick={() => handleStatusUpdate('vendor_enroute')}
-              disabled={updateCallMutation.isPending}
-            >
-              <Navigation className="w-5 h-5 ml-2" />
-              יצאתי לדרך
-            </Button>
-          ) : call.call_status === 'vendor_enroute' ? (
-            <Button
-              className="flex-1 bg-green-600 hover:bg-green-700 h-12"
-              onClick={() => handleStatusUpdate('in_progress')}
-              disabled={updateCallMutation.isPending}
-            >
-              <CheckCircle className="w-5 h-5 ml-2" />
-              הגעתי למקום
-            </Button>
-          ) : call.call_status === 'in_progress' ? (
-            <>
-              <Button
-                variant="outline"
-                className="flex-1 h-12"
-                onClick={() => setShowSignatureDialog(true)}
-              >
-                <Pencil className="w-5 h-5 ml-2" />
-                חתימת לקוח
-              </Button>
-              <Button
-                className="flex-1 bg-orange-500 hover:bg-orange-600 h-12"
-                onClick={handleCompleteCall}
-                disabled={updateCallMutation.isPending}
-              >
-                <CheckCircle className="w-5 h-5 ml-2" />
-                סיים קריאה
-              </Button>
-            </>
-          ) : null}
-        </div>
-      )}
+      <VendorCallActionBar
+        callStatus={call.call_status}
+        onStatusUpdate={handleStatusUpdate}
+        onSignature={() => setShowSignatureDialog(true)}
+        onComplete={handleCompleteCall}
+        isPending={updateCallMutation.isPending}
+      />
 
       {/* Photo Upload Dialog */}
       <Dialog open={showPhotoDialog} onOpenChange={setShowPhotoDialog}>
@@ -720,32 +456,6 @@ export default function VendorCallManagementPage() {
           />
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-// Message Input Component
-function MessageInput({ onSend, disabled }) {
-  const [text, setText] = useState('');
-
-  const handleSend = () => {
-    if (!text.trim()) return;
-    onSend(text);
-    setText('');
-  };
-
-  return (
-    <div className="flex gap-2">
-      <Input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="כתוב הודעה..."
-        disabled={disabled}
-        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-      />
-      <Button onClick={handleSend} disabled={disabled || !text.trim()} size="icon">
-        <Send className="w-4 h-4" />
-      </Button>
     </div>
   );
 }

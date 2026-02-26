@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ const VendorTrackingLeafletMap = React.lazy(
 
 export default function VendorMapWidget() {
   const { data: vendors = [], isLoading } = useQuery({
-    queryKey: ['dashboardVendorLocations'],
+    queryKey: queryKeys.dashboardVendorLocations.all(),
     queryFn: () => base44.entities.Vendor.filter({ is_active: true }),
     refetchInterval: 30000,
   });

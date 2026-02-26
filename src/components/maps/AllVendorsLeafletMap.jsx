@@ -13,6 +13,7 @@ import {
   DEFAULT_ZOOM,
   createColorIcon,
 } from './mapUtils';
+import { vendorServiceTypeLabels, availabilityLabels } from '@/config/labels';
 
 const availabilityColors = {
   available: 'green',
@@ -21,27 +22,11 @@ const availabilityColors = {
   on_break: 'yellow',
 };
 
-const availabilityLabels = {
-  available: 'זמין',
-  busy: 'עסוק',
-  offline: 'לא מחובר',
-  on_break: 'בהפסקה',
-};
-
 const availabilityBadgeColors = {
   available: 'bg-green-100 text-green-800',
   busy: 'bg-orange-100 text-orange-800',
   offline: 'bg-gray-100 text-gray-800',
   on_break: 'bg-yellow-100 text-yellow-800',
-};
-
-const serviceTypeLabels = {
-  tow_truck: 'גרר',
-  mechanic: 'מכונאי',
-  tire_service: 'צמיגים',
-  locksmith: 'מנעולן',
-  fuel_delivery: 'דלק',
-  multi_service: 'שירות מולט',
 };
 
 export default function AllVendorsLeafletMap({
@@ -102,7 +87,7 @@ export default function AllVendorsLeafletMap({
                 )}
                 {vendor.service_type?.length > 0 && (
                   <div className="text-xs text-[#6b7280]">
-                    {vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')}
+                    {vendor.service_type.map((t) => vendorServiceTypeLabels[t] || t).join(', ')}
                   </div>
                 )}
               </div>

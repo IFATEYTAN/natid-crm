@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,15 +29,7 @@ import {
   StaggeredItem,
 } from '@/components/animations/AnimatedComponents';
 import { coverageLabels } from '@/config/coverageConstants';
-
-const serviceTypeLabels = {
-  tow_truck: 'גרר',
-  mechanic: 'מכונאי',
-  tire_service: 'צמיגים',
-  locksmith: 'מנעולן',
-  fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב',
-};
+import { vendorServiceTypeLabels } from '@/config/labels';
 
 export default function VendorDetailsPage() {
   const navigate = useNavigate();
@@ -44,7 +37,7 @@ export default function VendorDetailsPage() {
   const id = searchParams.get('id');
 
   const { data: vendor, isLoading } = useQuery({
-    queryKey: ['vendor', id],
+    queryKey: queryKeys.vendors.detail(id),
     queryFn: () => base44.entities.Vendor.get(id),
     enabled: !!id,
   });
@@ -177,7 +170,7 @@ export default function VendorDetailsPage() {
                         variant="secondary"
                         className="bg-blue-50 text-blue-700 hover:bg-blue-100"
                       >
-                        {serviceTypeLabels[type] || type}
+                        {vendorServiceTypeLabels[type] || type}
                       </Badge>
                     ))}
                     {!vendor.service_type?.length && (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -51,6 +52,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { issueTypeLabels, statusLabels } from '@/config/labels';
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -58,13 +60,13 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 // Work Queue Overview Component
 function WorkQueueOverview({ calls, isLoading }) {
   const { data: queueItems = [] } = useQuery({
-    queryKey: ['dashboardQueue'],
+    queryKey: queryKeys.queue.dashboard(),
     queryFn: () => base44.entities.WorkQueue.list(),
     refetchInterval: 15000,
   });
 
   const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
+    queryKey: queryKeys.users.agents(),
     queryFn: async () => {
       const users = await base44.entities.User.list();
       return users.filter((u) => u.role === 'user');
@@ -177,28 +179,6 @@ function WorkQueueOverview({ calls, isLoading }) {
   );
 }
 
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
-
-const statusLabels = {
-  waiting_treatment: 'ממתין לטיפול',
-  awaiting_assignment: 'ממתין לשיוך',
-  assigning: 'בשיוך',
-  vendor_enroute: 'ספק בדרך',
-  in_progress: 'בטיפול',
-  completed: 'הושלם',
-  cancelled: 'בוטל',
-};
-
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
@@ -215,23 +195,23 @@ export default function Dashboard() {
   const today = new Date();
 
   const { data: workQueue = [] } = useQuery({
-    queryKey: ['workQueue'],
+    queryKey: queryKeys.queue.all(),
     queryFn: () => base44.entities.WorkQueue.list(),
   });
 
   const { data: calls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ['calls'],
+    queryKey: queryKeys.calls.all(),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
   });
 
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
   // Fetch available vendors for operator view
   const { data: availableVendors = [] } = useQuery({
-    queryKey: ['availableVendors'],
+    queryKey: queryKeys.vendors.available(),
     queryFn: () =>
       base44.entities.Vendor.filter({
         is_active: true,

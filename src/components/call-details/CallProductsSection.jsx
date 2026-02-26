@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,13 +36,13 @@ export default function CallProductsSection({ call, callId, currentUser }) {
   const [saving, setSaving] = useState(false);
 
   const { data: callProducts = [] } = useQuery({
-    queryKey: ['callProducts', callId],
+    queryKey: queryKeys.callProducts.byCall(callId),
     queryFn: () => base44.entities.CallProduct.filter({ call_id: callId }),
     enabled: !!callId,
   });
 
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
+    queryKey: queryKeys.products.all(),
     queryFn: () => base44.entities.Product.filter({ is_active: true }),
   });
 
@@ -68,7 +69,7 @@ export default function CallProductsSection({ call, callId, currentUser }) {
       sold_by: currentUser?.full_name || 'מוקדן',
       notes,
     });
-    queryClient.invalidateQueries({ queryKey: ['callProducts', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.callProducts.byCall(callId) });
     setShowAddDialog(false);
     setSelectedProductId('');
     setQuantity(1);
@@ -80,7 +81,7 @@ export default function CallProductsSection({ call, callId, currentUser }) {
 
   const handleRemove = async (cpId) => {
     await base44.entities.CallProduct.delete(cpId);
-    queryClient.invalidateQueries({ queryKey: ['callProducts', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.callProducts.byCall(callId) });
     toast.success('מוצר הוסר');
   };
 

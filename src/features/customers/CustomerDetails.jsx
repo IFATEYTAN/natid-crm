@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { useSearchParams, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -29,11 +30,13 @@ import { Phone, Mail, MapPin, MessageSquare, Plus, ArrowRight, Calendar, User } 
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 import { triggerNotification } from '@/components/NotificationsUtils';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function CustomerDetails() {
   const [searchParams] = useSearchParams();
   const customerId = searchParams.get('id');
   const queryClient = useQueryClient();
+  const { currentUser } = usePermissions();
 
   const [isInteractionDialogOpen, setIsInteractionDialogOpen] = useState(false);
   const [interactionForm, setInteractionForm] = useState({
@@ -46,7 +49,7 @@ export default function CustomerDetails() {
 
   // Fetch Customer
   const { data: customer, isLoading: isCustomerLoading } = useQuery({
-    queryKey: ['customer', customerId],
+    queryKey: queryKeys.customers.single(customerId),
     queryFn: async () => {
       if (!customerId) return null;
       const res = await base44.entities.Customer.list();
@@ -63,14 +66,14 @@ export default function CustomerDetails() {
 
   // Fetch Calls
   const { data: calls = [], isLoading: isCallsLoading } = useQuery({
-    queryKey: ['customer-calls', customerId],
+    queryKey: queryKeys.customers.calls(customerId),
     queryFn: () => base44.entities.Call.filter({ customer_id: customerId }, '-created_date'),
     enabled: !!customerId,
   });
 
   // Fetch Interactions
   const { data: interactions = [], isLoading: isInteractionsLoading } = useQuery({
-    queryKey: ['customer-interactions', customerId],
+    queryKey: queryKeys.customers.interactions(customerId),
     queryFn: () =>
       base44.entities.CustomerInteraction.filter({ customer_id: customerId }, '-interaction_date'),
     enabled: !!customerId,
@@ -79,15 +82,14 @@ export default function CustomerDetails() {
   // Create Interaction Mutation
   const createInteractionMutation = useMutation({
     mutationFn: async (data) => {
-      const user = await base44.auth.me();
       return base44.entities.CustomerInteraction.create({
         ...data,
         customer_id: customerId,
-        performed_by: user?.full_name || 'System',
+        performed_by: currentUser?.full_name || 'System',
       });
     },
     onSuccess: async (data) => {
-      queryClient.invalidateQueries({ queryKey: ['customer-interactions', customerId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.interactions(customerId) });
       setIsInteractionDialogOpen(false);
       setInteractionForm({
         type: 'note',
@@ -99,7 +101,6 @@ export default function CustomerDetails() {
       toast.success('האינטראקציה נשמרה בהצלחה');
 
       // Trigger Notification
-      const user = await base44.auth.me();
       await triggerNotification(
         'new_interaction',
         {
@@ -110,7 +111,7 @@ export default function CustomerDetails() {
           id: customerId,
           entityType: 'customer',
         },
-        user
+        currentUser
       );
     },
     onError: (error) => toast.error('שגיאה בשמירת האינטראקציה: ' + error.message),

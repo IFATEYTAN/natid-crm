@@ -2,8 +2,8 @@ import React, { useState, useMemo, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
-import { useCalls } from '@/components/hooks/useCalls';
-import { useVendors } from '@/components/hooks/useVendors';
+import { useCalls } from '@/features/calls/hooks/useCalls';
+import { useVendors } from '@/features/vendors/hooks/useVendors';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,8 @@ const VendorPerformanceReport = React.lazy(
 const CompanyReport = React.lazy(() => import('@/components/reports/CompanyReport'));
 const FinancialReport = React.lazy(() => import('@/components/reports/FinancialReport'));
 const UsageReport = React.lazy(() => import('@/components/reports/UsageReport'));
+const Annual2025Report = React.lazy(() => import('@/components/reports/Annual2025Report.jsx'));
+const Fleet2025Report = React.lazy(() => import('@/components/reports/Fleet2025Report.jsx'));
 
 import ExportMenu from '@/components/ui/ExportMenu';
 import {
@@ -502,8 +504,10 @@ export default function ReportsPage() {
       </PermissionGuard>
 
       {/* Advanced Reports Tabs */}
-      <Tabs defaultValue="operational" className="mt-8">
+      <Tabs defaultValue="annual2025" className="mt-8">
         <TabsList className="w-full justify-start bg-white p-1 border border-[#e5e7eb] rounded-lg flex-wrap">
+          <TabsTrigger value="annual2025">דוח 2025 - סיכום</TabsTrigger>
+          <TabsTrigger value="fleet2025">דוח 2025 - צי וספקים</TabsTrigger>
           <TabsTrigger value="operational">יעילות תפעולית</TabsTrigger>
           <TabsTrigger value="vendors">ביצועי ספקים</TabsTrigger>
           <TabsTrigger value="customers">ניתוח לקוחות</TabsTrigger>
@@ -512,11 +516,23 @@ export default function ReportsPage() {
           <TabsTrigger value="usage">שימושים</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="operational" className="mt-4">
-          <Suspense fallback={<Skeleton className="h-[400px]" />}>
-            <OperationalEfficiencyReport calls={filteredCalls} />
-          </Suspense>
-        </TabsContent>
+        <TabsContent value="annual2025" className="mt-4">
+           <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <Annual2025Report />
+           </Suspense>
+         </TabsContent>
+
+         <TabsContent value="fleet2025" className="mt-4">
+           <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <Fleet2025Report />
+           </Suspense>
+         </TabsContent>
+
+         <TabsContent value="operational" className="mt-4">
+           <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <OperationalEfficiencyReport calls={filteredCalls} />
+           </Suspense>
+         </TabsContent>
 
         <TabsContent value="vendors" className="mt-4">
           <Suspense fallback={<Skeleton className="h-[400px]" />}>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,7 +27,7 @@ export default function ChangePriorityDialog({ open, onOpenChange, queueItem }) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
       onOpenChange(false);
     },
   });

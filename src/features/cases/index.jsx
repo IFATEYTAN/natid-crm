@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -18,17 +19,7 @@ import { Plus, Search, Phone, MapPin } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import ImportExport from '@/components/ImportExport';
 import { he } from 'date-fns/locale';
-
-const serviceTypeLabels = {
-  towing: 'גרירה',
-  flat_tire: "פנצ'ר",
-  battery: 'מצבר',
-  lockout: 'פתיחת רכב',
-  fuel: 'דלק',
-  accident: 'תאונה',
-  mechanical: 'תקלה מכנית',
-  other: 'אחר',
-};
+import { serviceTypeLabels } from '@/config/labels';
 
 export default function Cases() {
   const [search, setSearch] = useState('');
@@ -36,7 +27,7 @@ export default function Cases() {
   const [serviceFilter, setServiceFilter] = useState('all');
 
   const { data: cases = [], isLoading } = useQuery({
-    queryKey: ['cases'],
+    queryKey: queryKeys.cases.all(),
     queryFn: () => base44.entities.Case.list('-created_date', 200),
   });
 

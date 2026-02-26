@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,9 +20,20 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Calendar as CalendarIcon, Plus, ChevronRight, ChevronLeft, Trash2 } from 'lucide-react';
+import {
+  Calendar as CalendarIcon,
+  Plus,
+  ChevronRight,
+  ChevronLeft,
+  Trash2,
+  Upload,
+  FileSpreadsheet,
+  CheckCircle2,
+  AlertTriangle,
+} from 'lucide-react';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 const shiftTypeLabels = {
   morning: 'בוקר',
@@ -60,11 +72,26 @@ const defaultShiftTimes = {
   full_day: { start: '07:00', end: '23:00' },
 };
 
+function parseShiftType(value) {
+  if (!value) return 'morning';
+  const v = value.toLowerCase().trim();
+  if (v === 'בוקר' || v === 'morning') return 'morning';
+  if (v === 'צהריים' || v === 'afternoon') return 'afternoon';
+  if (v === 'לילה' || v === 'night') return 'night';
+  if (v === 'יום מלא' || v === 'full_day' || v === 'full day') return 'full_day';
+  return 'morning';
+}
+
 export default function ShiftScheduleTab() {
   const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
   const [showDialog, setShowDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [editingShift, setEditingShift] = useState(null);
+  const [importFile, setImportFile] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
   const [formData, setFormData] = useState({
     agent_name: '',
     agent_email: '',
@@ -81,19 +108,19 @@ export default function ShiftScheduleTab() {
   }, [weekStart]);
 
   const { data: shifts = [], isLoading } = useQuery({
-    queryKey: ['agentShifts'],
+    queryKey: queryKeys.agentShifts.all(),
     queryFn: () => base44.entities.AgentShift.list('-shift_date', 200),
   });
 
   const { data: users = [] } = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all(),
     queryFn: () => base44.entities.User.list(),
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.AgentShift.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agentShifts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() });
       closeDialog();
     },
   });
@@ -101,14 +128,14 @@ export default function ShiftScheduleTab() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.AgentShift.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agentShifts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() });
       closeDialog();
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.AgentShift.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['agentShifts'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() }),
   });
 
   const closeDialog = () => {
@@ -169,6 +196,150 @@ export default function ShiftScheduleTab() {
     }
   };
 
+  // Import file handling
+  const handleImportFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      if (
+        !selectedFile.name.endsWith('.csv') &&
+        !selectedFile.name.endsWith('.xlsx') &&
+        !selectedFile.name.endsWith('.xls')
+      ) {
+        toast.error('נא להעלות קובץ CSV או Excel');
+        return;
+      }
+      setImportFile(selectedFile);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importFile) {
+      toast.error('נא לבחור קובץ');
+      return;
+    }
+
+    setImporting(true);
+    setImportResult(null);
+
+    try {
+      const text = await importFile.text();
+      const lines = text.split('\n').filter((line) => line.trim());
+
+      if (lines.length < 2) {
+        throw new Error('הקובץ ריק או לא תקין');
+      }
+
+      const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, '').toLowerCase());
+      const records = [];
+      const errors = [];
+
+      // Map header names to expected fields
+      const headerMap = {};
+      headers.forEach((h, idx) => {
+        const normalized = h.replace(/\s+/g, '_');
+        if (['agent_name', 'שם_נציג', 'נציג', 'agent', 'name', 'שם'].includes(normalized)) {
+          headerMap.agent_name = idx;
+        } else if (['agent_email', 'אימייל', 'email', 'מייל'].includes(normalized)) {
+          headerMap.agent_email = idx;
+        } else if (['shift_date', 'date', 'תאריך', 'תאריך_משמרת'].includes(normalized)) {
+          headerMap.shift_date = idx;
+        } else if (['shift_type', 'type', 'סוג', 'סוג_משמרת', 'משמרת'].includes(normalized)) {
+          headerMap.shift_type = idx;
+        } else if (['start_time', 'start', 'שעת_התחלה', 'התחלה'].includes(normalized)) {
+          headerMap.start_time = idx;
+        } else if (['end_time', 'end', 'שעת_סיום', 'סיום'].includes(normalized)) {
+          headerMap.end_time = idx;
+        } else if (['notes', 'הערות', 'note'].includes(normalized)) {
+          headerMap.notes = idx;
+        }
+      });
+
+      if (headerMap.agent_name === undefined || headerMap.shift_date === undefined) {
+        throw new Error('הקובץ חייב לכלול עמודות: שם נציג, תאריך');
+      }
+
+      for (let i = 1; i < lines.length; i++) {
+        try {
+          const values = lines[i].split(',').map((v) => v.trim().replace(/"/g, ''));
+          const agentName = values[headerMap.agent_name];
+          const shiftDate = values[headerMap.shift_date];
+
+          if (!agentName || !shiftDate) {
+            errors.push(`שורה ${i + 1}: חסר שם נציג או תאריך`);
+            continue;
+          }
+
+          const shiftType = parseShiftType(
+            headerMap.shift_type !== undefined ? values[headerMap.shift_type] : ''
+          );
+          const times = defaultShiftTimes[shiftType];
+
+          records.push({
+            agent_name: agentName,
+            agent_email: headerMap.agent_email !== undefined ? values[headerMap.agent_email] : '',
+            shift_date: shiftDate,
+            shift_type: shiftType,
+            start_time:
+              headerMap.start_time !== undefined
+                ? values[headerMap.start_time] || times.start
+                : times.start,
+            end_time:
+              headerMap.end_time !== undefined
+                ? values[headerMap.end_time] || times.end
+                : times.end,
+            status: 'scheduled',
+            notes: headerMap.notes !== undefined ? values[headerMap.notes] || '' : '',
+          });
+        } catch (err) {
+          errors.push(`שורה ${i + 1}: ${err.message}`);
+        }
+      }
+
+      if (records.length === 0) {
+        throw new Error('לא נמצאו רשומות תקינות בקובץ');
+      }
+
+      // Bulk create shifts
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const record of records) {
+        try {
+          await base44.entities.AgentShift.create(record);
+          successCount++;
+        } catch (err) {
+          failCount++;
+          errors.push(`שגיאה ביצירת משמרת: ${err.message}`);
+        }
+      }
+
+      setImportResult({
+        success: successCount,
+        failed: failCount,
+        errors: errors.slice(0, 10),
+      });
+
+      if (successCount > 0) {
+        toast.success(`${successCount} משמרות יובאו בהצלחה`);
+        queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() });
+      }
+
+      if (failCount > 0) {
+        toast.error(`${failCount} משמרות נכשלו`);
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error(`שגיאה בייבוא: ${error.message}`);
+      setImportResult({
+        success: 0,
+        failed: 0,
+        errors: [error.message],
+      });
+    } finally {
+      setImporting(false);
+    }
+  };
+
   // Group shifts by agent for the weekly view
   const agentNames = useMemo(() => {
     const names = new Set(shifts.map((s) => s.agent_name));
@@ -181,18 +352,18 @@ export default function ShiftScheduleTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div dir="rtl" className="space-y-4">
       {/* Week navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, -7))}>
+          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, 7))}>
             <ChevronRight className="w-4 h-4" />
           </Button>
           <h3 className="font-semibold text-gray-800">
             {format(weekDays[0], 'd MMM', { locale: he })} -{' '}
             {format(weekDays[6], 'd MMM yyyy', { locale: he })}
           </h3>
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, 7))}>
+          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, -7))}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
           <Button
@@ -203,10 +374,25 @@ export default function ShiftScheduleTab() {
             היום
           </Button>
         </div>
-        <Button size="sm" className="gap-1" onClick={() => openNewShift(new Date())}>
-          <Plus className="w-4 h-4" />
-          הוסף משמרת
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => {
+              setImportFile(null);
+              setImportResult(null);
+              setShowImportDialog(true);
+            }}
+          >
+            <Upload className="w-4 h-4" />
+            ייבוא לו&quot;ז
+          </Button>
+          <Button size="sm" className="gap-1" onClick={() => openNewShift(new Date())}>
+            <Plus className="w-4 h-4" />
+            הוסף משמרת
+          </Button>
+        </div>
       </div>
 
       {/* Weekly grid */}
@@ -238,7 +424,9 @@ export default function ShiftScheduleTab() {
                   <td colSpan={8} className="text-center py-12 text-gray-400">
                     <CalendarIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>אין משמרות מתוכננות</p>
-                    <p className="text-xs mt-1">לחץ "הוסף משמרת" כדי להתחיל</p>
+                    <p className="text-xs mt-1">
+                      לחץ &quot;הוסף משמרת&quot; כדי להתחיל או ייבא קובץ לו&quot;ז
+                    </p>
                   </td>
                 </tr>
               )}
@@ -451,6 +639,104 @@ export default function ShiftScheduleTab() {
                 {editingShift ? 'עדכן' : 'שמור'}
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import shift schedule dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>ייבוא לו&quot;ז משמרות</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600 block">בחר קובץ CSV</label>
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={handleImportFileChange}
+                disabled={importing}
+              />
+              {importFile && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <FileSpreadsheet className="w-4 h-4" />
+                  {importFile.name}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-sm">
+              <p className="font-medium mb-2">מבנה הקובץ הנדרש:</p>
+              <ul className="list-disc list-inside space-y-1 text-gray-600">
+                <li>
+                  <strong>עמודות חובה:</strong> שם נציג (agent_name), תאריך (shift_date)
+                </li>
+                <li>
+                  <strong>עמודות אופציונליות:</strong> סוג משמרת (shift_type), שעת התחלה
+                  (start_time), שעת סיום (end_time), אימייל (agent_email), הערות (notes)
+                </li>
+                <li>פורמט תאריך: YYYY-MM-DD</li>
+                <li>סוגי משמרת: בוקר / צהריים / לילה / יום מלא</li>
+              </ul>
+              <div className="mt-3 p-2 bg-white rounded border text-xs font-mono" dir="ltr">
+                agent_name,shift_date,shift_type,start_time,end_time
+                <br />
+                דנה כהן,2026-03-01,בוקר,07:00,15:00
+                <br />
+                יואב לוי,2026-03-01,צהריים,15:00,23:00
+              </div>
+            </div>
+
+            {importResult && (
+              <div className="space-y-2">
+                {importResult.success > 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium">
+                      {importResult.success} משמרות יובאו בהצלחה
+                    </span>
+                  </div>
+                )}
+                {importResult.failed > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <AlertTriangle className="w-5 h-5 text-red-600" />
+                      <span className="text-sm font-medium">
+                        {importResult.failed} משמרות נכשלו
+                      </span>
+                    </div>
+                    {importResult.errors.length > 0 && (
+                      <div className="text-xs text-gray-500 max-h-32 overflow-y-auto">
+                        {importResult.errors.map((err, idx) => (
+                          <div key={idx} className="py-1">
+                            {err}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowImportDialog(false);
+                setImportFile(null);
+                setImportResult(null);
+              }}
+            >
+              סגור
+            </Button>
+            <Button onClick={handleImport} disabled={!importFile || importing}>
+              {importing ? 'מייבא...' : 'ייבא משמרות'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -9,37 +10,24 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListTodo, Clock, CheckCircle2, Timer, Phone, Play, X } from 'lucide-react';
 import { parseISO, differenceInMinutes } from 'date-fns';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function MyQueue() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('my-queue');
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: queueItems = [], isLoading } = useQuery({
-    queryKey: ['myQueue', user?.email],
+    queryKey: queryKeys.queue.my(user?.email),
     queryFn: () => base44.entities.WorkQueue.list('-priority_score'),
     refetchInterval: 15000, // Refresh every 15 seconds
   });
 
   const { data: calls = [] } = useQuery({
-    queryKey: ['queueCalls'],
+    queryKey: queryKeys.queue.calls(),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
   });
 
@@ -87,7 +75,7 @@ export default function MyQueue() {
       });
     },
     onSuccess: (_, queueId) => {
-      queryClient.invalidateQueries({ queryKey: ['myQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
       const queue = queueItems.find((q) => q.id === queueId);
       if (queue?.call_id) {
         navigate(createPageUrl(`CaseDetails?id=${queue.call_id}`));
@@ -103,7 +91,7 @@ export default function MyQueue() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
     },
   });
 
@@ -126,7 +114,7 @@ export default function MyQueue() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
     },
   });
 

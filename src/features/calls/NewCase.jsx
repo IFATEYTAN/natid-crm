@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -16,26 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, User, Car, MapPin, Wrench, Save, Loader2 } from 'lucide-react';
-
-const serviceTypeLabels = {
-  towing: 'גרירה',
-  flat_tire: "פנצ'ר",
-  battery: 'מצבר',
-  lockout: 'פתיחת רכב',
-  fuel: 'דלק',
-  accident: 'תאונה',
-  mechanical: 'תקלה מכנית',
-  other: 'אחר',
-};
-
-const vehicleTypeLabels = {
-  car: 'רכב פרטי',
-  motorcycle: 'אופנוע',
-  truck: 'משאית',
-  bus: 'אוטובוס',
-  van: 'ואן',
-  other: 'אחר',
-};
+import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 
 export default function NewCase() {
   const navigate = useNavigate();
@@ -60,7 +42,7 @@ export default function NewCase() {
   });
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
-    queryKey: ['customers'],
+    queryKey: queryKeys.customers.all(),
     queryFn: () => base44.entities.Customer.list(),
   });
 
@@ -88,7 +70,7 @@ export default function NewCase() {
       });
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       navigate(createPageUrl(`CaseDetails?id=${result.id}`));
     },
   });

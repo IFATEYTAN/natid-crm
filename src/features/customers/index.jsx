@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { motion } from 'framer-motion';
 import { base44 } from '@/lib/api';
 import DataTable from '@/components/ui/DataTable';
@@ -60,14 +61,14 @@ export default function Customers() {
   const queryClient = useQueryClient();
 
   const { data: customers = [], isLoading } = useQuery({
-    queryKey: ['customers'],
+    queryKey: queryKeys.customers.all(),
     queryFn: () => base44.entities.Customer.list('-created_date'),
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Customer.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
       resetForm();
     },
   });
@@ -75,7 +76,7 @@ export default function Customers() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Customer.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
       resetForm();
     },
   });
@@ -83,7 +84,7 @@ export default function Customers() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Customer.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
     },
   });
 

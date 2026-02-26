@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
-import { useCalls } from '@/components/hooks/useCalls';
+import { useCalls } from '@/features/calls/hooks/useCalls';
 import { Lightbulb, TrendingUp, AlertTriangle, Clock, Sparkles, Loader2, RefreshCw } from 'lucide-react';
 
 export default function AIInsightsWidget() {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -12,25 +13,14 @@ import AvatarStack from '@/components/ui/AvatarStack';
 
 import { Plus, Phone, Truck, AlertCircle, Eye, MapPin } from 'lucide-react';
 import { startOfDay, endOfDay } from 'date-fns';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'נעצר בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אזל דלק',
-  dead_battery: 'מצבר מת',
-  locked_keys: 'מפתחות נעולים',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 export default function OperatorDashboard() {
   const today = new Date();
 
   // Fetch open calls
   const { data: openCalls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ['openCalls'],
+    queryKey: queryKeys.calls.open(),
     queryFn: () =>
       base44.entities.Call.filter({
         call_status: {
@@ -48,7 +38,7 @@ export default function OperatorDashboard() {
 
   // Fetch today's completed calls
   const { data: completedToday = [] } = useQuery({
-    queryKey: ['completedToday'],
+    queryKey: queryKeys.calls.completedToday(),
     queryFn: async () => {
       const calls = await base44.entities.Call.filter(
         {
@@ -66,7 +56,7 @@ export default function OperatorDashboard() {
 
   // Fetch available vendors
   const { data: availableVendors = [], isLoading: vendorsLoading } = useQuery({
-    queryKey: ['availableVendors'],
+    queryKey: queryKeys.vendors.available(),
     queryFn: () =>
       base44.entities.Vendor.filter({
         is_active: true,

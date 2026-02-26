@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,7 @@ export default function CustomerDetails() {
     isError,
     error,
   } = useQuery({
-    queryKey: ['customer', id],
+    queryKey: queryKeys.customers.detail(id),
     enabled: !!id,
     queryFn: async () => {
       const res = await base44.entities.Customer.filter({ id });

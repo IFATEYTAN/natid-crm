@@ -15,18 +15,7 @@ import {
   Banknote,
   ChevronRight,
 } from 'lucide-react';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'רכב לא נוסע',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'מצבר',
-  locked_keys: 'מפתחות נעולים',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 const DECLINE_REASONS = [
   { id: 'too_far', label: 'רחוק מדי' },
