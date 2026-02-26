@@ -109,28 +109,36 @@ export default function Fleet2025Report() {
         <Card className="bg-gradient-to-br from-blue-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-blue-600 mb-1 font-medium">צי פנימי - סה"כ קריאות</div>
-            <div className="text-2xl font-bold text-gray-900">6,267</div>
-            <div className="text-xs text-gray-500 mt-1">13% מסה"כ הקריאות</div>
+            <div className="text-2xl font-bold text-gray-900">{fleetCalls.length.toLocaleString()}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {calls.length > 0 ? ((fleetCalls.length / calls.length) * 100).toFixed(0) : 0}% מסה"כ הקריאות
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-red-600 mb-1 font-medium">ספקים חיצוניים</div>
-            <div className="text-2xl font-bold text-gray-900">41,671</div>
-            <div className="text-xs text-gray-500 mt-1">87% מסה"כ הקריאות</div>
+            <div className="text-2xl font-bold text-gray-900">{externalCalls.length.toLocaleString()}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {calls.length > 0 ? ((externalCalls.length / calls.length) * 100).toFixed(0) : 0}% מסה"כ הקריאות
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-orange-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-orange-600 mb-1 font-medium">עלות ממוצעת - צי</div>
-            <div className="text-2xl font-bold text-gray-900">₪334</div>
+            <div className="text-2xl font-bold text-gray-900">
+              ₪{fleetCalls.length > 0 ? Math.round(fleetCost / fleetCalls.length) : 0}
+            </div>
             <div className="text-xs text-gray-500 mt-1">לקריאה</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-green-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-green-600 mb-1 font-medium">עלות ממוצעת - ספקים</div>
-            <div className="text-2xl font-bold text-gray-900">₪251</div>
+            <div className="text-2xl font-bold text-gray-900">
+              ₪{externalCalls.length > 0 ? Math.round(externalCost / externalCalls.length) : 0}
+            </div>
             <div className="text-xs text-gray-500 mt-1">לקריאה</div>
           </CardContent>
         </Card>
