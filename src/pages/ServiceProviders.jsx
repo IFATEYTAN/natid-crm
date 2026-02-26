@@ -157,8 +157,9 @@ export default function ServiceProvidersPage() {
 
   const stats = useMemo(() => {
     const active = vendors.filter((v) => v.is_active);
-    const towTrucks = active.filter(hasTowService);
-    const mobileUnits = active.filter(hasMobileService);
+    const towOnly = active.filter(v => hasTowService(v) && !hasMobileService(v));
+    const mobileOnly = active.filter(v => hasMobileService(v) && !hasTowService(v));
+    const combined = active.filter(v => hasTowService(v) && hasMobileService(v));
     const inactive = vendors.filter((v) => !v.is_active);
 
     return {
@@ -166,8 +167,9 @@ export default function ServiceProvidersPage() {
       active: active.length,
       available: vendors.filter((v) => v.availability_status === 'available').length,
       busy: vendors.filter((v) => v.availability_status === 'busy').length,
-      towTrucks: towTrucks.length,
-      mobileUnits: mobileUnits.length,
+      towTrucks: towOnly.length,
+      mobileUnits: mobileOnly.length,
+      combined: combined.length,
       inactive: inactive.length,
       avgRating:
         vendors.length > 0
