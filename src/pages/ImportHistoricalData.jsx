@@ -34,6 +34,7 @@ export default function ImportHistoricalDataPage() {
 
   const previewFile = async (selectedFile) => {
     try {
+      toast.loading('עיבוד הקובץ...');
       const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
       const fileName = selectedFile.name.toLowerCase();
 
@@ -42,7 +43,7 @@ export default function ImportHistoricalDataPage() {
         const csvText = await response.text();
         const lines = csvText.split('\n').filter((line) => line.trim());
         const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
-        const dataRows = lines.slice(1, 4).map((line) => {
+        const dataRows = lines.slice(1).map((line) => {
           const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
           const row = {};
           headers.forEach((header, idx) => {
@@ -51,6 +52,7 @@ export default function ImportHistoricalDataPage() {
           return row;
         });
         setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: file_url });
+        toast.success('הקובץ טופל בהצלחה');
       } else {
         const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
           file_url,
@@ -74,10 +76,15 @@ export default function ImportHistoricalDataPage() {
 
         if (extractResult.status === 'success' && extractResult.output) {
           setFilePreview({ sheets: extractResult.output.sheets || [], url: file_url });
+          toast.success('הקובץ טופל בהצלחה');
+        } else {
+          throw new Error('לא הצליח לעבד את הקובץ');
         }
       }
     } catch (error) {
       console.error('Preview error:', error);
+      toast.error(error.message || 'שגיאה בעיבוד הקובץ');
+      setFile(null);
     }
   };
 
