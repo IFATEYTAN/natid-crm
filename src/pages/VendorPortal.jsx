@@ -128,7 +128,7 @@ export default function VendorPortalPage() {
   const callsQuery = useQuery({
     queryKey: ['vendorCalls', vendorProfile?.id],
     queryFn: () =>
-      base44.entities.Call.filter({ assigned_vendor_id: vendorProfile.id }, '-created_date', 100),
+      base44.entities.Call.filter({ assigned_vendor_id: vendorProfile.id }, '-created_date', 1000),
     enabled: !!vendorProfile?.id,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
