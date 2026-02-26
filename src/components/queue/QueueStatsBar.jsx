@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Users, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Clock, Users, AlertTriangle } from 'lucide-react';
 
 function formatMinutes(ms) {
   if (!ms || ms <= 0) return '0 דק׳';
@@ -11,22 +11,32 @@ function formatMinutes(ms) {
 }
 
 export default function QueueStatsBar({ queueItems }) {
-  const waiting = queueItems.filter(i => i.queue_status === 'waiting_in_queue');
-  const assigned = queueItems.filter(i => i.queue_status === 'assigned_to_agent');
-  const inProgress = queueItems.filter(i => i.queue_status === 'in_progress');
+  const waiting = queueItems.filter((i) => i.queue_status === 'waiting_in_queue');
+  const assigned = queueItems.filter((i) => i.queue_status === 'assigned_to_agent');
+  const inProgress = queueItems.filter((i) => i.queue_status === 'in_progress');
 
   const now = Date.now();
-  const avgWaitTime = waiting.length > 0
-    ? waiting.reduce((sum, i) => sum + (i.added_to_queue_at ? now - new Date(i.added_to_queue_at).getTime() : 0), 0) / waiting.length
-    : 0;
+  const avgWaitTime =
+    waiting.length > 0
+      ? waiting.reduce(
+          (sum, i) =>
+            sum + (i.added_to_queue_at ? now - new Date(i.added_to_queue_at).getTime() : 0),
+          0
+        ) / waiting.length
+      : 0;
 
-  const longestWait = waiting.length > 0
-    ? Math.max(...waiting.map(i => i.added_to_queue_at ? now - new Date(i.added_to_queue_at).getTime() : 0))
-    : 0;
+  const longestWait =
+    waiting.length > 0
+      ? Math.max(
+          ...waiting.map((i) =>
+            i.added_to_queue_at ? now - new Date(i.added_to_queue_at).getTime() : 0
+          )
+        )
+      : 0;
 
   // Agent workload
   const agentLoad = {};
-  [...assigned, ...inProgress].forEach(i => {
+  [...assigned, ...inProgress].forEach((i) => {
     if (i.assigned_to_agent) {
       agentLoad[i.assigned_to_agent] = (agentLoad[i.assigned_to_agent] || 0) + 1;
     }
@@ -38,13 +48,19 @@ export default function QueueStatsBar({ queueItems }) {
       label: 'ממתינים בתור',
       value: waiting.length,
       icon: Clock,
-      color: waiting.length > 5 ? 'text-red-600 bg-red-50 border-red-200' : 'text-yellow-600 bg-yellow-50 border-yellow-200',
+      color:
+        waiting.length > 5
+          ? 'text-red-600 bg-red-50 border-red-200'
+          : 'text-yellow-600 bg-yellow-50 border-yellow-200',
     },
     {
       label: 'זמן המתנה ממוצע',
       value: formatMinutes(avgWaitTime),
       icon: Clock,
-      color: avgWaitTime > 1800000 ? 'text-red-600 bg-red-50 border-red-200' : 'text-blue-600 bg-blue-50 border-blue-200',
+      color:
+        avgWaitTime > 1800000
+          ? 'text-red-600 bg-red-50 border-red-200'
+          : 'text-blue-600 bg-blue-50 border-blue-200',
     },
     {
       label: 'משובצים לנציגים',
@@ -56,7 +72,10 @@ export default function QueueStatsBar({ queueItems }) {
       label: 'המתנה מקסימלית',
       value: formatMinutes(longestWait),
       icon: AlertTriangle,
-      color: longestWait > 3600000 ? 'text-red-600 bg-red-50 border-red-200' : 'text-gray-600 bg-gray-50 border-gray-200',
+      color:
+        longestWait > 3600000
+          ? 'text-red-600 bg-red-50 border-red-200'
+          : 'text-gray-600 bg-gray-50 border-gray-200',
     },
   ];
 
@@ -78,7 +97,8 @@ export default function QueueStatsBar({ queueItems }) {
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
           <span className="text-sm text-red-700">
-            <strong>התראת עומס:</strong> {overloadedAgents.map(([name, count]) => `${name} (${count} משימות)`).join(', ')}
+            <strong>התראת עומס:</strong>{' '}
+            {overloadedAgents.map(([name, count]) => `${name} (${count} משימות)`).join(', ')}
           </span>
         </div>
       )}

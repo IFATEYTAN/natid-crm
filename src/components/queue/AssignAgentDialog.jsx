@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { User, ArrowLeftRight } from 'lucide-react';
+import { User } from 'lucide-react';
 
 export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode = 'assign' }) {
   const queryClient = useQueryClient();
@@ -31,7 +31,7 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const user = users.find(u => u.email === selectedAgent);
+      const user = users.find((u) => u.email === selectedAgent);
       await base44.entities.WorkQueue.update(queueItem.id, {
         assigned_to_agent: selectedAgent,
         queue_status: 'assigned_to_agent',
@@ -57,10 +57,16 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
         <div className="space-y-4 py-2">
           {queueItem && (
             <div className="bg-gray-50 rounded-lg p-3 text-sm">
-              <div className="font-medium">{queueItem.call?.call_number || `#${queueItem.call_id?.slice(-6)}`}</div>
-              <div className="text-gray-500">{queueItem.call?.customer_name} — {queueItem.call?.pickup_location_address}</div>
+              <div className="font-medium">
+                {queueItem.call?.call_number || `#${queueItem.call_id?.slice(-6)}`}
+              </div>
+              <div className="text-gray-500">
+                {queueItem.call?.customer_name} — {queueItem.call?.pickup_location_address}
+              </div>
               {mode === 'transfer' && queueItem.assigned_to_agent && (
-                <div className="text-xs text-gray-400 mt-1">נציג נוכחי: {queueItem.assigned_to_agent}</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  נציג נוכחי: {queueItem.assigned_to_agent}
+                </div>
               )}
             </div>
           )}
@@ -72,7 +78,7 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
                 <SelectValue placeholder="בחר נציג..." />
               </SelectTrigger>
               <SelectContent>
-                {users.map(u => (
+                {users.map((u) => (
                   <SelectItem key={u.id} value={u.email}>
                     <div className="flex items-center gap-2">
                       <User className="w-3 h-3" />
@@ -95,7 +101,9 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>ביטול</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            ביטול
+          </Button>
           <Button
             onClick={() => mutation.mutate()}
             disabled={!selectedAgent}

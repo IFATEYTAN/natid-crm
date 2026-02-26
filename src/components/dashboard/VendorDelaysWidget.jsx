@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Clock, AlertTriangle, Timer, Eye, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, Timer, Eye, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -184,86 +184,90 @@ export default function VendorDelaysWidget({ calls, isLoading, compact = false }
               className="h-8 w-8 p-0"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
-              {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              {isCollapsed ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronUp className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </div>
       </CardHeader>
       {!isCollapsed && (
-      <CardContent>
-        {delayedCalls.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-3">
-              <Clock className="w-6 h-6 text-green-500" />
+        <CardContent>
+          {delayedCalls.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-3">
+                <Clock className="w-6 h-6 text-green-500" />
+              </div>
+              <p className="text-sm font-medium text-green-700">אין איחורים כרגע</p>
+              <p className="text-xs text-gray-500 mt-1">כל הקריאות עומדות בלוח הזמנים</p>
             </div>
-            <p className="text-sm font-medium text-green-700">אין איחורים כרגע</p>
-            <p className="text-xs text-gray-500 mt-1">כל הקריאות עומדות בלוח הזמנים</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {delayedCalls.slice(0, compact ? 5 : 10).map((call) => {
-              const { delayInfo } = call;
-              const config = severityConfig[delayInfo.severity];
-              return (
-                <div
-                  key={call.id}
-                  className={`flex items-center justify-between p-3 bg-white rounded-lg border ${config.border} shadow-sm hover:shadow-md transition-shadow`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <Link
-                        to={createPageUrl('CallDetails') + '?id=' + call.id}
-                        className="font-bold text-gray-900 hover:text-blue-600 hover:underline text-sm"
-                      >
-                        {call.call_number || `#${call.id?.slice(-6)}`}
-                      </Link>
-                      <Badge className={`${config.color} text-[10px] px-1.5 py-0`}>
-                        {config.label}
-                      </Badge>
-                      <span className="text-[10px] text-gray-400">
-                        {delayTypeLabels[delayInfo.delayType]}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-600">
-                      <span className="font-medium">{call.customer_name}</span>
-                      <span>•</span>
-                      <span>{call.pickup_location_city || '—'}</span>
-                      {call.assigned_vendor_name && (
-                        <>
-                          <span>•</span>
-                          <span className="text-blue-600">{call.assigned_vendor_name}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 mr-3">
-                    <div className="text-left">
-                      <div className="flex items-center gap-1">
-                        <TrendingDown className="w-3.5 h-3.5 text-red-500" />
-                        <span className="text-sm font-bold text-red-600">
-                          {formatDelay(delayInfo.delayMinutes)}
+          ) : (
+            <div className="space-y-3">
+              {delayedCalls.slice(0, compact ? 5 : 10).map((call) => {
+                const { delayInfo } = call;
+                const config = severityConfig[delayInfo.severity];
+                return (
+                  <div
+                    key={call.id}
+                    className={`flex items-center justify-between p-3 bg-white rounded-lg border ${config.border} shadow-sm hover:shadow-md transition-shadow`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <Link
+                          to={createPageUrl('CallDetails') + '?id=' + call.id}
+                          className="font-bold text-gray-900 hover:text-blue-600 hover:underline text-sm"
+                        >
+                          {call.call_number || `#${call.id?.slice(-6)}`}
+                        </Link>
+                        <Badge className={`${config.color} text-[10px] px-1.5 py-0`}>
+                          {config.label}
+                        </Badge>
+                        <span className="text-[10px] text-gray-400">
+                          {delayTypeLabels[delayInfo.delayType]}
                         </span>
                       </div>
-                      <span className="text-[10px] text-gray-400">איחור</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-600">
+                        <span className="font-medium">{call.customer_name}</span>
+                        <span>•</span>
+                        <span>{call.pickup_location_city || '—'}</span>
+                        {call.assigned_vendor_name && (
+                          <>
+                            <span>•</span>
+                            <span className="text-blue-600">{call.assigned_vendor_name}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
-                      <Button size="sm" variant="outline" className="border-gray-200 h-8 text-xs">
-                        <Eye className="w-3.5 h-3.5 ml-1" />
-                        צפה
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-3 mr-3">
+                      <div className="text-left">
+                        <div className="flex items-center gap-1">
+                          <TrendingDown className="w-3.5 h-3.5 text-red-500" />
+                          <span className="text-sm font-bold text-red-600">
+                            {formatDelay(delayInfo.delayMinutes)}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-gray-400">איחור</span>
+                      </div>
+                      <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
+                        <Button size="sm" variant="outline" className="border-gray-200 h-8 text-xs">
+                          <Eye className="w-3.5 h-3.5 ml-1" />
+                          צפה
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            {delayedCalls.length > (compact ? 5 : 10) && (
-              <p className="text-xs text-center text-gray-500 pt-2">
-                ועוד {delayedCalls.length - (compact ? 5 : 10)} קריאות נוספות עם איחור...
-              </p>
-            )}
-          </div>
-        )}
-      </CardContent>
+                );
+              })}
+              {delayedCalls.length > (compact ? 5 : 10) && (
+                <p className="text-xs text-center text-gray-500 pt-2">
+                  ועוד {delayedCalls.length - (compact ? 5 : 10)} קריאות נוספות עם איחור...
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
       )}
     </Card>
   );
