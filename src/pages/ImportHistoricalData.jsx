@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ImportHistoricalDataPage() {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const [selectedSheet, setSelectedSheet] = useState(0);
+  const [columnMapping, setColumnMapping] = useState({});
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
