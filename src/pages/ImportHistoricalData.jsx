@@ -82,124 +82,61 @@ export default function ImportHistoricalDataPage() {
   };
 
   const handleImport = async () => {
-    if (!file) {
+    if (!file || !filePreview) {
       toast.error('נא לבחור קובץ להעלאה');
       return;
     }
 
+    const currentSheet = filePreview.sheets[selectedSheet];
+    if (!currentSheet || currentSheet.rows.length === 0) {
+      toast.error('הגיליון הנבחר ריק');
+      return;
+    }
+
     setIsUploading(true);
-    setImportResult(null);
 
     try {
-      // Upload file first
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
-      // Check file extension
-      const fileName = file.name.toLowerCase();
-      let data;
-
-      if (fileName.endsWith('.csv')) {
-        // For CSV files, fetch and parse manually
-        const response = await fetch(file_url);
-        const csvText = await response.text();
-
-        // Parse CSV
-        const lines = csvText.split('\n').filter((line) => line.trim());
-        if (lines.length < 2) {
-          throw new Error('הקובץ ריק או לא מכיל נתונים');
-        }
-
-        // Get headers from first line
-        const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
-
-        // Parse data rows
-        data = [];
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
-          if (values.length >= headers.length) {
-            const row = {};
-            headers.forEach((header, idx) => {
-              row[header] = values[idx] || '';
-            });
-            data.push(row);
+      // Transform rows according to column mapping
+      const recordsToInsert = currentSheet.rows.map((row) => {
+        const record = {};
+        Object.entries(columnMapping).forEach(([dbField, sourceField]) => {
+          if (sourceField && row[sourceField] !== undefined) {
+            const value = row[sourceField];
+            // Handle boolean conversions
+            if (dbField === 'bot_match' || dbField === 'nayedet_fixed') {
+              record[dbField] =
+                value === true ||
+                value === 'true' ||
+                value === 'כן' ||
+                value === 'yes' ||
+                value === '1' ||
+                value === 1;
+            } else if (dbField === 'car_year') {
+              record[dbField] = value ? Number(value) : null;
+            } else {
+              record[dbField] = value?.toString() || '';
+            }
           }
-        }
-      } else {
-        // For other files, use ExtractDataFromUploadedFile
-        const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
-          file_url,
-          json_schema: {
-            type: 'object',
-            properties: {
-              records: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    serve_type: { type: 'string' },
-                    car_type: { type: 'string' },
-                    car_name: { type: 'string' },
-                    car_year: { type: 'number' },
-                    description: { type: 'string' },
-                    bot_recommendation: { type: 'string' },
-                    bot_match: { type: 'string' },
-                    nayedet_fixed: { type: 'string' },
-                    diagnose: { type: 'string' },
-                  },
-                },
-              },
-            },
-          },
         });
+        return record;
+      });
 
-        if (extractResult.status === 'error') {
-          throw new Error(extractResult.details || 'שגיאה בחילוץ הנתונים מהקובץ');
-        }
-
-        data = extractResult.output?.records || extractResult.output;
+      if (recordsToInsert.length === 0) {
+        throw new Error('לא נמצאו רשומות לייבוא');
       }
-
-      if (!data || data.length === 0) {
-        throw new Error('לא נמצאו נתונים בקובץ');
-      }
-
-      // Transform and insert data
-      const recordsToInsert = data.map((row) => ({
-        external_id: row.id?.toString() || '',
-        serve_type: row.serve_type || '',
-        car_type: row.car_type || '',
-        car_name: row.car_name || '',
-        car_year: row.car_year ? Number(row.car_year) : null,
-        description: row.description || '',
-        bot_recommendation: row.bot_recommendation || '',
-        bot_match:
-          row.bot_match === true ||
-          row.bot_match === 'true' ||
-          row.bot_match === 'כן' ||
-          row.bot_match === 'yes' ||
-          row.bot_match === '1' ||
-          row.bot_match === 1,
-        nayedet_fixed:
-          row.nayedet_fixed === true ||
-          row.nayedet_fixed === 'true' ||
-          row.nayedet_fixed === 'כן' ||
-          row.nayedet_fixed === 'yes' ||
-          row.nayedet_fixed === '1' ||
-          row.nayedet_fixed === 1,
-        diagnose: row.diagnose || '',
-      }));
 
       // Bulk create records
-      await base44.entities.HistoricalCallData.bulkCreate(recordsToInsert);
+      await base44.entities.Call.bulkCreate(recordsToInsert);
 
       setImportResult({
         success: true,
         count: recordsToInsert.length,
+        sheet: currentSheet.name,
       });
 
-      toast.success(`יובאו ${recordsToInsert.length} רשומות בהצלחה`);
+      toast.success(`יובאו ${recordsToInsert.length} רשומות מגיליון "${currentSheet.name}" בהצלחה`);
       setFile(null);
+      setFilePreview(null);
     } catch (error) {
       console.error('Import error:', error);
       setImportResult({
