@@ -15,20 +15,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  MoreVertical,
-  Pencil,
-  RotateCcw,
-  Truck,
-  MapPin,
-  Ban,
-  Bell,
-  AlertTriangle,
-  CheckCircle,
-} from 'lucide-react';
+import { MoreVertical, RotateCcw, Truck, MapPin, Ban, Bell, CheckCircle } from 'lucide-react';
 import { statusLabels } from './callDetailsConstants';
 
 export default function CallActionsMenu({
@@ -45,7 +34,8 @@ export default function CallActionsMenu({
   const [showReopenDialog, setShowReopenDialog] = useState(false);
   const [reopenReason, setReopenReason] = useState('');
 
-  const isClosedOrCancelled = call?.call_status === 'completed' || call?.call_status === 'cancelled';
+  const isClosedOrCancelled =
+    call?.call_status === 'completed' || call?.call_status === 'cancelled';
 
   const handleReopen = () => {
     if (!canEdit) return;
@@ -143,8 +133,8 @@ export default function CallActionsMenu({
           <DialogHeader>
             <DialogTitle>פתיחה מחדש / תיקון קריאה</DialogTitle>
             <DialogDescription>
-              הקריאה כרגע במצב "{statusLabels[call?.call_status]}". 
-              פעולה זו תחזיר את הקריאה למצב "ממתין לטיפול".
+              הקריאה כרגע במצב "{statusLabels[call?.call_status]}". פעולה זו תחזיר את הקריאה למצב
+              "ממתין לטיפול".
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-3">

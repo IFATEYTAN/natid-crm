@@ -24,6 +24,7 @@ import VendorAIInsights from '@/components/ai/VendorAIInsights';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getCoverageLabel } from '@/config/coverageConstants';
 
 export default function VendorProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -324,7 +325,9 @@ export default function VendorProfile() {
               <MapPin className="w-4 h-4 text-[#616161]" />
               <div>
                 <p className="text-sm text-[#616161]">אזורי כיסוי</p>
-                <p className="font-medium">{vendor.coverage_areas?.join(', ') || '-'}</p>
+                <p className="font-medium">
+                  {vendor.coverage_areas?.map(getCoverageLabel).join(', ') || '-'}
+                </p>
               </div>
             </div>
           </CardContent>

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Trophy, MapPin, Clock } from 'lucide-react';
+import { getCoverageLabel } from '@/config/coverageConstants';
 
 export default function VendorRecommendation({ callDetails, onSelectVendor }) {
   const { data, isLoading } = useQuery({
@@ -61,7 +62,8 @@ export default function VendorRecommendation({ callDetails, onSelectVendor }) {
                 <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {rec.vendor?.coverage_areas?.slice(0, 2).join(', ') || '-'}
+                    {rec.vendor?.coverage_areas?.slice(0, 2).map(getCoverageLabel).join(', ') ||
+                      '-'}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />

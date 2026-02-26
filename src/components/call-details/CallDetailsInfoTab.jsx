@@ -1,5 +1,23 @@
 import React, { Suspense } from 'react';
-import { User, Car, MapPin, Truck, PenTool, CheckCircle, Mic, ExternalLink, Shield, FileText, Clock, Key, Warehouse, Pencil, AlertTriangle, Star, CreditCard, Timer, Phone, Mail, Hash, Navigation, Fuel, Settings, Info } from 'lucide-react';
+import {
+  User,
+  Car,
+  MapPin,
+  Truck,
+  PenTool,
+  CheckCircle,
+  Mic,
+  ExternalLink,
+  Shield,
+  FileText,
+  Clock,
+  Warehouse,
+  Pencil,
+  Star,
+  CreditCard,
+  Timer,
+  Info,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,7 +100,9 @@ const BoolField = ({ value, label }) => (
 const InfoField = ({ label, value, dir }) => (
   <div>
     <Label className="text-xs text-[#6B778C]">{label}</Label>
-    <p className="font-medium" dir={dir}>{value || '-'}</p>
+    <p className="font-medium" dir={dir}>
+      {value || '-'}
+    </p>
   </div>
 );
 
@@ -127,10 +147,15 @@ export default function CallDetailsInfoTab({
                 {call?.is_vip && <Badge className="bg-purple-100 text-purple-800 mr-1">VIP</Badge>}
               </div>
             </div>
-            <InfoField label="מקור קריאה" value={sourceLabels[call?.created_by_source] || call?.created_by_source || '-'} />
+            <InfoField
+              label="מקור קריאה"
+              value={sourceLabels[call?.created_by_source] || call?.created_by_source || '-'}
+            />
             <InfoField label="נפתחה על ידי" value={call?.created_by} />
             <InfoField label="תאריך פתיחה" value={formatDateTime(call?.created_date)} />
-            {call?.closed_at && <InfoField label="תאריך סגירה" value={formatDateTime(call?.closed_at)} />}
+            {call?.closed_at && (
+              <InfoField label="תאריך סגירה" value={formatDateTime(call?.closed_at)} />
+            )}
             {call?.closed_by && <InfoField label={'נסגרה ע"י'} value={call?.closed_by} />}
             {call?.sla_status && (
               <div>
@@ -164,7 +189,9 @@ export default function CallDetailsInfoTab({
               <InfoField label="טלפון משני" value={call?.customer_phone_2} dir="ltr" />
               <InfoField label="אימייל" value={call?.customer_email} />
               <InfoField label="כתובת" value={call?.customer_address} />
-              {call?.customer_response_code && <InfoField label="קוד לזיהוי לקוח" value={call?.customer_response_code} />}
+              {call?.customer_response_code && (
+                <InfoField label="קוד לזיהוי לקוח" value={call?.customer_response_code} />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -205,8 +232,14 @@ export default function CallDetailsInfoTab({
               <InfoField label="מספר רכב" value={call?.vehicle_plate} dir="ltr" />
               <InfoField label="דגם" value={call?.vehicle_model} />
               <InfoField label="שנת ייצור" value={call?.vehicle_year} />
-              <InfoField label="סוג רכב" value={vehicleTypeLabels[call?.vehicle_type] || call?.vehicle_type} />
-              <InfoField label="סוג דלק" value={fuelTypeLabels[call?.fuel_type] || call?.fuel_type} />
+              <InfoField
+                label="סוג רכב"
+                value={vehicleTypeLabels[call?.vehicle_type] || call?.vehicle_type}
+              />
+              <InfoField
+                label="סוג דלק"
+                value={fuelTypeLabels[call?.fuel_type] || call?.fuel_type}
+              />
               <InfoField label="קודן" value={call?.vehicle_code} />
             </div>
           </CardContent>
@@ -222,18 +255,25 @@ export default function CallDetailsInfoTab({
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-4">
-              <InfoField label="סוג תקלה" value={issueTypeLabels[call?.issue_type] || call?.issue_type} />
+              <InfoField
+                label="סוג תקלה"
+                value={issueTypeLabels[call?.issue_type] || call?.issue_type}
+              />
               {call?.has_key !== undefined && (
                 <div>
                   <Label className="text-xs text-[#6B778C]">יש מפתח</Label>
-                  <p className={`font-medium ${call?.has_key ? 'text-green-700' : 'text-red-600'}`}>{call?.has_key ? 'כן' : 'לא'}</p>
+                  <p className={`font-medium ${call?.has_key ? 'text-green-700' : 'text-red-600'}`}>
+                    {call?.has_key ? 'כן' : 'לא'}
+                  </p>
                 </div>
               )}
               {call?.key_location && <InfoField label="מיקום מפתח" value={call?.key_location} />}
             </div>
             <div>
               <Label className="text-xs text-[#6B778C]">תיאור התקלה</Label>
-              <p className="text-sm bg-gray-50 p-2 rounded mt-1">{call?.issue_description || '-'}</p>
+              <p className="text-sm bg-gray-50 p-2 rounded mt-1">
+                {call?.issue_description || '-'}
+              </p>
             </div>
             {call?.operation_instructions && (
               <div className="p-2 bg-amber-50 border border-amber-200 rounded-md">
@@ -258,7 +298,10 @@ export default function CallDetailsInfoTab({
                 <InfoField label="כתובת/מיקום" value={call?.pickup_location_address} />
               </div>
               <InfoField label="עיר" value={call?.pickup_location_city} />
-              <InfoField label="אזור" value={areaLabels[call?.pickup_location_area] || call?.pickup_location_area} />
+              <InfoField
+                label="אזור"
+                value={areaLabels[call?.pickup_location_area] || call?.pickup_location_area}
+              />
             </div>
 
             {/* Technical conditions at location */}
@@ -279,13 +322,20 @@ export default function CallDetailsInfoTab({
                   <Label className="text-xs text-[#6B778C] font-semibold">יעד פריקה סופי:</Label>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {call?.dropoff_garage_name && <InfoField label="מוסך" value={call.dropoff_garage_name} />}
-                  {call?.dropoff_garage_phone && <InfoField label="טלפון מוסך" value={call.dropoff_garage_phone} dir="ltr" />}
+                  {call?.dropoff_garage_name && (
+                    <InfoField label="מוסך" value={call.dropoff_garage_name} />
+                  )}
+                  {call?.dropoff_garage_phone && (
+                    <InfoField label="טלפון מוסך" value={call.dropoff_garage_phone} dir="ltr" />
+                  )}
                   <div className="col-span-2">
                     <InfoField label="כתובת יעד" value={call?.dropoff_location_address} />
                   </div>
                   <InfoField label="עיר" value={call?.dropoff_location_city} />
-                  <InfoField label="אזור" value={areaLabels[call?.dropoff_location_area] || call?.dropoff_location_area} />
+                  <InfoField
+                    label="אזור"
+                    value={areaLabels[call?.dropoff_location_area] || call?.dropoff_location_area}
+                  />
                 </div>
               </>
             )}
@@ -324,13 +374,33 @@ export default function CallDetailsInfoTab({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
                   <InfoField label="נותן השירות" value={call.assigned_vendor_name} />
-                  <InfoField label="אזור" value={areaLabels[call?.assigned_vendor_area] || call?.assigned_vendor_area} />
+                  <InfoField
+                    label="אזור"
+                    value={areaLabels[call?.assigned_vendor_area] || call?.assigned_vendor_area}
+                  />
                   <InfoField label="שובץ ב-" value={formatDateTime(call.assigned_at)} />
-                  <InfoField label="צפי הגעה" value={formatDateTime(call.vendor_arrival_time_estimated)} />
-                  {call.vendor_arrival_time_actual && <InfoField label="הגעה בפועל" value={formatDateTime(call.vendor_arrival_time_actual)} />}
-                  {call.service_end_time && <InfoField label="סיום טיפול" value={formatDateTime(call.service_end_time)} />}
-                  {call.estimated_distance_km && <InfoField label="מרחק מוערך (ק״מ)" value={call.estimated_distance_km} />}
-                  {call.estimated_arrival_time && <InfoField label="זמן הגעה מחושב" value={formatDateTime(call.estimated_arrival_time)} />}
+                  <InfoField
+                    label="צפי הגעה"
+                    value={formatDateTime(call.vendor_arrival_time_estimated)}
+                  />
+                  {call.vendor_arrival_time_actual && (
+                    <InfoField
+                      label="הגעה בפועל"
+                      value={formatDateTime(call.vendor_arrival_time_actual)}
+                    />
+                  )}
+                  {call.service_end_time && (
+                    <InfoField label="סיום טיפול" value={formatDateTime(call.service_end_time)} />
+                  )}
+                  {call.estimated_distance_km && (
+                    <InfoField label="מרחק מוערך (ק״מ)" value={call.estimated_distance_km} />
+                  )}
+                  {call.estimated_arrival_time && (
+                    <InfoField
+                      label="זמן הגעה מחושב"
+                      value={formatDateTime(call.estimated_arrival_time)}
+                    />
+                  )}
                 </div>
                 {call.early_notification_minutes && (
                   <div className="flex items-center gap-2 text-sm bg-blue-50 p-2 rounded">
@@ -383,10 +453,15 @@ export default function CallDetailsInfoTab({
                       <span className="text-xs text-gray-400 ml-1">#{idx + 1}</span>
                       {key}
                     </span>
-                    <span className={`text-sm font-medium ${
-                      value === true || value === 'כן' ? 'text-green-700' : 
-                      value === false || value === 'לא' ? 'text-red-600' : ''
-                    }`}>
+                    <span
+                      className={`text-sm font-medium ${
+                        value === true || value === 'כן'
+                          ? 'text-green-700'
+                          : value === false || value === 'לא'
+                            ? 'text-red-600'
+                            : ''
+                      }`}
+                    >
                       {typeof value === 'boolean' ? (value ? 'כן' : 'לא') : String(value)}
                     </span>
                   </div>
@@ -419,15 +494,33 @@ export default function CallDetailsInfoTab({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs text-[#6B778C]">נדרש תשלום</Label>
-                <p className={`font-medium ${call?.payment_required ? 'text-red-600' : 'text-green-700'}`}>
+                <p
+                  className={`font-medium ${call?.payment_required ? 'text-red-600' : 'text-green-700'}`}
+                >
                   {call?.payment_required ? 'כן' : 'לא'}
                 </p>
               </div>
-              {call?.payment_reason && <InfoField label="סיבת תשלום" value={call?.payment_reason} />}
-              {call?.payment_amount_customer && <InfoField label="סכום מהלקוח" value={`₪${call?.payment_amount_customer?.toLocaleString()}`} />}
-              {call?.payment_type && <InfoField label="אמצעי תשלום" value={paymentTypeLabels[call?.payment_type] || call?.payment_type} />}
-              {call?.payment_date && <InfoField label="תאריך תשלום" value={formatDateTime(call?.payment_date)} />}
-              {call?.cost_to_vendor && <InfoField label="עלות לספק" value={`₪${call?.cost_to_vendor?.toLocaleString()}`} />}
+              {call?.payment_reason && (
+                <InfoField label="סיבת תשלום" value={call?.payment_reason} />
+              )}
+              {call?.payment_amount_customer && (
+                <InfoField
+                  label="סכום מהלקוח"
+                  value={`₪${call?.payment_amount_customer?.toLocaleString()}`}
+                />
+              )}
+              {call?.payment_type && (
+                <InfoField
+                  label="אמצעי תשלום"
+                  value={paymentTypeLabels[call?.payment_type] || call?.payment_type}
+                />
+              )}
+              {call?.payment_date && (
+                <InfoField label="תאריך תשלום" value={formatDateTime(call?.payment_date)} />
+              )}
+              {call?.cost_to_vendor && (
+                <InfoField label="עלות לספק" value={`₪${call?.cost_to_vendor?.toLocaleString()}`} />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -443,9 +536,18 @@ export default function CallDetailsInfoTab({
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                {call?.time_waiting && <InfoField label="זמן המתנה (דקות)" value={call?.time_waiting} />}
-                {call?.time_to_vendor_assignment && <InfoField label="זמן עד שיוך ספק (דקות)" value={call?.time_to_vendor_assignment} />}
-                {call?.time_to_completion && <InfoField label="זמן מפתיחה לסגירה (דקות)" value={call?.time_to_completion} />}
+                {call?.time_waiting && (
+                  <InfoField label="זמן המתנה (דקות)" value={call?.time_waiting} />
+                )}
+                {call?.time_to_vendor_assignment && (
+                  <InfoField
+                    label="זמן עד שיוך ספק (דקות)"
+                    value={call?.time_to_vendor_assignment}
+                  />
+                )}
+                {call?.time_to_completion && (
+                  <InfoField label="זמן מפתיחה לסגירה (דקות)" value={call?.time_to_completion} />
+                )}
               </div>
             </CardContent>
           </Card>
@@ -501,7 +603,10 @@ export default function CallDetailsInfoTab({
               {call?.customer_rating && (
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className={`w-5 h-5 ${s <= call.customer_rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                    <Star
+                      key={s}
+                      className={`w-5 h-5 ${s <= call.customer_rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                    />
                   ))}
                   <span className="font-bold mr-2">{call.customer_rating}/5</span>
                 </div>
@@ -527,12 +632,16 @@ export default function CallDetailsInfoTab({
             {call?.summary_final ? (
               <div>
                 <Label className="text-xs text-green-600 font-medium">סיכום סופי:</Label>
-                <p className="text-sm bg-green-50 p-3 rounded mt-1 whitespace-pre-line">{call.summary_final}</p>
+                <p className="text-sm bg-green-50 p-3 rounded mt-1 whitespace-pre-line">
+                  {call.summary_final}
+                </p>
               </div>
             ) : call?.summary_draft ? (
               <div>
                 <Label className="text-xs text-blue-600 font-medium">טיוטת סיכום:</Label>
-                <p className="text-sm bg-blue-50 p-3 rounded mt-1 whitespace-pre-line">{call.summary_draft}</p>
+                <p className="text-sm bg-blue-50 p-3 rounded mt-1 whitespace-pre-line">
+                  {call.summary_draft}
+                </p>
               </div>
             ) : null}
           </CardContent>
@@ -549,7 +658,9 @@ export default function CallDetailsInfoTab({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm bg-yellow-50 p-3 rounded whitespace-pre-line">{call.operator_notes}</p>
+            <p className="text-sm bg-yellow-50 p-3 rounded whitespace-pre-line">
+              {call.operator_notes}
+            </p>
           </CardContent>
         </Card>
       )}

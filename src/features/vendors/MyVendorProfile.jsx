@@ -34,6 +34,7 @@ import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { getCoverageLabel } from '@/config/coverageConstants';
 
 export default function MyVendorProfile() {
   const queryClient = useQueryClient();
@@ -248,7 +249,7 @@ export default function MyVendorProfile() {
                 <h1 className="text-2xl font-bold text-gray-900">{vendor.vendor_name}</h1>
                 <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                   <MapPin className="w-3 h-3" />
-                  {vendor.coverage_areas?.join(', ') || 'אין אזורי כיסוי'}
+                  {vendor.coverage_areas?.map(getCoverageLabel).join(', ') || 'אין אזורי כיסוי'}
                 </div>
               </div>
             </div>

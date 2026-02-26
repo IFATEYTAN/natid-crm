@@ -43,6 +43,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCoverageLabel } from '@/config/coverageConstants';
 import {
   SlideUp,
   AnimatedCard,
@@ -74,6 +75,16 @@ const availabilityColors = {
   busy: 'bg-orange-100 text-orange-800',
   offline: 'bg-gray-100 text-gray-800',
   on_break: 'bg-yellow-100 text-yellow-800',
+};
+
+const hasTowService = (v) => {
+  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+  return types.includes('tow_truck') || types.some((t) => t === 'גרירה');
+};
+
+const hasMobileService = (v) => {
+  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+  return types.includes('mobile_unit') || types.some((t) => t === 'ניידת');
 };
 
 export default function ServiceProvidersPage() {
@@ -129,41 +140,39 @@ export default function ServiceProvidersPage() {
 
   const filteredVendors = useMemo(() => {
     return vendors.filter((vendor) => {
+      const coverageText = (vendor.coverage_areas || []).map(getCoverageLabel).join(' ');
       const matchesSearch =
         !searchQuery ||
         vendor.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         vendor.phone?.includes(searchQuery) ||
+        coverageText.includes(searchQuery) ||
         vendor.coverage_cities?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType =
         typeFilter === 'all' ||
-        (activeKpi === 'tow_truck' ? (hasTowService(vendor) && !hasMobileService(vendor)) :
-         activeKpi === 'mobile_unit' ? (hasMobileService(vendor) && !hasTowService(vendor)) :
-        (Array.isArray(vendor.service_type)
-          ? vendor.service_type.includes(typeFilter)
-          : vendor.service_type === typeFilter));
+        (activeKpi === 'tow_truck'
+          ? hasTowService(vendor) && !hasMobileService(vendor)
+          : activeKpi === 'mobile_unit'
+            ? hasMobileService(vendor) && !hasTowService(vendor)
+            : Array.isArray(vendor.service_type)
+              ? vendor.service_type.includes(typeFilter)
+              : vendor.service_type === typeFilter);
       const matchesAvailability =
         availabilityFilter === 'all' || vendor.availability_status === availabilityFilter;
-      const matchesActive = activeKpi === 'inactive' ? !vendor.is_active 
-        : activeKpi === 'combined' ? (hasTowService(vendor) && hasMobileService(vendor))
-        : true;
+      const matchesActive =
+        activeKpi === 'inactive'
+          ? !vendor.is_active
+          : activeKpi === 'combined'
+            ? hasTowService(vendor) && hasMobileService(vendor)
+            : true;
       return matchesSearch && matchesType && matchesAvailability && matchesActive;
     });
   }, [vendors, searchQuery, typeFilter, availabilityFilter, activeKpi]);
 
-  const hasTowService = (v) => {
-    const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-    return types.includes('tow_truck') || types.some(t => t === 'גרירה');
-  };
-  const hasMobileService = (v) => {
-    const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-    return types.includes('mobile_unit') || types.some(t => t === 'ניידת');
-  };
-
   const stats = useMemo(() => {
     const active = vendors.filter((v) => v.is_active);
-    const towOnly = active.filter(v => hasTowService(v) && !hasMobileService(v));
-    const mobileOnly = active.filter(v => hasMobileService(v) && !hasTowService(v));
-    const combined = active.filter(v => hasTowService(v) && hasMobileService(v));
+    const towOnly = active.filter((v) => hasTowService(v) && !hasMobileService(v));
+    const mobileOnly = active.filter((v) => hasMobileService(v) && !hasTowService(v));
+    const combined = active.filter((v) => hasTowService(v) && hasMobileService(v));
     const inactive = vendors.filter((v) => !v.is_active);
 
     return {
@@ -177,7 +186,9 @@ export default function ServiceProvidersPage() {
       inactive: inactive.length,
       avgRating:
         vendors.length > 0
-          ? (vendors.reduce((sum, v) => sum + (v.average_rating || 0), 0) / vendors.length).toFixed(1)
+          ? (vendors.reduce((sum, v) => sum + (v.average_rating || 0), 0) / vendors.length).toFixed(
+              1
+            )
           : 0,
     };
   }, [vendors]);
@@ -250,13 +261,27 @@ export default function ServiceProvidersPage() {
     },
     {
       header: 'אזור כיסוי',
-      accessor: 'coverage_cities',
-      cell: (vendor) => (
-        <div className="flex items-center gap-1 text-sm text-[#6B778C]">
-          <MapPin className="w-3 h-3" />
-          <span className="truncate max-w-[150px]">{vendor.coverage_cities || '-'}</span>
-        </div>
-      ),
+      accessor: 'coverage_areas',
+      cell: (vendor) => {
+        const areas = vendor.coverage_areas || [];
+        if (areas.length === 0) {
+          return <span className="text-sm text-[#6B778C]">-</span>;
+        }
+        return (
+          <div className="flex flex-wrap gap-1">
+            {areas.slice(0, 3).map((area) => (
+              <Badge key={area} variant="outline" className="text-xs font-normal">
+                {getCoverageLabel(area)}
+              </Badge>
+            ))}
+            {areas.length > 3 && (
+              <Badge variant="outline" className="text-xs font-normal text-[#6B778C]">
+                +{areas.length - 3}
+              </Badge>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: 'דירוג',
@@ -375,9 +400,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'all' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'
+              activeKpi === 'all'
+                ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]'
+                : 'border-[#e5e7eb] hover:border-[#3b82f6]'
             )}
-            onClick={() => { setActiveKpi('all'); setTypeFilter('all'); setAvailabilityFilter('all'); }}
+            onClick={() => {
+              setActiveKpi('all');
+              setTypeFilter('all');
+              setAvailabilityFilter('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -394,9 +425,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'tow_truck' ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]' : 'border-[#e5e7eb] hover:border-[#f59e0b]'
+              activeKpi === 'tow_truck'
+                ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]'
+                : 'border-[#e5e7eb] hover:border-[#f59e0b]'
             )}
-            onClick={() => { setActiveKpi('tow_truck'); setTypeFilter('tow_truck'); setAvailabilityFilter('all'); }}
+            onClick={() => {
+              setActiveKpi('tow_truck');
+              setTypeFilter('tow_truck');
+              setAvailabilityFilter('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -413,9 +450,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'mobile_unit' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'
+              activeKpi === 'mobile_unit'
+                ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]'
+                : 'border-[#e5e7eb] hover:border-[#3b82f6]'
             )}
-            onClick={() => { setActiveKpi('mobile_unit'); setTypeFilter('mobile_unit'); setAvailabilityFilter('all'); }}
+            onClick={() => {
+              setActiveKpi('mobile_unit');
+              setTypeFilter('mobile_unit');
+              setAvailabilityFilter('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -432,9 +475,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'combined' ? 'border-[#8b5cf6] ring-1 ring-[#8b5cf6]' : 'border-[#e5e7eb] hover:border-[#8b5cf6]'
+              activeKpi === 'combined'
+                ? 'border-[#8b5cf6] ring-1 ring-[#8b5cf6]'
+                : 'border-[#e5e7eb] hover:border-[#8b5cf6]'
             )}
-            onClick={() => { setActiveKpi('combined'); setTypeFilter('all'); setAvailabilityFilter('all'); }}
+            onClick={() => {
+              setActiveKpi('combined');
+              setTypeFilter('all');
+              setAvailabilityFilter('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -451,9 +500,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'inactive' ? 'border-[#ef4444] ring-1 ring-[#ef4444]' : 'border-[#e5e7eb] hover:border-[#ef4444]'
+              activeKpi === 'inactive'
+                ? 'border-[#ef4444] ring-1 ring-[#ef4444]'
+                : 'border-[#e5e7eb] hover:border-[#ef4444]'
             )}
-            onClick={() => { setActiveKpi('inactive'); setTypeFilter('all'); setAvailabilityFilter('offline'); }}
+            onClick={() => {
+              setActiveKpi('inactive');
+              setTypeFilter('all');
+              setAvailabilityFilter('offline');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">

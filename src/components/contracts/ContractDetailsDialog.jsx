@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { coverageLabels as areaLabels } from '@/config/coverageConstants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -59,15 +60,6 @@ const paymentTermsLabels = {
   net_30: 'שוטף + 30',
   net_45: 'שוטף + 45',
   net_60: 'שוטף + 60',
-};
-
-const areaLabels = {
-  center: 'מרכז',
-  sharon: 'שרון',
-  north: 'צפון',
-  south: 'דרום',
-  jerusalem: 'ירושלים',
-  lowlands: 'שפלה',
 };
 
 const serviceLabels = {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { coverageAreas } from '@/config/coverageConstants';
 import { sanitizeVendorCreate } from '@/lib/schemas/vendor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,15 +48,6 @@ const vehicleTypes = [
   { key: 'commercial_light', label: 'מסחרי קל' },
   { key: 'truck', label: 'משאית' },
   { key: 'motorcycle', label: 'אופנוע' },
-];
-
-const coverageAreas = [
-  { key: 'center', label: 'מרכז' },
-  { key: 'sharon', label: 'שרון' },
-  { key: 'north', label: 'צפון' },
-  { key: 'south', label: 'דרום' },
-  { key: 'jerusalem', label: 'ירושלים' },
-  { key: 'lowlands', label: 'שפלה' },
 ];
 
 export default function NewVendorPage() {

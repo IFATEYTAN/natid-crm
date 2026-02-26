@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 
 export default function ChangePriorityDialog({ open, onOpenChange, queueItem }) {
@@ -58,7 +57,9 @@ export default function ChangePriorityDialog({ open, onOpenChange, queueItem }) 
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-sm text-gray-600">ציון עדיפות</label>
-              <span className={`text-lg font-bold ${color}`}>{priority} — {label}</span>
+              <span className={`text-lg font-bold ${color}`}>
+                {priority} — {label}
+              </span>
             </div>
             <Slider
               value={[priority]}
@@ -76,7 +77,9 @@ export default function ChangePriorityDialog({ open, onOpenChange, queueItem }) 
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>ביטול</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            ביטול
+          </Button>
           <Button onClick={() => mutation.mutate()} isLoading={mutation.isPending}>
             עדכן
           </Button>

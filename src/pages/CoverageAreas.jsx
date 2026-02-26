@@ -20,44 +20,7 @@ import {
   AnimatedCard,
 } from '@/components/animations/AnimatedComponents';
 import { cn } from '@/lib/utils';
-
-const coverageAreas = [
-  {
-    key: 'center',
-    label: 'מרכז',
-    cities: [
-      'תל אביב',
-      'רמת גן',
-      'גבעתיים',
-      'בני ברק',
-      'פתח תקווה',
-      'ראשון לציון',
-      'חולון',
-      'בת ים',
-    ],
-  },
-  {
-    key: 'sharon',
-    label: 'שרון',
-    cities: ['נתניה', 'הרצליה', 'רעננה', 'כפר סבא', 'הוד השרון', 'רמת השרון'],
-  },
-  {
-    key: 'north',
-    label: 'צפון',
-    cities: ['חיפה', 'עכו', 'נהריה', 'קריות', 'טבריה', 'צפת', 'נצרת'],
-  },
-  {
-    key: 'south',
-    label: 'דרום',
-    cities: ['באר שבע', 'אשדוד', 'אשקלון', 'אילת', 'דימונה', 'קריית גת'],
-  },
-  {
-    key: 'jerusalem',
-    label: 'ירושלים והסביבה',
-    cities: ['ירושלים', 'בית שמש', 'מודיעין', 'מעלה אדומים'],
-  },
-  { key: 'lowlands', label: 'שפלה', cities: ['רחובות', 'נס ציונה', 'לוד', 'רמלה', 'יבנה', 'גדרה'] },
-];
+import { coverageAreas } from '@/config/coverageConstants';
 
 const availabilityLabels = {
   available: 'זמין',
