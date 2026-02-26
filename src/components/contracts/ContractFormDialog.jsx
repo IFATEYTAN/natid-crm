@@ -233,11 +233,12 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   <Select
                     value={formData.contract_type}
                     onValueChange={(v) => setFormData({ ...formData, contract_type: v })}
+                    dir="rtl"
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent dir="rtl">
                       <SelectItem value="per_call">לפי קריאה</SelectItem>
                       <SelectItem value="monthly">חודשי</SelectItem>
                       <SelectItem value="yearly">שנתי</SelectItem>
@@ -250,11 +251,12 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   <Select
                     value={formData.status}
                     onValueChange={(v) => setFormData({ ...formData, status: v })}
+                    dir="rtl"
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent dir="rtl">
                       <SelectItem value="draft">טיוטה</SelectItem>
                       <SelectItem value="pending_approval">ממתין לאישור</SelectItem>
                       <SelectItem value="active">פעיל</SelectItem>
