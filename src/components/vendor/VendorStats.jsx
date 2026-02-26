@@ -100,7 +100,11 @@ export default function VendorStats({ vendor, calls = [], onStatClick }) {
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
-          <Card key={idx} className="bg-white">
+          <Card 
+            key={idx} 
+            className={`bg-white ${onStatClick ? 'cursor-pointer hover:shadow-md transition-all hover:bg-gray-50' : ''}`}
+            onClick={() => onStatClick && onStatClick(stat.id)}
+          >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div
