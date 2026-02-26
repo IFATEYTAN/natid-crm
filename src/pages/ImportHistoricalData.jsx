@@ -115,8 +115,8 @@ export default function ImportHistoricalDataPage() {
         throw new Error('לא נמצאו רשומות עם נתונים לייבוא');
       }
 
-      // Bulk create records directly
-      await base44.entities.Call.bulkCreate(recordsToInsert);
+      // Bulk create records directly to HistoricalCallData
+      await base44.entities.HistoricalCallData.bulkCreate(recordsToInsert);
 
       setImportResult({
         success: true,
