@@ -1,60 +1,95 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import { TrendingUp, Truck, MapPin, Wrench, Settings } from 'lucide-react';
-
-// === Static Data from 2025 Excel Files ===
-
-const monthlyTrendData = [
-  { name: 'ינואר', calls: 3535, cost: 824585 },
-  { name: 'פברואר', calls: 3269, cost: 760196 },
-  { name: 'מרץ', calls: 3852, cost: 928487 },
-  { name: 'אפריל', calls: 3679, cost: 894427 },
-  { name: 'מאי', calls: 3846, cost: 935000 },
-  { name: 'יוני', calls: 3555, cost: 855000 },
-  { name: 'יולי', calls: 4793, cost: 1150000 },
-  { name: 'אוגוסט', calls: 4655, cost: 1110000 },
-  { name: 'ספטמבר', calls: 4329, cost: 1050000 },
-  { name: 'אוקטובר', calls: 4146, cost: 1010000 },
-  { name: 'נובמבר', calls: 3923, cost: 960000 },
-  { name: 'דצמבר', calls: 4356, cost: 1060000 },
-];
-
-const regionData = [
-  { name: 'המרכז', value: 17251 },
-  { name: 'לא מוגדר', value: 10051 },
-  { name: 'צפון', value: 5593 },
-  { name: 'דרום', value: 4802 },
-  { name: 'ירושלים', value: 3543 },
-  { name: 'חיפה והקריות', value: 2007 },
-  { name: 'השרון', value: 1967 },
-  { name: 'אחר', value: 2724 },
-];
-
-const issueData = [
-  { name: 'אין סטארטר', value: 7832 },
-  { name: 'תאונה', value: 7117 },
-  { name: 'כבה בנסיעה', value: 2983 },
-  { name: 'יש סטארטר', value: 2534 },
-  { name: 'אחר', value: 27472 },
-];
-
-const serviceTypeData = [
-  { name: 'גרירה', value: 26254 },
-  { name: 'ניידת שירות', value: 8074 },
-  { name: 'אחסנה + גרירה', value: 8028 },
-  { name: 'גרירה + ניידת', value: 1092 },
-  { name: 'אחר', value: 2490 },
-];
-
-const fleetVsExternalData = [
-  { name: 'צי פנימי', calls: 6267, cost: 2093776, avgCost: 334 },
-  { name: 'ספקים חיצוניים', calls: 41671, cost: 9845440, avgCost: 251 },
-];
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1', '#8b5cf6', '#ec4899'];
 
+const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+
 export default function Annual2025Report() {
+  const { data: calls = [], isLoading, error } = useQuery({
+    queryKey: ['calls-annual'],
+    queryFn: () => base44.entities.Call.list('-created_date', 1000),
+  });
+
+  const monthlyTrendData = useMemo(() => {
+    const monthlyMap = {};
+    monthNames.forEach((name, i) => {
+      monthlyMap[i] = { name, calls: 0, cost: 0 };
+    });
+
+    calls.forEach(call => {
+      const date = new Date(call.created_date);
+      const month = date.getMonth();
+      if (monthlyMap[month]) {
+        monthlyMap[month].calls += 1;
+        monthlyMap[month].cost += (call.total_cost || 0);
+      }
+    });
+
+    return Object.values(monthlyMap);
+  }, [calls]);
+
+  const regionData = useMemo(() => {
+    const regions = {};
+    calls.forEach(call => {
+      const region = call.pickup_location_area || 'לא מוגדר';
+      regions[region] = (regions[region] || 0) + 1;
+    });
+    return Object.entries(regions).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [calls]);
+
+  const issueData = useMemo(() => {
+    const issues = {};
+    calls.forEach(call => {
+      const issue = call.issue_type || 'אחר';
+      issues[issue] = (issues[issue] || 0) + 1;
+    });
+    return Object.entries(issues).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [calls]);
+
+  const serviceTypeData = useMemo(() => {
+    const services = {};
+    calls.forEach(call => {
+      const service = call.service_category || 'אחר';
+      services[service] = (services[service] || 0) + 1;
+    });
+    return Object.entries(services).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [calls]);
+
+  const fleetVsExternalData = useMemo(() => {
+    const fleetCalls = calls.filter(c => c.provider_type === 'fleet');
+    const externalCalls = calls.filter(c => c.provider_type === 'external');
+    const fleetCost = fleetCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
+    const externalCost = externalCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
+
+    return [
+      {
+        name: 'צי פנימי',
+        calls: fleetCalls.length,
+        cost: fleetCost,
+        avgCost: fleetCalls.length > 0 ? Math.round(fleetCost / fleetCalls.length) : 0,
+      },
+      {
+        name: 'ספקים חיצוניים',
+        calls: externalCalls.length,
+        cost: externalCost,
+        avgCost: externalCalls.length > 0 ? Math.round(externalCost / externalCalls.length) : 0,
+      },
+    ];
+  }, [calls]);
+
+  const totalCalls = calls.length;
+  const totalCost = calls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
+  const avgCostPerCall = totalCalls > 0 ? Math.round(totalCost / totalCalls) : 0;
+  const avgMonthly = totalCalls > 0 ? Math.round(totalCalls / 12) : 0;
+
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div className="text-red-600">שגיאה בטעינת הנתונים</div>;
   return (
     <div className="space-y-6">
       {/* Executive Summary */}
