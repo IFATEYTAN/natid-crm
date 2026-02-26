@@ -244,9 +244,9 @@ export default function ImportHistoricalDataPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2">
-                  <Upload className="w-12 h-12 text-gray-400" />
-                  <span className="text-gray-600">גרור קובץ לכאן או לחץ לבחירה</span>
-                  <span className="text-sm text-gray-400">CSV בלבד</span>
+                   <Upload className="w-12 h-12 text-gray-400" />
+                   <span className="text-gray-600">גרור קובץ לכאן או לחץ לבחירה</span>
+                   <span className="text-sm text-gray-400">CSV או XLSX</span>
                 </div>
               )}
             </label>
