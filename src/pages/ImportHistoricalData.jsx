@@ -53,50 +53,7 @@ export default function ImportHistoricalDataPage() {
         setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: file_url });
         toast.success('הקובץ טופל בהצלחה');
       } else {
-        const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
-          file_url,
-          json_schema: {
-            type: 'object',
-            properties: {
-              type: { type: 'string' },
-              sheets: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    name: { type: 'string' },
-                    headers: { type: 'array', items: { type: 'string' } },
-                    rows: { type: 'array' },
-                  },
-                },
-              },
-            },
-          },
-        });
-
-        console.log('Extract result:', extractResult);
-
-        let sheets = [];
-        if (extractResult.status === 'success' && extractResult.output) {
-          sheets = Array.isArray(extractResult.output.sheets) 
-            ? extractResult.output.sheets 
-            : [{ name: 'Sheet1', headers: Object.keys(extractResult.output[0] || {}), rows: Array.isArray(extractResult.output) ? extractResult.output : [extractResult.output] }];
-        }
-
-        // Ensure each sheet has headers and rows
-        sheets = sheets.map(sheet => ({
-          name: sheet.name || 'Sheet',
-          headers: Array.isArray(sheet.headers) ? sheet.headers : Object.keys(sheet.rows?.[0] || {}),
-          rows: Array.isArray(sheet.rows) ? sheet.rows : []
-        })).filter(sheet => sheet.rows.length > 0);
-
-        if (!sheets || sheets.length === 0) {
-          throw new Error('לא נמצאו גיליונות עם נתונים בקובץ');
-        }
-
-        setFilePreview({ sheets, url: file_url });
-        setSelectedSheet(0);
-        toast.success('הקובץ טופל בהצלחה');
+        throw new Error('כרגע תומך רק בקבצי CSV');
       }
     } catch (error) {
       console.error('Preview error:', error);
