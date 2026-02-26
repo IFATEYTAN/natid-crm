@@ -43,12 +43,14 @@ function LayoutContent({ children, currentPageName }) {
   const navigate = useNavigate();
   const hasRedirected = useRef(false);
 
-  // Fetch Notifications
+  // Fetch Notifications - only when user is authenticated
   const { data: notifications = [] } = useQuery({
     queryKey: queryKeys.notifications.byUser(currentUser?.id),
-    queryFn: () =>
-      base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_at', 20),
-    enabled: !!currentUser?.id,
+    queryFn: async () => {
+      if (!currentUser?.id) return [];
+      return base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_at', 20);
+    },
+    enabled: !!currentUser?.id && !isLoadingAuth,
     refetchInterval: 30000,
   });
 
