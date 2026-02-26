@@ -196,7 +196,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               <TabsTrigger value="terms">תנאים</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-4 mt-4">
+            <TabsContent value="basic" className="space-y-4 mt-4 text-right" dir="rtl">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>ספק *</Label>
@@ -309,7 +309,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
             </TabsContent>
 
-            <TabsContent value="pricing" className="space-y-4 mt-4">
+            <TabsContent value="pricing" className="space-y-4 mt-4 text-right" dir="rtl">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-medium text-blue-800 mb-3 flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
@@ -451,7 +451,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
             </TabsContent>
 
-            <TabsContent value="coverage" className="space-y-4 mt-4">
+            <TabsContent value="coverage" className="space-y-4 mt-4 text-right" dir="rtl">
               <div>
                 <Label className="mb-3 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
@@ -518,7 +518,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
             </TabsContent>
 
-            <TabsContent value="terms" className="space-y-4 mt-4">
+            <TabsContent value="terms" className="space-y-4 mt-4 text-right" dir="rtl">
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-3 flex items-center gap-2">
                   <Shield className="w-4 h-4" />
