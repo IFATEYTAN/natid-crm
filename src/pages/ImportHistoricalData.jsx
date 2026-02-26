@@ -291,10 +291,12 @@ export default function ImportHistoricalDataPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-blue-900">
-                    ✅ <strong>כל העמודות</strong> מהקובץ יועלו בדיוק כמו שהן. אין צורך במיפוי.
-                  </p>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-yellow-900 font-medium mb-2">📋 שדות חובה נדרשים:</p>
+                  <ul className="text-sm text-yellow-800 space-y-1">
+                    <li>✓ <strong>serve_type</strong> - סוג השירות (לא יכול להיות ריק)</li>
+                    <li>✓ <strong>description</strong> - תיאור התקלה (לא יכול להיות ריק)</li>
+                  </ul>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-medium text-gray-900 mb-3">עמודות שיעלו:</h4>
