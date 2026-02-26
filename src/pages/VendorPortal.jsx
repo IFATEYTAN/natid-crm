@@ -77,6 +77,7 @@ export default function VendorPortalPage() {
   const isAdmin = currentUser?.role === 'admin';
   const [selectedVendorId, setSelectedVendorId] = useState('');
   const [activeTab, setActiveTab] = useState('vendor');
+  const [callsTab, setCallsTab] = useState('all');
   useEffect(() => {
     if (isAdmin) setActiveTab('admin');
   }, [isAdmin]);
