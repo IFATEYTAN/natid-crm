@@ -52,6 +52,7 @@ import { InlineLoader } from '@/components/ui/LoadingSpinner';
 
 const serviceTypeLabels = {
   tow_truck: 'גרר',
+  mobile_unit: 'ניידת',
   mechanic: 'מכונאי',
   tire_service: 'צמיגים',
   locksmith: 'מנעולן',
