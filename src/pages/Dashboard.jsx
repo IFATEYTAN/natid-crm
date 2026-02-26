@@ -1,7 +1,6 @@
 import React, { useState, Suspense, lazy } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-
 import { Link, useNavigate } from 'react-router-dom';
 import { useCalls } from '@/components/hooks/useCalls';
 import { useVendors } from '@/components/hooks/useVendors';
