@@ -42,6 +42,7 @@ export default function VendorPortalPage() {
 
   const isAdmin = effectiveRole === 'admin';
   const [activeTab, setActiveTab] = useState('vendor');
+  const [callsTab, setCallsTab] = useState('all');
   useEffect(() => {
     if (isAdmin) setActiveTab('admin');
   }, [isAdmin]);
@@ -63,7 +64,7 @@ export default function VendorPortalPage() {
   const callsQuery = useQuery({
     queryKey: queryKeys.vendors.calls(vendorProfile?.id),
     queryFn: () =>
-      base44.entities.Call.filter({ assigned_vendor_id: vendorProfile.id }, '-created_date', 100),
+      base44.entities.Call.filter({ assigned_vendor_id: vendorProfile.id }, '-created_date', 1000),
     enabled: !!vendorProfile?.id,
     refetchInterval: 30000,
   });
@@ -383,7 +384,18 @@ export default function VendorPortalPage() {
               </Suspense>
 
               <Suspense fallback={<Skeleton className="h-32" />}>
-                <VendorStatsLazy vendor={vendorProfile} calls={calls} />
+                <VendorStatsLazy 
+                  vendor={vendorProfile} 
+                  calls={calls} 
+                  onStatClick={(statId) => {
+                    if (statId === 'completed') setCallsTab('completed');
+                    if (statId === 'active' || statId === 'pending') setCallsTab('active');
+                    if (statId === 'all' || statId === 'month') setCallsTab('all');
+                    
+                    // Scroll to table
+                    document.getElementById('calls-table-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }} 
+                />
               </Suspense>
 
               {activeCalls.length > 0 && (
@@ -466,9 +478,9 @@ export default function VendorPortalPage() {
                 </Card>
               )}
 
-              <Card className="bg-white">
+              <Card className="bg-white" id="calls-table-section">
                 <CardHeader>
-                  <Tabs defaultValue="all" className="w-full" dir="rtl">
+                  <Tabs value={callsTab} onValueChange={setCallsTab} className="w-full" dir="rtl">
                     <TabsList>
                       <TabsTrigger value="all">כל הקריאות</TabsTrigger>
                       <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
