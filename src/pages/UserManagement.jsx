@@ -41,15 +41,7 @@ import { showToast } from '@/components/ui/FeedbackToast';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
 import { useAuditLog } from '@/hooks/useAuditLog';
-
-const roleLabels = {
-  admin: 'מנהל מערכת',
-  manager: 'מנהל תפעול',
-  operator: 'מוקדן',
-  agent: 'נציג שטח',
-  vendor: 'ספק שירות',
-  user: 'משתמש',
-};
+import { roleLabels } from '@/config/labels';
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',

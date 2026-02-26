@@ -39,26 +39,7 @@ import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { triggerNotification } from '@/components/NotificationsUtils';
 import CallChat from '@/components/chat/CallChat';
-
-const serviceTypeLabels = {
-  towing: 'גרירה',
-  flat_tire: "פנצ'ר",
-  battery: 'מצבר',
-  lockout: 'פתיחת רכב',
-  fuel: 'דלק',
-  accident: 'תאונה',
-  mechanical: 'תקלה מכנית',
-  other: 'אחר',
-};
-
-const vehicleTypeLabels = {
-  car: 'רכב פרטי',
-  motorcycle: 'אופנוע',
-  truck: 'משאית',
-  bus: 'אוטובוס',
-  van: 'ואן',
-  other: 'אחר',
-};
+import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 
 const statusOptions = [
   { value: 'new', label: 'חדש' },

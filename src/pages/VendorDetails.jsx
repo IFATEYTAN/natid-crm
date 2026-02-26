@@ -28,15 +28,7 @@ import {
   StaggeredItem,
 } from '@/components/animations/AnimatedComponents';
 import { coverageLabels } from '@/config/coverageConstants';
-
-const serviceTypeLabels = {
-  tow_truck: 'גרר',
-  mechanic: 'מכונאי',
-  tire_service: 'צמיגים',
-  locksmith: 'מנעולן',
-  fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב',
-};
+import { vendorServiceTypeLabels } from '@/config/labels';
 
 export default function VendorDetailsPage() {
   const navigate = useNavigate();
@@ -177,7 +169,7 @@ export default function VendorDetailsPage() {
                         variant="secondary"
                         className="bg-blue-50 text-blue-700 hover:bg-blue-100"
                       >
-                        {serviceTypeLabels[type] || type}
+                        {vendorServiceTypeLabels[type] || type}
                       </Badge>
                     ))}
                     {!vendor.service_type?.length && (

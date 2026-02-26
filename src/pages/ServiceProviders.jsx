@@ -52,23 +52,7 @@ import {
 } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { InlineLoader } from '@/components/ui/LoadingSpinner';
-
-const serviceTypeLabels = {
-  tow_truck: 'גרר',
-  mobile_unit: 'ניידת',
-  mechanic: 'מכונאי',
-  tire_service: 'צמיגים',
-  locksmith: 'מנעולן',
-  fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב',
-};
-
-const availabilityLabels = {
-  available: 'זמין',
-  busy: 'עסוק',
-  offline: 'לא מחובר',
-  on_break: 'בהפסקה',
-};
+import { vendorServiceTypeLabels, availabilityLabels } from '@/config/labels';
 
 const availabilityColors = {
   available: 'bg-green-100 text-green-800',
@@ -242,8 +226,8 @@ export default function ServiceProvidersPage() {
             </Link>
             <div className="text-xs text-[#6B778C]">
               {Array.isArray(vendor.service_type)
-                ? vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')
-                : serviceTypeLabels[vendor.service_type] || vendor.service_type}
+                ? vendor.service_type.map((t) => vendorServiceTypeLabels[t] || t).join(', ')
+                : vendorServiceTypeLabels[vendor.service_type] || vendor.service_type}
             </div>
           </div>
         </div>
@@ -544,7 +528,7 @@ export default function ServiceProvidersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">כל הסוגים</SelectItem>
-                  {Object.entries(serviceTypeLabels).map(([key, label]) => (
+                  {Object.entries(vendorServiceTypeLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
                     </SelectItem>

@@ -16,26 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, User, Car, MapPin, Wrench, Save, Loader2 } from 'lucide-react';
-
-const serviceTypeLabels = {
-  towing: 'גרירה',
-  flat_tire: "פנצ'ר",
-  battery: 'מצבר',
-  lockout: 'פתיחת רכב',
-  fuel: 'דלק',
-  accident: 'תאונה',
-  mechanical: 'תקלה מכנית',
-  other: 'אחר',
-};
-
-const vehicleTypeLabels = {
-  car: 'רכב פרטי',
-  motorcycle: 'אופנוע',
-  truck: 'משאית',
-  bus: 'אוטובוס',
-  van: 'ואן',
-  other: 'אחר',
-};
+import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 
 export default function NewCase() {
   const navigate = useNavigate();

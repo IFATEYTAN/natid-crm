@@ -20,6 +20,7 @@ import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { cn } from '@/lib/utils';
 import { getCoverageLabel } from '@/config/coverageConstants';
+import { vendorServiceTypeLabels, availabilityLabels } from '@/config/labels';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -49,27 +50,11 @@ const availabilityColors = {
   on_break: 'yellow',
 };
 
-const availabilityLabels = {
-  available: 'זמין',
-  busy: 'עסוק',
-  offline: 'לא מחובר',
-  on_break: 'בהפסקה',
-};
-
 const availabilityBadgeColors = {
   available: 'bg-green-100 text-green-800',
   busy: 'bg-orange-100 text-orange-800',
   offline: 'bg-gray-100 text-gray-800',
   on_break: 'bg-yellow-100 text-yellow-800',
-};
-
-const serviceTypeLabels = {
-  tow_truck: 'גרר',
-  mechanic: 'מכונאי',
-  tire_service: 'צמיגים',
-  locksmith: 'מנעולן',
-  fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב',
 };
 
 export default function AllVendorsMapPage() {
@@ -276,7 +261,7 @@ export default function AllVendorsMapPage() {
                           )}
                           {vendor.service_type?.length > 0 && (
                             <div className="text-xs text-[#6b7280]">
-                              {vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')}
+                              {vendor.service_type.map((t) => vendorServiceTypeLabels[t] || t).join(', ')}
                             </div>
                           )}
                         </div>

@@ -18,17 +18,7 @@ import { Plus, Search, Phone, MapPin } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import ImportExport from '@/components/ImportExport';
 import { he } from 'date-fns/locale';
-
-const serviceTypeLabels = {
-  towing: 'גרירה',
-  flat_tire: "פנצ'ר",
-  battery: 'מצבר',
-  lockout: 'פתיחת רכב',
-  fuel: 'דלק',
-  accident: 'תאונה',
-  mechanical: 'תקלה מכנית',
-  other: 'אחר',
-};
+import { serviceTypeLabels } from '@/config/labels';
 
 export default function Cases() {
   const [search, setSearch] = useState('');

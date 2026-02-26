@@ -3,22 +3,12 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2, Check, AlertTriangle } from 'lucide-react';
+import { serviceTypeLabels, priorityLabels, priorityColors } from '@/config/labels';
 
 const issueTypeLabels = {
   mechanical: 'תקלה מכנית', stopped_driving: 'רכב לא נוסע', flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע', accident: 'תאונה', no_fuel: 'אין דלק',
   dead_battery: 'מצבר', locked_keys: 'מפתחות נעולים', other: 'אחר'
-};
-
-const serviceTypeLabels = {
-  towing: 'גרירה', flat_tire: "פנצ'ר", battery: 'מצבר', lockout: 'פתיחת רכב',
-  fuel: 'דלק', accident: 'תאונה', mechanical: 'תקלה מכנית', other: 'אחר'
-};
-
-const priorityLabels = { low: 'נמוך', normal: 'רגיל', high: 'גבוה', urgent: 'דחוף' };
-const priorityColors = {
-  low: 'bg-gray-100 text-gray-700', normal: 'bg-blue-100 text-blue-700',
-  high: 'bg-orange-100 text-orange-700', urgent: 'bg-red-100 text-red-700'
 };
 
 export default function AICategorization({ problemDescription, locationAddress, locationCity, vehicleType, onApply }) {

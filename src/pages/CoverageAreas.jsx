@@ -21,22 +21,7 @@ import {
 } from '@/components/animations/AnimatedComponents';
 import { cn } from '@/lib/utils';
 import { coverageAreas } from '@/config/coverageConstants';
-
-const availabilityLabels = {
-  available: 'זמין',
-  busy: 'עסוק',
-  offline: 'לא מחובר',
-  on_break: 'בהפסקה',
-};
-
-const serviceTypeLabels = {
-  tow_truck: 'גרר',
-  mechanic: 'מכונאי',
-  tire_service: 'צמיגים',
-  locksmith: 'מנעולן',
-  fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב',
-};
+import { vendorServiceTypeLabels, availabilityLabels } from '@/config/labels';
 
 export default function CoverageAreasPage() {
   const [selectedArea, setSelectedArea] = useState('all');
@@ -279,7 +264,7 @@ export default function CoverageAreasPage() {
                         {vendor.vendor_name}
                       </div>
                       <div className="text-xs text-[#6b7280]">
-                        {vendor.service_type?.map((t) => serviceTypeLabels[t] || t).join(', ') ||
+                        {vendor.service_type?.map((t) => vendorServiceTypeLabels[t] || t).join(', ') ||
                           'לא צוין'}
                       </div>
                     </div>

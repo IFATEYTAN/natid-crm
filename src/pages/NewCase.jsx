@@ -38,6 +38,7 @@ import {
 } from '@/components/forms/FormValidation';
 import { showToast } from '@/components/ui/FeedbackToast';
 import AICategorization from '@/components/ai/AICategorization';
+import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 
 const TechnicalQuestionnaire = lazy(() => import('@/components/calls/TechnicalQuestionnaire'));
 
@@ -46,26 +47,6 @@ const newCaseSchema = createValidationSchema({
   caller_phone: { label: 'טלפון המתקשר', validators: [validators.required, validators.phone] },
   location_address: { label: 'כתובת מיקום', validators: [validators.required] },
 });
-
-const serviceTypeLabels = {
-  towing: 'גרירה',
-  flat_tire: "פנצ'ר",
-  battery: 'מצבר',
-  lockout: 'פתיחת רכב',
-  fuel: 'דלק',
-  accident: 'תאונה',
-  mechanical: 'תקלה מכנית',
-  other: 'אחר',
-};
-
-const vehicleTypeLabels = {
-  car: 'רכב פרטי',
-  motorcycle: 'אופנוע',
-  truck: 'משאית',
-  bus: 'אוטובוס',
-  van: 'ואן',
-  other: 'אחר',
-};
 
 export default function NewCase() {
   const navigate = useNavigate();
