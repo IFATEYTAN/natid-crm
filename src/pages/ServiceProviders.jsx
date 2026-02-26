@@ -136,9 +136,11 @@ export default function ServiceProvidersPage() {
         vendor.coverage_cities?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType =
         typeFilter === 'all' ||
+        (activeKpi === 'tow_truck' ? (hasTowService(vendor) && !hasMobileService(vendor)) :
+         activeKpi === 'mobile_unit' ? (hasMobileService(vendor) && !hasTowService(vendor)) :
         (Array.isArray(vendor.service_type)
           ? vendor.service_type.includes(typeFilter)
-          : vendor.service_type === typeFilter);
+          : vendor.service_type === typeFilter));
       const matchesAvailability =
         availabilityFilter === 'all' || vendor.availability_status === availabilityFilter;
       const matchesActive = activeKpi === 'inactive' ? !vendor.is_active 
