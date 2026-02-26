@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -19,7 +20,7 @@ export default function OperatorDashboard() {
 
   // Fetch open calls
   const { data: openCalls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ['openCalls'],
+    queryKey: queryKeys.calls.open(),
     queryFn: () =>
       base44.entities.Call.filter({
         call_status: {
@@ -37,7 +38,7 @@ export default function OperatorDashboard() {
 
   // Fetch today's completed calls
   const { data: completedToday = [] } = useQuery({
-    queryKey: ['completedToday'],
+    queryKey: queryKeys.calls.completedToday(),
     queryFn: async () => {
       const calls = await base44.entities.Call.filter(
         {
@@ -55,7 +56,7 @@ export default function OperatorDashboard() {
 
   // Fetch available vendors
   const { data: availableVendors = [], isLoading: vendorsLoading } = useQuery({
-    queryKey: ['availableVendors'],
+    queryKey: queryKeys.vendors.available(),
     queryFn: () =>
       base44.entities.Vendor.filter({
         is_active: true,

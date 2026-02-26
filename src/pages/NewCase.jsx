@@ -104,7 +104,7 @@ export default function NewCase() {
       });
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       showToast.success('קריאה נוצרה בהצלחה');
       navigate(createPageUrl(`CaseDetails?id=${result.id}`));
     },

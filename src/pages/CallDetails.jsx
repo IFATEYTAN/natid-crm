@@ -5,6 +5,7 @@ import { useVendors } from '@/features/vendors/hooks/useVendors';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { useAuditLog } from '@/hooks/useAuditLog';
@@ -93,7 +94,7 @@ export default function CallDetailsPage() {
   const canAssign = hasPermission('calls', 'assign');
 
   const callQuery = useQuery({
-    queryKey: ['call', callId],
+    queryKey: queryKeys.calls.single(callId),
     queryFn: () => base44.entities.Call.filter({ id: callId }),
     enabled: !!callId,
     refetchInterval: 15000,
@@ -112,21 +113,21 @@ export default function CallDetailsPage() {
 
   // Fetch photos for this call
   const { data: photos = [] } = useQuery({
-    queryKey: ['callPhotos', callId],
+    queryKey: queryKeys.callPhotos.byCall(callId),
     queryFn: () => base44.entities.CallPhoto.filter({ call_id: callId }),
     enabled: !!callId,
   });
 
   // Fetch history for this call
   const { data: history = [] } = useQuery({
-    queryKey: ['callHistory', callId],
+    queryKey: queryKeys.callHistory.byCall(callId),
     queryFn: () => base44.entities.CallHistory.filter({ call_id: callId }, '-created_date'),
     enabled: !!callId,
   });
 
   // Fetch messages for this call
   const { data: messages = [] } = useQuery({
-    queryKey: ['callMessages', callId],
+    queryKey: queryKeys.callMessages.byCall(callId),
     queryFn: () => base44.entities.Message.filter({ call_id: callId }, '-created_date'),
     enabled: !!callId,
   });
@@ -151,7 +152,7 @@ export default function CallDetailsPage() {
       sender_role: 'operator',
       message_text: content,
     });
-    queryClient.invalidateQueries({ queryKey: ['callMessages', targetCallId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.callMessages.byCall(targetCallId) });
   };
 
   const handleStatusChange = async (newStatus, reason) => {
@@ -167,7 +168,7 @@ export default function CallDetailsPage() {
     }
 
     await base44.entities.Call.update(callId, updates);
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
     logAction({
       action: 'status_change',
       entity_type: 'Call',
@@ -219,7 +220,7 @@ export default function CallDetailsPage() {
       assigned_at: new Date().toISOString(),
       call_status: 'assigning',
     });
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
 
     logAction({
       action: 'assign',
@@ -243,19 +244,19 @@ export default function CallDetailsPage() {
 
   const handleSignatureSaved = () => {
     setShowSignature(false);
-    queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(callId) });
     toast.success('החתימה נשמרה בהצלחה');
   };
 
   const handleFilesUploaded = () => {
-    queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(callId) });
   };
 
   const handleSaveOperatorNotes = async () => {
     if (!canEdit) return;
     await base44.entities.Call.update(callId, { operator_notes: operatorNotes });
     toast.success('הערות נשמרו');
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
   };
 
   if (!callId) {
@@ -563,7 +564,7 @@ export default function CallDetailsPage() {
                     summaryDraft={call?.summary_draft}
                     summaryFinal={call?.summary_final}
                     onSummaryGenerated={() => {
-                      queryClient.invalidateQueries({ queryKey: ['call', callId] });
+                      queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
                     }}
                   />
                 </Suspense>

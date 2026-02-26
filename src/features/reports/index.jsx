@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,27 +44,27 @@ export default function Reports() {
 
   // Fetch data
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors-report'],
+    queryKey: queryKeys.reports.vendorsPage(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
   const { data: customers = [] } = useQuery({
-    queryKey: ['customers-report'],
+    queryKey: queryKeys.reports.customersPage(),
     queryFn: () => base44.entities.Customer.list(),
   });
 
   const { data: calls = [] } = useQuery({
-    queryKey: ['calls-report'],
+    queryKey: queryKeys.reports.callsPage(),
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
   });
 
   const { data: ratings = [] } = useQuery({
-    queryKey: ['ratings-report'],
+    queryKey: queryKeys.reports.ratingsPage(),
     queryFn: () => base44.entities.VendorRating.list('-created_date', 500),
   });
 
   const { data: payments = [] } = useQuery({
-    queryKey: ['payments-report'],
+    queryKey: queryKeys.reports.paymentsPage(),
     queryFn: () => base44.entities.VendorPayment.list('-created_date', 500),
   });
 
