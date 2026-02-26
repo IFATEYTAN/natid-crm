@@ -435,11 +435,12 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 <Select
                   value={formData.payment_terms}
                   onValueChange={(v) => setFormData({ ...formData, payment_terms: v })}
+                  dir="rtl"
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent dir="rtl">
                     <SelectItem value="net_0">מיידי</SelectItem>
                     <SelectItem value="net_15">שוטף + 15</SelectItem>
                     <SelectItem value="net_30">שוטף + 30</SelectItem>
@@ -614,7 +615,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
             </TabsContent>
           </Tabs>
 
-          <DialogFooter className="mt-6">
+          <DialogFooter className="mt-6 flex justify-start gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               ביטול
             </Button>
