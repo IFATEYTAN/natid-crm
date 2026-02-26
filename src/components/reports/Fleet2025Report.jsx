@@ -1,43 +1,107 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ScatterChart, Scatter } from 'recharts';
 import { Truck, TrendingUp, MapPin, Target } from 'lucide-react';
-
-// === Fleet vs External Data ===
-
-const monthlyComparisonData = [
-  { month: 'ינואר', total: 3535, fleet: 68, external: 2743, fleetPercent: 1.92 },
-  { month: 'פברואר', total: 3269, fleet: 136, external: 2385, fleetPercent: 4.16 },
-  { month: 'מרץ', total: 3852, fleet: 197, external: 2936, fleetPercent: 5.11 },
-  { month: 'אפריל', total: 3679, fleet: 298, external: 2792, fleetPercent: 8.10 },
-  { month: 'מאי', total: 3846, fleet: 418, external: 3083, fleetPercent: 10.87 },
-  { month: 'יוני', total: 3555, fleet: 407, external: 2848, fleetPercent: 11.45 },
-  { month: 'יולי', total: 4793, fleet: 652, external: 3787, fleetPercent: 13.61 },
-  { month: 'אוגוסט', total: 4655, fleet: 588, external: 3907, fleetPercent: 12.63 },
-  { month: 'ספטמבר', total: 4329, fleet: 486, external: 3425, fleetPercent: 11.23 },
-  { month: 'אוקטובר', total: 4146, fleet: 420, external: 3287, fleetPercent: 10.13 },
-  { month: 'נובמבר', total: 3923, fleet: 368, external: 3076, fleetPercent: 9.38 },
-  { month: 'דצמבר', total: 4356, fleet: 528, external: 3431, fleetPercent: 12.12 },
-];
-
-const regionComparisonData = [
-  { region: 'המרכז', total: 17251, fleet: 2806, external: 13076, fleetAvgCost: 259, externalAvgCost: 215 },
-  { region: 'לא מוגדר', total: 10051, fleet: 1175, external: 7509, fleetAvgCost: 326, externalAvgCost: 254 },
-  { region: 'צפון', total: 5593, fleet: 920, external: 4214, fleetAvgCost: 435, externalAvgCost: 271 },
-  { region: 'דרום', total: 4802, fleet: 296, external: 4108, fleetAvgCost: 457, externalAvgCost: 285 },
-];
-
-const topFleetVehicles = [
-  { name: 'גרר נתי-מרכז-אדי', type: 'גרר', calls: 1629, avgCost: 357, km: 27.6, region: 'המרכז' },
-  { name: 'ניידת נתי-יבגני-חדרה', type: 'ניידת', calls: 1454, avgCost: 106, km: 11.5, region: 'המרכז' },
-  { name: 'גרר נתי-ראיד-15 טון מרכז', type: 'גרר', calls: 1084, avgCost: 473, km: 57.6, region: 'המרכז' },
-  { name: 'ניידת נתי-אברי-צפון מערבי', type: 'ניידת', calls: 878, avgCost: 87, km: 9.2, region: 'צפון' },
-  { name: 'גרר נתי-צפון-יואל', type: 'גרר', calls: 756, avgCost: 512, km: 48.3, region: 'צפון' },
-];
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1'];
+const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 export default function Fleet2025Report() {
+  const { data: calls = [], isLoading, error } = useQuery({
+    queryKey: ['calls-fleet'],
+    queryFn: () => base44.entities.Call.list('-created_date', 1000),
+  });
+
+  const monthlyComparisonData = useMemo(() => {
+    const monthlyMap = {};
+    monthNames.forEach((name, i) => {
+      monthlyMap[i] = { month: name, total: 0, fleet: 0, external: 0, fleetPercent: 0 };
+    });
+
+    calls.forEach(call => {
+      const date = new Date(call.created_date);
+      const month = date.getMonth();
+      if (monthlyMap[month]) {
+        monthlyMap[month].total += 1;
+        if (call.provider_type === 'fleet') {
+          monthlyMap[month].fleet += 1;
+        } else {
+          monthlyMap[month].external += 1;
+        }
+      }
+    });
+
+    Object.keys(monthlyMap).forEach(m => {
+      const data = monthlyMap[m];
+      data.fleetPercent = data.total > 0 ? (data.fleet / data.total) * 100 : 0;
+    });
+
+    return Object.values(monthlyMap);
+  }, [calls]);
+
+  const regionComparisonData = useMemo(() => {
+    const regions = {};
+    calls.forEach(call => {
+      const region = call.pickup_location_area || 'לא מוגדר';
+      if (!regions[region]) {
+        regions[region] = { region, total: 0, fleet: 0, external: 0, fleetCost: 0, externalCost: 0 };
+      }
+      regions[region].total += 1;
+      if (call.provider_type === 'fleet') {
+        regions[region].fleet += 1;
+        regions[region].fleetCost += call.total_cost || 0;
+      } else {
+        regions[region].external += 1;
+        regions[region].externalCost += call.total_cost || 0;
+      }
+    });
+
+    return Object.values(regions).map(r => ({
+      ...r,
+      fleetAvgCost: r.fleet > 0 ? Math.round(r.fleetCost / r.fleet) : 0,
+      externalAvgCost: r.external > 0 ? Math.round(r.externalCost / r.external) : 0,
+    }));
+  }, [calls]);
+
+  const topFleetVehicles = useMemo(() => {
+    const vehicles = {};
+    calls.filter(c => c.provider_type === 'fleet').forEach(call => {
+      const vehicleName = call.fleet_vehicle_name || 'לא ידוע';
+      if (!vehicles[vehicleName]) {
+        vehicles[vehicleName] = {
+          name: vehicleName,
+          type: call.service_category || 'שירות',
+          calls: 0,
+          totalCost: 0,
+          totalKm: 0,
+          region: call.pickup_location_area || 'לא מוגדר',
+        };
+      }
+      vehicles[vehicleName].calls += 1;
+      vehicles[vehicleName].totalCost += call.total_cost || 0;
+      vehicles[vehicleName].totalKm += call.actual_distance_km || 0;
+    });
+
+    return Object.values(vehicles)
+      .map(v => ({
+        ...v,
+        avgCost: v.calls > 0 ? Math.round(v.totalCost / v.calls) : 0,
+        km: v.calls > 0 ? (v.totalKm / v.calls).toFixed(1) : 0,
+      }))
+      .sort((a, b) => b.calls - a.calls)
+      .slice(0, 5);
+  }, [calls]);
+
+  const fleetCalls = calls.filter(c => c.provider_type === 'fleet');
+  const externalCalls = calls.filter(c => c.provider_type === 'external');
+  const fleetCost = fleetCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
+  const externalCost = externalCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
+
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <div className="text-red-600">שגיאה בטעינת הנתונים</div>;
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
