@@ -97,35 +97,37 @@ export default function Annual2025Report() {
         <Card className="bg-gradient-to-br from-blue-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-blue-600 mb-1 font-medium">סה"כ קריאות</div>
-            <div className="text-2xl font-bold text-gray-900">47,938</div>
-            <div className="text-xs text-gray-500 mt-1">שנת 2025</div>
+            <div className="text-2xl font-bold text-gray-900">{totalCalls.toLocaleString()}</div>
+            <div className="text-xs text-gray-500 mt-1">קריאות</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-green-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-green-600 mb-1 font-medium">ממוצע חודשי</div>
-            <div className="text-2xl font-bold text-gray-900">3,994</div>
+            <div className="text-2xl font-bold text-gray-900">{avgMonthly.toLocaleString()}</div>
             <div className="text-xs text-gray-500 mt-1">קריאות לחודש</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-white">
           <CardContent className="p-4">
-            <div className="text-sm text-red-600 mb-1 font-medium">עלות שנתית</div>
-            <div className="text-2xl font-bold text-gray-900">₪11.9M</div>
+            <div className="text-sm text-red-600 mb-1 font-medium">עלות כוללת</div>
+            <div className="text-2xl font-bold text-gray-900">₪{(totalCost / 1000000).toFixed(1)}M</div>
             <div className="text-xs text-gray-500 mt-1">סה"כ הוצאות</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-orange-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-orange-600 mb-1 font-medium">עלות ממוצעת לקריאה</div>
-            <div className="text-2xl font-bold text-gray-900">₪262.7</div>
+            <div className="text-2xl font-bold text-gray-900">₪{avgCostPerCall}</div>
             <div className="text-xs text-gray-500 mt-1">משוקלל</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-purple-50 to-white">
           <CardContent className="p-4">
-            <div className="text-sm text-purple-600 mb-1 font-medium">ק"מ ממוצע לקריאה</div>
-            <div className="text-2xl font-bold text-gray-900">27.7</div>
+            <div className="text-sm text-purple-600 mb-1 font-medium">ממוצע ק"מ</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {(calls.reduce((sum, c) => sum + (c.actual_distance_km || 0), 0) / (calls.length || 1)).toFixed(1)}
+            </div>
             <div className="text-xs text-gray-500 mt-1">קילומטרים</div>
           </CardContent>
         </Card>
