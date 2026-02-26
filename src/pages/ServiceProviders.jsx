@@ -141,7 +141,9 @@ export default function ServiceProvidersPage() {
           : vendor.service_type === typeFilter);
       const matchesAvailability =
         availabilityFilter === 'all' || vendor.availability_status === availabilityFilter;
-      const matchesActive = activeKpi === 'inactive' ? !vendor.is_active : true;
+      const matchesActive = activeKpi === 'inactive' ? !vendor.is_active 
+        : activeKpi === 'combined' ? (hasTowService(vendor) && hasMobileService(vendor))
+        : true;
       return matchesSearch && matchesType && matchesAvailability && matchesActive;
     });
   }, [vendors, searchQuery, typeFilter, availabilityFilter, activeKpi]);
@@ -367,7 +369,7 @@ export default function ServiceProvidersPage() {
         </div>
 
         {/* KPI Stats - like Fleet Management */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4" dir="rtl">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4" dir="rtl">
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
@@ -421,6 +423,25 @@ export default function ServiceProvidersPage() {
                 <div>
                   <div className="text-2xl font-bold text-[#111827]">{stats.mobileUnits}</div>
                   <div className="text-sm text-[#6b7280]">ניידות</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card
+            className={cn(
+              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
+              activeKpi === 'combined' ? 'border-[#8b5cf6] ring-1 ring-[#8b5cf6]' : 'border-[#e5e7eb] hover:border-[#8b5cf6]'
+            )}
+            onClick={() => { setActiveKpi('combined'); setTypeFilter('all'); setAvailabilityFilter('all'); }}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[8px] bg-[#f5f3ff] flex items-center justify-center">
+                  <Truck className="w-5 h-5 text-[#8b5cf6]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.combined}</div>
+                  <div className="text-sm text-[#6b7280]">משולבים</div>
                 </div>
               </div>
             </CardContent>
