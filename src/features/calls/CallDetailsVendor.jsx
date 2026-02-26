@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function CallDetailsVendor() {
   const navigate = useNavigate();
@@ -34,18 +36,15 @@ export default function CallDetailsVendor() {
   const callId = urlParams.get('id');
 
   const { data: call, isLoading } = useQuery({
-    queryKey: ['call', callId],
+    queryKey: queryKeys.calls.single(callId),
     queryFn: () => base44.entities.Call.filter({ id: callId }),
     select: (data) => data[0],
   });
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
@@ -93,7 +92,7 @@ export default function CallDetailsVendor() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['call', callId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
       setNote('');
     },
   });
@@ -109,7 +108,7 @@ export default function CallDetailsVendor() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['call', callId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
       setNote('');
     },
   });
@@ -410,7 +409,7 @@ function PhotoGallery({ callId, vendorId }) {
   const queryClient = useQueryClient();
 
   const { data: photos = [] } = useQuery({
-    queryKey: ['callPhotos', callId],
+    queryKey: queryKeys.callPhotos.byCall(callId),
     queryFn: async () => {
       const data = await base44.entities.CallPhoto.filter({ call_id: callId, is_deleted: false });
       return data;
@@ -478,7 +477,7 @@ function PhotoGallery({ callId, vendorId }) {
         changed_by: vendorId,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['callPhotos', callId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(callId) });
       alert('התמונה הועלתה בהצלחה');
     } catch (error) {
       alert('שגיאה בהעלאת תמונה');

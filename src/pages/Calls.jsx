@@ -31,30 +31,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'רכב לא נוסע',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'מצבר',
-  locked_keys: 'מפתחות נעולים',
-  other: 'אחר',
-};
-
-const priorityLabels = {
-  normal: 'רגיל',
-  urgent: 'דחוף',
-  critical: 'קריטי',
-};
-
-const priorityColors = {
-  normal: 'bg-gray-100 text-gray-800',
-  urgent: 'bg-orange-100 text-orange-800',
-  critical: 'bg-red-100 text-red-800',
-};
+import { issueTypeLabels, priorityLabels, priorityColors } from '@/config/labels';
 
 const openStatuses = [
   'waiting_treatment',

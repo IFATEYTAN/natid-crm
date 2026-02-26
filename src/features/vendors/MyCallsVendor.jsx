@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -19,6 +20,7 @@ import { Search, Phone, MapPin, Navigation, Eye } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { issueTypeLabels } from '@/config/labels';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 const statusOptions = [
   { value: 'all', label: 'כל הסטטוסים' },
@@ -36,20 +38,17 @@ export default function MyCallsVendor() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
   const currentVendor = vendors.find((v) => v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
-    queryKey: ['vendorCalls', currentVendor?.id],
+    queryKey: queryKeys.vendors.calls(currentVendor?.id),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
     enabled: !!currentVendor,
   });

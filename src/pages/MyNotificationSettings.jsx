@@ -1,29 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import React from 'react';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import UserNotificationPreferences from '@/components/notifications/UserNotificationPreferences';
 
 export default function MyNotificationSettingsPage() {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { currentUser: user, isLoading } = usePermissions();
 
-  const fetchUser = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-    } catch (e) {
-      console.error('Error fetching user:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  if (isLoading) {
+  if (isLoading || !user) {
     return <PageLoader text="טוען הגדרות..." />;
   }
 
@@ -35,7 +19,7 @@ export default function MyNotificationSettingsPage() {
           <p className="text-[#6b7280] text-sm">הגדר אילו התראות תרצה לקבל וכיצד</p>
         </div>
 
-        <UserNotificationPreferences user={user} onUpdate={fetchUser} />
+        <UserNotificationPreferences user={user} />
       </div>
     </SlideUp>
   );

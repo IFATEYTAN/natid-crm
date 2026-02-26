@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/providers/AuthProvider';
 import { Shield, Headset, MapPin, Clock, Truck, BarChart3, Zap, CheckCircle } from 'lucide-react';
 
 const getLoginUrl = (next) => {
@@ -231,19 +231,9 @@ function HeroIllustration() {
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (e) {
-        // Not logged in
-      }
-    };
-    checkAuth();
-
     const link = document.createElement('link');
     link.href =
       'https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap';

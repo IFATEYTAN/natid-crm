@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,7 +26,7 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
   const [notes, setNotes] = useState('');
 
   const { data: users = [] } = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all(),
     queryFn: () => base44.entities.User.list(),
   });
 
@@ -39,7 +40,7 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
       onOpenChange(false);
       setSelectedAgent('');
       setNotes('');

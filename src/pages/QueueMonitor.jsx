@@ -6,6 +6,7 @@ import { useWorkQueue } from '@/features/queue/hooks/useQueue';
 import { useCalls } from '@/features/calls/hooks/useCalls';
 import { useCurrentUserRole } from '@/components/auth/RoleGuard';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import {
   ArrowRight,
@@ -191,7 +192,7 @@ export default function QueueMonitor() {
   const handleRemoveFromQueue = async (item) => {
     if (!window.confirm('האם להסיר את הקריאה מהתור?')) return;
     await base44.entities.WorkQueue.delete(item.id);
-    queryClient.invalidateQueries({ queryKey: ['workQueue'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
   };
 
   // Admin inline edit - open edit dialog
@@ -231,8 +232,8 @@ export default function QueueMonitor() {
         });
       }
 
-      queryClient.invalidateQueries({ queryKey: ['workQueue'] });
-      queryClient.invalidateQueries({ queryKey: ['calls'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
       toast.success('הקריאה עודכנה בהצלחה');
       setEditDialog({ open: false, item: null });
     } catch (err) {

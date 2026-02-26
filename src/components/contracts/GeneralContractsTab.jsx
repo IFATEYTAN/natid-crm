@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,12 +37,12 @@ export default function GeneralContractsTab() {
   const [statusFilter, setStatusFilter] = useState('all');
 
   const { data: contracts = [], isLoading } = useQuery({
-    queryKey: ['vendorContracts'],
+    queryKey: queryKeys.vendorContracts.all(),
     queryFn: () => base44.entities.VendorContract.list('-created_date')
   });
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list()
   });
 

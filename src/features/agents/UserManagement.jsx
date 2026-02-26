@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import DataTable from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import AvatarStack from '@/components/ui/AvatarStack';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function UserManagement() {
   const [search, setSearch] = useState('');
@@ -51,20 +53,17 @@ export default function UserManagement() {
   const queryClient = useQueryClient();
 
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all(),
     queryFn: () => base44.entities.User.list('-created_date'),
   });
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser } = usePermissions();
 
   const inviteMutation = useMutation({
     mutationFn: ({ email, role }) => base44.users.inviteUser(email, role),
     onSuccess: () => {
       toast.success('הזמנה נשלחה בהצלחה');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       setIsInviteDialogOpen(false);
       setInviteEmail('');
       setInviteRole('user');
@@ -86,7 +85,7 @@ export default function UserManagement() {
     mutationFn: ({ userId, data }) => base44.entities.User.update(userId, data),
     onSuccess: () => {
       toast.success('המשתמש עודכן בהצלחה');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       setIsEditDialogOpen(false);
       setEditingUser(null);
     },
@@ -108,7 +107,7 @@ export default function UserManagement() {
       });
 
       toast.success('תמונת פרופיל עודכנה בהצלחה');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       setIsUploadOpen(false);
       setUploadUser(null);
     } catch (error) {

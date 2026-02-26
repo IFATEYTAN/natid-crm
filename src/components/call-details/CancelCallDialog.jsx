@@ -8,6 +8,7 @@ import { AlertTriangle, Ban, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 export default function CancelCallDialog({ open, onOpenChange, call, callId, currentUser }) {
   const queryClient = useQueryClient();
@@ -56,7 +57,7 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
       changed_by: currentUser?.full_name || 'operator',
     });
 
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
     toast.success('הקריאה בוטלה');
     setProcessing(false);
     resetAndClose();

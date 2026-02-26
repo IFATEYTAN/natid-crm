@@ -4,6 +4,7 @@ import { createPageUrl } from '@/components/utils';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,23 +53,7 @@ import {
 } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { InlineLoader } from '@/components/ui/LoadingSpinner';
-
-const serviceTypeLabels = {
-  tow_truck: 'גרר',
-  mobile_unit: 'ניידת',
-  mechanic: 'מכונאי',
-  tire_service: 'צמיגים',
-  locksmith: 'מנעולן',
-  fuel_delivery: 'דלק',
-  multi_service: 'שירות משולב',
-};
-
-const availabilityLabels = {
-  available: 'זמין',
-  busy: 'עסוק',
-  offline: 'לא מחובר',
-  on_break: 'בהפסקה',
-};
+import { vendorServiceTypeLabels, availabilityLabels } from '@/config/labels';
 
 const availabilityColors = {
   available: 'bg-green-100 text-green-800',
@@ -96,26 +81,26 @@ export default function ServiceProvidersPage() {
   const queryClient = useQueryClient();
 
   const vendorsQuery = useQuery({
-    queryKey: ['service-providers'],
+    queryKey: queryKeys.serviceProviders.all(),
     queryFn: () => base44.entities.Vendor.list('-updated_date', 1000),
   });
 
   const deleteVendor = useMutation({
     mutationFn: (id) => base44.entities.Vendor.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() }),
   });
 
   const updateAvailability = useMutation({
     mutationFn: ({ id, is_available_now, availability_status }) =>
       base44.entities.Vendor.update(id, { is_available_now, availability_status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() }),
   });
 
   const vendors = vendorsQuery.data || [];
 
   // Fetch calls to calculate open/closed per vendor
   const { data: calls = [] } = useQuery({
-    queryKey: ['calls-for-vendors'],
+    queryKey: queryKeys.calls.forVendors(),
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
   });
 
@@ -242,8 +227,8 @@ export default function ServiceProvidersPage() {
             </Link>
             <div className="text-xs text-[#6B778C]">
               {Array.isArray(vendor.service_type)
-                ? vendor.service_type.map((t) => serviceTypeLabels[t] || t).join(', ')
-                : serviceTypeLabels[vendor.service_type] || vendor.service_type}
+                ? vendor.service_type.map((t) => vendorServiceTypeLabels[t] || t).join(', ')
+                : vendorServiceTypeLabels[vendor.service_type] || vendor.service_type}
             </div>
           </div>
         </div>
@@ -544,7 +529,7 @@ export default function ServiceProvidersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">כל הסוגים</SelectItem>
-                  {Object.entries(serviceTypeLabels).map(([key, label]) => (
+                  {Object.entries(vendorServiceTypeLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
                     </SelectItem>

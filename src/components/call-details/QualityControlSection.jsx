@@ -7,6 +7,7 @@ import { ShieldCheck, ShieldX, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { Badge } from '@/components/ui/badge';
 
 export default function QualityControlSection({ call, callId, currentUser }) {
@@ -31,7 +32,7 @@ export default function QualityControlSection({ call, callId, currentUser }) {
       notes: `אושר ע"י ${currentUser?.full_name || 'בקר'}`,
       changed_by: currentUser?.full_name || 'בקר',
     });
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
     toast.success('הקריאה אושרה לתפעול');
     setProcessing(false);
   };
@@ -57,7 +58,7 @@ export default function QualityControlSection({ call, callId, currentUser }) {
       notes: `נדחה: ${rejectionReason}`,
       changed_by: currentUser?.full_name || 'בקר',
     });
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
     toast.success('הקריאה הוחזרה למוקדן');
     setProcessing(false);
     setShowRejectForm(false);

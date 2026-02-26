@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,7 +107,7 @@ export default function CallFeedbackForm({
     },
     onSuccess: () => {
       setSubmitted(true);
-      queryClient.invalidateQueries({ queryKey: ['call', callId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
       toast.success('תודה על המשוב!');
       onSubmitSuccess?.();
     },

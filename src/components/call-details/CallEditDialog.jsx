@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 
 const statusOptions = [
@@ -149,7 +150,7 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
       changed_by: currentUser?.full_name || 'operator',
     });
 
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
     toast.success('הקריאה עודכנה בהצלחה');
     setSaving(false);
     onOpenChange(false);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -101,17 +102,17 @@ export default function RoleManagement() {
     isError: rolesError,
     error: rolesQueryError,
   } = useQuery({
-    queryKey: ['roles'],
+    queryKey: queryKeys.roles.all(),
     queryFn: () => base44.entities.Role.list(),
   });
 
   const { data: userPermissions = [] } = useQuery({
-    queryKey: ['allUserPermissions'],
+    queryKey: queryKeys.users.allPermissions(),
     queryFn: () => base44.entities.UserPermission.list(),
   });
 
   const { data: users = [] } = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all(),
     queryFn: () => base44.entities.User.list(),
   });
 
@@ -141,7 +142,7 @@ export default function RoleManagement() {
         );
       }
       toast.success('התפקיד נשמר בהצלחה');
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.roles.all() });
       setIsRoleDialogOpen(false);
       setSelectedRole(null);
     },
@@ -161,7 +162,7 @@ export default function RoleManagement() {
         `נמחק תפקיד: ${deletedRole?.display_name}`
       );
       toast.success('התפקיד נמחק');
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.roles.all() });
     },
   });
 
@@ -176,7 +177,7 @@ export default function RoleManagement() {
       // Log permission change to audit
       logPermissionChange(variables.user_email, 'ברירת מחדל', variables.role_name || 'ברירת מחדל');
       toast.success('ההרשאות נשמרו');
-      queryClient.invalidateQueries({ queryKey: ['allUserPermissions'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.allPermissions() });
       setIsUserPermDialogOpen(false);
       setSelectedUserPerm(null);
     },

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
 
 export default function CallFeedbackTab({ call, callId }) {
@@ -157,7 +158,7 @@ export default function CallFeedbackTab({ call, callId }) {
         vendorName={call?.assigned_vendor_name}
         feedbackSource="operator"
         onSubmitSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['call', callId] });
+          queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
         }}
       />
     </div>

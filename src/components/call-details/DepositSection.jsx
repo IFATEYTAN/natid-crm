@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,7 +56,7 @@ export default function DepositSection({ call, callId, currentUser }) {
   const [saving, setSaving] = useState(false);
 
   const { data: deposits = [] } = useQuery({
-    queryKey: ['deposits', callId],
+    queryKey: queryKeys.deposits.byCall(callId),
     queryFn: () => base44.entities.Deposit.filter({ call_id: callId }, '-created_date'),
     enabled: !!callId,
   });
@@ -81,7 +82,7 @@ export default function DepositSection({ call, callId, currentUser }) {
       notes: form.notes,
       created_by_name: currentUser?.full_name || 'מוקדן',
     });
-    queryClient.invalidateQueries({ queryKey: ['deposits', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.deposits.byCall(callId) });
     setShowCreateDialog(false);
     setForm({ amount: '', payment_method: 'credit_card', credit_card_last4: '', notes: '' });
     setSaving(false);
@@ -109,7 +110,7 @@ export default function DepositSection({ call, callId, currentUser }) {
     }
 
     await base44.entities.Deposit.update(deposit.id, updates);
-    queryClient.invalidateQueries({ queryKey: ['deposits', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.deposits.byCall(callId) });
     setShowActionDialog(null);
     setActionForm({ amount: '', reason: '' });
     setSaving(false);

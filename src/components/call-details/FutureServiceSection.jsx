@@ -8,6 +8,7 @@ import { CalendarClock, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { format } from 'date-fns';
 
 const timeRanges = [
@@ -45,7 +46,7 @@ export default function FutureServiceSection({ call, callId, onStatusChanged }) 
       notes: `שירות עתידי נקבע ל-${date} ${timeRange || ''}`,
       changed_by: 'operator',
     });
-    queryClient.invalidateQueries({ queryKey: ['call', callId] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
     toast.success('שירות עתידי נשמר');
     setSaving(false);
     onStatusChanged?.();

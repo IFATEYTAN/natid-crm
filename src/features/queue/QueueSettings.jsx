@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ export default function QueueSettings() {
   });
 
   const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
+    queryKey: queryKeys.users.agents(),
     queryFn: async () => {
       const users = await base44.entities.User.list();
       return users.filter((u) => u.role === 'user'); // Operators
@@ -31,7 +32,7 @@ export default function QueueSettings() {
   });
 
   const { data: queueItems = [] } = useQuery({
-    queryKey: ['allQueues'],
+    queryKey: queryKeys.queue.allQueues(),
     queryFn: () => base44.entities.WorkQueue.list(),
   });
 

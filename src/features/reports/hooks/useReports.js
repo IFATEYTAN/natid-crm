@@ -7,7 +7,7 @@ import * as reportsApi from '../api';
  */
 export const useReportVendors = () => {
   return useQuery({
-    queryKey: ['reports', 'vendors'],
+    queryKey: queryKeys.reports.vendors(),
     queryFn: reportsApi.getReportVendors,
   });
 };
@@ -17,7 +17,7 @@ export const useReportVendors = () => {
  */
 export const useReportCustomers = () => {
   return useQuery({
-    queryKey: ['reports', 'customers'],
+    queryKey: queryKeys.reports.customers(),
     queryFn: reportsApi.getReportCustomers,
   });
 };
@@ -27,7 +27,7 @@ export const useReportCustomers = () => {
  */
 export const useReportCalls = (sort = '-created_date', limit = 1000) => {
   return useQuery({
-    queryKey: ['reports', 'calls'],
+    queryKey: queryKeys.reports.calls(),
     queryFn: () => reportsApi.getReportCalls(sort, limit),
   });
 };

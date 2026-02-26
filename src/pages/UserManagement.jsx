@@ -41,15 +41,7 @@ import { showToast } from '@/components/ui/FeedbackToast';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
 import { useAuditLog } from '@/hooks/useAuditLog';
-
-const roleLabels = {
-  admin: 'מנהל מערכת',
-  manager: 'מנהל תפעול',
-  operator: 'מוקדן',
-  agent: 'נציג שטח',
-  vendor: 'ספק שירות',
-  user: 'משתמש',
-};
+import { roleLabels } from '@/config/labels';
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',
@@ -82,7 +74,7 @@ export default function UserManagementPage() {
   });
 
   const { data: userPermissions = [] } = useQuery({
-    queryKey: ['userPermissions'],
+    queryKey: queryKeys.users.permissions(),
     queryFn: () => base44.entities.UserPermission.list(),
   });
 
@@ -132,7 +124,7 @@ export default function UserManagementPage() {
         variables.email,
         `הוזמן משתמש חדש: ${variables.email} בתפקיד ${roleLabels[variables.role] || variables.role}`
       );
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       setInviteDialogOpen(false);
       setInviteEmail('');
       setInviteRole('operator');
@@ -154,7 +146,7 @@ export default function UserManagementPage() {
         'עדכון פרטי משתמש',
         `עודכן משתמש: ${variables.data.full_name}, תפקיד: ${variables.data.role}`
       );
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       setEditDialogOpen(false);
       setEditUser(null);
       showToast.success('המשתמש עודכן בהצלחה');

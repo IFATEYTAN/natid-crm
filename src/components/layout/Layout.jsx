@@ -5,6 +5,7 @@ import { Menu, X, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
@@ -44,7 +45,7 @@ function LayoutContent({ children, currentPageName }) {
 
   // Fetch Notifications
   const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', currentUser?.id],
+    queryKey: queryKeys.notifications.byUser(currentUser?.id),
     queryFn: () =>
       base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_at', 20),
     enabled: !!currentUser?.id,
@@ -56,7 +57,7 @@ function LayoutContent({ children, currentPageName }) {
   const markAsReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
     },
   });
 

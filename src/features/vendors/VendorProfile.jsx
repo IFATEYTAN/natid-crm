@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -31,7 +32,7 @@ export default function VendorProfile() {
   const vendorId = urlParams.get('id');
 
   const { data: vendor, isLoading: vendorLoading } = useQuery({
-    queryKey: ['vendor', vendorId],
+    queryKey: queryKeys.vendors.single(vendorId),
     queryFn: async () => {
       const vendors = await base44.entities.Vendor.filter({ id: vendorId });
       return vendors[0];
@@ -40,34 +41,34 @@ export default function VendorProfile() {
   });
 
   const { data: calls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ['vendor-calls', vendorId],
+    queryKey: queryKeys.vendors.singleCalls(vendorId),
     queryFn: () =>
       base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50),
     enabled: !!vendorId,
   });
 
   const { data: ratings = [] } = useQuery({
-    queryKey: ['vendor-ratings', vendorId],
+    queryKey: queryKeys.vendors.singleRatings(vendorId),
     queryFn: () =>
       base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
   const { data: payments = [] } = useQuery({
-    queryKey: ['vendor-payments', vendorId],
+    queryKey: queryKeys.vendors.singlePayments(vendorId),
     queryFn: () =>
       base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
   const { data: contracts = [] } = useQuery({
-    queryKey: ['vendor-contracts', vendorId],
+    queryKey: queryKeys.vendors.singleContracts(vendorId),
     queryFn: () => base44.entities.VendorContract.filter({ vendor_id: vendorId }, '-created_date'),
     enabled: !!vendorId,
   });
 
   const { data: location } = useQuery({
-    queryKey: ['vendor-location', vendorId],
+    queryKey: queryKeys.vendors.singleLocation(vendorId),
     queryFn: async () => {
       const locations = await base44.entities.VendorLocation.filter(
         { vendor_id: vendorId },

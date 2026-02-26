@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ import { he } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { getCoverageLabel } from '@/config/coverageConstants';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function MyVendorProfile() {
   const queryClient = useQueryClient();
@@ -42,14 +44,11 @@ export default function MyVendorProfile() {
   const [editForm, setEditForm] = useState({});
 
   // 1. Get Current User
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { currentUser: user } = usePermissions();
 
   // 2. Get Vendor associated with user email
   const { data: vendor, isLoading: vendorLoading } = useQuery({
-    queryKey: ['my-vendor-profile', user?.email],
+    queryKey: queryKeys.vendors.myProfile(user?.email),
     queryFn: async () => {
       if (!user?.email) return null;
       // Assuming vendor email matches user email
@@ -67,28 +66,28 @@ export default function MyVendorProfile() {
 
   // 3. Data Queries
   const { data: calls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ['my-vendor-calls', vendorId],
+    queryKey: queryKeys.vendors.myCalls(vendorId),
     queryFn: () =>
       base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50),
     enabled: !!vendorId,
   });
 
   const { data: ratings = [] } = useQuery({
-    queryKey: ['my-vendor-ratings', vendorId],
+    queryKey: queryKeys.vendors.myRatings(vendorId),
     queryFn: () =>
       base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
   const { data: payments = [] } = useQuery({
-    queryKey: ['my-vendor-payments', vendorId],
+    queryKey: queryKeys.vendors.myPayments(vendorId),
     queryFn: () =>
       base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20),
     enabled: !!vendorId,
   });
 
   const { data: location } = useQuery({
-    queryKey: ['my-vendor-location', vendorId],
+    queryKey: queryKeys.vendors.myLocation(vendorId),
     queryFn: async () => {
       const locations = await base44.entities.VendorLocation.filter(
         { vendor_id: vendorId },
@@ -104,7 +103,7 @@ export default function MyVendorProfile() {
   const updateVendorMutation = useMutation({
     mutationFn: (data) => base44.entities.Vendor.update(vendorId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-vendor-profile']);
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.myProfile() });
       toast.success('הפרופיל עודכן בהצלחה');
       setIsEditOpen(false);
     },
@@ -118,7 +117,7 @@ export default function MyVendorProfile() {
         availability_status: newStatus ? 'available' : 'offline',
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['my-vendor-profile']);
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.myProfile() });
       toast.success('סטטוס זמינות עודכן');
     },
   });

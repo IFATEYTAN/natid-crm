@@ -1,12 +1,13 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
+import { queryKeys } from '@/lib/queryKeys';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Clock, Loader2 } from 'lucide-react';
 
 export default function PredictionBadge({ call }) {
   const { data, isLoading } = useQuery({
-    queryKey: ['prediction', call.id],
+    queryKey: queryKeys.predictions.byCall(call.id),
     queryFn: () =>
       base44.functions
         .invoke('predictCallTimes', {

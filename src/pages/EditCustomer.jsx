@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { createPageUrl } from '@/components/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,7 +49,7 @@ export default function EditCustomer() {
   const [form, setForm] = useState(null);
 
   const { data: customer, isLoading, isError } = useQuery({
-    queryKey: ['customer', id],
+    queryKey: queryKeys.customers.detail(id),
     enabled: !!id,
     queryFn: async () => {
       const res = await base44.entities.Customer.filter({ id });
@@ -65,8 +66,8 @@ export default function EditCustomer() {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Customer.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customer', id] });
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
       toast.success('הלקוח עודכן בהצלחה');
     },
   });

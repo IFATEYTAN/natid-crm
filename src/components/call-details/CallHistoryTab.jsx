@@ -3,7 +3,7 @@ import { History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDateTime } from '@/components/utils';
-import { statusLabels } from './callDetailsConstants';
+import { statusLabels } from '@/config/labels';
 
 export default function CallHistoryTab({ combinedTimeline }) {
   return (
