@@ -141,9 +141,10 @@ export default function ServiceProvidersPage() {
           : vendor.service_type === typeFilter);
       const matchesAvailability =
         availabilityFilter === 'all' || vendor.availability_status === availabilityFilter;
-      return matchesSearch && matchesType && matchesAvailability;
+      const matchesActive = activeKpi === 'inactive' ? !vendor.is_active : true;
+      return matchesSearch && matchesType && matchesAvailability && matchesActive;
     });
-  }, [vendors, searchQuery, typeFilter, availabilityFilter]);
+  }, [vendors, searchQuery, typeFilter, availabilityFilter, activeKpi]);
 
   const hasTowService = (v) => {
     if (Array.isArray(v.service_type)) return v.service_type.includes('tow_truck');
