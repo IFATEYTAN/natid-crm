@@ -313,32 +313,50 @@ export default function ImportHistoricalDataPage() {
                 </div>
 
                 <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">תצוגה מקדימה:</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">📊 תצוגה מקדימה:</h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-blue-100">
                         <tr>
-                          {currentSheet.headers.slice(0, 5).map((h) => (
-                            <th key={h} className="px-2 py-1 text-right">{h}</th>
+                          {currentSheet.headers.map((h) => (
+                            <th 
+                              key={`header-${h}`} 
+                              className={`px-2 py-1 text-right text-xs font-semibold ${
+                                ['serve_type', 'description'].includes(h) ? 'bg-red-200 text-red-900' : ''
+                              }`}
+                            >
+                              {h}
+                              {['serve_type', 'description'].includes(h) && <span className="text-red-600"> *</span>}
+                            </th>
                           ))}
-                          {currentSheet.headers.length > 5 && (
-                            <th className="px-2 py-1 text-right">...</th>
-                          )}
                         </tr>
                       </thead>
                       <tbody>
-                        {currentSheet.rows.slice(0, 3).map((row, idx) => (
-                          <tr key={`row-${idx}`} className="border-t">
-                            {currentSheet.headers.slice(0, 5).map((h, hIdx) => (
-                              <td key={`cell-${idx}-${hIdx}`} className="px-2 py-1 text-right text-gray-600">
-                                {row[h]?.toString().substring(0, 30)}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
+                        {currentSheet.rows.slice(0, 3).map((row, idx) => {
+                          const hasRequiredFields = row['serve_type'] && row['description'];
+                          return (
+                            <tr key={`row-${idx}`} className={`border-t ${!hasRequiredFields ? 'bg-red-50' : ''}`}>
+                              {currentSheet.headers.map((h, hIdx) => (
+                                <td 
+                                  key={`cell-${idx}-${hIdx}`} 
+                                  className={`px-2 py-1 text-right text-xs ${
+                                    ['serve_type', 'description'].includes(h) && !row[h]
+                                      ? 'bg-red-100 text-red-700 font-semibold'
+                                      : 'text-gray-600'
+                                  }`}
+                                >
+                                  {row[h]?.toString().substring(0, 30) || '⚠️ ריק'}
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    * שדות בעלי כוכב הם חובה. אם שדה חובה ריק, הרשומה לא תיובא.
+                  </p>
                 </div>
               </CardContent>
             </Card>
