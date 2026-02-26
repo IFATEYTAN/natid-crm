@@ -9,18 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListTodo, Clock, CheckCircle2, Timer, Phone, Play, X } from 'lucide-react';
 import { parseISO, differenceInMinutes } from 'date-fns';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 export default function MyQueue() {
   const navigate = useNavigate();

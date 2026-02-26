@@ -40,7 +40,7 @@ import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
-import { useAuditLog } from '@/components/hooks/useAuditLog';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 const roleLabels = {
   admin: 'מנהל מערכת',

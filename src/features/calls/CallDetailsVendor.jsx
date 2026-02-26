@@ -22,18 +22,7 @@ import {
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 export default function CallDetailsVendor() {
   const navigate = useNavigate();
