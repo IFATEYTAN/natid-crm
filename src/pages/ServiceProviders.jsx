@@ -387,18 +387,18 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'available' ? 'border-[#10b981] ring-1 ring-[#10b981]' : 'border-[#e5e7eb] hover:border-[#10b981]'
+              activeKpi === 'tow_truck' ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]' : 'border-[#e5e7eb] hover:border-[#f59e0b]'
             )}
-            onClick={() => { setActiveKpi('available'); setTypeFilter('all'); setAvailabilityFilter('available'); }}
+            onClick={() => { setActiveKpi('tow_truck'); setTypeFilter('tow_truck'); setAvailabilityFilter('all'); }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-[#10b981]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
+                  <Truck className="w-5 h-5 text-[#f59e0b]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.available}</div>
-                  <div className="text-sm text-[#6b7280]">זמינים כעת</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.towTrucks}</div>
+                  <div className="text-sm text-[#6b7280]">גררים</div>
                 </div>
               </div>
             </CardContent>
@@ -406,18 +406,18 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'busy' ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]' : 'border-[#e5e7eb] hover:border-[#f59e0b]'
+              activeKpi === 'mobile_unit' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'
             )}
-            onClick={() => { setActiveKpi('busy'); setTypeFilter('all'); setAvailabilityFilter('busy'); }}
+            onClick={() => { setActiveKpi('mobile_unit'); setTypeFilter('mobile_unit'); setAvailabilityFilter('all'); }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
-                  <PhoneCall className="w-5 h-5 text-[#f59e0b]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#eff6ff] flex items-center justify-center">
+                  <Car className="w-5 h-5 text-[#3b82f6]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.busy}</div>
-                  <div className="text-sm text-[#6b7280]">עסוקים</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.mobileUnits}</div>
+                  <div className="text-sm text-[#6b7280]">ניידות</div>
                 </div>
               </div>
             </CardContent>
@@ -432,7 +432,7 @@ export default function ServiceProvidersPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[8px] bg-[#fef2f2] flex items-center justify-center">
-                  <XCircle className="w-5 h-5 text-[#ef4444]" />
+                  <AlertTriangle className="w-5 h-5 text-[#ef4444]" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-[#111827]">{stats.inactive}</div>
