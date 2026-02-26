@@ -636,7 +636,18 @@ export default function VendorPortalPage() {
 
               {/* Stats */}
               <Suspense fallback={<Skeleton className="h-32" />}>
-                <VendorStatsLazy vendor={vendorProfile} calls={calls} />
+                <VendorStatsLazy 
+                  vendor={vendorProfile} 
+                  calls={calls} 
+                  onStatClick={(statId) => {
+                    if (statId === 'completed') setCallsTab('completed');
+                    if (statId === 'active' || statId === 'pending') setCallsTab('active');
+                    if (statId === 'all' || statId === 'month') setCallsTab('all');
+                    
+                    // Scroll to table
+                    document.getElementById('calls-table-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }} 
+                />
               </Suspense>
 
               {/* Active Calls Alert */}
