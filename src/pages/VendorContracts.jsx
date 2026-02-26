@@ -6,14 +6,14 @@ import PricingAgreementsTab from '@/components/contracts/PricingAgreementsTab.js
 
 export default function VendorContractsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-right" dir="rtl">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[#111827]">ניהול חוזים והסכמי תמחור</h1>
         <p className="text-[#6b7280] text-sm">ניהול מרוכז של חוזים והסכמי מחיר עם ספקים</p>
       </div>
 
-      <Tabs defaultValue="general" className="w-full">
+      <Tabs defaultValue="general" className="w-full" dir="rtl">
         <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
