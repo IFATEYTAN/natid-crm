@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { issueTypeLabels } from './dashboardConstants';
+import { getCoverageLabel } from '@/config/coverageConstants';
 
 const StatusBadge = lazy(() => import('@/components/ui/StatusBadge'));
 
@@ -185,9 +186,12 @@ export const getVendorColumns = () => [
             key={idx}
             className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200"
           >
-            {area}
+            {getCoverageLabel(area)}
           </span>
         ))}
+        {(row.coverage_areas || []).length > 2 && (
+          <span className="text-xs text-gray-400">+{row.coverage_areas.length - 2}</span>
+        )}
       </div>
     ),
   },

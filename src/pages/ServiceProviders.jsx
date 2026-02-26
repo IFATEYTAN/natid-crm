@@ -43,6 +43,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCoverageLabel } from '@/config/coverageConstants';
 import {
   SlideUp,
   AnimatedCard,
@@ -139,10 +140,12 @@ export default function ServiceProvidersPage() {
 
   const filteredVendors = useMemo(() => {
     return vendors.filter((vendor) => {
+      const coverageText = (vendor.coverage_areas || []).map(getCoverageLabel).join(' ');
       const matchesSearch =
         !searchQuery ||
         vendor.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         vendor.phone?.includes(searchQuery) ||
+        coverageText.includes(searchQuery) ||
         vendor.coverage_cities?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType =
         typeFilter === 'all' ||
@@ -247,13 +250,27 @@ export default function ServiceProvidersPage() {
     },
     {
       header: 'אזור כיסוי',
-      accessor: 'coverage_cities',
-      cell: (vendor) => (
-        <div className="flex items-center gap-1 text-sm text-[#6B778C]">
-          <MapPin className="w-3 h-3" />
-          <span className="truncate max-w-[150px]">{vendor.coverage_cities || '-'}</span>
-        </div>
-      ),
+      accessor: 'coverage_areas',
+      cell: (vendor) => {
+        const areas = vendor.coverage_areas || [];
+        if (areas.length === 0) {
+          return <span className="text-sm text-[#6B778C]">-</span>;
+        }
+        return (
+          <div className="flex flex-wrap gap-1">
+            {areas.slice(0, 3).map((area) => (
+              <Badge key={area} variant="outline" className="text-xs font-normal">
+                {getCoverageLabel(area)}
+              </Badge>
+            ))}
+            {areas.length > 3 && (
+              <Badge variant="outline" className="text-xs font-normal text-[#6B778C]">
+                +{areas.length - 3}
+              </Badge>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: 'דירוג',

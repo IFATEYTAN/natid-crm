@@ -19,6 +19,7 @@ import { Truck, Phone, Star, MapPin, Search, Eye, RefreshCw } from 'lucide-react
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { cn } from '@/lib/utils';
+import { getCoverageLabel } from '@/config/coverageConstants';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -97,6 +98,7 @@ export default function AllVendorsMapPage() {
       const matchesSearch =
         !searchQuery ||
         v.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (v.coverage_areas || []).map(getCoverageLabel).join(' ').includes(searchQuery) ||
         v.coverage_cities?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesAvailability =
         availabilityFilter === 'all' || v.availability_status === availabilityFilter;

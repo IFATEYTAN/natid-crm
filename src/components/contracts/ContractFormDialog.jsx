@@ -25,15 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, FileText, DollarSign, Shield, MapPin, Upload, X, File } from 'lucide-react';
 import { format, addYears } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
-
-const coverageAreas = [
-  { key: 'center', label: 'מרכז' },
-  { key: 'sharon', label: 'שרון' },
-  { key: 'north', label: 'צפון' },
-  { key: 'south', label: 'דרום' },
-  { key: 'jerusalem', label: 'ירושלים' },
-  { key: 'lowlands', label: 'שפלה' },
-];
+import { coverageAreas } from '@/config/coverageConstants';
 
 const serviceTypes = [
   { key: 'towing', label: 'גרירה' },
