@@ -143,7 +143,7 @@ export default function ImportHistoricalDataPage() {
           >
             <input
               type="file"
-              accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+              accept=".csv,text/csv"
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
