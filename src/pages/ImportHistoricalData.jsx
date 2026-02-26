@@ -96,36 +96,26 @@ export default function ImportHistoricalDataPage() {
     setIsUploading(true);
 
     try {
-      // Transform rows according to column mapping
-      const recordsToInsert = currentSheet.rows.map((row) => {
-        const record = {};
-        Object.entries(columnMapping).forEach(([dbField, sourceField]) => {
-          if (sourceField && row[sourceField] !== undefined) {
-            const value = row[sourceField];
-            // Handle boolean conversions
-            if (dbField === 'bot_match' || dbField === 'nayedet_fixed') {
-              record[dbField] =
-                value === true ||
-                value === 'true' ||
-                value === 'כן' ||
-                value === 'yes' ||
-                value === '1' ||
-                value === 1;
-            } else if (dbField === 'car_year') {
-              record[dbField] = value ? Number(value) : null;
-            } else {
-              record[dbField] = value?.toString() || '';
+      // Import all rows as-is from the sheet, removing null values
+      const recordsToInsert = currentSheet.rows
+        .map((row) => {
+          const record = {};
+          currentSheet.headers.forEach((header) => {
+            const value = row[header];
+            // Only include non-null/non-empty values
+            if (value !== null && value !== undefined && value !== '') {
+              record[header] = value;
             }
-          }
-        });
-        return record;
-      });
+          });
+          return record;
+        })
+        .filter((record) => Object.keys(record).length > 0); // Filter out empty records
 
       if (recordsToInsert.length === 0) {
-        throw new Error('לא נמצאו רשומות לייבוא');
+        throw new Error('לא נמצאו רשומות עם נתונים לייבוא');
       }
 
-      // Bulk create records
+      // Bulk create records directly
       await base44.entities.Call.bulkCreate(recordsToInsert);
 
       setImportResult({
