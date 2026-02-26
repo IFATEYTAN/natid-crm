@@ -9,9 +9,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-export const TILE_URL = 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png';
+export const TILE_URL = 'https://israelhiking.osm.org.il/Hebrew/tiles/{z}/{x}/{y}.png';
 export const TILE_ATTRIBUTION =
-  '&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  '&copy; <a href="https://israelhiking.osm.org.il/">Israel Hiking Map</a>';
 
 export const DEFAULT_CENTER = [31.7683, 35.2137]; // Israel
 export const DEFAULT_ZOOM = 8;
