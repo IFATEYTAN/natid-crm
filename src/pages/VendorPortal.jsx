@@ -732,9 +732,9 @@ export default function VendorPortalPage() {
               )}
 
               {/* Calls Table */}
-              <Card className="bg-white">
+              <Card className="bg-white" id="calls-table-section">
                 <CardHeader>
-                  <Tabs defaultValue="all" className="w-full" dir="rtl">
+                  <Tabs value={callsTab} onValueChange={setCallsTab} className="w-full" dir="rtl">
                     <TabsList>
                       <TabsTrigger value="all">כל הקריאות</TabsTrigger>
                       <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
