@@ -323,9 +323,9 @@ export default function ImportHistoricalDataPage() {
                       </thead>
                       <tbody>
                         {currentSheet.rows.slice(0, 3).map((row, idx) => (
-                          <tr key={idx} className="border-t">
-                            {currentSheet.headers.slice(0, 5).map((h) => (
-                              <td key={h} className="px-2 py-1 text-right text-gray-600">
+                          <tr key={`row-${idx}`} className="border-t">
+                            {currentSheet.headers.slice(0, 5).map((h, hIdx) => (
+                              <td key={`cell-${idx}-${hIdx}`} className="px-2 py-1 text-right text-gray-600">
                                 {row[h]?.toString().substring(0, 30)}
                               </td>
                             ))}
