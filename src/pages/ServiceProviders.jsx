@@ -147,12 +147,12 @@ export default function ServiceProvidersPage() {
   }, [vendors, searchQuery, typeFilter, availabilityFilter, activeKpi]);
 
   const hasTowService = (v) => {
-    if (Array.isArray(v.service_type)) return v.service_type.includes('tow_truck');
-    return v.service_type === 'tow_truck';
+    const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+    return types.includes('tow_truck') || types.some(t => t === 'גרירה');
   };
   const hasMobileService = (v) => {
-    if (Array.isArray(v.service_type)) return v.service_type.includes('mobile_unit');
-    return v.service_type === 'mobile_unit';
+    const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+    return types.includes('mobile_unit') || types.some(t => t === 'ניידת');
   };
 
   const stats = useMemo(() => {
