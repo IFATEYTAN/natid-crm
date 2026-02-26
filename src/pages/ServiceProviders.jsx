@@ -141,20 +141,35 @@ export default function ServiceProvidersPage() {
     });
   }, [vendors, searchQuery, typeFilter, availabilityFilter]);
 
-  const stats = useMemo(
-    () => ({
+  const stats = useMemo(() => {
+    const active = vendors.filter((v) => v.is_active);
+    const towTrucks = active.filter((v) => 
+      Array.isArray(v.service_type) ? v.service_type.includes('tow_truck') : v.service_type === 'tow_truck'
+    );
+    const mobileUnits = active.filter((v) => 
+      Array.isArray(v.service_type) ? v.service_type.includes('multi_service') || v.service_type.includes('mechanic') || v.service_type.includes('tire_service') || v.service_type.includes('fuel_delivery') || v.service_type.includes('locksmith') : false
+    );
+    const inactive = vendors.filter((v) => !v.is_active);
+    
+    const totalOpen = Object.values(vendorCallStats).reduce((sum, s) => sum + s.open, 0);
+    const totalClosed = Object.values(vendorCallStats).reduce((sum, s) => sum + s.closed, 0);
+    
+    return {
       total: vendors.length,
+      active: active.length,
       available: vendors.filter((v) => v.availability_status === 'available').length,
       busy: vendors.filter((v) => v.availability_status === 'busy').length,
+      towTrucks: towTrucks.length,
+      mobileUnits: mobileUnits.length,
+      inactive: inactive.length,
+      totalOpen,
+      totalClosed,
       avgRating:
         vendors.length > 0
-          ? (vendors.reduce((sum, v) => sum + (v.average_rating || 0), 0) / vendors.length).toFixed(
-              1
-            )
+          ? (vendors.reduce((sum, v) => sum + (v.average_rating || 0), 0) / vendors.length).toFixed(1)
           : 0,
-    }),
-    [vendors]
-  );
+    };
+  }, [vendors, vendorCallStats]);
 
   const toggleAvailability = (vendor) => {
     const newStatus = vendor.is_available_now ? 'offline' : 'available';

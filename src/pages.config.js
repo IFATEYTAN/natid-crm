@@ -61,6 +61,7 @@ import CustomerDetails from './pages/CustomerDetails';
 import CustomerFeedback from './pages/CustomerFeedback';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
+import EditCustomer from './pages/EditCustomer';
 import EditVendor from './pages/EditVendor';
 import FeedbackManagement from './pages/FeedbackManagement';
 import FleetManagement from './pages/FleetManagement';
@@ -94,7 +95,6 @@ import VendorGuide from './pages/VendorGuide';
 import VendorPortal from './pages/VendorPortal';
 import VendorPricing from './pages/VendorPricing';
 import VendorTracking from './pages/VendorTracking';
-import EditCustomer from './pages/EditCustomer';
 import __Layout from './Layout.jsx';
 
 
@@ -113,6 +113,7 @@ export const PAGES = {
     "CustomerFeedback": CustomerFeedback,
     "Customers": Customers,
     "Dashboard": Dashboard,
+    "EditCustomer": EditCustomer,
     "EditVendor": EditVendor,
     "FeedbackManagement": FeedbackManagement,
     "FleetManagement": FleetManagement,
@@ -146,7 +147,6 @@ export const PAGES = {
     "VendorPortal": VendorPortal,
     "VendorPricing": VendorPricing,
     "VendorTracking": VendorTracking,
-    "EditCustomer": EditCustomer,
 }
 
 export const pagesConfig = {
