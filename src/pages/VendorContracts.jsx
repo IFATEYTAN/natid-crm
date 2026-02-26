@@ -1,8 +1,8 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, DollarSign } from 'lucide-react';
-import GeneralContractsTab from '@/components/contracts/GeneralContractsTab';
-import PricingAgreementsTab from '@/components/contracts/PricingAgreementsTab';
+import GeneralContractsTab from '@/components/contracts/GeneralContractsTab.jsx';
+import PricingAgreementsTab from '@/components/contracts/PricingAgreementsTab.jsx';
 
 export default function VendorContractsPage() {
   return (
