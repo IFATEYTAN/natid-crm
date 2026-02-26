@@ -8,7 +8,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
-import { AuthProvider } from '@/components/AuthProvider';
 import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
 
 // Lazy-load AccessibilityWidget
@@ -231,7 +230,7 @@ function LayoutContent({ children, currentPageName }) {
   };
 
   if (currentPageName === 'LandingPage') {
-    return <AuthProvider>{children}</AuthProvider>;
+    return <>{children}</>;
   }
 
   if (isLoadingAuth) {
@@ -245,7 +244,6 @@ function LayoutContent({ children, currentPageName }) {
   if (!currentUser) return null;
 
   return (
-    <AuthProvider>
       <div dir="rtl" className="min-h-screen bg-[#FAFAFA]">
         {/* Skip to main content link - visible on keyboard focus */}
         <a
@@ -600,7 +598,6 @@ function LayoutContent({ children, currentPageName }) {
           </Suspense>
         </div>
       </div>
-    </AuthProvider>
   );
 }
 

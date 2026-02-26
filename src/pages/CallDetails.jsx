@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
-import { useVendors } from '@/components/hooks/useVendors';
+import { useVendors } from '@/features/vendors/hooks/useVendors';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
-import { useAuditLog } from '@/components/hooks/useAuditLog';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';

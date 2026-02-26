@@ -1,14 +1,3 @@
-import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
-
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
-
-//Create a client with authentication required
-export const base44 = createClient({
-  appId,
-  token,
-  functionsVersion,
-  serverUrl: '',
-  requiresAuth: false,
-  appBaseUrl,
-});
+// Canonical base44 client is defined in @/lib/api.js
+// This file re-exports for backward compatibility with existing imports.
+export { base44 } from '@/lib/api';

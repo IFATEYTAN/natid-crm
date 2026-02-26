@@ -37,7 +37,7 @@ import {
   Map,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuditLog } from '@/components/hooks/useAuditLog';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 const PERMISSION_CATEGORIES = {
   calls: { label: 'קריאות', icon: Phone },

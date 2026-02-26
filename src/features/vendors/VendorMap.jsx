@@ -18,17 +18,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 // Custom marker icons by status
 const createMarkerIcon = (status) => {

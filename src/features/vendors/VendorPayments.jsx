@@ -17,18 +17,7 @@ import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import ImportExport from '@/components/ImportExport';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 const monthNames = [
   'ינואר',

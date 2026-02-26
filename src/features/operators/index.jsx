@@ -12,18 +12,7 @@ import AvatarStack from '@/components/ui/AvatarStack';
 
 import { Plus, Phone, Truck, AlertCircle, Eye, MapPin } from 'lucide-react';
 import { startOfDay, endOfDay } from 'date-fns';
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'נעצר בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אזל דלק',
-  dead_battery: 'מצבר מת',
-  locked_keys: 'מפתחות נעולים',
-  other: 'אחר',
-};
+import { issueTypeLabels } from '@/config/labels';
 
 export default function OperatorDashboard() {
   const today = new Date();

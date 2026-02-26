@@ -51,6 +51,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { issueTypeLabels, statusLabels } from '@/config/labels';
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
@@ -176,28 +177,6 @@ function WorkQueueOverview({ calls, isLoading }) {
     </Card>
   );
 }
-
-const issueTypeLabels = {
-  mechanical: 'תקלה מכנית',
-  stopped_driving: 'כבה בנסיעה',
-  flat_tire: "פנצ'ר",
-  stuck_wheel: 'גלגל תקוע',
-  accident: 'תאונה',
-  no_fuel: 'אין דלק',
-  dead_battery: 'סוללה ריקה',
-  locked_keys: 'מפתחות ננעלו',
-  other: 'אחר',
-};
-
-const statusLabels = {
-  waiting_treatment: 'ממתין לטיפול',
-  awaiting_assignment: 'ממתין לשיוך',
-  assigning: 'בשיוך',
-  vendor_enroute: 'ספק בדרך',
-  in_progress: 'בטיפול',
-  completed: 'הושלם',
-  cancelled: 'בוטל',
-};
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');

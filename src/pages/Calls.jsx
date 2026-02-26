@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useCalls } from '@/components/hooks/useCalls';
+import { useCalls } from '@/features/calls/hooks/useCalls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
