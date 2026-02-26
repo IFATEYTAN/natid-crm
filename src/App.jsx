@@ -12,6 +12,7 @@ import AppAccessDeniedError from '@/components/AppAccessDeniedError';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import RoleGuard from '@/components/auth/RoleGuard';
 import { getPageRoles } from '@/config/permissions';
+import DemoBanner from '@/demo/DemoBanner';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 
@@ -115,6 +116,7 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
+          <DemoBanner />
           <Router>
             <NavigationTracker />
             <AuthenticatedApp />
