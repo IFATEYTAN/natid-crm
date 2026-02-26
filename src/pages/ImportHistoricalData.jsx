@@ -160,7 +160,7 @@ export default function ImportHistoricalDataPage() {
                 <div className="flex flex-col items-center gap-2">
                   <Upload className="w-12 h-12 text-gray-400" />
                   <span className="text-gray-600">גרור קובץ לכאן או לחץ לבחירה</span>
-                  <span className="text-sm text-gray-400">תומך ב-Excel (.xlsx, .xls) ו-CSV</span>
+                  <span className="text-sm text-gray-400">CSV בלבד</span>
                 </div>
               )}
             </label>
