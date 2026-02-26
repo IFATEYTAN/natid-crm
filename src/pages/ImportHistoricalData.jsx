@@ -276,7 +276,7 @@ export default function ImportHistoricalDataPage() {
             <CardContent className="pt-6">
               <Button
                 onClick={handleImport}
-                disabled={!currentSheet || isUploading || Object.values(columnMapping).filter(Boolean).length === 0}
+                disabled={!currentSheet || isUploading}
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 {isUploading ? (
