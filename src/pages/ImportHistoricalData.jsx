@@ -150,11 +150,8 @@ export default function ImportHistoricalDataPage() {
   };
 
   const currentSheet = filePreview?.sheets[selectedSheet];
-  const callFields = [
-    'call_number', 'customer_name', 'customer_phone', 'vehicle_plate', 'issue_type',
-    'issue_description', 'pickup_location_address', 'pickup_location_city', 'service_category',
-    'provider_type', 'fleet_vehicle_name', 'assigned_vendor_name', 'total_cost', 'actual_distance_km'
-  ];
+  // Get all available column headers from the current sheet
+  const availableColumns = currentSheet?.headers || [];
 
   return (
     <div className="max-w-4xl mx-auto p-6">
