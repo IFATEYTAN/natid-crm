@@ -176,10 +176,13 @@ export default function ImportHistoricalDataPage() {
           });
           return record;
         })
-        .filter((record) => Object.keys(record).length > 0); // Filter out empty records
+        .filter((record) => {
+          // Must have both required fields: serve_type and description
+          return record['serve_type'] && record['description'];
+        });
 
       if (recordsToInsert.length === 0) {
-        throw new Error('לא נמצאו רשומות עם נתונים לייבוא');
+        throw new Error('לא נמצאו רשומות עם שדות חובה (serve_type ו-description)');
       }
 
       // Bulk create records directly to HistoricalCallData
