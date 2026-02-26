@@ -30,7 +30,7 @@ export const useVendor = (vendorId) => {
  */
 export const useVendorByEmail = (email) => {
   return useQuery({
-    queryKey: ['vendors', 'email', email],
+    queryKey: queryKeys.vendors.byEmail(email),
     queryFn: () => vendorsApi.getVendorByEmail(email),
     enabled: !!email,
   });

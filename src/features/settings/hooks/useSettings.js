@@ -17,7 +17,7 @@ export const useNotificationSettings = () => {
  */
 export const useUserNotificationSettings = (userId) => {
   return useQuery({
-    queryKey: ['notificationSettings', 'user', userId],
+    queryKey: queryKeys.notifications.userSettings(userId),
     queryFn: () => settingsApi.getNotificationSettingsByUser(userId),
     enabled: !!userId,
   });

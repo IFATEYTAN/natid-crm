@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { useSearchParams, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -48,7 +49,7 @@ export default function CustomerDetails() {
 
   // Fetch Customer
   const { data: customer, isLoading: isCustomerLoading } = useQuery({
-    queryKey: ['customer', customerId],
+    queryKey: queryKeys.customers.single(customerId),
     queryFn: async () => {
       if (!customerId) return null;
       const res = await base44.entities.Customer.list();
@@ -65,14 +66,14 @@ export default function CustomerDetails() {
 
   // Fetch Calls
   const { data: calls = [], isLoading: isCallsLoading } = useQuery({
-    queryKey: ['customer-calls', customerId],
+    queryKey: queryKeys.customers.calls(customerId),
     queryFn: () => base44.entities.Call.filter({ customer_id: customerId }, '-created_date'),
     enabled: !!customerId,
   });
 
   // Fetch Interactions
   const { data: interactions = [], isLoading: isInteractionsLoading } = useQuery({
-    queryKey: ['customer-interactions', customerId],
+    queryKey: queryKeys.customers.interactions(customerId),
     queryFn: () =>
       base44.entities.CustomerInteraction.filter({ customer_id: customerId }, '-interaction_date'),
     enabled: !!customerId,
@@ -88,7 +89,7 @@ export default function CustomerDetails() {
       });
     },
     onSuccess: async (data) => {
-      queryClient.invalidateQueries({ queryKey: ['customer-interactions', customerId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.customers.interactions(customerId) });
       setIsInteractionDialogOpen(false);
       setInteractionForm({
         type: 'note',

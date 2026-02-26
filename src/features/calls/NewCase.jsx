@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -41,7 +42,7 @@ export default function NewCase() {
   });
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
-    queryKey: ['customers'],
+    queryKey: queryKeys.customers.all(),
     queryFn: () => base44.entities.Customer.list(),
   });
 
@@ -69,7 +70,7 @@ export default function NewCase() {
       });
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       navigate(createPageUrl(`CaseDetails?id=${result.id}`));
     },
   });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -66,7 +67,7 @@ export default function VendorMap() {
   const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
@@ -77,7 +78,7 @@ export default function VendorMap() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['vendorMapCalls', currentVendor?.id],
+    queryKey: queryKeys.vendors.mapCalls(currentVendor?.id),
     queryFn: () => base44.entities.Call.list('-created_date', 200),
     enabled: !!currentVendor,
     refetchInterval: 30000, // Auto-refresh every 30 seconds

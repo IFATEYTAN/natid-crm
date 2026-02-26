@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { motion } from 'framer-motion';
 import { base44 } from '@/lib/api';
 import { sanitizeVendorCreate, sanitizeVendorUpdate } from '@/lib/schemas/vendor';
@@ -73,14 +74,14 @@ export default function ServiceProviders() {
   const queryClient = useQueryClient();
 
   const { data: providers = [], isLoading } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list('-created_date'),
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Vendor.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
       resetForm();
     },
   });
@@ -88,7 +89,7 @@ export default function ServiceProviders() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Vendor.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
       resetForm();
     },
   });
@@ -96,7 +97,7 @@ export default function ServiceProviders() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Vendor.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
     },
   });
 

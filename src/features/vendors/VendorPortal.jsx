@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -29,7 +30,7 @@ export default function VendorPortal() {
   const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
@@ -37,7 +38,7 @@ export default function VendorPortal() {
   const currentVendor = vendors.find((v) => v.id === user?.vendor_id || v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
-    queryKey: ['vendorCalls', currentVendor?.id],
+    queryKey: queryKeys.vendors.calls(currentVendor?.id),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
     enabled: !!currentVendor,
   });
@@ -50,7 +51,7 @@ export default function VendorPortal() {
 
   // Auto-Assignment Requests
   const { data: assignmentRequests = [], refetch: refetchRequests } = useQuery({
-    queryKey: ['assignmentRequests', currentVendor?.id],
+    queryKey: queryKeys.assignmentRequests.byVendorPortal(currentVendor?.id),
     queryFn: () =>
       base44.entities.CallAssignmentAttempt.filter({
         vendor_id: currentVendor.id,
@@ -65,7 +66,7 @@ export default function VendorPortal() {
       base44.functions.invoke('handleAssignmentResponse', { attemptId, response }),
     onSuccess: () => {
       refetchRequests();
-      queryClient.invalidateQueries({ queryKey: ['vendorCalls'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.calls() });
     },
   });
 

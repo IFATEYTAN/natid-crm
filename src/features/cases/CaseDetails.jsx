@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -65,7 +66,7 @@ export default function CaseDetails() {
   const [distanceData, setDistanceData] = useState(null);
 
   const { data: caseData, isLoading } = useQuery({
-    queryKey: ['case', caseId],
+    queryKey: queryKeys.cases.single(caseId),
     queryFn: async () => {
       const cases = await base44.entities.Case.filter({ id: caseId });
       return cases[0];
@@ -74,19 +75,19 @@ export default function CaseDetails() {
   });
 
   const { data: providers = [] } = useQuery({
-    queryKey: ['providers-available'],
+    queryKey: queryKeys.serviceProviders.available(),
     queryFn: () => base44.entities.ServiceProvider.filter({ status: 'available' }),
   });
 
   const { data: activities = [] } = useQuery({
-    queryKey: ['case-activities', caseId],
+    queryKey: queryKeys.cases.activities(caseId),
     queryFn: () => base44.entities.CaseActivity.filter({ case_id: caseId }, '-created_date', 50),
     enabled: !!caseId,
   });
 
   // Fetch vendor location if assigned
   const { data: vendorLocation } = useQuery({
-    queryKey: ['vendor-location', caseData?.assigned_provider_id],
+    queryKey: queryKeys.vendors.singleLocation(caseData?.assigned_provider_id),
     queryFn: async () => {
       const locations = await base44.entities.VendorLocation.filter(
         { vendor_id: caseData.assigned_provider_id },
@@ -120,8 +121,8 @@ export default function CaseDetails() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Case.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['case', caseId] });
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cases.single(caseId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       setIsEditMode(false);
     },
   });
@@ -129,7 +130,7 @@ export default function CaseDetails() {
   const addActivityMutation = useMutation({
     mutationFn: (data) => base44.entities.CaseActivity.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['case-activities', caseId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cases.activities(caseId) });
     },
   });
 

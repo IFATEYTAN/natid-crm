@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -40,14 +41,14 @@ export default function MyCallsVendor() {
   const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
   const currentVendor = vendors.find((v) => v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
-    queryKey: ['vendorCalls', currentVendor?.id],
+    queryKey: queryKeys.vendors.calls(currentVendor?.id),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
     enabled: !!currentVendor,
   });

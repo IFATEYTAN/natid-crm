@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -26,7 +27,7 @@ export default function Cases() {
   const [serviceFilter, setServiceFilter] = useState('all');
 
   const { data: cases = [], isLoading } = useQuery({
-    queryKey: ['cases'],
+    queryKey: queryKeys.cases.all(),
     queryFn: () => base44.entities.Case.list('-created_date', 200),
   });
 

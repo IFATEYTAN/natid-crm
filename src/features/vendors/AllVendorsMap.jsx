@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Circle } from 'react-leaflet';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -143,21 +144,21 @@ export default function AllVendorsMap() {
 
   // Fetch all vendors
   const { data: vendors = [], refetch: refetchVendors } = useQuery({
-    queryKey: ['allVendors'],
+    queryKey: queryKeys.vendors.allList(),
     queryFn: () => base44.entities.Vendor.list(),
     refetchInterval: 30000,
   });
 
   // Fetch vendor locations
   const { data: vendorLocations = [], refetch: refetchLocations } = useQuery({
-    queryKey: ['vendorLocations'],
+    queryKey: queryKeys.vendors.allLocations(),
     queryFn: () => base44.entities.VendorLocation.list('-created_date', 500),
     refetchInterval: 15000, // Refresh every 15 seconds
   });
 
   // Fetch all active calls
   const { data: allCalls = [], refetch: refetchCalls } = useQuery({
-    queryKey: ['mapCalls'],
+    queryKey: queryKeys.mapCalls.all(),
     queryFn: () =>
       base44.entities.Call.filter({
         call_status: {

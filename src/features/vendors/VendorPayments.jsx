@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import StatCard from '@/components/ui/StatCard';
 import DataTable from '@/components/ui/DataTable';
@@ -44,14 +45,14 @@ export default function VendorPayments() {
   const { currentUser: user } = usePermissions();
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
   const currentVendor = vendors.find((v) => v.email === user?.email);
 
   const { data: allCalls = [], isLoading } = useQuery({
-    queryKey: ['vendorPayments', currentVendor?.id],
+    queryKey: queryKeys.vendors.vendorPayments(currentVendor?.id),
     queryFn: () => base44.entities.Call.list('-closed_at', 1000),
     enabled: !!currentVendor,
   });
