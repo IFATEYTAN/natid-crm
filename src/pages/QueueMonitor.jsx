@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
 import { useWorkQueue } from '@/components/hooks/useWorkQueue';
 import { useCalls } from '@/components/hooks/useCalls';
+import { useCurrentUserRole } from '@/components/auth/RoleGuard';
 import { useQueryClient } from '@tanstack/react-query';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import {
@@ -22,6 +23,9 @@ import {
   ArrowLeftRight,
   Trash2,
   Gauge,
+  Settings,
+  AlertTriangle,
+  Edit,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,11 +50,20 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 const ShiftScheduleTab = lazy(() => import('@/components/queue/ShiftScheduleTab'));
 const QueueStatsBar = lazy(() => import('@/components/queue/QueueStatsBar'));
 const AssignAgentDialog = lazy(() => import('@/components/queue/AssignAgentDialog'));
 const ChangePriorityDialog = lazy(() => import('@/components/queue/ChangePriorityDialog'));
+const DelaysTab = lazy(() => import('@/components/queue/DelaysTab'));
 
 const statusOptions = [
   { value: 'all', label: 'הכל' },
@@ -62,14 +75,28 @@ const statusOptions = [
   { value: 'rejected', label: 'נדחה' },
 ];
 
+const callStatusOptions = [
+  { value: 'waiting_treatment', label: 'ממתין לטיפול' },
+  { value: 'awaiting_assignment', label: 'ממתין לשיוך' },
+  { value: 'assigning', label: 'בתהליך שיוך' },
+  { value: 'vendor_enroute', label: 'ספק בדרך' },
+  { value: 'in_progress', label: 'בטיפול' },
+  { value: 'completed', label: 'הושלם' },
+  { value: 'cancelled', label: 'בוטל' },
+];
+
 export default function QueueMonitor() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isAdmin } = useCurrentUserRole();
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [seeding, setSeeding] = useState(false);
   const [assignDialog, setAssignDialog] = useState({ open: false, item: null, mode: 'assign' });
   const [priorityDialog, setPriorityDialog] = useState({ open: false, item: null });
+  const [editDialog, setEditDialog] = useState({ open: false, item: null });
+  const [editForm, setEditForm] = useState({ call_status: '', assigned_to_agent: '', notes: '' });
+  const [saving, setSaving] = useState(false);
 
   const workQueueQuery = useWorkQueue();
   const callsQuery = useCalls();
@@ -93,10 +120,13 @@ export default function QueueMonitor() {
     return matchesStatus && matchesSearch;
   });
 
+  const handleKpiFilter = (status) => {
+    setFilterStatus(status);
+  };
+
   const seedDemoData = async () => {
     try {
       setSeeding(true);
-      // Create demo calls
       const demoCalls = await base44.entities.Call.bulkCreate([
         {
           call_number: 'C-1001',
@@ -140,7 +170,6 @@ export default function QueueMonitor() {
         },
       ]);
 
-      // Create demo queue items linked to calls
       await base44.entities.WorkQueue.bulkCreate(
         (demoCalls || []).map((c, idx) => ({
           call_id: c.id,
@@ -163,6 +192,55 @@ export default function QueueMonitor() {
     if (!window.confirm('האם להסיר את הקריאה מהתור?')) return;
     await base44.entities.WorkQueue.delete(item.id);
     queryClient.invalidateQueries({ queryKey: ['workQueue'] });
+  };
+
+  // Admin inline edit - open edit dialog
+  const openEditDialog = (item) => {
+    setEditForm({
+      call_status: item.call?.call_status || '',
+      assigned_to_agent: item.assigned_to_agent || '',
+      notes: '',
+    });
+    setEditDialog({ open: true, item });
+  };
+
+  const handleSaveEdit = async () => {
+    const item = editDialog.item;
+    if (!item) return;
+
+    setSaving(true);
+    try {
+      // Update queue item assignment
+      const queueUpdates = {};
+      if (editForm.assigned_to_agent !== (item.assigned_to_agent || '')) {
+        queueUpdates.assigned_to_agent = editForm.assigned_to_agent;
+        queueUpdates.assigned_at = new Date().toISOString();
+        if (editForm.assigned_to_agent && item.queue_status === 'waiting_in_queue') {
+          queueUpdates.queue_status = 'assigned_to_agent';
+        }
+      }
+
+      if (Object.keys(queueUpdates).length > 0) {
+        await base44.entities.WorkQueue.update(item.id, queueUpdates);
+      }
+
+      // Update call status if changed
+      if (item.call_id && editForm.call_status && editForm.call_status !== item.call?.call_status) {
+        await base44.entities.Call.update(item.call_id, {
+          call_status: editForm.call_status,
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['workQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['calls'] });
+      toast.success('הקריאה עודכנה בהצלחה');
+      setEditDialog({ open: false, item: null });
+    } catch (err) {
+      console.error('Edit error:', err);
+      toast.error('שגיאה בעדכון הקריאה');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const columns = [
@@ -215,7 +293,15 @@ export default function QueueMonitor() {
       header: 'עדיפות',
       accessor: 'priority_score',
       cell: (item) => (
-        <Badge variant={item.priority_score > 80 ? 'destructive' : item.priority_score > 60 ? 'default' : 'secondary'}>
+        <Badge
+          variant={
+            item.priority_score > 80
+              ? 'destructive'
+              : item.priority_score > 60
+                ? 'default'
+                : 'secondary'
+          }
+        >
           {item.priority_score}
         </Badge>
       ),
@@ -223,16 +309,17 @@ export default function QueueMonitor() {
     {
       header: 'נציג מטפל',
       accessor: 'assigned_to_agent',
-      cell: (item) => item.assigned_to_agent ? (
-        <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-bold">
-            {item.assigned_to_agent.charAt(0).toUpperCase()}
+      cell: (item) =>
+        item.assigned_to_agent ? (
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-bold">
+              {item.assigned_to_agent.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-sm">{item.assigned_to_agent}</span>
           </div>
-          <span className="text-sm">{item.assigned_to_agent}</span>
-        </div>
-      ) : (
-        <span className="text-gray-400 text-sm">לא משובץ</span>
-      ),
+        ) : (
+          <span className="text-gray-400 text-sm">לא משובץ</span>
+        ),
     },
     {
       header: 'זמן בתור',
@@ -243,8 +330,12 @@ export default function QueueMonitor() {
         const display = mins < 60 ? `${mins} דק׳` : `${Math.floor(mins / 60)} שע׳ ${mins % 60} דק׳`;
         return (
           <div>
-            <div className={`text-sm font-medium ${mins > 30 ? 'text-red-600' : ''}`}>{display}</div>
-            <div className="text-[10px] text-gray-400">{formatDateTime(item.added_to_queue_at)}</div>
+            <div className={`text-sm font-medium ${mins > 30 ? 'text-red-600' : ''}`}>
+              {display}
+            </div>
+            <div className="text-[10px] text-gray-400">
+              {formatDateTime(item.added_to_queue_at)}
+            </div>
           </div>
         );
       },
@@ -253,7 +344,20 @@ export default function QueueMonitor() {
       header: 'פעולות',
       cell: (item) => (
         <div className="flex items-center gap-1">
-          {(!item.assigned_to_agent && item.queue_status === 'waiting_in_queue') && (
+          {/* Admin: always allow assignment/reassignment */}
+          {isAdmin && item.queue_status !== 'completed' && !item.assigned_to_agent && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              onClick={() => setAssignDialog({ open: true, item, mode: 'assign' })}
+            >
+              <UserPlus className="w-3 h-3" />
+              שבץ
+            </Button>
+          )}
+          {/* Non-admin: only allow if waiting and unassigned */}
+          {!isAdmin && !item.assigned_to_agent && item.queue_status === 'waiting_in_queue' && (
             <Button
               variant="ghost"
               size="sm"
@@ -275,13 +379,25 @@ export default function QueueMonitor() {
               העבר
             </Button>
           )}
+          {/* Admin inline edit button */}
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
+              onClick={() => openEditDialog(item)}
+            >
+              <Edit className="w-3 h-3" />
+              ערוך
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-7 w-7 p-0" aria-label="פעולות נוספות">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="start">
               <DropdownMenuLabel>פעולות</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => navigate(createPageUrl(`CaseDetails?id=${item.call_id}`))}
@@ -293,12 +409,32 @@ export default function QueueMonitor() {
                 <Gauge className="w-4 h-4 ml-2" />
                 שנה עדיפות
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setAssignDialog({ open: true, item, mode: item.assigned_to_agent ? 'transfer' : 'assign' })}>
+              <DropdownMenuItem
+                onClick={() =>
+                  setAssignDialog({
+                    open: true,
+                    item,
+                    mode: item.assigned_to_agent ? 'transfer' : 'assign',
+                  })
+                }
+              >
                 <UserPlus className="w-4 h-4 ml-2" />
                 {item.assigned_to_agent ? 'העבר לנציג אחר' : 'שבץ לנציג'}
               </DropdownMenuItem>
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => openEditDialog(item)}>
+                    <Edit className="w-4 h-4 ml-2" />
+                    עריכת קריאה (מנהל)
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600" onClick={() => handleRemoveFromQueue(item)}>
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => handleRemoveFromQueue(item)}
+              >
                 <Trash2 className="w-4 h-4 ml-2" />
                 הסר מהתור
               </DropdownMenuItem>
@@ -321,19 +457,31 @@ export default function QueueMonitor() {
   }
 
   return (
-    <div className="space-y-6">
+    <div dir="rtl" className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">ניטור תורים</h1>
-          <p className="text-gray-500">ניהול ובקרה על תור המשימות ולו"ז משמרות</p>
+          <p className="text-gray-500">ניהול ובקרה על תור המשימות ולו&quot;ז משמרות</p>
         </div>
         <div className="flex gap-2">
+          {isAdmin && (
+            <Button
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => navigate(createPageUrl('Settings'))}
+            >
+              <Settings className="w-4 h-4" />
+              ניהול
+            </Button>
+          )}
           <Button variant="outline" onClick={seedDemoData} isLoading={seeding}>
             טען נתוני הדגמה
           </Button>
         </div>
       </div>
 
+      {/* Tabs */}
       <Tabs defaultValue="queue" className="w-full">
         <TabsList>
           <TabsTrigger value="queue" className="gap-1.5">
@@ -342,18 +490,39 @@ export default function QueueMonitor() {
           </TabsTrigger>
           <TabsTrigger value="shifts" className="gap-1.5">
             <CalendarDays className="w-4 h-4" />
-            לו"ז משמרות
+            לו&quot;ז משמרות
+          </TabsTrigger>
+          <TabsTrigger value="delays" className="gap-1.5">
+            <AlertTriangle className="w-4 h-4" />
+            איחורים
           </TabsTrigger>
         </TabsList>
 
+        {/* Queue Tab */}
         <TabsContent value="queue" className="space-y-4">
           <Suspense fallback={<Skeleton className="h-24" />}>
-            <QueueStatsBar queueItems={enrichedItems} />
+            <QueueStatsBar
+              queueItems={enrichedItems}
+              onFilterByStatus={handleKpiFilter}
+              activeFilter={filterStatus}
+            />
           </Suspense>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle>רשימת המתנה ({filteredItems.length})</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>רשימת המתנה ({filteredItems.length})</CardTitle>
+                {filterStatus !== 'all' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-gray-500"
+                    onClick={() => setFilterStatus('all')}
+                  >
+                    נקה סינון
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -391,9 +560,17 @@ export default function QueueMonitor() {
           </Card>
         </TabsContent>
 
+        {/* Shifts Tab */}
         <TabsContent value="shifts">
           <Suspense fallback={<Skeleton className="h-[400px] rounded-lg" />}>
             <ShiftScheduleTab />
+          </Suspense>
+        </TabsContent>
+
+        {/* Delays Tab */}
+        <TabsContent value="delays">
+          <Suspense fallback={<Skeleton className="h-[400px] rounded-lg" />}>
+            <DelaysTab queueItems={enrichedItems} calls={calls} />
           </Suspense>
         </TabsContent>
       </Tabs>
@@ -402,16 +579,126 @@ export default function QueueMonitor() {
       <Suspense fallback={null}>
         <AssignAgentDialog
           open={assignDialog.open}
-          onOpenChange={(open) => setAssignDialog(prev => ({ ...prev, open }))}
+          onOpenChange={(open) => setAssignDialog((prev) => ({ ...prev, open }))}
           queueItem={assignDialog.item}
           mode={assignDialog.mode}
         />
         <ChangePriorityDialog
           open={priorityDialog.open}
-          onOpenChange={(open) => setPriorityDialog(prev => ({ ...prev, open }))}
+          onOpenChange={(open) => setPriorityDialog((prev) => ({ ...prev, open }))}
           queueItem={priorityDialog.item}
         />
       </Suspense>
+
+      {/* Admin Edit Dialog */}
+      {editDialog.open && (
+        <Suspense fallback={null}>
+          <AdminEditDialog
+            open={editDialog.open}
+            onOpenChange={(open) => setEditDialog((prev) => ({ ...prev, open }))}
+            item={editDialog.item}
+            editForm={editForm}
+            setEditForm={setEditForm}
+            onSave={handleSaveEdit}
+            saving={saving}
+            callStatusOptions={callStatusOptions}
+          />
+        </Suspense>
+      )}
     </div>
+  );
+}
+
+// Admin Edit Dialog - inline component to avoid circular imports
+function AdminEditDialog({
+  open,
+  onOpenChange,
+  item,
+  editForm,
+  setEditForm,
+  onSave,
+  saving,
+  callStatusOptions,
+}) {
+  const [dialogUsers, setDialogUsers] = React.useState([]);
+  React.useEffect(() => {
+    base44.entities.User.list()
+      .then(setDialogUsers)
+      .catch(() => {});
+  }, []);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>עריכת קריאה - מנהל</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          {item && (
+            <div className="bg-gray-50 rounded-lg p-3 text-sm">
+              <div className="font-medium">
+                {item.call?.call_number || `#${item.call_id?.slice(-6)}`}
+              </div>
+              <div className="text-gray-500">
+                {item.call?.customer_name} — {item.call?.pickup_location_address}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm text-gray-600 mb-1 block">סטטוס קריאה</label>
+            <Select
+              value={editForm.call_status}
+              onValueChange={(v) => setEditForm({ ...editForm, call_status: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="בחר סטטוס..." />
+              </SelectTrigger>
+              <SelectContent>
+                {callStatusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-600 mb-1 block">שיוך לנציג</label>
+            <Select
+              value={editForm.assigned_to_agent || '_none'}
+              onValueChange={(v) =>
+                setEditForm({ ...editForm, assigned_to_agent: v === '_none' ? '' : v })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="בחר נציג..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none">ללא שיוך</SelectItem>
+                {dialogUsers.map((u) => (
+                  <SelectItem key={u.id} value={u.email}>
+                    {u.full_name || u.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {item?.assigned_to_agent && (
+              <p className="text-xs text-gray-400 mt-1">נציג נוכחי: {item.assigned_to_agent}</p>
+            )}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            ביטול
+          </Button>
+          <Button onClick={onSave} disabled={saving}>
+            {saving ? 'שומר...' : 'שמור שינויים'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
