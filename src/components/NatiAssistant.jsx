@@ -42,14 +42,20 @@ const contextualTips = {
       title: 'SLA וזמנים',
       text: 'שים לב לעמודת הזמנים - קריאות שמתקרבות לחריגה יסומנו בצבע בולט. תעדף אותן בטיפול.',
     },
-    { title: 'ייצוא נתונים', text: 'כפתור הייצוא מאפשר להוריד את הטבלה הנוכחית (אחרי סינון) לקובץ Excel לעבודה חיצונית.' },
+    {
+      title: 'ייצוא נתונים',
+      text: 'כפתור הייצוא מאפשר להוריד את הטבלה הנוכחית (אחרי סינון) לקובץ Excel לעבודה חיצונית.',
+    },
   ],
   CallDetails: [
     {
       title: 'כרטיס קריאה',
       text: 'כל המידע במקום אחד: סטטוס נוכחי, מיקום בזמן אמת, ופרטי הספק המשובץ.',
     },
-    { title: 'שיבוץ ספקים', text: 'לחץ על "שבץ ספק" לקבלת המלצות חכמות מבוססות מיקום, דירוג וזמינות. המערכת תסמן את המומלצים.' },
+    {
+      title: 'שיבוץ ספקים',
+      text: 'לחץ על "שבץ ספק" לקבלת המלצות חכמות מבוססות מיקום, דירוג וזמינות. המערכת תסמן את המומלצים.',
+    },
     {
       title: 'עדכונים ויומן',
       text: 'ציר הזמן מתעד כל פעולה אוטומטית. השתמש ב"הערות" לתיעוד שיחות ועדכונים ידניים.',
@@ -74,12 +80,12 @@ const contextualTips = {
       text: 'בחירת סוג השירות (גרירה/חילוץ/שרות דרך) קריטית לשיבוץ הספק המתאים עם הציוד הנכון.',
     },
   ],
-  
+
   // === Expanded Guides ===
   UserGuide: [
     {
       title: 'מדריך למוקדן',
-      text: 'ברוך הבא! כאן תלמד איך לנהל קריאות מא\' ועד ת\'.',
+      text: "ברוך הבא! כאן תלמד איך לנהל קריאות מא' ועד ת'.",
     },
     {
       title: 'פתיחת קריאה',
@@ -151,7 +157,10 @@ const contextualTips = {
       title: 'אזורי כיסוי',
       text: 'כאן מנוהלים אזורי הכיסוי של כל הספקים ומוצג הכיסוי הכולל על המפה.',
     },
-    { title: 'חורים בכיסוי', text: 'המערכת מסמנת אזורים ללא כיסוי ספקים כדי לזהות פערים ולגייס ספקים חדשים.' },
+    {
+      title: 'חורים בכיסוי',
+      text: 'המערכת מסמנת אזורים ללא כיסוי ספקים כדי לזהות פערים ולגייס ספקים חדשים.',
+    },
   ],
   Reports: [
     { title: 'דוחות', text: 'כאן ניתן ליצור דוחות מותאמים אישית על ביצועים, עלויות ומגמות.' },
@@ -280,7 +289,10 @@ const contextualTips = {
       title: 'שלום! אני נתי',
       text: 'אני כאן לעזור לך להשתמש במערכת. אני מכיל את כל הידע על המערכת.',
     },
-    { title: 'עזרה הקשרית', text: 'לחץ עליי בכל מסך כדי לקבל הסבר וטיפים רלוונטיים בדיוק לדף שבו אתה נמצא.' },
+    {
+      title: 'עזרה הקשרית',
+      text: 'לחץ עליי בכל מסך כדי לקבל הסבר וטיפים רלוונטיים בדיוק לדף שבו אתה נמצא.',
+    },
     { title: 'מרכז הידע', text: 'למידע מקיף, עבור למדריך למשתמש או למדריך לספק בתפריט.' },
   ],
 };
@@ -293,91 +305,113 @@ function TowTruckSVG({ isTalking }) {
       xmlns="http://www.w3.org/2000/svg"
       className="w-full h-full"
     >
-      {/* Body */}
-      <rect x="10" y="35" width="45" height="22" rx="3" fill="#DC2626" />
-      {/* Cabin */}
-      <rect x="55" y="40" width="18" height="17" rx="2" fill="#B91C1C" />
-      {/* Window */}
-      <rect x="58" y="43" width="10" height="8" rx="1.5" fill="#BFDBFE" />
-      {/* Crane arm */}
-      <motion.g
-        animate={{ rotate: [0, -3, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ originX: '22px', originY: '35px' }}
-      >
-        <line
-          x1="22"
-          y1="35"
-          x2="15"
-          y2="15"
-          stroke="#7F1D1D"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <line
-          x1="15"
-          y1="15"
-          x2="25"
-          y2="15"
-          stroke="#7F1D1D"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-        <motion.path
-          d="M25 15 L25 22 Q25 25 23 25 Q21 25 21 22"
-          stroke="#7F1D1D"
-          strokeWidth="1.5"
-          fill="none"
-          animate={{ pathLength: [0.8, 1, 0.8] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      </motion.g>
+      {/* === VW Beetle "נתי הגרר" === */}
+
+      {/* Lower body with wheel arches */}
+      <path
+        d="M8 48 Q6 48 6 50 L6 55 Q6 58 9 58 L15 58 Q15 53 21 53 Q27 53 27 58 L53 58 Q53 53 59 53 Q65 53 65 58 L71 58 Q74 58 74 55 L74 50 Q74 48 72 48 Z"
+        fill="#DC2626"
+      />
+
+      {/* Upper body - beetle dome */}
+      <path
+        d="M16 48 Q13 40 17 32 Q23 22 35 20 Q43 18 47 20 Q59 22 63 32 Q67 40 64 48 Z"
+        fill="#DC2626"
+      />
+
+      {/* Roof panel - darker */}
+      <path
+        d="M20 48 Q17 40 21 33 Q27 24 37 22 Q45 20 49 22 Q57 24 59 33 Q63 40 60 48 Z"
+        fill="#B91C1C"
+      />
+
+      {/* Front windshield (car faces right) */}
+      <path
+        d="M44 48 L46 30 Q52 26 58 32 L58 48 Z"
+        fill="#BFDBFE"
+        stroke="#991B1B"
+        strokeWidth="0.5"
+      />
+
+      {/* Rear window */}
+      <path
+        d="M22 48 L22 32 Q28 26 34 30 L36 48 Z"
+        fill="#BFDBFE"
+        stroke="#991B1B"
+        strokeWidth="0.5"
+      />
+
+      {/* B-pillar (window divider) */}
+      <rect x="36" y="27" width="8" height="21" rx="2" fill="#991B1B" />
+
+      {/* Running board */}
+      <rect x="27" y="56" width="26" height="2" rx="1" fill="#7F1D1D" />
+
+      {/* Front bumper */}
+      <rect x="73" y="52" width="4" height="2.5" rx="1.25" fill="#D1D5DB" />
+
+      {/* Rear bumper */}
+      <rect x="3" y="52" width="4" height="2.5" rx="1.25" fill="#D1D5DB" />
+
+      {/* Headlight (front) */}
+      <circle cx="72" cy="50" r="2.5" fill="#FBBF24" />
+      <circle cx="72" cy="50" r="1" fill="#FEF3C7" />
+
+      {/* Taillight (rear) */}
+      <circle cx="8" cy="50" r="2" fill="#FCA5A5" />
+
+      {/* Door handle */}
+      <rect x="48" y="47" width="3" height="1" rx="0.5" fill="#991B1B" />
+
       {/* NatID text */}
       <text
-        x="25"
-        y="50"
+        x="40"
+        y="54"
         fill="white"
-        fontSize="7"
+        fontSize="5.5"
         fontWeight="bold"
         fontFamily="Heebo, sans-serif"
+        textAnchor="middle"
       >
         NatID
       </text>
+
       {/* Wheels */}
       <motion.g
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        style={{ originX: '25px', originY: '60px' }}
+        style={{ originX: '21px', originY: '60px' }}
       >
-        <circle cx="25" cy="60" r="6" fill="#1E293B" />
-        <circle cx="25" cy="60" r="2.5" fill="#94A3B8" />
+        <circle cx="21" cy="60" r="5.5" fill="#1E293B" />
+        <circle cx="21" cy="60" r="2" fill="#94A3B8" />
       </motion.g>
       <motion.g
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        style={{ originX: '62px', originY: '60px' }}
+        style={{ originX: '59px', originY: '60px' }}
       >
-        <circle cx="62" cy="60" r="6" fill="#1E293B" />
-        <circle cx="62" cy="60" r="2.5" fill="#94A3B8" />
+        <circle cx="59" cy="60" r="5.5" fill="#1E293B" />
+        <circle cx="59" cy="60" r="2" fill="#94A3B8" />
       </motion.g>
+
       {/* Eyes */}
       <AnimatePresence>
         {isTalking ? (
           <>
             <motion.ellipse
-              cx="60"
-              cy="44"
-              rx="2"
-              ry="2.5"
+              cx="48"
+              cy="38"
+              rx="2.5"
+              ry="3"
               fill="#1E293B"
               animate={{ scaleY: [1, 0.2, 1] }}
               transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 1.5 }}
             />
             <motion.ellipse
-              cx="66"
-              cy="44"
-              rx="2"
-              ry="2.5"
+              cx="55"
+              cy="38"
+              rx="2.5"
+              ry="3"
               fill="#1E293B"
               animate={{ scaleY: [1, 0.2, 1] }}
               transition={{ duration: 0.4, repeat: Infinity, repeatDelay: 1.5 }}
@@ -385,16 +419,21 @@ function TowTruckSVG({ isTalking }) {
           </>
         ) : (
           <>
-            <circle cx="60" cy="44" r="2" fill="#1E293B" />
-            <circle cx="66" cy="44" r="2" fill="#1E293B" />
+            <circle cx="48" cy="38" r="2.5" fill="#1E293B" />
+            <circle cx="55" cy="38" r="2.5" fill="#1E293B" />
           </>
         )}
       </AnimatePresence>
+
+      {/* Eye highlights */}
+      <circle cx="49" cy="37" r="0.8" fill="white" />
+      <circle cx="56" cy="37" r="0.8" fill="white" />
+
       {/* Mouth */}
       {isTalking ? (
         <motion.ellipse
-          cx="63"
-          cy="49"
+          cx="51"
+          cy="44"
           rx="2.5"
           fill="#7F1D1D"
           initial={{ ry: 1.5 }}
@@ -402,26 +441,26 @@ function TowTruckSVG({ isTalking }) {
           transition={{ duration: 0.3, repeat: Infinity }}
         />
       ) : (
-        <path d="M60 49 Q63 51 66 49" stroke="#7F1D1D" strokeWidth="1.5" fill="none" />
+        <path d="M48 44 Q51 46 54 44" stroke="#7F1D1D" strokeWidth="1.5" fill="none" />
       )}
-      {/* Exhaust smoke */}
+
+      {/* Exhaust smoke (VW Beetle has rear engine) */}
       <motion.circle
-        cx="8"
-        cy="52"
+        cx="4"
+        cy="54"
         r="2"
         fill="#CBD5E1"
         animate={{ x: [-2, -8], y: [0, -6], opacity: [0.6, 0], scale: [0.5, 1.5] }}
         transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.5 }}
       />
-      {/* Signal lights */}
-      <motion.rect
-        x="73"
-        y="48"
-        width="3"
-        height="3"
-        rx="1"
+
+      {/* Headlight glow */}
+      <motion.circle
+        cx="72"
+        cy="50"
+        r="4"
         fill="#FBBF24"
-        animate={{ opacity: [1, 0.3, 1] }}
+        animate={{ opacity: [0.3, 0.1, 0.3] }}
         transition={{ duration: 0.8, repeat: Infinity }}
       />
     </svg>
@@ -512,7 +551,9 @@ export default function NatiAssistant() {
         whileTap={{ scale: 0.95 }}
         title="הצג את נתי"
       >
-        <span className="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform">🚛</span>
+        <span className="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform">
+          🚛
+        </span>
         <span className="absolute -top-1 -right-1 flex h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
