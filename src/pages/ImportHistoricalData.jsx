@@ -59,6 +59,7 @@ export default function ImportHistoricalDataPage() {
           json_schema: {
             type: 'object',
             properties: {
+              type: { type: 'string' },
               sheets: {
                 type: 'array',
                 items: {
@@ -66,7 +67,7 @@ export default function ImportHistoricalDataPage() {
                   properties: {
                     name: { type: 'string' },
                     headers: { type: 'array', items: { type: 'string' } },
-                    rows: { type: 'array', items: { type: 'object' } },
+                    rows: { type: 'array' },
                   },
                 },
               },
@@ -74,12 +75,19 @@ export default function ImportHistoricalDataPage() {
           },
         });
 
+        console.log('Extract result:', extractResult);
+
+        let sheets = [];
         if (extractResult.status === 'success' && extractResult.output) {
-          setFilePreview({ sheets: extractResult.output.sheets || [], url: file_url });
-          toast.success('הקובץ טופל בהצלחה');
-        } else {
-          throw new Error('לא הצליח לעבד את הקובץ');
+          sheets = Array.isArray(extractResult.output.sheets) ? extractResult.output.sheets : [extractResult.output];
         }
+
+        if (!sheets || sheets.length === 0) {
+          throw new Error('לא נמצאו גיליונות בקובץ');
+        }
+
+        setFilePreview({ sheets, url: file_url });
+        toast.success('הקובץ טופל בהצלחה');
       }
     } catch (error) {
       console.error('Preview error:', error);
