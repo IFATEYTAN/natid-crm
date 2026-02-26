@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { motion } from 'framer-motion';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
@@ -69,12 +70,12 @@ export default function Calls() {
   const rowsPerPage = 20;
 
   const { data: calls = [], isLoading } = useQuery({
-    queryKey: ['calls'],
+    queryKey: queryKeys.calls.all(),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
   });
 
   const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
