@@ -172,7 +172,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               <TabsTrigger value="history">היסטוריה ({history.length})</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="space-y-4 mt-4">
+            <TabsContent value="details" className="space-y-4 mt-4 text-right" dir="rtl">
               {/* Vendor Info */}
               <div className="p-4 bg-gray-50 rounded-lg flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="pricing" className="space-y-4 mt-4">
+            <TabsContent value="pricing" className="space-y-4 mt-4 text-right" dir="rtl">
               {/* Main Rate */}
               <div className="p-4 bg-blue-50 rounded-lg">
                 <div className="flex items-center gap-2 text-blue-800 mb-2">
@@ -351,7 +351,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="coverage" className="space-y-4 mt-4">
+            <TabsContent value="coverage" className="space-y-4 mt-4 text-right" dir="rtl">
               {/* Coverage Areas */}
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
@@ -421,7 +421,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="history" className="mt-4">
+            <TabsContent value="history" className="mt-4 text-right" dir="rtl">
               <div className="space-y-3">
                 {history.map((item, idx) => (
                   <div
