@@ -179,9 +179,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto text-right" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-right">
             <FileText className="w-5 h-5" />
             {isEdit ? 'עריכת חוזה' : 'יצירת חוזה חדש'}
           </DialogTitle>
@@ -204,11 +204,12 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     value={formData.vendor_id}
                     onValueChange={handleVendorChange}
                     disabled={isEdit}
+                    dir="rtl"
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="בחר ספק" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent dir="rtl">
                       {vendors.map((vendor) => (
                         <SelectItem key={vendor.id} value={vendor.id}>
                           {vendor.vendor_name}
