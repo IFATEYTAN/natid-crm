@@ -432,7 +432,7 @@ export default function CallDetailsPage() {
                     call={call}
                     callId={callId}
                     onStatusChanged={() =>
-                      queryClient.invalidateQueries({ queryKey: ['call', callId] })
+                      queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) })
                     }
                   />
                 </Suspense>
