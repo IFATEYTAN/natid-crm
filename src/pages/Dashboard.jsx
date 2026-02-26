@@ -9,39 +9,26 @@ import { createPageUrl } from '@/components/utils';
 const StatCard = lazy(() => import('@/components/ui/StatCard'));
 import {
   Plus,
-  ChevronLeft,
   Truck,
   AlertCircle,
   LayoutDashboard,
   Headphones,
-  List,
   TrendingUp,
   Clock,
   CheckCircle2,
   Users,
   Calendar,
   BarChart3,
-  BellRing,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import CollapsibleCard from '@/components/dashboard/CollapsibleCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { statusLabels, openStatuses } from '@/components/dashboard/dashboardConstants';
-import { getCallColumns } from '@/components/dashboard/DashboardColumns';
 
 // Lazy load sub-components
 const CallsTrendChart = lazy(() =>
@@ -55,8 +42,6 @@ const StatusDistributionChart = lazy(() =>
   }))
 );
 const WorkQueueOverview = lazy(() => import('@/components/dashboard/WorkQueueOverview'));
-const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
-const ExportMenu = lazy(() => import('@/components/ui/ExportMenu'));
 const AIInsightsWidget = lazy(() => import('@/components/ai/AIInsightsWidget'));
 const DashboardOperatorTab = lazy(() => import('@/components/dashboard/DashboardOperatorTab'));
 const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
@@ -73,8 +58,6 @@ const ProactiveRecommendationsWidget = lazy(
 export default function Dashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const { currentUser, hasPermission, canAccessPage } = usePermissions();
 
   const today = new Date();
@@ -184,17 +167,6 @@ export default function Dashboard() {
       ? Math.round((resolvedInField.length / recentCompleted.length) * 100)
       : 0;
 
-  // Filtered calls for cases tab
-  const filteredCalls = calls.filter((call) => {
-    const matchesSearch =
-      !searchQuery ||
-      call.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      call.call_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      call.customer_phone?.includes(searchQuery);
-    const matchesStatus = statusFilter === 'all' || call.call_status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
   // Chart data
   const statusData = Object.keys(statusLabels)
     .map((status) => ({
@@ -214,8 +186,6 @@ export default function Dashboard() {
       value: count,
     };
   });
-
-  const columns = getCallColumns();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -261,14 +231,6 @@ export default function Dashboard() {
             <Headphones className="w-4 h-4" />
             <span className="hidden md:inline">תפריט מוקדן</span>
             <span className="md:hidden">מוקדן</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="cases"
-            className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"
-          >
-            <List className="w-4 h-4" />
-            <span className="hidden md:inline">קריאות שירות</span>
-            <span className="md:hidden">קריאות</span>
           </TabsTrigger>
           <TabsTrigger
             value="totals"
@@ -467,96 +429,9 @@ export default function Dashboard() {
               availableVendors={availableVendors}
               callsLoading={callsLoading}
               vendorsLoading={vendorsLoading}
-              setActiveTab={setActiveTab}
               allCalls={calls}
             />
           </Suspense>
-        </TabsContent>
-
-        {/* Cases Tab */}
-        <TabsContent value="cases" className="space-y-6 mt-6 focus-visible:outline-none">
-          <CollapsibleCard
-            title="ניהול קריאות שירות"
-            description="צפייה וסינון כלל הקריאות במערכת"
-            headerRight={
-              <Suspense fallback={<Skeleton className="w-24 h-10" />}>
-                <ExportMenu
-                  data={filteredCalls}
-                  columns={columns}
-                  filename="dashboard_cases"
-                  title="דוח קריאות - לוח בקרה"
-                />
-              </Suspense>
-            }
-          >
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Input
-                  placeholder="חיפוש לפי שם, מספר קריאה או טלפון..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="סינון לפי סטטוס" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הסטטוסים</SelectItem>
-                  <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
-                  <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
-                  <SelectItem value="assigning">בשיוך</SelectItem>
-                  <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
-                  <SelectItem value="in_progress">בטיפול</SelectItem>
-                  <SelectItem value="vendor_arrived">נותן השירות הגיע</SelectItem>
-                  <SelectItem value="future_service">שירות עתידי</SelectItem>
-                  <SelectItem value="in_followup">במעקב</SelectItem>
-                  <SelectItem value="in_storage">באחסנה</SelectItem>
-                  <SelectItem value="continued_treatment">המשך טיפול</SelectItem>
-                  <SelectItem value="awaiting_payment">המתנה לחיוב</SelectItem>
-                  <SelectItem value="completed">הושלם</SelectItem>
-                  <SelectItem value="cancelled">בוטל</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-100">
-                <div className="text-2xl font-bold text-gray-900">{filteredCalls.length}</div>
-                <div className="text-xs text-gray-500 uppercase tracking-wide">סה״כ רשומות</div>
-              </div>
-              <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
-                <div className="text-2xl font-bold text-blue-600">
-                  {filteredCalls.filter((c) => openStatuses.includes(c.call_status)).length}
-                </div>
-                <div className="text-xs text-blue-500 uppercase tracking-wide">פתוחות</div>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
-                <div className="text-2xl font-bold text-green-600">
-                  {filteredCalls.filter((c) => c.call_status === 'completed').length}
-                </div>
-                <div className="text-xs text-green-500 uppercase tracking-wide">הושלמו</div>
-              </div>
-              <div className="bg-red-50 p-4 rounded-lg text-center border border-red-100">
-                <div className="text-2xl font-bold text-red-600">
-                  {filteredCalls.filter((c) => c.call_status === 'cancelled').length}
-                </div>
-                <div className="text-xs text-red-500 uppercase tracking-wide">בוטלו</div>
-              </div>
-            </div>
-
-            <Suspense fallback={<Skeleton className="h-40" />}>
-              <DataTableLazy
-                columns={columns}
-                data={filteredCalls}
-                isLoading={callsLoading}
-                onRowClick={(row) => navigate(createPageUrl('CallDetails') + '?id=' + row.id)}
-                emptyMessage="לא נמצאו קריאות התואמות לחיפוש"
-                rowColorField="call_status"
-              />
-            </Suspense>
-          </CollapsibleCard>
         </TabsContent>
 
         {/* Totals Tab */}

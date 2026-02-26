@@ -1,4 +1,5 @@
 import React, { useState, Suspense, lazy } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import { getCallColumns } from './DashboardColumns';
 const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
 
 export default function DashboardTotalsTab({ calls, callsLoading }) {
+  const navigate = useNavigate();
   const [rangePreset, setRangePreset] = useState('last7');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
@@ -160,7 +162,7 @@ export default function DashboardTotalsTab({ calls, callsLoading }) {
             columns={columns}
             data={filteredTotalsCalls}
             isLoading={callsLoading}
-            onRowClick={(row) => (window.location.href = createPageUrl(`CallDetails?id=${row.id}`))}
+            onRowClick={(row) => navigate(createPageUrl('CallDetails') + '?id=' + row.id)}
             emptyMessage="לא נמצאו קריאות בטווח"
           />
         </Suspense>

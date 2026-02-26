@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import {
   Plus,
@@ -33,9 +33,9 @@ export default function DashboardOperatorTab({
   availableVendors,
   callsLoading,
   vendorsLoading,
-  setActiveTab,
   allCalls = [],
 }) {
+  const navigate = useNavigate();
   const operatorCallColumns = getOperatorCallColumns();
   const vendorColumns = getVendorColumns();
 
@@ -117,18 +117,14 @@ export default function DashboardOperatorTab({
                 </div>
               </Link>
             </PermissionGuard>
-            <Button
-              variant="ghost"
-              onClick={() => setActiveTab('cases')}
-              className="h-auto p-0 group"
-            >
+            <Link to={createPageUrl('Calls')} className="group">
               <div className="w-full flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl border border-gray-100 group-hover:border-gray-300 group-hover:shadow-md transition-all cursor-pointer h-full">
                 <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm mb-3 group-hover:scale-110 transition-transform">
                   <List className="w-6 h-6 text-gray-600" />
                 </div>
                 <span className="font-semibold text-gray-800">רשימת קריאות</span>
               </div>
-            </Button>
+            </Link>
             <PermissionGuard category="vendors" permission="view">
               <Link to={createPageUrl('ServiceProviders')} className="group">
                 <div className="flex flex-col items-center justify-center p-6 bg-blue-50 rounded-xl border border-blue-100 group-hover:border-blue-300 group-hover:shadow-md transition-all cursor-pointer h-full">
@@ -229,9 +225,7 @@ export default function DashboardOperatorTab({
                 columns={operatorCallColumns}
                 data={myOpenCalls}
                 isLoading={callsLoading}
-                onRowClick={(row) =>
-                  (window.location.href = createPageUrl('CallDetails') + '?id=' + row.id)
-                }
+                onRowClick={(row) => navigate(createPageUrl('CallDetails') + '?id=' + row.id)}
                 emptyMessage="אין קריאות משויכות אליך כרגע"
               />
             </Suspense>
@@ -252,9 +246,7 @@ export default function DashboardOperatorTab({
                 columns={vendorColumns}
                 data={availableVendors}
                 isLoading={vendorsLoading}
-                onRowClick={(row) =>
-                  (window.location.href = createPageUrl('VendorProfile') + '?id=' + row.id)
-                }
+                onRowClick={(row) => navigate(createPageUrl('VendorProfile') + '?id=' + row.id)}
                 emptyMessage="אין ספקים זמינים כרגע"
               />
             </Suspense>

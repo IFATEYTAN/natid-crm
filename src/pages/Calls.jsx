@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useCalls } from '@/components/hooks/useCalls';
 import { Button } from '@/components/ui/button';
@@ -56,11 +56,31 @@ const priorityColors = {
   critical: 'bg-red-100 text-red-800',
 };
 
+const openStatuses = [
+  'waiting_treatment',
+  'awaiting_assignment',
+  'assigning',
+  'vendor_enroute',
+  'in_progress',
+  'vendor_arrived',
+  'future_service',
+  'in_followup',
+  'in_storage',
+  'continued_treatment',
+  'awaiting_payment',
+];
+
 export default function CallsPage() {
+  const [searchParams] = useSearchParams();
+  const initialStatus = searchParams.get('status') || 'all';
+  const initialPriority = searchParams.get('priority') || 'all';
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('active');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
+  const [priorityFilter, setPriorityFilter] = useState(initialPriority);
+  const [activeTab, setActiveTab] = useState(
+    initialStatus !== 'all' || initialPriority !== 'all' ? 'all' : 'active'
+  );
 
   const {
     data: calls = [],
@@ -81,7 +101,10 @@ export default function CallsPage() {
         call.customer_phone?.includes(searchQuery) ||
         call.vehicle_plate?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesStatus = statusFilter === 'all' || call.call_status === statusFilter;
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && openStatuses.includes(call.call_status)) ||
+        call.call_status === statusFilter;
       const matchesPriority = priorityFilter === 'all' || call.call_priority === priorityFilter;
 
       return matchesSearch && matchesStatus && matchesPriority;
@@ -293,6 +316,7 @@ export default function CallsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">כל הסטטוסים</SelectItem>
+                <SelectItem value="active">כל הפעילות</SelectItem>
                 <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
                 <SelectItem value="awaiting_assignment">ממתין לשיבוץ</SelectItem>
                 <SelectItem value="assigning">בתהליך שיבוץ</SelectItem>
