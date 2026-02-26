@@ -77,6 +77,7 @@ export default function ServiceProvidersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [activeKpi, setActiveKpi] = useState('all');
 
   const queryClient = useQueryClient();
 
@@ -359,10 +360,16 @@ export default function ServiceProvidersPage() {
           </Link>
         </div>
 
-        {/* Stats */}
-        <StaggeredList className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StaggeredItem>
-            <AnimatedCard className="p-4">
+        {/* KPI Stats - like Fleet Management */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4" dir="rtl">
+          <Card
+            className={cn(
+              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
+              activeKpi === 'all' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'
+            )}
+            onClick={() => { setActiveKpi('all'); setTypeFilter('all'); setAvailabilityFilter('all'); }}
+          >
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
                   <Truck className="w-5 h-5 text-[#3b82f6]" />
@@ -372,48 +379,66 @@ export default function ServiceProvidersPage() {
                   <div className="text-sm text-[#6b7280]">סה"כ ספקים</div>
                 </div>
               </div>
-            </AnimatedCard>
-          </StaggeredItem>
-          <StaggeredItem>
-            <AnimatedCard className="p-4">
+            </CardContent>
+          </Card>
+          <Card
+            className={cn(
+              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
+              activeKpi === 'available' ? 'border-[#10b981] ring-1 ring-[#10b981]' : 'border-[#e5e7eb] hover:border-[#10b981]'
+            )}
+            onClick={() => { setActiveKpi('available'); setTypeFilter('all'); setAvailabilityFilter('available'); }}
+          >
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-[#111827]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-[#10b981]" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-[#111827]">{stats.available}</div>
                   <div className="text-sm text-[#6b7280]">זמינים כעת</div>
                 </div>
               </div>
-            </AnimatedCard>
-          </StaggeredItem>
-          <StaggeredItem>
-            <AnimatedCard className="p-4">
+            </CardContent>
+          </Card>
+          <Card
+            className={cn(
+              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
+              activeKpi === 'busy' ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]' : 'border-[#e5e7eb] hover:border-[#f59e0b]'
+            )}
+            onClick={() => { setActiveKpi('busy'); setTypeFilter('all'); setAvailabilityFilter('busy'); }}
+          >
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
-                  <PhoneCall className="w-5 h-5 text-[#3b82f6]" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
+                  <PhoneCall className="w-5 h-5 text-[#f59e0b]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#3b82f6]">{stats.busy}</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.busy}</div>
                   <div className="text-sm text-[#6b7280]">עסוקים</div>
                 </div>
               </div>
-            </AnimatedCard>
-          </StaggeredItem>
-          <StaggeredItem>
-            <AnimatedCard className="p-4">
+            </CardContent>
+          </Card>
+          <Card
+            className={cn(
+              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
+              activeKpi === 'inactive' ? 'border-[#ef4444] ring-1 ring-[#ef4444]' : 'border-[#e5e7eb] hover:border-[#ef4444]'
+            )}
+            onClick={() => { setActiveKpi('inactive'); setTypeFilter('all'); setAvailabilityFilter('offline'); }}
+          >
+            <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
-                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                <div className="w-10 h-10 rounded-[8px] bg-[#fef2f2] flex items-center justify-center">
+                  <XCircle className="w-5 h-5 text-[#ef4444]" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.avgRating}</div>
-                  <div className="text-sm text-[#6b7280]">דירוג ממוצע</div>
+                  <div className="text-2xl font-bold text-[#111827]">{stats.inactive}</div>
+                  <div className="text-sm text-[#6b7280]">לא פעילים</div>
                 </div>
               </div>
-            </AnimatedCard>
-          </StaggeredItem>
-        </StaggeredList>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Filters & Table */}
         <Card className="bg-white">
