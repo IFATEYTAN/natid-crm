@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { useCurrentUserRole } from '@/components/auth/RoleGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -94,7 +95,7 @@ export default function FleetManagementPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ['fleet'],
+    queryKey: queryKeys.fleet.all(),
     queryFn: () => base44.entities.FleetVehicle.list(),
   });
 
@@ -160,7 +161,7 @@ export default function FleetManagementPage() {
         await base44.entities.FleetVehicle.create(data);
         toast.success('כלי רכב נוסף בהצלחה');
       }
-      queryClient.invalidateQueries({ queryKey: ['fleet'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.fleet.all() });
       setShowDialog(false);
     } catch (err) {
       console.error('Save fleet vehicle error:', err);
@@ -174,7 +175,7 @@ export default function FleetManagementPage() {
     const newStatus = vehicle.status === 'active' ? 'inactive' : 'active';
     try {
       await base44.entities.FleetVehicle.update(vehicle.id, { status: newStatus });
-      queryClient.invalidateQueries({ queryKey: ['fleet'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.fleet.all() });
       toast.success(newStatus === 'active' ? 'כלי רכב הופעל' : 'כלי רכב הושבת');
     } catch (err) {
       console.error('Toggle status error:', err);

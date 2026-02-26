@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -107,19 +108,19 @@ export default function ShiftScheduleTab() {
   }, [weekStart]);
 
   const { data: shifts = [], isLoading } = useQuery({
-    queryKey: ['agentShifts'],
+    queryKey: queryKeys.agentShifts.all(),
     queryFn: () => base44.entities.AgentShift.list('-shift_date', 200),
   });
 
   const { data: users = [] } = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all(),
     queryFn: () => base44.entities.User.list(),
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.AgentShift.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agentShifts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() });
       closeDialog();
     },
   });
@@ -127,14 +128,14 @@ export default function ShiftScheduleTab() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.AgentShift.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agentShifts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() });
       closeDialog();
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.AgentShift.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['agentShifts'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() }),
   });
 
   const closeDialog = () => {
@@ -320,7 +321,7 @@ export default function ShiftScheduleTab() {
 
       if (successCount > 0) {
         toast.success(`${successCount} משמרות יובאו בהצלחה`);
-        queryClient.invalidateQueries({ queryKey: ['agentShifts'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.agentShifts.all() });
       }
 
       if (failCount > 0) {

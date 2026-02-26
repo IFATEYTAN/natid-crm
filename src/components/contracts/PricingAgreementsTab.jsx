@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +59,7 @@ export default function PricingAgreementsTab() {
   const [saving, setSaving] = useState(false);
 
   const { data: rates = [], isLoading } = useQuery({
-    queryKey: ['operationalRates'],
+    queryKey: queryKeys.operationalRates.all(),
     queryFn: () => base44.entities.OperationalRate.list(),
   });
 
@@ -105,7 +106,7 @@ export default function PricingAgreementsTab() {
       await base44.entities.OperationalRate.create(data);
     }
 
-    queryClient.invalidateQueries({ queryKey: ['operationalRates'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.operationalRates.all() });
     setShowDialog(false);
     setSaving(false);
     showToast.success(editingRate ? 'תעריף עודכן' : 'תעריף נוצר');
@@ -113,7 +114,7 @@ export default function PricingAgreementsTab() {
 
   const handleDelete = async (id) => {
     await base44.entities.OperationalRate.delete(id);
-    queryClient.invalidateQueries({ queryKey: ['operationalRates'] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.operationalRates.all() });
     showToast.success('תעריף נמחק');
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import RoleGuard from '@/components/auth/RoleGuard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +57,7 @@ export default function AutomationSettingsPage() {
 
   // Load settings from database
   const settingsQuery = useQuery({
-    queryKey: ['automationSettings'],
+    queryKey: queryKeys.settings.automation(),
     queryFn: async () => {
       const results = await base44.entities.Setting.filter({ key: 'auto_assign_settings' });
       if (results?.[0]?.value) {
@@ -91,7 +92,7 @@ export default function AutomationSettingsPage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automationSettings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.automation() });
       toast.success('הגדרות נשמרו בהצלחה');
       setHasChanges(false);
     },

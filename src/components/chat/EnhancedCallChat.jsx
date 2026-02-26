@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -56,7 +57,7 @@ export default function EnhancedCallChat({
 
   // Fetch messages with real-time subscription
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['callMessages', callId],
+    queryKey: queryKeys.callMessages.byCall(callId),
     queryFn: () => base44.entities.Message.filter({ call_id: callId }, 'created_date', 200),
     refetchInterval: 3000,
   });
@@ -67,7 +68,7 @@ export default function EnhancedCallChat({
 
     const unsubscribe = base44.entities.Message.subscribe((event) => {
       if (event.data?.call_id === callId) {
-        queryClient.invalidateQueries({ queryKey: ['callMessages', callId] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.callMessages.byCall(callId) });
       }
     });
 
@@ -92,7 +93,7 @@ export default function EnhancedCallChat({
     onSuccess: () => {
       setMessageText('');
       setSelectedFile(null);
-      queryClient.invalidateQueries({ queryKey: ['callMessages', callId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.callMessages.byCall(callId) });
     },
   });
 

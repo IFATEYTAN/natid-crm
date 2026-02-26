@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ExportMenu from '@/components/ui/ExportMenu';
@@ -10,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 export default function FeedbackManagement() {
   const { data: feedbacks, isLoading } = useQuery({
-    queryKey: ['feedbacks'],
+    queryKey: queryKeys.feedbacks.all(),
     queryFn: () => base44.entities.CallFeedback.list('-created_at', 50),
     refetchInterval: 30000,
   });

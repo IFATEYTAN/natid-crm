@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { Bell, CheckCircle2, AlertTriangle, Info, XCircle } from 'lucide-react';
@@ -54,7 +55,7 @@ export default function RealtimeNotifications({ userId, soundEnabled = true }) {
         });
 
         // Invalidate notifications query to update the bell counter
-        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
       }
     });
 

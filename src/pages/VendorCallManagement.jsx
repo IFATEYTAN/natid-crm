@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -60,7 +61,7 @@ export default function VendorCallManagementPage() {
 
 
   const vendorQuery = useQuery({
-    queryKey: ['vendorProfile', currentUser?.email],
+    queryKey: queryKeys.vendors.profile(currentUser?.email),
     queryFn: async () => {
       const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
       if (vendors.length > 0) {
@@ -73,7 +74,7 @@ export default function VendorCallManagementPage() {
   });
 
   const callQuery = useQuery({
-    queryKey: ['vendorCall', selectedCallId, vendorProfile?.id],
+    queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
     queryFn: async () => {
       const calls = await base44.entities.Call.filter({ id: selectedCallId });
       if (calls.length > 0) {
@@ -89,7 +90,7 @@ export default function VendorCallManagementPage() {
   });
 
   const photosQuery = useQuery({
-    queryKey: ['callPhotos', selectedCallId],
+    queryKey: queryKeys.callPhotos.byCall(selectedCallId),
     queryFn: () => base44.entities.CallPhoto.filter({ call_id: selectedCallId, is_deleted: false }),
     enabled: !!selectedCallId,
   });
@@ -97,7 +98,7 @@ export default function VendorCallManagementPage() {
   const updateCallMutation = useMutation({
     mutationFn: (data) => base44.entities.Call.update(selectedCallId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendorCall', selectedCallId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id) });
       showToast.success('הקריאה עודכנה בהצלחה');
     },
   });
@@ -105,7 +106,7 @@ export default function VendorCallManagementPage() {
   const addPhotoMutation = useMutation({
     mutationFn: (data) => base44.entities.CallPhoto.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['callPhotos', selectedCallId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(selectedCallId) });
       showToast.success('התמונה נוספה בהצלחה');
       setShowPhotoDialog(false);
     },

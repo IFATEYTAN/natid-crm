@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -20,13 +21,13 @@ export default function MyQueue() {
   const { currentUser: user } = usePermissions();
 
   const { data: queueItems = [], isLoading } = useQuery({
-    queryKey: ['myQueue', user?.email],
+    queryKey: queryKeys.queue.my(user?.email),
     queryFn: () => base44.entities.WorkQueue.list('-priority_score'),
     refetchInterval: 15000, // Refresh every 15 seconds
   });
 
   const { data: calls = [] } = useQuery({
-    queryKey: ['queueCalls'],
+    queryKey: queryKeys.queue.calls(),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
   });
 
@@ -74,7 +75,7 @@ export default function MyQueue() {
       });
     },
     onSuccess: (_, queueId) => {
-      queryClient.invalidateQueries({ queryKey: ['myQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
       const queue = queueItems.find((q) => q.id === queueId);
       if (queue?.call_id) {
         navigate(createPageUrl(`CaseDetails?id=${queue.call_id}`));
@@ -90,7 +91,7 @@ export default function MyQueue() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
     },
   });
 
@@ -113,7 +114,7 @@ export default function MyQueue() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myQueue'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
     },
   });
 

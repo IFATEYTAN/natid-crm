@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +47,7 @@ export default function VendorPortalPage() {
   }, [isAdmin]);
 
   const vendorQuery = useQuery({
-    queryKey: ['vendorProfile', currentUser?.email],
+    queryKey: queryKeys.vendors.profile(currentUser?.email),
     queryFn: async () => {
       const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
       if (vendors.length > 0) {
@@ -60,7 +61,7 @@ export default function VendorPortalPage() {
   });
 
   const callsQuery = useQuery({
-    queryKey: ['vendorCalls', vendorProfile?.id],
+    queryKey: queryKeys.vendors.calls(vendorProfile?.id),
     queryFn: () =>
       base44.entities.Call.filter({ assigned_vendor_id: vendorProfile.id }, '-created_date', 100),
     enabled: !!vendorProfile?.id,
@@ -68,7 +69,7 @@ export default function VendorPortalPage() {
   });
 
   const contractQuery = useQuery({
-    queryKey: ['vendorContract', vendorProfile?.id],
+    queryKey: queryKeys.vendors.contracts(vendorProfile?.id),
     queryFn: async () => {
       const contracts = await base44.entities.VendorContract.filter(
         { vendor_id: vendorProfile.id, status: 'active' },
@@ -81,7 +82,7 @@ export default function VendorPortalPage() {
   });
 
   const pendingAssignmentsQuery = useQuery({
-    queryKey: ['pendingAssignments', vendorProfile?.id],
+    queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id),
     queryFn: async () => {
       const attempts = await base44.entities.CallAssignmentAttempt.filter(
         { vendor_id: vendorProfile.id, status: 'pending' },
@@ -129,8 +130,8 @@ export default function VendorPortalPage() {
       showToast.success('הקריאה התקבלה בהצלחה!');
       setShowNewCallAlert(false);
       setPendingCall(null);
-      queryClient.invalidateQueries({ queryKey: ['vendorCalls'] });
-      queryClient.invalidateQueries({ queryKey: ['pendingAssignments'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.calls(vendorProfile?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id) });
     },
   });
 
@@ -144,7 +145,7 @@ export default function VendorPortalPage() {
     onSuccess: () => {
       setShowNewCallAlert(false);
       setPendingCall(null);
-      queryClient.invalidateQueries({ queryKey: ['pendingAssignments'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id) });
     },
   });
 

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -46,7 +47,7 @@ export default function HistoricalDataAnalysisPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ['historicalCallData'],
+    queryKey: queryKeys.historicalData.all(),
     queryFn: async () => {
       // Fetch all records in batches
       const allRecords = [];
@@ -151,7 +152,7 @@ export default function HistoricalDataAnalysisPage() {
   const { currentUser } = usePermissions();
 
   const { data: displayPref } = useQuery({
-    queryKey: ['userDisplayPref', currentUser?.id, 'HistoricalDataAnalysis'],
+    queryKey: queryKeys.settings.display(currentUser?.id, 'HistoricalDataAnalysis'),
     enabled: !!currentUser,
     queryFn: async () => {
       const list = await base44.entities.UserDisplayPreference.filter({

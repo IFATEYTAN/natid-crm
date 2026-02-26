@@ -12,6 +12,7 @@ export const queryKeys = {
   calls: {
     all: () => ['calls'],
     detail: (id) => ['calls', id],
+    single: (id) => ['call', id],
     list: (filters) => ['calls', { filters }],
     byVendor: (vendorId) => ['calls', 'vendor', vendorId],
     byCustomer: (customerId) => ['calls', 'customer', customerId],
@@ -52,6 +53,7 @@ export const queryKeys = {
   cases: {
     all: () => ['cases'],
     detail: (id) => ['cases', id],
+    single: (id) => ['case', id],
     list: (filters) => ['cases', { filters }],
     activities: (caseId) => ['case-activities', caseId],
   },
@@ -60,6 +62,7 @@ export const queryKeys = {
   customers: {
     all: () => ['customers'],
     detail: (id) => ['customers', id],
+    single: (id) => ['customer', id],
     list: (filters) => ['customers', { filters }],
     interactions: (customerId) => ['customer-interactions', customerId],
     calls: (customerId) => ['customer-calls', customerId],
@@ -68,7 +71,9 @@ export const queryKeys = {
   // Vendors feature
   vendors: {
     all: () => ['vendors'],
+    allList: () => ['allVendors'],
     detail: (id) => ['vendors', id],
+    single: (id) => ['vendor', id],
     list: (filters) => ['vendors', { filters }],
     available: () => ['availableVendors'],
     ratings: (vendorId) => ['vendors', vendorId, 'ratings'],
@@ -85,6 +90,20 @@ export const queryKeys = {
     mapCalls: (vendorId) => ['vendorMapCalls', vendorId],
     contractHistory: (vendorId) => ['vendorContractHistory', vendorId],
     call: (callId, vendorId) => ['vendorCall', callId, vendorId],
+    // VendorProfile page keys (legacy singular format)
+    singleCalls: (vendorId) => ['vendor-calls', vendorId],
+    singleRatings: (vendorId) => ['vendor-ratings', vendorId],
+    singlePayments: (vendorId) => ['vendor-payments', vendorId],
+    singleContracts: (vendorId) => ['vendor-contracts', vendorId],
+    singleLocation: (vendorId) => ['vendor-location', vendorId],
+    // MyVendorProfile page keys
+    myProfile: (email) => ['my-vendor-profile', email],
+    myCalls: (vendorId) => ['my-vendor-calls', vendorId],
+    myRatings: (vendorId) => ['my-vendor-ratings', vendorId],
+    myPayments: (vendorId) => ['my-vendor-payments', vendorId],
+    myLocation: (vendorId) => ['my-vendor-location', vendorId],
+    // VendorPayments page key
+    vendorPayments: (vendorId) => ['vendorPayments', vendorId],
   },
 
   // Vendor Contracts (general tab)
@@ -95,6 +114,7 @@ export const queryKeys = {
   // Assignment Requests
   assignmentRequests: {
     byVendor: (vendorId) => ['pendingAssignments', vendorId],
+    byVendorPortal: (vendorId) => ['assignmentRequests', vendorId],
   },
 
   // Call Assignment Attempts
@@ -119,6 +139,7 @@ export const queryKeys = {
   // Queue feature
   queue: {
     all: () => ['workQueue'],
+    allQueues: () => ['allQueues'],
     detail: (id) => ['workQueue', id],
     list: (filters) => ['workQueue', { filters }],
     my: (email) => ['myQueue', email],
@@ -137,6 +158,7 @@ export const queryKeys = {
     all: () => ['notifications'],
     byUser: (userId) => ['notifications', userId],
     settings: (userId) => ['notification-settings', userId],
+    userSettings: (userId) => ['notificationSettings', 'user', userId],
   },
 
   // Activities feature
@@ -152,11 +174,18 @@ export const queryKeys = {
     vendors: () => ['reports', 'vendors'],
     customers: () => ['reports', 'customers'],
     calls: () => ['reports', 'calls'],
+    // Page-level report keys (used in reports/index.jsx)
+    vendorsPage: () => ['vendors-report'],
+    customersPage: () => ['customers-report'],
+    callsPage: () => ['calls-report'],
+    ratingsPage: () => ['ratings-report'],
+    paymentsPage: () => ['payments-report'],
   },
 
   // Service Providers (legacy/alias)
   serviceProviders: {
     all: () => ['service-providers'],
+    available: () => ['providers-available'],
   },
 
   // Products feature

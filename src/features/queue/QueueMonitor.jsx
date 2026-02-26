@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ export default function QueueMonitor() {
 
   // Fetch agents
   const { data: agents = [] } = useQuery({
-    queryKey: ['agents'],
+    queryKey: queryKeys.users.agents(),
     queryFn: async () => {
       const users = await base44.entities.User.list();
       return users.filter((u) => u.role === 'user');
@@ -53,14 +54,14 @@ export default function QueueMonitor() {
 
   // Fetch queue
   const { data: queueItems = [], isLoading } = useQuery({
-    queryKey: ['queueMonitor'],
+    queryKey: queryKeys.queue.monitor(),
     queryFn: () => base44.entities.WorkQueue.list(),
     refetchInterval: 5000,
   });
 
   // Fetch calls
   const { data: calls = [] } = useQuery({
-    queryKey: ['calls'],
+    queryKey: queryKeys.calls.all(),
     queryFn: () => base44.entities.Call.list('-created_date', 100),
     refetchInterval: 10000,
   });
@@ -87,7 +88,7 @@ export default function QueueMonitor() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['queueMonitor']);
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.monitor() });
       setTransferDialogOpen(false);
       setSelectedCall(null);
       setTargetAgent('');
@@ -156,7 +157,7 @@ export default function QueueMonitor() {
       await base44.functions.invoke('autoAssignVendor', { callId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calls'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
     },
   });
 

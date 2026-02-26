@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,18 +13,18 @@ export default function CallPricingSection({ call, callId }) {
   const [breakdown, setBreakdown] = useState(null);
 
   const { data: rates = [] } = useQuery({
-    queryKey: ['operationalRates'],
+    queryKey: queryKeys.operationalRates.all(),
     queryFn: () => base44.entities.OperationalRate.filter({ is_active: true }),
   });
 
   const { data: callProducts = [] } = useQuery({
-    queryKey: ['callProducts', callId],
+    queryKey: queryKeys.callProducts.byCall(callId),
     queryFn: () => base44.entities.CallProduct.filter({ call_id: callId }),
     enabled: !!callId,
   });
 
   const { data: deposits = [] } = useQuery({
-    queryKey: ['deposits', callId],
+    queryKey: queryKeys.deposits.byCall(callId),
     queryFn: () => base44.entities.Deposit.filter({ call_id: callId }),
     enabled: !!callId,
   });

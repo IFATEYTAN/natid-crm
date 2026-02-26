@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Loader2 } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function CallChat({ callId, currentUserRole, currentUserName }) {
 
   // Fetch messages
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['callMessages', callId],
+    queryKey: queryKeys.callMessages.byCall(callId),
     queryFn: () => base44.entities.Message.filter({ call_id: callId }, 'created_date', 100),
     refetchInterval: 5000, // Poll every 5 seconds
   });
@@ -43,7 +44,7 @@ export default function CallChat({ callId, currentUserRole, currentUserName }) {
     },
     onSuccess: () => {
       setMessageText('');
-      queryClient.invalidateQueries({ queryKey: ['callMessages', callId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.callMessages.byCall(callId) });
       // Scroll to bottom
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

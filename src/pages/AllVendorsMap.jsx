@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -71,7 +72,7 @@ export default function AllVendorsMapPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['vendors-map'],
+    queryKey: queryKeys.vendors.map(),
     queryFn: () => base44.entities.Vendor.list('-updated_date', 500),
     refetchInterval: 30000, // Auto refresh every 30 seconds
   });

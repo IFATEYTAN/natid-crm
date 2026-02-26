@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,14 +56,14 @@ export default function NotificationSettingsPage() {
   const queryClient = useQueryClient();
 
   const { data: settings = [], isLoading } = useQuery({
-    queryKey: ['notification-settings'],
+    queryKey: queryKeys.settings.notifications(),
     queryFn: () => base44.entities.NotificationSetting.list('-created_date', 50),
   });
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, enabled }) => base44.entities.NotificationSetting.update(id, { enabled }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.notifications() });
       showToast.success('ההגדרה עודכנה');
     },
     onError: () => {
@@ -73,7 +74,7 @@ export default function NotificationSettingsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.NotificationSetting.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.notifications() });
       showToast.success('ההגדרה נמחקה');
     },
     onError: () => {

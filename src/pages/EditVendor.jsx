@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { coverageAreas } from '@/config/coverageConstants';
 import { sanitizeVendorUpdate } from '@/lib/schemas/vendor';
 import { Button } from '@/components/ui/button';
@@ -66,7 +67,7 @@ export default function EditVendorPage() {
   });
 
   const { data: vendor, isLoading } = useQuery({
-    queryKey: ['vendor', id],
+    queryKey: queryKeys.vendors.detail(id),
     queryFn: () => base44.entities.Vendor.get(id),
     enabled: !!id,
   });
@@ -95,8 +96,8 @@ export default function EditVendorPage() {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Vendor.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendor', id] });
-      queryClient.invalidateQueries({ queryKey: ['service-providers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() });
       showToast.success('פרטי הספק עודכנו בהצלחה');
       navigate(createPageUrl('ServiceProviders'));
     },

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import RoleGuard from '@/components/auth/RoleGuard';
 import { Button } from '@/components/ui/button';
@@ -63,7 +64,7 @@ export default function AuditLogPage() {
   const [entityFilter, setEntityFilter] = useState('all');
 
   const auditQuery = useQuery({
-    queryKey: ['auditLog'],
+    queryKey: queryKeys.auditLog.all(),
     queryFn: () => base44.entities.AuditLog.list('-created_date', 500),
   });
 

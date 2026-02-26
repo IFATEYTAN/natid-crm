@@ -4,6 +4,7 @@ import { createPageUrl } from '@/components/utils';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -80,26 +81,26 @@ export default function ServiceProvidersPage() {
   const queryClient = useQueryClient();
 
   const vendorsQuery = useQuery({
-    queryKey: ['service-providers'],
+    queryKey: queryKeys.serviceProviders.all(),
     queryFn: () => base44.entities.Vendor.list('-updated_date', 1000),
   });
 
   const deleteVendor = useMutation({
     mutationFn: (id) => base44.entities.Vendor.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() }),
   });
 
   const updateAvailability = useMutation({
     mutationFn: ({ id, is_available_now, availability_status }) =>
       base44.entities.Vendor.update(id, { is_available_now, availability_status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['service-providers'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() }),
   });
 
   const vendors = vendorsQuery.data || [];
 
   // Fetch calls to calculate open/closed per vendor
   const { data: calls = [] } = useQuery({
-    queryKey: ['calls-for-vendors'],
+    queryKey: queryKeys.calls.forVendors(),
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
   });
 

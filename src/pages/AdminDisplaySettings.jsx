@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { queryKeys } from '@/lib/queryKeys';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,14 +35,14 @@ export default function AdminDisplaySettings() {
   }, [user]);
 
   const { data: users = [] } = useQuery({
-    queryKey: ['users'],
+    queryKey: queryKeys.users.all(),
     enabled: !!user && user.role === 'admin',
     queryFn: () => base44.entities.User.list(),
     initialData: [],
   });
 
   const { data: pref, isLoading } = useQuery({
-    queryKey: ["userDisplayPref", selectedUserId, selectedPage],
+    queryKey: queryKeys.settings.display(selectedUserId, selectedPage),
     enabled: !!user && !!selectedPage,
     queryFn: async () => {
       const list = await base44.entities.UserDisplayPreference.filter({ user_id: selectedUserId, page_name: selectedPage });
@@ -78,7 +79,7 @@ export default function AdminDisplaySettings() {
       }
       return base44.entities.UserDisplayPreference.create(payload);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["userDisplayPref", user?.id, selectedPage] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.settings.display(user?.id, selectedPage) }),
   });
 
   const handleReorder = (index, direction) => {

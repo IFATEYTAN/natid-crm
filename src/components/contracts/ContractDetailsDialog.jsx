@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { coverageLabels as areaLabels } from '@/config/coverageConstants';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,13 +78,13 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   const queryClient = useQueryClient();
 
   const vendorsQuery = useQuery({
-    queryKey: ['vendors'],
+    queryKey: queryKeys.vendors.all(),
     queryFn: () => base44.entities.Vendor.list(),
   });
 
   // Get contract history (all contracts for this vendor)
   const historyQuery = useQuery({
-    queryKey: ['vendorContractHistory', contract?.vendor_id],
+    queryKey: queryKeys.vendors.contractHistory(contract?.vendor_id),
     queryFn: () =>
       base44.entities.VendorContract.filter({ vendor_id: contract.vendor_id }, '-created_date'),
     enabled: !!contract?.vendor_id,
@@ -92,7 +93,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.VendorContract.update(contract.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendorContracts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContracts.all() });
       onUpdate?.();
     },
   });

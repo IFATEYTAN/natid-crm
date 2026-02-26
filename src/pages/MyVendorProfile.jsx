@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,7 +80,7 @@ export default function MyVendorProfilePage() {
 
 
   const vendorQuery = useQuery({
-    queryKey: ['myVendorProfile', currentUser?.email],
+    queryKey: queryKeys.vendors.profile(currentUser?.email),
     queryFn: async () => {
       const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
       if (vendors.length > 0) {
@@ -112,7 +113,7 @@ export default function MyVendorProfilePage() {
     mutationFn: (data) => base44.entities.Vendor.update(vendorQuery.data.id, data),
     onSuccess: () => {
       showToast.success(feedbackMessages.save.success);
-      queryClient.invalidateQueries({ queryKey: ['myVendorProfile'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.profile(currentUser?.email) });
     },
     onError: () => {
       showToast.error(feedbackMessages.save.error);
