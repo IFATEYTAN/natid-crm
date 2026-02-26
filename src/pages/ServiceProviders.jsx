@@ -76,6 +76,16 @@ const availabilityColors = {
   on_break: 'bg-yellow-100 text-yellow-800',
 };
 
+const hasTowService = (v) => {
+  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+  return types.includes('tow_truck') || types.some((t) => t === 'גרירה');
+};
+
+const hasMobileService = (v) => {
+  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+  return types.includes('mobile_unit') || types.some((t) => t === 'ניידת');
+};
+
 export default function ServiceProvidersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -146,15 +156,6 @@ export default function ServiceProvidersPage() {
     });
   }, [vendors, searchQuery, typeFilter, availabilityFilter, activeKpi]);
 
-  const hasTowService = (v) => {
-    const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-    return types.includes('tow_truck') || types.some(t => t === 'גרירה');
-  };
-  const hasMobileService = (v) => {
-    const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-    return types.includes('mobile_unit') || types.some(t => t === 'ניידת');
-  };
-
   const stats = useMemo(() => {
     const active = vendors.filter((v) => v.is_active);
     const towTrucks = active.filter(hasTowService);
@@ -171,7 +172,9 @@ export default function ServiceProvidersPage() {
       inactive: inactive.length,
       avgRating:
         vendors.length > 0
-          ? (vendors.reduce((sum, v) => sum + (v.average_rating || 0), 0) / vendors.length).toFixed(1)
+          ? (vendors.reduce((sum, v) => sum + (v.average_rating || 0), 0) / vendors.length).toFixed(
+              1
+            )
           : 0,
     };
   }, [vendors]);
@@ -369,9 +372,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'all' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'
+              activeKpi === 'all'
+                ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]'
+                : 'border-[#e5e7eb] hover:border-[#3b82f6]'
             )}
-            onClick={() => { setActiveKpi('all'); setTypeFilter('all'); setAvailabilityFilter('all'); }}
+            onClick={() => {
+              setActiveKpi('all');
+              setTypeFilter('all');
+              setAvailabilityFilter('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -388,9 +397,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'tow_truck' ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]' : 'border-[#e5e7eb] hover:border-[#f59e0b]'
+              activeKpi === 'tow_truck'
+                ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]'
+                : 'border-[#e5e7eb] hover:border-[#f59e0b]'
             )}
-            onClick={() => { setActiveKpi('tow_truck'); setTypeFilter('tow_truck'); setAvailabilityFilter('all'); }}
+            onClick={() => {
+              setActiveKpi('tow_truck');
+              setTypeFilter('tow_truck');
+              setAvailabilityFilter('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -407,9 +422,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'mobile_unit' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'
+              activeKpi === 'mobile_unit'
+                ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]'
+                : 'border-[#e5e7eb] hover:border-[#3b82f6]'
             )}
-            onClick={() => { setActiveKpi('mobile_unit'); setTypeFilter('mobile_unit'); setAvailabilityFilter('all'); }}
+            onClick={() => {
+              setActiveKpi('mobile_unit');
+              setTypeFilter('mobile_unit');
+              setAvailabilityFilter('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -426,9 +447,15 @@ export default function ServiceProvidersPage() {
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'inactive' ? 'border-[#ef4444] ring-1 ring-[#ef4444]' : 'border-[#e5e7eb] hover:border-[#ef4444]'
+              activeKpi === 'inactive'
+                ? 'border-[#ef4444] ring-1 ring-[#ef4444]'
+                : 'border-[#e5e7eb] hover:border-[#ef4444]'
             )}
-            onClick={() => { setActiveKpi('inactive'); setTypeFilter('all'); setAvailabilityFilter('offline'); }}
+            onClick={() => {
+              setActiveKpi('inactive');
+              setTypeFilter('all');
+              setAvailabilityFilter('offline');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
