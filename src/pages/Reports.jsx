@@ -516,11 +516,23 @@ export default function ReportsPage() {
           <TabsTrigger value="usage">שימושים</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="operational" className="mt-4">
-          <Suspense fallback={<Skeleton className="h-[400px]" />}>
-            <OperationalEfficiencyReport calls={filteredCalls} />
-          </Suspense>
-        </TabsContent>
+        <TabsContent value="annual2025" className="mt-4">
+           <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <Annual2025Report />
+           </Suspense>
+         </TabsContent>
+
+         <TabsContent value="fleet2025" className="mt-4">
+           <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <Fleet2025Report />
+           </Suspense>
+         </TabsContent>
+
+         <TabsContent value="operational" className="mt-4">
+           <Suspense fallback={<Skeleton className="h-[400px]" />}>
+             <OperationalEfficiencyReport calls={filteredCalls} />
+           </Suspense>
+         </TabsContent>
 
         <TabsContent value="vendors" className="mt-4">
           <Suspense fallback={<Skeleton className="h-[400px]" />}>
