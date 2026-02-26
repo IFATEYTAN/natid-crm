@@ -40,16 +40,73 @@ export default function ImportHistoricalDataPage() {
       if (fileName.endsWith('.csv')) {
         const response = await fetch(file_url);
         const csvText = await response.text();
-        const lines = csvText.split('\n').filter((line) => line.trim());
-        const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+        
+        // Parse CSV properly, handling quoted values
+        const parseCSV = (text) => {
+          const lines = [];
+          let currentLine = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+            
+            if (char === '"') {
+              if (inQuotes && nextChar === '"') {
+                currentLine += '"';
+                i++;
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (char === '\n' && !inQuotes) {
+              if (currentLine.trim()) lines.push(currentLine);
+              currentLine = '';
+            } else {
+              currentLine += char;
+            }
+          }
+          if (currentLine.trim()) lines.push(currentLine);
+          return lines;
+        };
+        
+        const parseRow = (line) => {
+          const values = [];
+          let current = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+            
+            if (char === '"') {
+              if (inQuotes && nextChar === '"') {
+                current += '"';
+                i++;
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (char === ',' && !inQuotes) {
+              values.push(current.trim().replace(/^"|"$/g, ''));
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          values.push(current.trim().replace(/^"|"$/g, ''));
+          return values;
+        };
+        
+        const lines = parseCSV(csvText);
+        const headers = parseRow(lines[0]);
         const dataRows = lines.slice(1).map((line) => {
-          const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+          const values = parseRow(line);
           const row = {};
           headers.forEach((header, idx) => {
             row[header] = values[idx] || '';
           });
           return row;
         });
+        
         setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: file_url });
         toast.success('הקובץ טופל בהצלחה');
       } else {
