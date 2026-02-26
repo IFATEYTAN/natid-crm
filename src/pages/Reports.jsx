@@ -504,8 +504,10 @@ export default function ReportsPage() {
       </PermissionGuard>
 
       {/* Advanced Reports Tabs */}
-      <Tabs defaultValue="operational" className="mt-8">
+      <Tabs defaultValue="annual2025" className="mt-8">
         <TabsList className="w-full justify-start bg-white p-1 border border-[#e5e7eb] rounded-lg flex-wrap">
+          <TabsTrigger value="annual2025">דוח 2025 - סיכום</TabsTrigger>
+          <TabsTrigger value="fleet2025">דוח 2025 - צי וספקים</TabsTrigger>
           <TabsTrigger value="operational">יעילות תפעולית</TabsTrigger>
           <TabsTrigger value="vendors">ביצועי ספקים</TabsTrigger>
           <TabsTrigger value="customers">ניתוח לקוחות</TabsTrigger>
