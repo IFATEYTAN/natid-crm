@@ -149,20 +149,23 @@ export default function ImportHistoricalDataPage() {
     }
   };
 
+  const currentSheet = filePreview?.sheets[selectedSheet];
+  const callFields = [
+    'call_number', 'customer_name', 'customer_phone', 'vehicle_plate', 'issue_type',
+    'issue_description', 'pickup_location_address', 'pickup_location_city', 'service_category',
+    'provider_type', 'fleet_vehicle_name', 'assigned_vendor_name', 'total_cost', 'actual_distance_km'
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold text-[#172B4D] mb-6">ייבוא נתוני קריאות היסטוריים</h1>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-blue-600" />
-            העלאת קובץ אקסל
+            שלב 1: בחר קובץ
           </CardTitle>
-          <CardDescription>
-            העלה קובץ אקסל עם נתוני הקריאות. הקובץ צריך לכלול את העמודות: id, serve_type, car_type,
-            car_name, car_year, description, bot_recommendation, bot_match, nayedet_fixed, diagnose
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div
@@ -194,33 +197,132 @@ export default function ImportHistoricalDataPage() {
               )}
             </label>
           </div>
+        </CardContent>
+      </Card>
 
-          <Button
-            onClick={handleImport}
-            disabled={!file || isUploading}
-            className="w-full bg-blue-600 hover:bg-blue-700"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                מייבא נתונים...
-              </>
-            ) : (
-              <>
-                <Upload className="w-4 h-4 ml-2" />
-                ייבא נתונים
-              </>
-            )}
-          </Button>
+      {filePreview && (
+        <>
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>שלב 2: בחר גיליון</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2 flex-wrap">
+                {filePreview.sheets.map((sheet, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedSheet(idx)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      selectedSheet === idx
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                    }`}
+                  >
+                    {sheet.name} ({sheet.rows?.length || 0} רשומות)
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {currentSheet && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>שלב 3: מיפוי עמודות</CardTitle>
+                <CardDescription>
+                  בחר איזו עמודה מהקובץ מתאימה לכל שדה בדאטאבייס
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {callFields.map((dbField) => (
+                    <div key={dbField} className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        {dbField}
+                      </label>
+                      <select
+                        value={columnMapping[dbField] || ''}
+                        onChange={(e) =>
+                          setColumnMapping({
+                            ...columnMapping,
+                            [dbField]: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">-- בחר עמודה --</option>
+                        {currentSheet.headers.map((header) => (
+                          <option key={header} value={header}>
+                            {header}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">תצוגה מקדימה:</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-blue-100">
+                        <tr>
+                          {currentSheet.headers.slice(0, 5).map((h) => (
+                            <th key={h} className="px-2 py-1 text-right">{h}</th>
+                          ))}
+                          {currentSheet.headers.length > 5 && (
+                            <th className="px-2 py-1 text-right">...</th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentSheet.rows.slice(0, 3).map((row, idx) => (
+                          <tr key={idx} className="border-t">
+                            {currentSheet.headers.slice(0, 5).map((h) => (
+                              <td key={h} className="px-2 py-1 text-right text-gray-600">
+                                {row[h]?.toString().substring(0, 30)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <Button
+                onClick={handleImport}
+                disabled={!currentSheet || isUploading || Object.values(columnMapping).filter(Boolean).length === 0}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                    מייבא נתונים...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 ml-2" />
+                    ייבא {currentSheet?.rows.length || 0} רשומות
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
 
           {importResult && (
             <div
-              className={`p-4 rounded-lg ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
+              className={`p-4 rounded-lg mt-6 ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
             >
               {importResult.success ? (
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle className="w-5 h-5" />
-                  <span>יובאו {importResult.count} רשומות בהצלחה!</span>
+                  <span>יובאו {importResult.count} רשומות מ-"{importResult.sheet}" בהצלחה! ✅</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-700">
@@ -230,8 +332,8 @@ export default function ImportHistoricalDataPage() {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   );
 }
