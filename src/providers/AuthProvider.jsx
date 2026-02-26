@@ -2,6 +2,8 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/lib/api';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import { isDemoMode } from '@/demo/demoMode';
+import { demoUser } from '@/demo/demoData';
 
 const AuthContext = createContext();
 
@@ -18,6 +20,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    // Demo mode: skip real auth, use demo user immediately
+    if (isDemoMode()) {
+      setUser(demoUser);
+      setIsAuthenticated(true);
+      setAppPublicSettings({ id: 'demo', public_settings: {} });
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+      return;
+    }
+
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
