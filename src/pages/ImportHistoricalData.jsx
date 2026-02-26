@@ -23,9 +23,61 @@ export default function ImportHistoricalDataPage() {
       if (isValidExtension) {
         setFile(selectedFile);
         setImportResult(null);
+        setFilePreview(null);
+        setColumnMapping({});
+        previewFile(selectedFile);
       } else {
         toast.error('נא להעלות קובץ אקסל (.xlsx, .xls) או CSV בלבד');
       }
+    }
+  };
+
+  const previewFile = async (selectedFile) => {
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
+      const fileName = selectedFile.name.toLowerCase();
+
+      if (fileName.endsWith('.csv')) {
+        const response = await fetch(file_url);
+        const csvText = await response.text();
+        const lines = csvText.split('\n').filter((line) => line.trim());
+        const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+        const dataRows = lines.slice(1, 4).map((line) => {
+          const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+          const row = {};
+          headers.forEach((header, idx) => {
+            row[header] = values[idx] || '';
+          });
+          return row;
+        });
+        setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: file_url });
+      } else {
+        const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
+          file_url,
+          json_schema: {
+            type: 'object',
+            properties: {
+              sheets: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    headers: { type: 'array', items: { type: 'string' } },
+                    rows: { type: 'array', items: { type: 'object' } },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (extractResult.status === 'success' && extractResult.output) {
+          setFilePreview({ sheets: extractResult.output.sheets || [], url: file_url });
+        }
+      }
+    } catch (error) {
+      console.error('Preview error:', error);
     }
   };
 
