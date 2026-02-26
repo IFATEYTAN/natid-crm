@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Clock, Star, TrendingUp, Calendar, DollarSign } from 'lucide-react';
 
-export default function VendorStats({ vendor, calls = [] }) {
+export default function VendorStats({ vendor, calls = [], onStatClick }) {
   // Calculate stats
   const completedCalls = calls.filter((c) => c.call_status === 'completed');
 
