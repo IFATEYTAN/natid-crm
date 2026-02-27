@@ -15,14 +15,14 @@ export default function FormInput({
   return (
     <div className="space-y-2">
       {label && (
-        <Label className="block text-right text-neutral-soft-800 font-medium text-[14px]">
+        <Label className="block text-end text-neutral-soft-800 font-medium text-[14px]">
           {label}
-          {required && <span className="text-error-soft-500 ml-1 text-base">*</span>}
+          {required && <span className="text-error-soft-500 ms-1 text-base">*</span>}
         </Label>
       )}
       <Input
         className={cn(
-          'border border-neutral-soft-200 rounded-[4px] px-4 py-3 text-base text-right bg-white',
+          'border border-neutral-soft-200 rounded-[4px] px-4 py-3 text-base text-end bg-white',
           'focus:border-secondary-soft-500 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.1)] focus:outline-none',
           error &&
             'border-error-soft-500 focus:border-error-soft-600 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.1)]',
@@ -38,7 +38,7 @@ export default function FormInput({
         </div>
       )}
       {helperText && !error && (
-        <p className="text-neutral-soft-500 text-xs caption text-right">{helperText}</p>
+        <p className="text-neutral-soft-500 text-xs caption text-end">{helperText}</p>
       )}
     </div>
   );

@@ -3,7 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CalendarClock, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
@@ -79,7 +85,9 @@ export default function FutureServiceSection({ call, callId, onStatusChanged }) 
               </SelectTrigger>
               <SelectContent>
                 {timeRanges.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  <SelectItem key={r.value} value={r.value}>
+                    {r.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -93,7 +101,8 @@ export default function FutureServiceSection({ call, callId, onStatusChanged }) 
         </div>
         {call?.future_service_date && (
           <div className="mt-3 p-2 bg-violet-50 rounded-md text-sm text-violet-700">
-            שירות עתידי מתוכנן ל-{call.future_service_date} {call.future_service_time_range && `בשעות ${call.future_service_time_range}`}
+            שירות עתידי מתוכנן ל-{call.future_service_date}{' '}
+            {call.future_service_time_range && `בשעות ${call.future_service_time_range}`}
           </div>
         )}
       </CardContent>

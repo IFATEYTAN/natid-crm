@@ -9,7 +9,9 @@ export default function OperationalEfficiencyReport({ calls }) {
   const stats = useMemo(() => {
     // Average handling time (creation to closed_at or completed status if we simulate time)
     // Using time_to_completion if available, otherwise estimating
-    const completedCalls = calls.filter((c) => c.call_status === 'completed' && c.time_to_completion);
+    const completedCalls = calls.filter(
+      (c) => c.call_status === 'completed' && c.time_to_completion
+    );
     const avgTime =
       completedCalls.reduce((sum, c) => sum + (c.time_to_completion || 0), 0) /
       (completedCalls.length || 1);
@@ -17,9 +19,9 @@ export default function OperationalEfficiencyReport({ calls }) {
     // Calls per day (average)
     // Group by date
     const callsByDate = {};
-    calls.forEach(c => {
-        const date = new Date(c.created_date).toDateString();
-        callsByDate[date] = (callsByDate[date] || 0) + 1;
+    calls.forEach((c) => {
+      const date = new Date(c.created_date).toDateString();
+      callsByDate[date] = (callsByDate[date] || 0) + 1;
     });
     const daysCount = Object.keys(callsByDate).length || 1;
     const avgCallsPerDay = calls.length / daysCount;
@@ -28,7 +30,7 @@ export default function OperationalEfficiencyReport({ calls }) {
       avgHandlingTime: Math.round(avgTime),
       totalCalls: calls.length,
       avgCallsPerDay: Math.round(avgCallsPerDay * 10) / 10,
-      activeOperators: new Set(calls.map(c => c.created_by)).size
+      activeOperators: new Set(calls.map((c) => c.created_by)).size,
     };
   }, [calls]);
 
@@ -118,15 +120,15 @@ export default function OperationalEfficiencyReport({ calls }) {
             </Suspense>
           </CardContent>
         </Card>
-        
+
         {/* We can add another chart here later, e.g., calls by hour of day */}
         <Card>
-            <CardHeader>
-                <CardTitle className="text-lg">התפלגות זמני טיפול</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center h-[300px] text-gray-400">
-                בקרוב...
-            </CardContent>
+          <CardHeader>
+            <CardTitle className="text-lg">התפלגות זמני טיפול</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center h-[300px] text-gray-400">
+            בקרוב...
+          </CardContent>
         </Card>
       </div>
     </div>

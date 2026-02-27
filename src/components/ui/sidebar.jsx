@@ -544,7 +544,7 @@ const SidebarMenuBadge = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     data-sidebar="menu-badge"
     className={cn(
-      'pointer-events-none absolute right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground',
+      'pointer-events-none absolute end-1 flex h-5 min-w-5 select-none items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground',
       'peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground',
       'peer-data-[size=sm]/menu-button:top-1',
       'peer-data-[size=default]/menu-button:top-1.5',
@@ -588,7 +588,7 @@ const SidebarMenuSub = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     data-sidebar="menu-sub"
     className={cn(
-      'mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5',
+      'mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-s border-sidebar-border px-2.5 py-0.5',
       'group-data-[collapsible=icon]:hidden',
       className
     )}

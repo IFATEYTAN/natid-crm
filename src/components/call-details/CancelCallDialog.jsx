@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -83,9 +89,7 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
         {step === 'choose' && (
           <div className="space-y-4 py-2">
             <p className="text-sm text-gray-600">
-              {isEnroute
-                ? 'נותן השירות כבר בדרך. בחר את סוג הביטול:'
-                : 'בחר את סוג הביטול:'}
+              {isEnroute ? 'נותן השירות כבר בדרך. בחר את סוג הביטול:' : 'בחר את סוג הביטול:'}
             </p>
             <RadioGroup value={cancelType} onValueChange={setCancelType} className="space-y-3">
               <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer">
@@ -130,7 +134,9 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
               )}
             </RadioGroup>
             <DialogFooter>
-              <Button variant="outline" onClick={resetAndClose}>ביטול</Button>
+              <Button variant="outline" onClick={resetAndClose}>
+                ביטול
+              </Button>
               <Button
                 disabled={!cancelType}
                 onClick={() => setStep('reason')}
@@ -156,11 +162,11 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
                 rows={3}
               />
             </div>
-            <p className="text-xs text-gray-500">
-              הסיבה תתועד בהתנהלות הקריאה
-            </p>
+            <p className="text-xs text-gray-500">הסיבה תתועד בהתנהלות הקריאה</p>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setStep('choose')}>חזרה</Button>
+              <Button variant="outline" onClick={() => setStep('choose')}>
+                חזרה
+              </Button>
               <Button
                 variant="destructive"
                 onClick={handleConfirm}

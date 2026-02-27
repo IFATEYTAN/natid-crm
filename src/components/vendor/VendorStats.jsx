@@ -71,8 +71,7 @@ export default function VendorStats({ vendor, calls = [], onStatClick }) {
     {
       id: 'arrival',
       title: 'זמן הגעה ממוצע',
-      value:
-        avgResponseTime > 0 ? Math.round(avgResponseTime) : '-',
+      value: avgResponseTime > 0 ? Math.round(avgResponseTime) : '-',
       icon: Clock,
       color: 'bg-purple-100 text-purple-600',
       suffix: "דק'",
@@ -100,8 +99,8 @@ export default function VendorStats({ vendor, calls = [], onStatClick }) {
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
-          <Card 
-            key={idx} 
+          <Card
+            key={idx}
             className={`bg-white ${onStatClick ? 'cursor-pointer hover:shadow-md transition-all hover:bg-gray-50' : ''}`}
             onClick={() => onStatClick && onStatClick(stat.id)}
           >

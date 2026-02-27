@@ -26,9 +26,7 @@ export default function VendorCallVehicleInfo({ call }) {
           </div>
           <div>
             <span className="text-[#6B778C]">סוג תקלה:</span>
-            <div className="font-medium">
-              {issueTypeLabels[call.issue_type] || call.issue_type}
-            </div>
+            <div className="font-medium">{issueTypeLabels[call.issue_type] || call.issue_type}</div>
           </div>
           <div>
             <span className="text-[#6B778C]">דלק:</span>

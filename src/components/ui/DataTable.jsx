@@ -127,69 +127,72 @@ export default function DataTable({
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
         {data.map((row, rowIdx) => {
-          const mobileStatusColor = rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
+          const mobileStatusColor =
+            rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
           return (
-          <div
-            key={row.id || rowIdx}
-            onClick={() => onRowClick?.(row)}
-            className={cn(
-              'card-base card-body transition-all',
-              onRowClick &&
-                'cursor-pointer hover:border-neutral-soft-300 hover:shadow-md active:bg-neutral-soft-50',
-              mobileStatusColor
-            )}
-          >
-            {/* Card Header - Title & Badge */}
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1 min-w-0">
-                {titleColumn ? (
-                  <div className="font-semibold text-neutral-soft-900 truncate">
-                    {titleColumn.cell ? titleColumn.cell(row) : row[titleColumn.accessor]}
-                  </div>
-                ) : (
-                  <div className="font-semibold text-neutral-soft-900 truncate">
-                    {columns[0]?.cell ? columns[0].cell(row) : row[columns[0]?.accessor]}
-                  </div>
-                )}
-                {subtitleColumn && (
-                  <div className="text-sm text-neutral-soft-500 truncate mt-0.5">
-                    {subtitleColumn.cell ? subtitleColumn.cell(row) : row[subtitleColumn.accessor]}
+            <div
+              key={row.id || rowIdx}
+              onClick={() => onRowClick?.(row)}
+              className={cn(
+                'card-base card-body transition-all',
+                onRowClick &&
+                  'cursor-pointer hover:border-neutral-soft-300 hover:shadow-md active:bg-neutral-soft-50',
+                mobileStatusColor
+              )}
+            >
+              {/* Card Header - Title & Badge */}
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex-1 min-w-0">
+                  {titleColumn ? (
+                    <div className="font-semibold text-neutral-soft-900 truncate">
+                      {titleColumn.cell ? titleColumn.cell(row) : row[titleColumn.accessor]}
+                    </div>
+                  ) : (
+                    <div className="font-semibold text-neutral-soft-900 truncate">
+                      {columns[0]?.cell ? columns[0].cell(row) : row[columns[0]?.accessor]}
+                    </div>
+                  )}
+                  {subtitleColumn && (
+                    <div className="text-sm text-neutral-soft-500 truncate mt-0.5">
+                      {subtitleColumn.cell
+                        ? subtitleColumn.cell(row)
+                        : row[subtitleColumn.accessor]}
+                    </div>
+                  )}
+                </div>
+                {badgeColumn && (
+                  <div className="me-3 flex-shrink-0">
+                    {badgeColumn.cell ? badgeColumn.cell(row) : row[badgeColumn.accessor]}
                   </div>
                 )}
               </div>
-              {badgeColumn && (
-                <div className="mr-3 flex-shrink-0">
-                  {badgeColumn.cell ? badgeColumn.cell(row) : row[badgeColumn.accessor]}
+
+              {/* Card Body - Additional Fields */}
+              <div className="space-y-1.5 mt-3 pt-3 border-t border-neutral-soft-100">
+                {mobileColumns
+                  .filter(
+                    (col) =>
+                      col.accessor !== mobileCardConfig.titleAccessor &&
+                      col.accessor !== mobileCardConfig.subtitleAccessor &&
+                      col.accessor !== mobileCardConfig.badgeAccessor
+                  )
+                  .map((col, colIdx) => (
+                    <div key={colIdx} className="flex justify-between items-center text-sm">
+                      <span className="text-neutral-soft-500">{col.header}</span>
+                      <span className="text-neutral-soft-900 font-medium">
+                        {col.cell ? col.cell(row) : row[col.accessor]}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Arrow indicator for clickable cards - RTL ChevronRight */}
+              {onRowClick && (
+                <div className="flex justify-end mt-3 pt-2 border-t border-neutral-soft-100">
+                  <ChevronRight className="w-5 h-5 text-neutral-soft-400 icon-flip-rtl" />
                 </div>
               )}
             </div>
-
-            {/* Card Body - Additional Fields */}
-            <div className="space-y-1.5 mt-3 pt-3 border-t border-neutral-soft-100">
-              {mobileColumns
-                .filter(
-                  (col) =>
-                    col.accessor !== mobileCardConfig.titleAccessor &&
-                    col.accessor !== mobileCardConfig.subtitleAccessor &&
-                    col.accessor !== mobileCardConfig.badgeAccessor
-                )
-                .map((col, colIdx) => (
-                  <div key={colIdx} className="flex justify-between items-center text-sm">
-                    <span className="text-neutral-soft-500">{col.header}</span>
-                    <span className="text-neutral-soft-900 font-medium">
-                      {col.cell ? col.cell(row) : row[col.accessor]}
-                    </span>
-                  </div>
-                ))}
-            </div>
-
-            {/* Arrow indicator for clickable cards - RTL ChevronRight */}
-            {onRowClick && (
-              <div className="flex justify-end mt-3 pt-2 border-t border-neutral-soft-100">
-                <ChevronRight className="w-5 h-5 text-neutral-soft-400 icon-flip-rtl" />
-              </div>
-            )}
-          </div>
           );
         })}
       </div>
@@ -208,19 +211,20 @@ export default function DataTable({
           </TableHeader>
           <TableBody>
             {data.map((row, rowIdx) => {
-              const rowStatusColor = rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
+              const rowStatusColor =
+                rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
               return (
-              <TableRow
-                key={row.id || rowIdx}
-                onClick={() => onRowClick?.(row)}
-                className={cn('table-row', onRowClick && 'cursor-pointer', rowStatusColor)}
-              >
-                {columns.map((col, colIdx) => (
-                  <TableCell key={colIdx} className={cn('table-cell', col.cellClassName)}>
-                    {col.cell ? col.cell(row) : row[col.accessor]}
-                  </TableCell>
-                ))}
-              </TableRow>
+                <TableRow
+                  key={row.id || rowIdx}
+                  onClick={() => onRowClick?.(row)}
+                  className={cn('table-row', onRowClick && 'cursor-pointer', rowStatusColor)}
+                >
+                  {columns.map((col, colIdx) => (
+                    <TableCell key={colIdx} className={cn('table-cell', col.cellClassName)}>
+                      {col.cell ? col.cell(row) : row[col.accessor]}
+                    </TableCell>
+                  ))}
+                </TableRow>
               );
             })}
           </TableBody>

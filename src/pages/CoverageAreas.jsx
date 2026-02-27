@@ -265,8 +265,9 @@ export default function CoverageAreasPage() {
                         {vendor.vendor_name}
                       </div>
                       <div className="text-xs text-[#6b7280]">
-                        {vendor.service_type?.map((t) => vendorServiceTypeLabels[t] || t).join(', ') ||
-                          'לא צוין'}
+                        {vendor.service_type
+                          ?.map((t) => vendorServiceTypeLabels[t] || t)
+                          .join(', ') || 'לא צוין'}
                       </div>
                     </div>
                     <Badge

@@ -31,7 +31,8 @@ export default function RoleGuard({
   const { effectiveRole, canAccessPage, isLoading } = usePermissions();
   const navigate = useNavigate();
 
-  const hasAccess = !isLoading && (effectiveRole === 'admin' || allowedRoles.includes(effectiveRole));
+  const hasAccess =
+    !isLoading && (effectiveRole === 'admin' || allowedRoles.includes(effectiveRole));
 
   // Redirect to the user's default accessible page when access is denied
   useEffect(() => {
