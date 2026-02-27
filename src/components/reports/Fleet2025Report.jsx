@@ -2,15 +2,45 @@ import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ScatterChart, Scatter } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  ScatterChart,
+  Scatter,
+} from 'recharts';
 import { Truck, TrendingUp, MapPin, Target } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1'];
-const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+const monthNames = [
+  'ינואר',
+  'פברואר',
+  'מרץ',
+  'אפריל',
+  'מאי',
+  'יוני',
+  'יולי',
+  'אוגוסט',
+  'ספטמבר',
+  'אוקטובר',
+  'נובמבר',
+  'דצמבר',
+];
 
 export default function Fleet2025Report() {
-  const { data: calls = [], isLoading, error } = useQuery({
+  const {
+    data: calls = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['calls-fleet'],
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
   });
@@ -21,7 +51,7 @@ export default function Fleet2025Report() {
       monthlyMap[i] = { month: name, total: 0, fleet: 0, external: 0, fleetPercent: 0 };
     });
 
-    calls.forEach(call => {
+    calls.forEach((call) => {
       const date = new Date(call.created_date);
       const month = date.getMonth();
       if (monthlyMap[month]) {
@@ -34,7 +64,7 @@ export default function Fleet2025Report() {
       }
     });
 
-    Object.keys(monthlyMap).forEach(m => {
+    Object.keys(monthlyMap).forEach((m) => {
       const data = monthlyMap[m];
       data.fleetPercent = data.total > 0 ? (data.fleet / data.total) * 100 : 0;
     });
@@ -44,10 +74,17 @@ export default function Fleet2025Report() {
 
   const regionComparisonData = useMemo(() => {
     const regions = {};
-    calls.forEach(call => {
+    calls.forEach((call) => {
       const region = call.pickup_location_area || 'לא מוגדר';
       if (!regions[region]) {
-        regions[region] = { region, total: 0, fleet: 0, external: 0, fleetCost: 0, externalCost: 0 };
+        regions[region] = {
+          region,
+          total: 0,
+          fleet: 0,
+          external: 0,
+          fleetCost: 0,
+          externalCost: 0,
+        };
       }
       regions[region].total += 1;
       if (call.provider_type === 'fleet') {
@@ -59,7 +96,7 @@ export default function Fleet2025Report() {
       }
     });
 
-    return Object.values(regions).map(r => ({
+    return Object.values(regions).map((r) => ({
       ...r,
       fleetAvgCost: r.fleet > 0 ? Math.round(r.fleetCost / r.fleet) : 0,
       externalAvgCost: r.external > 0 ? Math.round(r.externalCost / r.external) : 0,
@@ -68,25 +105,27 @@ export default function Fleet2025Report() {
 
   const topFleetVehicles = useMemo(() => {
     const vehicles = {};
-    calls.filter(c => c.provider_type === 'fleet').forEach(call => {
-      const vehicleName = call.fleet_vehicle_name || 'לא ידוע';
-      if (!vehicles[vehicleName]) {
-        vehicles[vehicleName] = {
-          name: vehicleName,
-          type: call.service_category || 'שירות',
-          calls: 0,
-          totalCost: 0,
-          totalKm: 0,
-          region: call.pickup_location_area || 'לא מוגדר',
-        };
-      }
-      vehicles[vehicleName].calls += 1;
-      vehicles[vehicleName].totalCost += call.total_cost || 0;
-      vehicles[vehicleName].totalKm += call.actual_distance_km || 0;
-    });
+    calls
+      .filter((c) => c.provider_type === 'fleet')
+      .forEach((call) => {
+        const vehicleName = call.fleet_vehicle_name || 'לא ידוע';
+        if (!vehicles[vehicleName]) {
+          vehicles[vehicleName] = {
+            name: vehicleName,
+            type: call.service_category || 'שירות',
+            calls: 0,
+            totalCost: 0,
+            totalKm: 0,
+            region: call.pickup_location_area || 'לא מוגדר',
+          };
+        }
+        vehicles[vehicleName].calls += 1;
+        vehicles[vehicleName].totalCost += call.total_cost || 0;
+        vehicles[vehicleName].totalKm += call.actual_distance_km || 0;
+      });
 
     return Object.values(vehicles)
-      .map(v => ({
+      .map((v) => ({
         ...v,
         avgCost: v.calls > 0 ? Math.round(v.totalCost / v.calls) : 0,
         km: v.calls > 0 ? (v.totalKm / v.calls).toFixed(1) : 0,
@@ -95,8 +134,8 @@ export default function Fleet2025Report() {
       .slice(0, 5);
   }, [calls]);
 
-  const fleetCalls = calls.filter(c => c.provider_type === 'fleet');
-  const externalCalls = calls.filter(c => c.provider_type === 'external');
+  const fleetCalls = calls.filter((c) => c.provider_type === 'fleet');
+  const externalCalls = calls.filter((c) => c.provider_type === 'external');
   const fleetCost = fleetCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
   const externalCost = externalCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
 
@@ -109,18 +148,24 @@ export default function Fleet2025Report() {
         <Card className="bg-gradient-to-br from-blue-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-blue-600 mb-1 font-medium">צי פנימי - סה"כ קריאות</div>
-            <div className="text-2xl font-bold text-gray-900">{fleetCalls.length.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {fleetCalls.length.toLocaleString()}
+            </div>
             <div className="text-xs text-gray-500 mt-1">
-              {calls.length > 0 ? ((fleetCalls.length / calls.length) * 100).toFixed(0) : 0}% מסה"כ הקריאות
+              {calls.length > 0 ? ((fleetCalls.length / calls.length) * 100).toFixed(0) : 0}% מסה"כ
+              הקריאות
             </div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-red-600 mb-1 font-medium">ספקים חיצוניים</div>
-            <div className="text-2xl font-bold text-gray-900">{externalCalls.length.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {externalCalls.length.toLocaleString()}
+            </div>
             <div className="text-xs text-gray-500 mt-1">
-              {calls.length > 0 ? ((externalCalls.length / calls.length) * 100).toFixed(0) : 0}% מסה"כ הקריאות
+              {calls.length > 0 ? ((externalCalls.length / calls.length) * 100).toFixed(0) : 0}%
+              מסה"כ הקריאות
             </div>
           </CardContent>
         </Card>
@@ -156,16 +201,41 @@ export default function Fleet2025Report() {
           <CardContent>
             <div className="h-80 w-full" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <LineChart
+                  data={monthlyComparisonData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="month" />
                   <YAxis yAxisId="left" />
                   <YAxis yAxisId="right" orientation="right" />
                   <Tooltip />
                   <Legend />
-                  <Line yAxisId="left" type="monotone" dataKey="fleet" name="קריאות צי" stroke="#3b82f6" strokeWidth={2} />
-                  <Line yAxisId="left" type="monotone" dataKey="external" name="קריאות ספקים" stroke="#ef4444" strokeWidth={2} />
-                  <Line yAxisId="right" type="monotone" dataKey="fleetPercent" name="% צי" stroke="#10b981" strokeWidth={2} strokeDasharray="5 5" />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="fleet"
+                    name="קריאות צי"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="external"
+                    name="קריאות ספקים"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="fleetPercent"
+                    name="% צי"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -183,14 +253,22 @@ export default function Fleet2025Report() {
           <CardContent>
             <div className="h-80 w-full" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={regionComparisonData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart
+                  data={regionComparisonData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="region" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="fleet" name="קריאות צי" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="external" name="קריאות ספקים" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="external"
+                    name="קריאות ספקים"
+                    fill="#ef4444"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -214,7 +292,14 @@ export default function Fleet2025Report() {
                   <YAxis dataKey="fleetAvgCost" type="number" name="עלות צי" />
                   <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                   <Scatter name="עלות ממוצעת - צי (₪)" data={regionComparisonData} fill="#3b82f6" />
-                  <Scatter name="עלות ממוצעת - ספקים (₪)" data={regionComparisonData.map(d => ({ ...d, fleetAvgCost: d.externalAvgCost }))} fill="#ef4444" />
+                  <Scatter
+                    name="עלות ממוצעת - ספקים (₪)"
+                    data={regionComparisonData.map((d) => ({
+                      ...d,
+                      fleetAvgCost: d.externalAvgCost,
+                    }))}
+                    fill="#ef4444"
+                  />
                 </ScatterChart>
               </ResponsiveContainer>
             </div>
@@ -283,13 +368,15 @@ export default function Fleet2025Report() {
           <div className="flex gap-3">
             <div className="text-lg">📈</div>
             <div>
-              <strong>צי פנימי:</strong> גדל משיתוף של 1.9% בינואר ל-12.1% בדצמבר - עלייה של 534% בשנת 2025
+              <strong>צי פנימי:</strong> גדל משיתוף של 1.9% בינואר ל-12.1% בדצמבר - עלייה של 534%
+              בשנת 2025
             </div>
           </div>
           <div className="flex gap-3">
             <div className="text-lg">💰</div>
             <div>
-              <strong>עלויות:</strong> צי יקר יותר (₪334 לקריאה) מספקים (₪251), אך יותר שליטה על הזמינות
+              <strong>עלויות:</strong> צי יקר יותר (₪334 לקריאה) מספקים (₪251), אך יותר שליטה על
+              הזמינות
             </div>
           </div>
           <div className="flex gap-3">
@@ -301,7 +388,8 @@ export default function Fleet2025Report() {
           <div className="flex gap-3">
             <div className="text-lg">📊</div>
             <div>
-              <strong>ק"מ ממוצע:</strong> צי בדרום עם ממוצע גבוה יותר (57.6 ק"מ) בהשוואה לממוצע הכללי (27.7 ק"מ)
+              <strong>ק"מ ממוצע:</strong> צי בדרום עם ממוצע גבוה יותר (57.6 ק"מ) בהשוואה לממוצע
+              הכללי (27.7 ק"מ)
             </div>
           </div>
         </CardContent>

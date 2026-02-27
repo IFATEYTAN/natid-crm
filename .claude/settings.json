@@ -6,11 +6,26 @@
       "Bash(git *)",
       "Bash(ls *)",
       "Bash(mkdir *)",
+      "Bash(bash scripts/*)",
       "Read",
       "Write",
       "Edit",
       "Glob",
       "Grep"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "command": "bash scripts/session-start.sh"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit *)",
+        "command": "echo '[Reminder] Run ci-build-check before committing: npm run lint && npm run build'"
+      }
     ]
   },
   "env": {
