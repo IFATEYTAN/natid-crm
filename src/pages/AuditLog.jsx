@@ -234,7 +234,7 @@ export default function AuditLogPage() {
               <div className="text-sm text-[#6B778C]">עדכונים</div>
             </CardContent>
           </Card>
-          <Card className="bg-white border-l-4 border-s-red-500">
+          <Card className="bg-white border-s-4 border-s-red-500">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-red-600">
                 {

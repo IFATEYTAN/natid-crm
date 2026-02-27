@@ -209,7 +209,7 @@ export default function NewCase() {
                   onChange={(e) => setFormData({ ...formData, caller_phone: e.target.value })}
                   onBlur={() => handleBlur('caller_phone')}
                   dir="ltr"
-                  className={`text-right ${touched.caller_phone && formErrors.caller_phone ? 'border-red-500' : ''}`}
+                  className={`text-end ${touched.caller_phone && formErrors.caller_phone ? 'border-red-500' : ''}`}
                   placeholder="0501234567"
                 />
                 {touched.caller_phone && <FieldError error={formErrors.caller_phone} />}

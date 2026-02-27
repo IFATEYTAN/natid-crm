@@ -58,7 +58,7 @@ function PhotoCard({ photo, onEdit, onDelete }) {
         </div>
       </a>
       {/* Overlay actions */}
-      <div className="absolute top-1 left-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-1 start-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           size="icon"
           variant="secondary"

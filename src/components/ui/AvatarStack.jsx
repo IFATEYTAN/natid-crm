@@ -88,7 +88,7 @@ export default function AvatarStack({ users, max = 5, size = 'md', onShowAll, cl
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"
+                        className="absolute bottom-0 end-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"
                       />
                     )}
                   </motion.div>

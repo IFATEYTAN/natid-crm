@@ -12,7 +12,7 @@ export default function VendorCallActionBar({
   if (callStatus === 'completed' || callStatus === 'cancelled') return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex gap-3">
+    <div className="fixed bottom-0 start-0 end-0 bg-white border-t p-4 flex gap-3">
       {callStatus === 'assigned' || callStatus === 'assigning' ? (
         <Button
           className="flex-1 bg-blue-600 hover:bg-blue-700 h-12"

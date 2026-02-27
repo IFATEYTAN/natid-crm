@@ -291,7 +291,7 @@ export default function VendorAssistant({ isVendor = false }) {
   if (isHidden) {
     return (
       <motion.button
-        className="fixed bottom-4 left-4 z-50 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-red-600 hover:border-red-200 transition-colors"
+        className="fixed bottom-4 start-4 z-50 w-10 h-10 bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center text-gray-400 hover:text-red-600 hover:border-red-200 transition-colors"
         onClick={handleShow}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
@@ -303,7 +303,7 @@ export default function VendorAssistant({ isVendor = false }) {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-50" dir="rtl">
+    <div className="fixed bottom-4 start-4 z-50" dir="rtl">
       {/* Speech Bubble */}
       <AnimatePresence>
         {isOpen && (
@@ -312,7 +312,7 @@ export default function VendorAssistant({ isVendor = false }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="absolute bottom-20 left-0 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+            className="absolute bottom-20 start-0 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-red-50 border-b border-red-100">

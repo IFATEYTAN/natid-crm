@@ -64,7 +64,7 @@ export default function GeneralContractsTab() {
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-center mb-6">
         <div className="flex gap-2 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
-            <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute start-3 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="חיפוש לפי שם ספק או חוזה..."
               value={searchTerm}

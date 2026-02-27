@@ -545,7 +545,7 @@ export default function NatiAssistant() {
   if (isHidden) {
     return (
       <motion.button
-        className="fixed bottom-6 left-6 z-[100] w-14 h-14 bg-white border-2 border-red-100 rounded-full shadow-xl flex items-center justify-center text-red-500 hover:border-red-300 hover:bg-red-50 transition-all duration-300 group"
+        className="fixed bottom-6 start-6 z-[100] w-14 h-14 bg-white border-2 border-red-100 rounded-full shadow-xl flex items-center justify-center text-red-500 hover:border-red-300 hover:bg-red-50 transition-all duration-300 group"
         onClick={handleShow}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
@@ -554,7 +554,7 @@ export default function NatiAssistant() {
         <span className="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform">
           🚛
         </span>
-        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+        <span className="absolute -top-1 -end-1 flex h-3 w-3">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
         </span>
@@ -563,7 +563,7 @@ export default function NatiAssistant() {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 z-[100]" dir="rtl">
+    <div className="fixed bottom-20 start-4 z-[100]" dir="rtl">
       {/* Speech Bubble */}
       <AnimatePresence>
         {isOpen && (
@@ -572,7 +572,7 @@ export default function NatiAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="absolute bottom-20 left-0 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+            className="absolute bottom-20 start-0 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-red-50 border-b border-red-100">

@@ -121,7 +121,7 @@ export default function EscalationPredictionWidget() {
             .map((call, i) => (
               <div
                 key={i}
-                className={`bg-white rounded-lg p-3 border border-l-4 ${riskBorderColors[call.risk_level]}`}
+                className={`bg-white rounded-lg p-3 border border-s-4 ${riskBorderColors[call.risk_level]}`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">

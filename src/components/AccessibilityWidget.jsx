@@ -104,14 +104,14 @@ export default function AccessibilityWidget() {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 accessibility-widget">
+    <div className="fixed bottom-4 start-4 z-50 accessibility-widget">
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="absolute bottom-16 left-0 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+            className="absolute bottom-16 start-0 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
           >
             <div className="p-4 bg-blue-600 text-white flex justify-between items-center">
               <h3 className="font-bold flex items-center gap-2">

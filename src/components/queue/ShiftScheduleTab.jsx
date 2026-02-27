@@ -432,7 +432,7 @@ export default function ShiftScheduleTab() {
               )}
               {agentNames.map((agentName) => (
                 <tr key={agentName} className="border-b hover:bg-gray-50/50">
-                  <td className="p-3 text-sm font-medium text-gray-800 bg-white sticky right-0 border-l">
+                  <td className="p-3 text-sm font-medium text-gray-800 bg-white sticky end-0 border-s">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold">
                         {agentName.charAt(0)}
