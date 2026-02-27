@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import * as casesApi from '../api';
 
 /**
@@ -44,6 +45,10 @@ export const useCreateCase = () => {
     mutationFn: casesApi.createCase,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
+      toast.success('תיק נוצר בהצלחה');
+    },
+    onError: () => {
+      toast.error('שגיאה ביצירת תיק');
     },
   });
 };
@@ -60,6 +65,9 @@ export const useUpdateCase = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.detail(id) });
     },
+    onError: () => {
+      toast.error('שגיאה בעדכון תיק');
+    },
   });
 };
 
@@ -73,6 +81,10 @@ export const useDeleteCase = () => {
     mutationFn: casesApi.deleteCase,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
+      toast.success('תיק נמחק בהצלחה');
+    },
+    onError: () => {
+      toast.error('שגיאה במחיקת תיק');
     },
   });
 };
@@ -98,6 +110,9 @@ export const useCreateCaseActivity = () => {
     mutationFn: casesApi.createCaseActivity,
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.activities.byCase(data.case_id) });
+    },
+    onError: () => {
+      toast.error('שגיאה ביצירת פעילות בתיק');
     },
   });
 };

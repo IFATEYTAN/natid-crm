@@ -303,7 +303,7 @@ export default function AutomationSettingsPage() {
             <CardDescription>
               קבע את החשיבות היחסית של כל קריטריון בחישוב הציון
               {totalWeight !== 100 && (
-                <span className="text-red-500 mr-2">(סה"כ: {totalWeight}%, צריך להיות 100%)</span>
+                <span className="text-red-500 me-2">(סה"כ: {totalWeight}%, צריך להיות 100%)</span>
               )}
             </CardDescription>
           </CardHeader>

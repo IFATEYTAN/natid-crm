@@ -140,6 +140,7 @@ export default function IntegrationSettings() {
                     variant="outline"
                     size="icon"
                     onClick={() => copyToClipboard(settings.webhookUrl)}
+                    aria-label="העתק"
                   >
                     {copied ? (
                       <Check className="w-4 h-4 text-[#2E7D32]" />
@@ -163,7 +164,7 @@ export default function IntegrationSettings() {
                     className="font-mono text-sm"
                   />
                   <Button variant="outline" onClick={generateWebhookSecret}>
-                    <Key className="w-4 h-4 ml-2" />
+                    <Key className="w-4 h-4 ms-2" />
                     צור חדש
                   </Button>
                 </div>
@@ -313,8 +314,9 @@ export default function IntegrationSettings() {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 left-2"
+              className="absolute top-2 start-2"
               onClick={() => copyToClipboard(JSON.stringify(samplePayload, null, 2))}
+              aria-label="העתק"
             >
               <Copy className="w-4 h-4 text-white" />
             </Button>

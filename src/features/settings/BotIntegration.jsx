@@ -10,7 +10,8 @@ export default function BotIntegration() {
   const [copied, setCopied] = useState(false);
 
   const webhookUrl = `${window.location.origin}/api/functions/99digitalBot`;
-  const apiKey = import.meta.env.VITE_BOT_API_KEY || '[יש להגדיר VITE_BOT_API_KEY בקובץ .env]';
+  // API key should not be exposed in client bundle - admins should configure BOT_WEBHOOK_SECRET in .env on the server
+  const apiKey = '[מוגדר בשרת כ-BOT_WEBHOOK_SECRET - ראה .env]';
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -126,7 +127,12 @@ export default function BotIntegration() {
             <Label>Webhook URL</Label>
             <div className="flex gap-2">
               <Input value={webhookUrl} readOnly className="font-mono text-sm" />
-              <Button variant="outline" size="icon" onClick={() => copyToClipboard(webhookUrl)}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => copyToClipboard(webhookUrl)}
+                aria-label="העתק"
+              >
                 {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
@@ -158,7 +164,7 @@ X-Bot-Source: 99digital`}
               className="mt-2"
               onClick={() => copyToClipboard(samplePayload)}
             >
-              <Copy className="w-3 h-3 mr-2" />
+              <Copy className="w-3 h-3 me-2" />
               העתק דוגמת Payload
             </Button>
           </div>

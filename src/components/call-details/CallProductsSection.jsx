@@ -8,10 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { ShoppingCart, Plus, Trash2, Package } from 'lucide-react';
 import { toast } from 'sonner';
@@ -48,7 +56,7 @@ export default function CallProductsSection({ call, callId, currentUser }) {
 
   const totalAmount = callProducts.reduce((sum, cp) => sum + (cp.total_price || 0), 0);
 
-  const selectedProduct = products.find(p => p.id === selectedProductId);
+  const selectedProduct = products.find((p) => p.id === selectedProductId);
   const calcTotal = selectedProduct
     ? selectedProduct.unit_price * quantity * (1 - discount / 100)
     : 0;
@@ -93,7 +101,9 @@ export default function CallProductsSection({ call, callId, currentUser }) {
             <ShoppingCart className="w-4 h-4 text-[#3b82f6]" />
             מוצרים ורכישות
             {callProducts.length > 0 && (
-              <Badge className="bg-blue-100 text-blue-800 text-xs">{callProducts.length} פריטים</Badge>
+              <Badge className="bg-blue-100 text-blue-800 text-xs">
+                {callProducts.length} פריטים
+              </Badge>
             )}
           </CardTitle>
           <Button size="sm" onClick={() => setShowAddDialog(true)} className="gap-1">
@@ -117,20 +127,32 @@ export default function CallProductsSection({ call, callId, currentUser }) {
             </div>
 
             {callProducts.map((cp) => (
-              <div key={cp.id} className="grid grid-cols-12 gap-2 items-center text-sm px-2 py-1.5 hover:bg-gray-50 rounded">
+              <div
+                key={cp.id}
+                className="grid grid-cols-12 gap-2 items-center text-sm px-2 py-1.5 hover:bg-gray-50 rounded"
+              >
                 <div className="col-span-4">
                   <div className="font-medium">{cp.product_name}</div>
-                  {cp.product_sku && <div className="text-xs text-gray-400">מק"ט: {cp.product_sku}</div>}
+                  {cp.product_sku && (
+                    <div className="text-xs text-gray-400">מק"ט: {cp.product_sku}</div>
+                  )}
                 </div>
                 <div className="col-span-1 text-center">{cp.quantity}</div>
                 <div className="col-span-2 text-center">₪{cp.unit_price?.toLocaleString()}</div>
                 <div className="col-span-2 text-center">
                   {cp.discount_percent > 0 ? `${cp.discount_percent}%` : '-'}
                 </div>
-                <div className="col-span-2 text-center font-medium">₪{cp.total_price?.toLocaleString()}</div>
+                <div className="col-span-2 text-center font-medium">
+                  ₪{cp.total_price?.toLocaleString()}
+                </div>
                 <div className="col-span-1 text-center">
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600"
-                    onClick={() => handleRemove(cp.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-400 hover:text-red-600"
+                    onClick={() => handleRemove(cp.id)}
+                    aria-label="מחיקה"
+                  >
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
@@ -140,7 +162,9 @@ export default function CallProductsSection({ call, callId, currentUser }) {
             {/* Total */}
             <div className="border-t pt-2 px-2 flex justify-between items-center">
               <span className="font-medium text-sm">סה"כ מוצרים:</span>
-              <span className="font-bold text-lg text-[#111827]">₪{totalAmount.toLocaleString()}</span>
+              <span className="font-bold text-lg text-[#111827]">
+                ₪{totalAmount.toLocaleString()}
+              </span>
             </div>
           </div>
         )}
@@ -148,19 +172,27 @@ export default function CallProductsSection({ call, callId, currentUser }) {
         {/* Add Product Dialog */}
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogContent>
-            <DialogHeader><DialogTitle>הוספת מוצר לקריאה</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>הוספת מוצר לקריאה</DialogTitle>
+            </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label>מוצר</Label>
                 <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-                  <SelectTrigger><SelectValue placeholder="בחר מוצר..." /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר מוצר..." />
+                  </SelectTrigger>
                   <SelectContent>
                     {products.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         <div className="flex items-center gap-2">
                           <Package className="w-3 h-3 text-gray-400" />
                           {p.name} {p.sku && `(${p.sku})`} - ₪{p.unit_price}
-                          {p.category && <Badge variant="outline" className="text-xs mr-1">{categoryLabels[p.category] || p.category}</Badge>}
+                          {p.category && (
+                            <Badge variant="outline" className="text-xs me-1">
+                              {categoryLabels[p.category] || p.category}
+                            </Badge>
+                          )}
                         </div>
                       </SelectItem>
                     ))}
@@ -170,11 +202,24 @@ export default function CallProductsSection({ call, callId, currentUser }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>כמות</Label>
-                  <Input type="number" min={1} value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                  <Input
+                    type="number"
+                    min={1}
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  />
                 </div>
                 <div>
                   <Label>הנחה (%)</Label>
-                  <Input type="number" min={0} max={100} value={discount} onChange={e => setDiscount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={discount}
+                    onChange={(e) =>
+                      setDiscount(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))
+                    }
+                  />
                 </div>
               </div>
               {selectedProduct && (
@@ -185,12 +230,20 @@ export default function CallProductsSection({ call, callId, currentUser }) {
               )}
               <div>
                 <Label>הערות</Label>
-                <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="הערות..." />
+                <Input
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="הערות..."
+                />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddDialog(false)}>ביטול</Button>
-              <Button onClick={handleAdd} isLoading={saving} disabled={!selectedProductId}>הוסף מוצר</Button>
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                ביטול
+              </Button>
+              <Button onClick={handleAdd} isLoading={saving} disabled={!selectedProductId}>
+                הוסף מוצר
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -90,7 +90,7 @@ export default function RecurringPatternsWidget() {
       {loading && (
         <CardContent>
           <div className="flex items-center justify-center py-8 text-purple-600 text-sm">
-            <Loader2 className="w-5 h-5 animate-spin ml-2" />
+            <Loader2 className="w-5 h-5 animate-spin ms-2" />
             מנתח היסטוריית קריאות...
           </div>
         </CardContent>
@@ -137,7 +137,7 @@ export default function RecurringPatternsWidget() {
                   >
                     <div>
                       <span className="font-medium">{c.name}</span>
-                      <span className="text-xs text-gray-500 mr-2">{c.phone}</span>
+                      <span className="text-xs text-gray-500 me-2">{c.phone}</span>
                     </div>
                     <Badge variant="secondary" className="text-xs">
                       {c.total_calls} קריאות
@@ -161,7 +161,7 @@ export default function RecurringPatternsWidget() {
                       <span className="font-medium" dir="ltr">
                         {v.plate}
                       </span>
-                      <span className="text-xs text-gray-500 mr-2">{v.model}</span>
+                      <span className="text-xs text-gray-500 me-2">{v.model}</span>
                     </div>
                     <Badge variant="secondary" className="text-xs">
                       {v.total_calls} קריאות

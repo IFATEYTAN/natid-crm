@@ -150,12 +150,12 @@ export default function Cases() {
       <div className="card-base">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-disabled)]" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-disabled)]" />
             <Input
               placeholder="חיפוש לפי מספר קריאה, לקוח, טלפון..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-base pr-11"
+              className="input-base ps-11"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>

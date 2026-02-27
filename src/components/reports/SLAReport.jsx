@@ -171,13 +171,13 @@ export default function SLAReport({ calls }) {
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">עמידה כללית ב-SLA</div>
             <div className="text-2xl font-bold text-[#22C55E] mt-1">{overallSLARate}%</div>
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">קריאות בזמן</div>
             <div className="text-2xl font-bold text-[#22C55E] mt-1 flex items-center justify-end gap-2">
               {totalOnTime}
@@ -186,7 +186,7 @@ export default function SLAReport({ calls }) {
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">חריגות SLA</div>
             <div className="text-2xl font-bold text-[#FF6B6B] mt-1 flex items-center justify-end gap-2">
               {totalBreached}
@@ -195,7 +195,7 @@ export default function SLAReport({ calls }) {
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">אזור עם הכי הרבה חריגות</div>
             <div className="text-xl font-bold text-[#212121] mt-1">
               {areaStats.length > 0
@@ -209,7 +209,7 @@ export default function SLAReport({ calls }) {
       {/* Chart */}
       <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <CardHeader>
-          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">
+          <CardTitle className="text-[20px] font-medium text-[#212121] text-end">
             עמידה ב-SLA וזמני תגובה לפי אזור
           </CardTitle>
         </CardHeader>
@@ -258,11 +258,11 @@ export default function SLAReport({ calls }) {
       {/* Tables */}
       <div className="grid lg:grid-cols-2 gap-6" dir="rtl">
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">לפי אזור</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-end">לפי אזור</h3>
           <DataTable columns={areaColumns} data={areaStats} emptyMessage="אין נתונים" />
         </div>
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">לפי סוג תקלה</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-end">לפי סוג תקלה</h3>
           <DataTable columns={issueColumns} data={issueStats} emptyMessage="אין נתונים" />
         </div>
       </div>

@@ -257,7 +257,7 @@ export default function Calls() {
       cell: (row) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="אפשרויות נוספות">
               <MoreVertical className="w-4 h-4" strokeWidth={2} />
             </Button>
           </DropdownMenuTrigger>
@@ -400,14 +400,14 @@ export default function Calls() {
               <Label className="text-[#616161] text-sm mb-2 block">חיפוש</Label>
               <div className="relative">
                 <Search
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9E9E9E]"
+                  className="absolute start-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9E9E9E]"
                   strokeWidth={2}
                 />
                 <Input
                   placeholder="מספר קריאה, שם לקוח, טלפון, מספר רכב..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pr-10"
+                  className="ps-10"
                 />
               </div>
             </div>

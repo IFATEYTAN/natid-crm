@@ -29,7 +29,12 @@ export default function QuickCallSummary({ callId }) {
           </CardTitle>
           <div className="flex items-center gap-2">
             {result && (
-              <Button size="sm" variant="ghost" onClick={() => setExpanded(!expanded)} className="h-7 w-7 p-0">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setExpanded(!expanded)}
+                className="h-7 w-7 p-0"
+              >
                 {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             )}
@@ -40,7 +45,11 @@ export default function QuickCallSummary({ callId }) {
               disabled={loading}
               className="gap-1 text-indigo-700 border-indigo-300 hover:bg-indigo-100"
             >
-              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+              {loading ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Sparkles className="w-3 h-3" />
+              )}
               {result ? 'רענן' : 'צור סיכום'}
             </Button>
           </div>
@@ -50,7 +59,7 @@ export default function QuickCallSummary({ callId }) {
       {loading && (
         <CardContent>
           <div className="flex items-center justify-center py-6 text-indigo-600 text-sm">
-            <Loader2 className="w-5 h-5 animate-spin ml-2" />
+            <Loader2 className="w-5 h-5 animate-spin ms-2" />
             יוצר סיכום מהיר...
           </div>
         </CardContent>
@@ -63,7 +72,9 @@ export default function QuickCallSummary({ callId }) {
               <FileText className="w-4 h-4 text-indigo-600" />
               <span className="text-sm font-semibold text-gray-800">סיכום</span>
             </div>
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{result.summary}</p>
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {result.summary}
+            </p>
           </div>
 
           {result.key_points?.length > 0 && (
@@ -72,7 +83,9 @@ export default function QuickCallSummary({ callId }) {
               <ul className="space-y-1">
                 {result.key_points.map((point, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="bg-indigo-100 text-indigo-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{i + 1}</span>
+                    <span className="bg-indigo-100 text-indigo-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
                     {point}
                   </li>
                 ))}

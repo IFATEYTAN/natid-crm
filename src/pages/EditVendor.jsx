@@ -169,7 +169,7 @@ export default function EditVendorPage() {
     <SlideUp>
       <div className="max-w-3xl mx-auto space-y-6 pb-10">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
             <ArrowRight className="w-5 h-5" />
           </Button>
           <div>
@@ -212,7 +212,7 @@ export default function EditVendorPage() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     dir="ltr"
-                    className="text-right"
+                    className="text-end"
                     required
                   />
                 </div>
@@ -222,7 +222,7 @@ export default function EditVendorPage() {
                     value={formData.phone_2}
                     onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                     dir="ltr"
-                    className="text-right"
+                    className="text-end"
                   />
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function EditVendorPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   dir="ltr"
-                  className="text-right"
+                  className="text-end"
                 />
               </div>
 

@@ -20,7 +20,3 @@ export const formatDateTime = (dateString) => {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleString('he-IL');
 };
-
-export function cn(...inputs) {
-  return inputs.filter(Boolean).join(' ');
-}

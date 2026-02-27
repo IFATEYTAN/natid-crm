@@ -190,7 +190,7 @@ export default function DepositSection({ call, callId, currentUser }) {
                             setActionForm({ amount: '', reason: '' });
                           }}
                         >
-                          <RotateCcw className="w-3 h-3 ml-1" /> החזר
+                          <RotateCcw className="w-3 h-3 ms-1" /> החזר
                         </Button>
                         <Button
                           size="sm"

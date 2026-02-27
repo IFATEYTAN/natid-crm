@@ -214,6 +214,7 @@ export default function UserManagement() {
                 handleEditUser(row);
               }}
               title="עריכת משתמש"
+              aria-label="עריכה"
             >
               <Edit className="w-4 h-4 text-[#616161]" />
             </Button>
@@ -228,6 +229,7 @@ export default function UserManagement() {
                 setIsUploadOpen(true);
               }}
               title="העלאת תמונת פרופיל"
+              aria-label="העלה"
             >
               <Upload className="w-4 h-4 text-[#616161]" />
             </Button>
@@ -284,13 +286,13 @@ export default function UserManagement() {
               <div>
                 <Label>כתובת אימייל *</Label>
                 <div className="relative mt-1">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
                   <Input
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="user@example.com"
-                    className="pr-10"
+                    className="ps-10"
                     required
                   />
                 </div>
@@ -356,12 +358,12 @@ export default function UserManagement() {
       <div className="bg-white border border-[#E5E7EB] rounded-lg p-5">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E9E9E]" />
             <Input
               placeholder="חיפוש לפי שם או אימייל..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pr-10"
+              className="ps-10"
             />
           </div>
           <Select value={roleFilter} onValueChange={setRoleFilter}>

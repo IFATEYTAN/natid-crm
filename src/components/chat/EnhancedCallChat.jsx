@@ -55,11 +55,11 @@ export default function EnhancedCallChat({
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
-  // Fetch messages with real-time subscription
+  // Fetch messages - real-time updates handled by subscribe() below
   const { data: messages = [], isLoading } = useQuery({
     queryKey: queryKeys.callMessages.byCall(callId),
     queryFn: () => base44.entities.Message.filter({ call_id: callId }, 'created_date', 200),
-    refetchInterval: 3000,
+    staleTime: 1000 * 30, // 30 seconds - real-time subscription handles updates
   });
 
   // Subscribe to real-time updates
@@ -94,6 +94,9 @@ export default function EnhancedCallChat({
       setMessageText('');
       setSelectedFile(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.callMessages.byCall(callId) });
+    },
+    onError: () => {
+      toast.error('שגיאה בשליחת הודעה');
     },
   });
 
@@ -316,6 +319,7 @@ export default function EnhancedCallChat({
             size="icon"
             className="h-8 w-8"
             onClick={() => setSelectedFile(null)}
+            aria-label="הסר קובץ"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -339,6 +343,7 @@ export default function EnhancedCallChat({
           className="shrink-0"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
+          aria-label="צרף קובץ"
         >
           <Paperclip className="w-5 h-5 text-[#6b7280]" />
         </Button>
@@ -358,6 +363,7 @@ export default function EnhancedCallChat({
             (!messageText.trim() && !selectedFile) || sendMessageMutation.isPending || isUploading
           }
           className="bg-[#3b82f6] hover:bg-[#2563eb] shrink-0"
+          aria-label="שלח"
         >
           {sendMessageMutation.isPending || isUploading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

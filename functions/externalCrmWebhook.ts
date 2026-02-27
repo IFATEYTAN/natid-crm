@@ -4,14 +4,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Verify webhook secret
+    // Verify webhook secret - fail closed if not configured
     const webhookSecret = req.headers.get('x-webhook-secret');
     const savedSettings = Deno.env.get('WEBHOOK_SECRET');
-    
-    if (savedSettings && webhookSecret !== savedSettings) {
-      return Response.json({ 
-        error: 'Invalid webhook secret',
-        success: false 
+
+    if (!savedSettings || webhookSecret !== savedSettings) {
+      return Response.json({
+        error: 'Invalid or missing webhook secret',
+        success: false
       }, { status: 401 });
     }
 
@@ -156,8 +156,7 @@ Deno.serve(async (req) => {
     console.error('External CRM webhook error:', error);
     return Response.json({
       success: false,
-      error: error.message,
-      details: 'Failed to process webhook'
+      error: 'Failed to process webhook'
     }, { status: 500 });
   }
 });

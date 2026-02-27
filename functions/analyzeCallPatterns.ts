@@ -77,6 +77,6 @@ Deno.serve(async (req) => {
         return Response.json(response);
 
     } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
+        return Response.json({ error: 'Failed to analyze call patterns' }, { status: 500 });
     }
 });

@@ -27,7 +27,7 @@ export default function Settings() {
             </div>
             <div>
               <Label>טלפון ראשי</Label>
-              <Input defaultValue="*6283" dir="ltr" className="text-right" />
+              <Input defaultValue="*6283" dir="ltr" className="text-end" />
             </div>
             <div>
               <Label>דוא"ל</Label>

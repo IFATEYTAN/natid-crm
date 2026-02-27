@@ -86,8 +86,8 @@ function getElapsedTime(createdDate) {
  * > 2 hours (120 min) = red, > 1 hour (60 min) = orange
  */
 function getSlaRowClass(minutes) {
-  if (minutes > 120) return 'bg-red-50 border-r-4 border-r-red-400';
-  if (minutes > 60) return 'bg-orange-50 border-r-4 border-r-orange-400';
+  if (minutes > 120) return 'bg-red-50 border-e-4 border-e-red-400';
+  if (minutes > 60) return 'bg-orange-50 border-e-4 border-e-orange-400';
   return '';
 }
 
@@ -133,13 +133,13 @@ export default function TrackedCallsPanel({ calls = [], isLoading, onCallClick }
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50/80">
-                <TableHead className="text-right font-semibold text-gray-600">מספר קריאה</TableHead>
-                <TableHead className="text-right font-semibold text-gray-600">לקוח</TableHead>
-                <TableHead className="text-right font-semibold text-gray-600">סוג שירות</TableHead>
-                <TableHead className="text-right font-semibold text-gray-600">ספק משובץ</TableHead>
-                <TableHead className="text-right font-semibold text-gray-600">סטטוס</TableHead>
-                <TableHead className="text-right font-semibold text-gray-600">זמן שעבר</TableHead>
-                <TableHead className="text-right font-semibold text-gray-600">פעולות</TableHead>
+                <TableHead className="text-end font-semibold text-gray-600">מספר קריאה</TableHead>
+                <TableHead className="text-end font-semibold text-gray-600">לקוח</TableHead>
+                <TableHead className="text-end font-semibold text-gray-600">סוג שירות</TableHead>
+                <TableHead className="text-end font-semibold text-gray-600">ספק משובץ</TableHead>
+                <TableHead className="text-end font-semibold text-gray-600">סטטוס</TableHead>
+                <TableHead className="text-end font-semibold text-gray-600">זמן שעבר</TableHead>
+                <TableHead className="text-end font-semibold text-gray-600">פעולות</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -192,6 +192,7 @@ export default function TrackedCallsPanel({ calls = [], isLoading, onCallClick }
                               size="icon"
                               className="h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
                               onClick={() => onCallClick?.(call.id)}
+                              aria-label="צפה"
                             >
                               <Eye className="w-4 h-4" />
                             </Button>

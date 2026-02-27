@@ -154,14 +154,14 @@ export default function VendorDelaysWidget({ calls, isLoading, compact = false }
   }
 
   return (
-    <Card className={delayedCalls.length > 0 ? 'border-r-4 border-r-orange-500' : ''}>
+    <Card className={delayedCalls.length > 0 ? 'border-e-4 border-e-orange-500' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Timer className="w-5 h-5 text-orange-500" />
             ניהול איחורים
             {delayedCalls.length > 0 && (
-              <Badge className="bg-orange-500 text-white mr-2">{delayedCalls.length}</Badge>
+              <Badge className="bg-orange-500 text-white me-2">{delayedCalls.length}</Badge>
             )}
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -240,8 +240,8 @@ export default function VendorDelaysWidget({ calls, isLoading, compact = false }
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 mr-3">
-                      <div className="text-left">
+                    <div className="flex items-center gap-3 me-3">
+                      <div className="text-start">
                         <div className="flex items-center gap-1">
                           <TrendingDown className="w-3.5 h-3.5 text-red-500" />
                           <span className="text-sm font-bold text-red-600">
@@ -252,7 +252,7 @@ export default function VendorDelaysWidget({ calls, isLoading, compact = false }
                       </div>
                       <Link to={createPageUrl('CallDetails') + '?id=' + call.id}>
                         <Button size="sm" variant="outline" className="border-gray-200 h-8 text-xs">
-                          <Eye className="w-3.5 h-3.5 ml-1" />
+                          <Eye className="w-3.5 h-3.5 ms-1" />
                           צפה
                         </Button>
                       </Link>

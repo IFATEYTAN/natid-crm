@@ -25,10 +25,10 @@ const riskColors = {
 const riskLabels = { low: 'נמוך', medium: 'בינוני', high: 'גבוה', critical: 'קריטי' };
 
 const riskBorderColors = {
-  low: 'border-l-green-400',
-  medium: 'border-l-yellow-400',
-  high: 'border-l-orange-500',
-  critical: 'border-l-red-500',
+  low: 'border-s-green-400',
+  medium: 'border-s-yellow-400',
+  high: 'border-s-orange-500',
+  critical: 'border-s-red-500',
 };
 
 export default function EscalationPredictionWidget() {
@@ -96,7 +96,7 @@ export default function EscalationPredictionWidget() {
       {loading && (
         <CardContent>
           <div className="flex items-center justify-center py-8 text-orange-600 text-sm">
-            <Loader2 className="w-5 h-5 animate-spin ml-2" />
+            <Loader2 className="w-5 h-5 animate-spin ms-2" />
             סורק קריאות פתוחות לזיהוי סיכונים...
           </div>
         </CardContent>
@@ -137,7 +137,7 @@ export default function EscalationPredictionWidget() {
                       {riskLabels[call.risk_level]}
                     </Badge>
                     <Link to={createPageUrl(`CallDetails?id=${call.call_id}`)}>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0" aria-label="צפה">
                         <Eye className="w-3 h-3" />
                       </Button>
                     </Link>

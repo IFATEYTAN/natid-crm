@@ -319,7 +319,7 @@ export default function CaseDetails() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link to={createPageUrl('Cases')}>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="חזרה">
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
@@ -360,7 +360,7 @@ export default function CaseDetails() {
                 className="bg-[#0D47A1] hover:bg-[#1565C0] w-full sm:w-auto"
                 onClick={() => setIsAssignDialogOpen(true)}
               >
-                <Truck className="w-4 h-4 ml-2" />
+                <Truck className="w-4 h-4 ms-2" />
                 <span className="hidden sm:inline">שבץ נותן שירות</span>
                 <span className="sm:hidden">שבץ ספק</span>
               </Button>
@@ -655,7 +655,7 @@ export default function CaseDetails() {
                   activities.map((activity) => (
                     <div
                       key={activity.id}
-                      className="text-sm border-r-2 border-[#0D47A1] pr-3 py-1"
+                      className="text-sm border-e-2 border-[#0D47A1] pe-3 py-1"
                     >
                       <p className="text-[#212121]">{activity.description}</p>
                       <p className="text-xs text-[#9E9E9E]">

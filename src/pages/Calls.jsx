@@ -31,21 +31,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { issueTypeLabels, priorityLabels, priorityColors } from '@/config/labels';
-
-const openStatuses = [
-  'waiting_treatment',
-  'awaiting_assignment',
-  'assigning',
-  'vendor_enroute',
-  'in_progress',
-  'vendor_arrived',
-  'future_service',
-  'in_followup',
-  'in_storage',
-  'continued_treatment',
-  'awaiting_payment',
-];
+import { issueTypeLabels, priorityLabels, priorityColors, openStatuses } from '@/config/labels';
 
 export default function CallsPage() {
   const [searchParams] = useSearchParams();
@@ -278,7 +264,7 @@ export default function CallsPage() {
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
               <Input
                 placeholder="חיפוש לפי מספר קריאה, שם לקוח, טלפון או מספר רכב..."
                 value={searchQuery}

@@ -18,6 +18,7 @@ export default function CallChat({ callId, currentUserRole, currentUserName }) {
     queryKey: queryKeys.callMessages.byCall(callId),
     queryFn: () => base44.entities.Message.filter({ call_id: callId }, 'created_date', 100),
     refetchInterval: 5000, // Poll every 5 seconds
+    staleTime: 1000 * 3, // 3 seconds
   });
 
   // Send message mutation
@@ -138,6 +139,7 @@ export default function CallChat({ callId, currentUserRole, currentUserName }) {
           size="icon"
           disabled={!messageText.trim() || sendMessageMutation.isPending}
           className="bg-[#0D47A1] hover:bg-[#1565C0]"
+          aria-label="שלח"
         >
           {sendMessageMutation.isPending ? (
             <Loader2 className="w-4 h-4 animate-spin" />

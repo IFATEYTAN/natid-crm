@@ -89,9 +89,9 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('SMS Error:', error);
-    return Response.json({ 
-      error: error.message,
-      success: false 
+    return Response.json({
+      error: 'Failed to send SMS',
+      success: false
     }, { status: 500 });
   }
 });

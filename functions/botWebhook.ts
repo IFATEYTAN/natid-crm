@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
     console.error('Bot webhook error:', error);
     return Response.json({
       success: false,
-      error: error.message || 'שגיאה ביצירת קריאה'
+      error: 'שגיאה ביצירת קריאה'
     }, { status: 500 });
   }
 });

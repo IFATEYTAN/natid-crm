@@ -337,6 +337,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('seedDemoData error:', error);
-    return Response.json({ success: false, error: error.message }, { status: 500 });
+    return Response.json({ success: false, error: 'Failed to seed demo data' }, { status: 500 });
   }
 });

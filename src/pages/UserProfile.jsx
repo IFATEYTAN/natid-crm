@@ -120,7 +120,7 @@ export default function UserProfilePage() {
                   </div>
                   <label
                     htmlFor="profile-upload"
-                    className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full text-white cursor-pointer hover:bg-blue-700 transition-colors shadow-sm"
+                    className="absolute bottom-0 end-0 p-2 bg-blue-600 rounded-full text-white cursor-pointer hover:bg-blue-700 transition-colors shadow-sm"
                   >
                     <Camera className="w-4 h-4" />
                     <input
@@ -140,7 +140,7 @@ export default function UserProfilePage() {
                 <div>
                   <Label>שם מלא</Label>
                   <div className="relative">
-                    <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
+                    <User className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
                     <Input
                       value={formData.full_name}
                       onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
@@ -152,7 +152,7 @@ export default function UserProfilePage() {
                 <div>
                   <Label>אימייל</Label>
                   <div className="relative">
-                    <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
+                    <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
                     <Input value={formData.email} disabled className="pe-10 bg-gray-50" dir="ltr" />
                   </div>
                   <p className="text-xs text-[#6b7280] mt-1">לא ניתן לשנות כתובת אימייל</p>
@@ -161,7 +161,7 @@ export default function UserProfilePage() {
                 <div>
                   <Label>תפקיד במערכת</Label>
                   <div className="relative">
-                    <Shield className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
+                    <Shield className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280]" />
                     <Input
                       value={formData.role === 'admin' ? 'מנהל מערכת' : 'משתמש'}
                       disabled

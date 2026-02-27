@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
+import {
+  Upload,
+  FileSpreadsheet,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  ChevronRight,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ImportHistoricalDataPage() {
@@ -223,9 +230,7 @@ export default function ImportHistoricalDataPage() {
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>שלב 3: מיפוי עמודות</CardTitle>
-                <CardDescription>
-                  בחר איזו עמודה מהקובץ מתאימה לכל שדה בדאטאבייס
-                </CardDescription>
+                <CardDescription>בחר איזו עמודה מהקובץ מתאימה לכל שדה בדאטאבייס</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -254,10 +259,12 @@ export default function ImportHistoricalDataPage() {
                       <thead className="bg-blue-100">
                         <tr>
                           {currentSheet.headers.slice(0, 5).map((h) => (
-                            <th key={h} className="px-2 py-1 text-right">{h}</th>
+                            <th key={h} className="px-2 py-1 text-end">
+                              {h}
+                            </th>
                           ))}
                           {currentSheet.headers.length > 5 && (
-                            <th className="px-2 py-1 text-right">...</th>
+                            <th className="px-2 py-1 text-end">...</th>
                           )}
                         </tr>
                       </thead>
@@ -265,7 +272,7 @@ export default function ImportHistoricalDataPage() {
                         {currentSheet.rows.slice(0, 3).map((row, idx) => (
                           <tr key={idx} className="border-t">
                             {currentSheet.headers.slice(0, 5).map((h) => (
-                              <td key={h} className="px-2 py-1 text-right text-gray-600">
+                              <td key={h} className="px-2 py-1 text-end text-gray-600">
                                 {row[h]?.toString().substring(0, 30)}
                               </td>
                             ))}
@@ -288,12 +295,12 @@ export default function ImportHistoricalDataPage() {
               >
                 {isUploading ? (
                   <>
-                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 ms-2 animate-spin" />
                     מייבא נתונים...
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4 ml-2" />
+                    <Upload className="w-4 h-4 ms-2" />
                     ייבא {currentSheet?.rows.length || 0} רשומות
                   </>
                 )}
@@ -308,7 +315,9 @@ export default function ImportHistoricalDataPage() {
               {importResult.success ? (
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle className="w-5 h-5" />
-                  <span>יובאו {importResult.count} רשומות מ-"{importResult.sheet}" בהצלחה! ✅</span>
+                  <span>
+                    יובאו {importResult.count} רשומות מ-"{importResult.sheet}" בהצלחה! ✅
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-700">

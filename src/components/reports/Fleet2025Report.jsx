@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
@@ -41,7 +42,7 @@ export default function Fleet2025Report() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['calls-fleet'],
+    queryKey: queryKeys.reportData.callsFleet(),
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
   });
 
@@ -327,7 +328,7 @@ export default function Fleet2025Report() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-right">
+            <table className="w-full text-sm text-end">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <th className="px-4 py-2 font-semibold text-gray-700">שם הרכב</th>

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import * as usersApi from '../api';
 
 /**
@@ -45,6 +46,10 @@ export const useUpdateUser = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.agents() });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(id) });
+      toast.success('משתמש עודכן בהצלחה');
+    },
+    onError: () => {
+      toast.error('שגיאה בעדכון משתמש');
     },
   });
 };
@@ -60,6 +65,10 @@ export const useCreateUser = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.agents() });
+      toast.success('משתמש נוצר בהצלחה');
+    },
+    onError: () => {
+      toast.error('שגיאה ביצירת משתמש');
     },
   });
 };
@@ -75,6 +84,10 @@ export const useDeleteUser = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.agents() });
+      toast.success('משתמש נמחק בהצלחה');
+    },
+    onError: () => {
+      toast.error('שגיאה במחיקת משתמש');
     },
   });
 };

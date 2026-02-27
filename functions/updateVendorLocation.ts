@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Update location error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to update vendor location' }, { status: 500 });
   }
 });
 

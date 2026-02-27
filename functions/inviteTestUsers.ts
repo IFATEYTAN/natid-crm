@@ -27,6 +27,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ results });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to invite test users' }, { status: 500 });
   }
 });

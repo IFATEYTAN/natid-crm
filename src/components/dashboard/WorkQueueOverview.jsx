@@ -13,6 +13,7 @@ export default function WorkQueueOverview({ calls = [], isLoading }) {
     queryKey: queryKeys.queue.dashboard(),
     queryFn: () => base44.entities.WorkQueue.list(),
     refetchInterval: 15000,
+    staleTime: 1000 * 10, // 10 seconds
   });
 
   const { data: agents = [] } = useQuery({
@@ -34,9 +35,7 @@ export default function WorkQueueOverview({ calls = [], isLoading }) {
     (c) => c.call_status === 'vendor_enroute' || c.call_status === 'in_progress'
   ).length;
 
-  const completedCalls = calls.filter(
-    (c) => c.call_status === 'completed' && c.time_to_completion
-  );
+  const completedCalls = calls.filter((c) => c.call_status === 'completed' && c.time_to_completion);
   const avgTime =
     completedCalls.length > 0
       ? Math.round(
@@ -72,65 +71,65 @@ export default function WorkQueueOverview({ calls = [], isLoading }) {
         </Link>
       }
     >
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Link to={createPageUrl('MyQueue')} className="block group">
-            <div className="bg-orange-50 rounded-xl p-4 border border-orange-100 group-hover:border-orange-300 transition-all text-center">
-              <p className="text-3xl font-extrabold text-orange-600">{waitingInQueue}</p>
-              <p className="text-sm font-medium text-gray-600 mt-1">ממתינים בתור</p>
-            </div>
-          </Link>
-          <Link to={createPageUrl('MyQueue')} className="block group">
-            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 group-hover:border-blue-300 transition-all text-center">
-              <p className="text-3xl font-extrabold text-blue-600">{assignedToAgents}</p>
-              <p className="text-sm font-medium text-gray-600 mt-1">משובץ לנציג</p>
-            </div>
-          </Link>
-          <Link to={createPageUrl('Calls') + '?status=in_progress'} className="block group">
-            <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100 group-hover:border-indigo-300 transition-all text-center">
-              <p className="text-3xl font-extrabold text-indigo-600">{inProgress}</p>
-              <p className="text-sm font-medium text-gray-600 mt-1">בטיפול פעיל</p>
-            </div>
-          </Link>
-          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
-            <p className="text-3xl font-extrabold text-gray-700">{avgTime}'</p>
-            <p className="text-sm font-medium text-gray-600 mt-1">זמן טיפול ממוצע</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Link to={createPageUrl('MyQueue')} className="block group">
+          <div className="bg-orange-50 rounded-xl p-4 border border-orange-100 group-hover:border-orange-300 transition-all text-center">
+            <p className="text-3xl font-extrabold text-orange-600">{waitingInQueue}</p>
+            <p className="text-sm font-medium text-gray-600 mt-1">ממתינים בתור</p>
           </div>
+        </Link>
+        <Link to={createPageUrl('MyQueue')} className="block group">
+          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100 group-hover:border-blue-300 transition-all text-center">
+            <p className="text-3xl font-extrabold text-blue-600">{assignedToAgents}</p>
+            <p className="text-sm font-medium text-gray-600 mt-1">משובץ לנציג</p>
+          </div>
+        </Link>
+        <Link to={createPageUrl('Calls') + '?status=in_progress'} className="block group">
+          <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100 group-hover:border-indigo-300 transition-all text-center">
+            <p className="text-3xl font-extrabold text-indigo-600">{inProgress}</p>
+            <p className="text-sm font-medium text-gray-600 mt-1">בטיפול פעיל</p>
+          </div>
+        </Link>
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+          <p className="text-3xl font-extrabold text-gray-700">{avgTime}'</p>
+          <p className="text-sm font-medium text-gray-600 mt-1">זמן טיפול ממוצע</p>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-semibold text-gray-700">עומס נציגים פעיל</span>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Users className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-semibold text-gray-700">עומס נציגים פעיל</span>
+        </div>
+        {agentStats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+            <CheckCircle2 className="w-8 h-8 text-green-500 mb-2 opacity-50" />
+            <p className="text-sm text-gray-500">אין עומס על הנציגים כרגע</p>
           </div>
-          {agentStats.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-              <CheckCircle2 className="w-8 h-8 text-green-500 mb-2 opacity-50" />
-              <p className="text-sm text-gray-500">אין עומס על הנציגים כרגע</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-              {agentStats.map((agent) => (
-                <div key={agent.name} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {agent.name.slice(0, 2)}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+            {agentStats.map((agent) => (
+              <div key={agent.name} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
+                  {agent.name.slice(0, 2)}
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-800">{agent.name}</span>
+                    <span className="text-xs text-gray-500">{agent.count} קריאות</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-800">{agent.name}</span>
-                      <span className="text-xs text-gray-500">{agent.count} קריאות</span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden" dir="ltr">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${agent.count >= 5 ? 'bg-red-500' : agent.count >= 3 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                        style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
-                      />
-                    </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden" dir="ltr">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${agent.count >= 5 ? 'bg-red-500' : agent.count >= 3 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(100, (agent.count / 5) * 100)}%` }}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </CollapsibleCard>
   );
 }

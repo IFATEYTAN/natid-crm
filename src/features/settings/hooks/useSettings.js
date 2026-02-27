@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 import * as settingsApi from '../api';
 
 /**
@@ -33,6 +34,10 @@ export const useCreateNotificationSetting = () => {
     mutationFn: settingsApi.createNotificationSetting,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.settings() });
+      toast.success('הגדרת התראה נוצרה בהצלחה');
+    },
+    onError: () => {
+      toast.error('שגיאה ביצירת הגדרת התראה');
     },
   });
 };
@@ -48,6 +53,9 @@ export const useUpdateNotificationSetting = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.settings() });
     },
+    onError: () => {
+      toast.error('שגיאה בעדכון הגדרת התראה');
+    },
   });
 };
 
@@ -61,6 +69,9 @@ export const useDeleteNotificationSetting = () => {
     mutationFn: settingsApi.deleteNotificationSetting,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.settings() });
+    },
+    onError: () => {
+      toast.error('שגיאה במחיקת הגדרת התראה');
     },
   });
 };
@@ -88,6 +99,9 @@ export const useMarkNotificationAsRead = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
     },
+    onError: () => {
+      toast.error('שגיאה בסימון התראה כנקראה');
+    },
   });
 };
 
@@ -95,7 +109,15 @@ export const useMarkNotificationAsRead = () => {
  * Hook for creating notification
  */
 export const useCreateNotification = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: settingsApi.createNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all() });
+    },
+    onError: () => {
+      toast.error('שגיאה בשליחת התראה');
+    },
   });
 };

@@ -85,6 +85,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Categorize call error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to categorize call' }, { status: 500 });
   }
 });

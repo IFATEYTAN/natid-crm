@@ -126,6 +126,7 @@ export default function VendorMap() {
                 size="icon"
                 onClick={() => setSidebarOpen(false)}
                 className="lg:hidden"
+                aria-label="סגור"
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -202,6 +203,7 @@ export default function VendorMap() {
             variant="outline"
             size="icon"
             onClick={() => setSidebarOpen(true)}
+            aria-label="תפריט"
           >
             <Menu className="w-5 h-5" />
           </Button>

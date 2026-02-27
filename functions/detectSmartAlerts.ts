@@ -13,6 +13,13 @@ import { differenceInMinutes, subHours } from 'npm:date-fns@3.6.0';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Verify caller is admin/operator or system cron
+    const user = await base44.auth.me();
+    if (!user || !['admin', 'operator'].includes(user.role)) {
+      return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
+    }
+
     // Use service role for system tasks
     const client = base44.asServiceRole;
 
@@ -202,6 +209,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Smart alerts error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to detect alerts' }, { status: 500 });
   }
 });

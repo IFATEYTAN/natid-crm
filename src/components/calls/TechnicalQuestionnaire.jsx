@@ -181,7 +181,7 @@ export default function TechnicalQuestionnaire({ serviceType, answers = {}, onCh
               value={answers[question.id] || ''}
               onChange={(e) => handleChange(question.id, e.target.value)}
               placeholder="הקלד כאן..."
-              className="text-right"
+              className="text-end"
             />
           </div>
         );

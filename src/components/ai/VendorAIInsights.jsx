@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/lib/api';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,7 @@ export default function VendorAIInsights({ vendorId }) {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['vendor-analysis', vendorId],
+    queryKey: queryKeys.ai.vendorAnalysis(vendorId),
     queryFn: () =>
       base44.functions
         .invoke('analyzeVendorPerformance', { vendor_id: vendorId })
@@ -50,7 +51,7 @@ export default function VendorAIInsights({ vendorId }) {
             className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
             size="sm"
           >
-            <Brain className="w-4 h-4 ml-2" />
+            <Brain className="w-4 h-4 ms-2" />
             הפעל ניתוח
           </Button>
         </CardContent>
@@ -65,7 +66,13 @@ export default function VendorAIInsights({ vendorId }) {
           <Brain className="w-4 h-4 text-indigo-600" />
           <CardTitle className="text-base text-indigo-900">פרופיל ביצועים (AI)</CardTitle>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => refetch()} className="h-8 w-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => refetch()}
+          className="h-8 w-8"
+          aria-label="רענן"
+        >
           <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
         </Button>
       </CardHeader>

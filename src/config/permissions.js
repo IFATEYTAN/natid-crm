@@ -28,6 +28,7 @@ export const PAGE_PERMISSIONS = {
   // Admin + Operator - daily operations
   AdvancedExport: ['admin', 'operator'],
   Agents: ['admin', 'operator'],
+  EditCustomer: ['admin', 'operator'],
   AllVendorsMap: ['admin', 'operator'],
   Calendar: ['admin', 'operator'],
   CallDetails: ['admin', 'operator'],

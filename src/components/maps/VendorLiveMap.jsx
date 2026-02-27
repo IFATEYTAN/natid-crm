@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, MapPin, Navigation, Clock, Truck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { format } from 'date-fns';
 import { TILE_URL, TILE_ATTRIBUTION, createColorIcon } from './mapUtils';
 
@@ -36,7 +37,7 @@ export default function VendorLiveMap({
 
   // Fetch vendor's current location
   const { data: vendor, refetch: refetchVendor } = useQuery({
-    queryKey: ['vendor-location', vendorId],
+    queryKey: queryKeys.vendorLiveMap.location(vendorId),
     queryFn: async () => {
       if (!vendorId) return null;
       const vendors = await base44.entities.Vendor.filter({ id: vendorId });
@@ -48,7 +49,7 @@ export default function VendorLiveMap({
 
   // Fetch location history for this call
   const { data: locationHistory = [] } = useQuery({
-    queryKey: ['vendor-location-history', callId],
+    queryKey: queryKeys.vendorLiveMap.locationHistory(callId),
     queryFn: async () => {
       if (!callId) return [];
       return await base44.entities.VendorLocation.filter({ call_id: callId }, 'created_date', 500);

@@ -356,7 +356,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
         </DropdownMenu>
 
         <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-          <Upload className="w-4 h-4 ml-2" />
+          <Upload className="w-4 h-4 ms-2" />
           ייבוא נתונים
         </Button>
       </div>

@@ -164,7 +164,7 @@ export default function MyCallsVendor() {
       cell: (row) => (
         <div className="flex items-center gap-1">
           <Link to={createPageUrl(`CallDetailsVendor?id=${row.id}`)}>
-            <Button variant="ghost" size="icon" className="h-8 w-8" title="צפייה">
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="צפייה" aria-label="צפה">
               <Eye className="w-4 h-4" />
             </Button>
           </Link>
@@ -174,6 +174,7 @@ export default function MyCallsVendor() {
             className="h-8 w-8"
             onClick={() => openNavigation(row.pickup_location_address)}
             title="ניווט"
+            aria-label="ניווט"
           >
             <Navigation className="w-4 h-4" />
           </Button>
@@ -205,12 +206,12 @@ export default function MyCallsVendor() {
           <div className="lg:col-span-2">
             <Label className="text-[#6B7280] text-sm mb-1.5 block">חיפוש</Label>
             <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+              <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
               <Input
                 placeholder="מספר קריאה, לקוח, טלפון, רכב..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
+                className="ps-10"
               />
             </div>
           </div>

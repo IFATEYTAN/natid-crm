@@ -336,6 +336,6 @@ ${JSON.stringify(callsData)}
 
   } catch (error) {
     console.error('Historical analysis error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to analyze historical patterns' }, { status: 500 });
   }
 });

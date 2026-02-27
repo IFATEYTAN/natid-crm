@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Bell, Plus, Check, Clock, AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -45,10 +54,14 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
   const [showDialog, setShowDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    title: '', description: '', remind_at: '', priority: 'medium', assigned_to_name: '',
+    title: '',
+    description: '',
+    remind_at: '',
+    priority: 'medium',
+    assigned_to_name: '',
   });
 
-  const queryKey = showAll ? ['reminders-all'] : ['reminders', callId];
+  const queryKey = showAll ? queryKeys.reminders.all() : queryKeys.reminders.byCall(callId);
   const { data: reminders = [] } = useQuery({
     queryKey,
     queryFn: () => {
@@ -60,12 +73,15 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
 
   // Mark overdue
   const now = new Date();
-  const processedReminders = reminders.map(r => ({
+  const processedReminders = reminders.map((r) => ({
     ...r,
-    status: r.status === 'pending' && r.remind_at && new Date(r.remind_at) < now ? 'overdue' : r.status,
+    status:
+      r.status === 'pending' && r.remind_at && new Date(r.remind_at) < now ? 'overdue' : r.status,
   }));
 
-  const pendingCount = processedReminders.filter(r => r.status === 'pending' || r.status === 'overdue').length;
+  const pendingCount = processedReminders.filter(
+    (r) => r.status === 'pending' || r.status === 'overdue'
+  ).length;
 
   const handleCreate = async () => {
     if (!form.title || !form.remind_at) return toast.error('יש למלא כותרת ותאריך');
@@ -84,13 +100,22 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
     });
     queryClient.invalidateQueries({ queryKey });
     setShowDialog(false);
-    setForm({ title: '', description: '', remind_at: '', priority: 'medium', assigned_to_name: '' });
+    setForm({
+      title: '',
+      description: '',
+      remind_at: '',
+      priority: 'medium',
+      assigned_to_name: '',
+    });
     setSaving(false);
     toast.success('תזכורת נוצרה');
   };
 
   const handleComplete = async (id) => {
-    await base44.entities.Reminder.update(id, { status: 'done', completed_at: new Date().toISOString() });
+    await base44.entities.Reminder.update(id, {
+      status: 'done',
+      completed_at: new Date().toISOString(),
+    });
     queryClient.invalidateQueries({ queryKey });
     toast.success('תזכורת סומנה כבוצעה');
   };
@@ -124,25 +149,41 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
             {processedReminders.map((rem) => {
               const StatusIcon = statusConfig[rem.status]?.icon || Clock;
               return (
-                <div key={rem.id} className={`border rounded-lg p-3 flex items-start justify-between gap-3 ${rem.status === 'overdue' ? 'border-red-300 bg-red-50' : rem.status === 'done' ? 'opacity-50' : ''}`}>
+                <div
+                  key={rem.id}
+                  className={`border rounded-lg p-3 flex items-start justify-between gap-3 ${rem.status === 'overdue' ? 'border-red-300 bg-red-50' : rem.status === 'done' ? 'opacity-50' : ''}`}
+                >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={statusConfig[rem.status]?.class || 'bg-gray-100'}>
-                        <StatusIcon className="w-3 h-3 ml-1" />
+                        <StatusIcon className="w-3 h-3 ms-1" />
                         {statusConfig[rem.status]?.label}
                       </Badge>
-                      <Badge className={priorityConfig[rem.priority]?.class}>{priorityConfig[rem.priority]?.label}</Badge>
+                      <Badge className={priorityConfig[rem.priority]?.class}>
+                        {priorityConfig[rem.priority]?.label}
+                      </Badge>
                       {rem.reminder_type !== 'manual' && (
-                        <Badge variant="outline" className="text-xs">{typeLabels[rem.reminder_type]}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {typeLabels[rem.reminder_type]}
+                        </Badge>
                       )}
                     </div>
                     <p className="font-medium text-sm mt-1">{rem.title}</p>
-                    {rem.description && <p className="text-xs text-gray-500 mt-0.5">{rem.description}</p>}
+                    {rem.description && (
+                      <p className="text-xs text-gray-500 mt-0.5">{rem.description}</p>
+                    )}
                     <div className="flex gap-3 text-xs text-gray-400 mt-1">
-                      {rem.remind_at && <span>תזכור: {format(new Date(rem.remind_at), 'dd/MM/yy HH:mm', { locale: he })}</span>}
+                      {rem.remind_at && (
+                        <span>
+                          תזכור: {format(new Date(rem.remind_at), 'dd/MM/yy HH:mm', { locale: he })}
+                        </span>
+                      )}
                       {rem.assigned_to_name && <span>ל: {rem.assigned_to_name}</span>}
                       {showAll && rem.call_number && (
-                        <Link to={createPageUrl(`CallDetails?id=${rem.call_id}`)} className="text-blue-600 hover:underline">
+                        <Link
+                          to={createPageUrl(`CallDetails?id=${rem.call_id}`)}
+                          className="text-blue-600 hover:underline"
+                        >
                           קריאה {rem.call_number}
                         </Link>
                       )}
@@ -150,10 +191,20 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
                   </div>
                   {(rem.status === 'pending' || rem.status === 'overdue') && (
                     <div className="flex gap-1 shrink-0">
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-green-600" onClick={() => handleComplete(rem.id)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-green-600"
+                        onClick={() => handleComplete(rem.id)}
+                      >
                         <Check className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-gray-400" onClick={() => handleDismiss(rem.id)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-gray-400"
+                        onClick={() => handleDismiss(rem.id)}
+                      >
                         <X className="w-4 h-4" />
                       </Button>
                     </div>
@@ -166,25 +217,44 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
 
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent>
-            <DialogHeader><DialogTitle>תזכורת חדשה</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>תזכורת חדשה</DialogTitle>
+            </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label>כותרת</Label>
-                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="למשל: חזור ללקוח..." />
+                <Input
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="למשל: חזור ללקוח..."
+                />
               </div>
               <div>
                 <Label>תיאור</Label>
-                <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="h-16" />
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="h-16"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>תאריך ושעה</Label>
-                  <Input type="datetime-local" value={form.remind_at} onChange={e => setForm({ ...form, remind_at: e.target.value })} />
+                  <Input
+                    type="datetime-local"
+                    value={form.remind_at}
+                    onChange={(e) => setForm({ ...form, remind_at: e.target.value })}
+                  />
                 </div>
                 <div>
                   <Label>עדיפות</Label>
-                  <Select value={form.priority} onValueChange={v => setForm({ ...form, priority: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.priority}
+                    onValueChange={(v) => setForm({ ...form, priority: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="low">נמוך</SelectItem>
                       <SelectItem value="medium">בינוני</SelectItem>
@@ -195,12 +265,20 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
               </div>
               <div>
                 <Label>מקבל התזכורת</Label>
-                <Input value={form.assigned_to_name} onChange={e => setForm({ ...form, assigned_to_name: e.target.value })} placeholder={currentUser?.full_name || 'שם המוקדן'} />
+                <Input
+                  value={form.assigned_to_name}
+                  onChange={(e) => setForm({ ...form, assigned_to_name: e.target.value })}
+                  placeholder={currentUser?.full_name || 'שם המוקדן'}
+                />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>ביטול</Button>
-              <Button onClick={handleCreate} isLoading={saving}>צור תזכורת</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>
+                ביטול
+              </Button>
+              <Button onClick={handleCreate} isLoading={saving}>
+                צור תזכורת
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

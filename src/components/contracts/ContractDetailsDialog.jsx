@@ -135,7 +135,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto text-right" dir="rtl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto text-end" dir="rtl">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div>
@@ -158,7 +158,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)}>
-                  <Pencil className="w-4 h-4 ml-1" />
+                  <Pencil className="w-4 h-4 ms-1" />
                   ערוך
                 </Button>
               </div>
@@ -173,7 +173,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               <TabsTrigger value="history">היסטוריה ({history.length})</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="space-y-4 mt-4 text-right" dir="rtl">
+            <TabsContent value="details" className="space-y-4 mt-4 text-end" dir="rtl">
               {/* Vendor Info */}
               <div className="p-4 bg-gray-50 rounded-lg flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -245,20 +245,20 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               <div className="flex gap-2 pt-4 border-t">
                 {contract.status === 'draft' && (
                   <Button onClick={handleActivate} className="bg-green-600 hover:bg-green-700">
-                    <CheckCircle className="w-4 h-4 ml-1" />
+                    <CheckCircle className="w-4 h-4 ms-1" />
                     הפעל חוזה
                   </Button>
                 )}
                 {contract.status === 'pending_approval' && (
                   <Button onClick={handleActivate} className="bg-green-600 hover:bg-green-700">
-                    <CheckCircle className="w-4 h-4 ml-1" />
+                    <CheckCircle className="w-4 h-4 ms-1" />
                     אשר והפעל
                   </Button>
                 )}
                 {contract.status === 'active' && (
                   <>
                     <Button variant="outline" onClick={handleSuspend}>
-                      <Clock className="w-4 h-4 ml-1" />
+                      <Clock className="w-4 h-4 ms-1" />
                       השהה
                     </Button>
                     <Button
@@ -266,28 +266,28 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                       className="text-red-600 hover:text-red-700"
                       onClick={() => setShowTerminateDialog(true)}
                     >
-                      <Ban className="w-4 h-4 ml-1" />
+                      <Ban className="w-4 h-4 ms-1" />
                       בטל חוזה
                     </Button>
                   </>
                 )}
                 {contract.status === 'suspended' && (
                   <Button onClick={handleActivate} className="bg-green-600 hover:bg-green-700">
-                    <CheckCircle className="w-4 h-4 ml-1" />
+                    <CheckCircle className="w-4 h-4 ms-1" />
                     הפעל מחדש
                   </Button>
                 )}
                 {(contract.status === 'expired' ||
                   (contract.status === 'active' && daysToExpiry <= 30)) && (
                   <Button onClick={handleRenew} className="bg-blue-600 hover:bg-blue-700">
-                    <RefreshCw className="w-4 h-4 ml-1" />
+                    <RefreshCw className="w-4 h-4 ms-1" />
                     חדש חוזה
                   </Button>
                 )}
               </div>
             </TabsContent>
 
-            <TabsContent value="pricing" className="space-y-4 mt-4 text-right" dir="rtl">
+            <TabsContent value="pricing" className="space-y-4 mt-4 text-end" dir="rtl">
               {/* Main Rate */}
               <div className="p-4 bg-blue-50 rounded-lg">
                 <div className="flex items-center gap-2 text-blue-800 mb-2">
@@ -352,7 +352,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="coverage" className="space-y-4 mt-4 text-right" dir="rtl">
+            <TabsContent value="coverage" className="space-y-4 mt-4 text-end" dir="rtl">
               {/* Coverage Areas */}
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
@@ -422,7 +422,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
               </div>
             </TabsContent>
 
-            <TabsContent value="history" className="mt-4 text-right" dir="rtl">
+            <TabsContent value="history" className="mt-4 text-end" dir="rtl">
               <div className="space-y-3">
                 {history.map((item, idx) => (
                   <div
@@ -448,7 +448,7 @@ export default function ContractDetailsDialog({ open, onOpenChange, contract, on
                           {format(new Date(item.end_date), 'dd/MM/yyyy')}
                         </p>
                       </div>
-                      <div className="text-left">
+                      <div className="text-start">
                         <p className="text-sm text-gray-600">
                           {contractTypeLabels[item.contract_type]}
                         </p>

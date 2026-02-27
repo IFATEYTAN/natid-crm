@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
@@ -43,7 +44,7 @@ export default function Annual2025Report() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['calls-annual'],
+    queryKey: queryKeys.reportData.callsAnnual(),
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
   });
 

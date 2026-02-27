@@ -121,7 +121,7 @@ export default function VendorNewCallAlert({
                 <Button
                   key={reason.id}
                   variant="outline"
-                  className="w-full h-12 justify-between text-right"
+                  className="w-full h-12 justify-between text-end"
                   onClick={() => handleDeclineWithReason(reason.label)}
                 >
                   <span>{reason.label}</span>
@@ -243,11 +243,11 @@ export default function VendorNewCallAlert({
                 className="flex-1 h-14 border-red-300 text-red-600 hover:bg-red-50"
                 onClick={() => setShowDeclineReasons(true)}
               >
-                <X className="w-5 h-5 ml-2" />
+                <X className="w-5 h-5 ms-2" />
                 דחה
               </Button>
               <Button className="flex-1 h-14 bg-green-600 hover:bg-green-700" onClick={onAccept}>
-                <CheckCircle className="w-5 h-5 ml-2" />
+                <CheckCircle className="w-5 h-5 ms-2" />
                 קבל קריאה
               </Button>
             </div>

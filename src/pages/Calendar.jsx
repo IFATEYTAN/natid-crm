@@ -195,13 +195,23 @@ export default function CalendarPage() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" onClick={() => navigateMonth('prev')}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => navigateMonth('prev')}
+                  aria-label="חודש קודם"
+                >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
                 <h2 className="text-lg font-semibold text-[#172B4D] min-w-[140px] text-center">
                   {format(currentDate, 'MMMM yyyy', { locale: he })}
                 </h2>
-                <Button variant="outline" size="icon" onClick={() => navigateMonth('next')}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => navigateMonth('next')}
+                  aria-label="חודש הבא"
+                >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
               </div>

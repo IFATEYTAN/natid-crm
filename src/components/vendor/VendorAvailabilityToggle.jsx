@@ -93,41 +93,41 @@ export default function VendorAvailabilityToggle({
   };
 
   const handleStartBreak = async (minutes) => {
-  setIsLoading(true);
-  setShowBreakOptions(false);
-  try {
-    await base44.functions.invoke('updateVendorStatus', {
-      vendor_id: vendor.id,
-      status: 'on_break'
-    });
-    setIsOnBreak(true);
-    setBreakEndTime(Date.now() + minutes * 60 * 1000);
-    showToast.success(`הפסקה ל-${minutes} דקות התחילה`);
-  } catch (error) {
-    console.error('Error starting break:', error);
-    showToast.error('שגיאה בהפעלת הפסקה');
-  } finally {
-    setIsLoading(false);
-  }
+    setIsLoading(true);
+    setShowBreakOptions(false);
+    try {
+      await base44.functions.invoke('updateVendorStatus', {
+        vendor_id: vendor.id,
+        status: 'on_break',
+      });
+      setIsOnBreak(true);
+      setBreakEndTime(Date.now() + minutes * 60 * 1000);
+      showToast.success(`הפסקה ל-${minutes} דקות התחילה`);
+    } catch (error) {
+      console.error('Error starting break:', error);
+      showToast.error('שגיאה בהפעלת הפסקה');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEndBreak = useCallback(async () => {
-  setIsLoading(true);
-  try {
-    await base44.functions.invoke('updateVendorStatus', {
-      vendor_id: vendor.id,
-      status: 'available'
-    });
-    setIsOnBreak(false);
-    setBreakEndTime(null);
-    setBreakRemaining(null);
-    clearInterval(breakTimerRef.current);
-    showToast.success('חזרת מהפסקה - זמין לקריאות');
-  } catch (error) {
-    console.error('Error ending break:', error);
-  } finally {
-    setIsLoading(false);
-  }
+    setIsLoading(true);
+    try {
+      await base44.functions.invoke('updateVendorStatus', {
+        vendor_id: vendor.id,
+        status: 'available',
+      });
+      setIsOnBreak(false);
+      setBreakEndTime(null);
+      setBreakRemaining(null);
+      clearInterval(breakTimerRef.current);
+      showToast.success('חזרת מהפסקה - זמין לקריאות');
+    } catch (error) {
+      console.error('Error ending break:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [vendor?.id]);
 
   const formatBreakRemaining = (ms) => {
@@ -179,7 +179,7 @@ export default function VendorAvailabilityToggle({
 
           <div className="flex items-center gap-2">
             {isAvailable && !isOnBreak && (
-              <div className="text-left text-sm ml-2">
+              <div className="text-start text-sm ms-2">
                 {locationError ? (
                   <div className="flex items-center gap-1 text-red-600">
                     <AlertTriangle className="w-4 h-4" />
@@ -233,7 +233,7 @@ export default function VendorAvailabilityToggle({
           <div className="mt-3 pt-3 border-t border-green-200">
             {showBreakOptions ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-600 ml-1">בחר משך הפסקה:</span>
+                <span className="text-sm text-gray-600 ms-1">בחר משך הפסקה:</span>
                 {BREAK_DURATIONS.map((opt) => (
                   <Button
                     key={opt.minutes}

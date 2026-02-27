@@ -245,16 +245,16 @@ function LayoutContent({ children, currentPageName }) {
   if (!currentUser) return null;
 
   return (
-      <div dir="rtl" className="min-h-screen bg-[#FAFAFA]">
-        {/* Skip to main content link - visible on keyboard focus */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-red-600 focus:font-medium"
-        >
-          דלג לתוכן הראשי
-        </a>
+    <div dir="rtl" className="min-h-screen bg-[#FAFAFA]">
+      {/* Skip to main content link - visible on keyboard focus */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:text-red-600 focus:font-medium"
+      >
+        דלג לתוכן הראשי
+      </a>
 
-        <style>{`
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
         
         * {
@@ -336,269 +336,265 @@ function LayoutContent({ children, currentPageName }) {
         }
       `}</style>
 
-        {/* Mobile Overlay */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        {/* Sidebar */}
-        <aside
-          className={cn(
-            'fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out flex flex-col',
-            'lg:translate-x-0',
-            sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-          )}
-        >
-          {/* Logo */}
-          <div className="h-16 flex-shrink-0 flex items-center justify-between px-4 border-b border-[#E0E0E0]">
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          'fixed top-0 end-0 h-full w-64 bg-white border-s border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out flex flex-col',
+          'lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+        )}
+      >
+        {/* Logo */}
+        <div className="h-16 flex-shrink-0 flex items-center justify-between px-4 border-b border-[#E0E0E0]">
+          <div className="flex items-center gap-3">
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
+              alt="נתי"
+              className="h-10 w-auto object-contain"
+            />
+            <span className="font-bold text-lg text-[#111827] hidden md:block">
+              NatID 360 Control
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="סגור תפריט"
+          >
+            <X className="w-5 h-5 text-[#616161]" />
+          </Button>
+        </div>
+
+        {/* Navigation - scrollable area */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+          {navigationGroups.map((group, groupIdx) => {
+            // Hide groups where the user has no accessible items
+            const visibleItems = group.items.filter((item) => canAccessPage(item.href));
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={groupIdx} className="mb-2">
+                <button
+                  onClick={() => toggleGroup(group.title)}
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-[#9E9E9E] uppercase tracking-wider hover:bg-gray-50 rounded transition-colors"
+                >
+                  <span>{group.title}</span>
+                  {expandedGroups[group.title] ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </button>
+
+                {expandedGroups[group.title] && (
+                  <div className="space-y-1 mt-1">
+                    {visibleItems.map((item) => {
+                      const isActive = currentPageName === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          to={createPageUrl(item.href)}
+                          onClick={() => setSidebarOpen(false)}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200',
+                            isActive
+                              ? 'bg-[#F5F5F5] text-[#212121] shadow-sm border border-[#E0E0E0]'
+                              : 'text-[#424242] hover:bg-[#FAFAFA] hover:text-[#212121]'
+                          )}
+                        >
+                          {item.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* User Section - fixed at bottom */}
+        <div className="flex-shrink-0 p-4 border-t border-[#E0E0E0]">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-[#616161] hover:text-[#D32F2F] hover:bg-red-50"
+            onClick={handleLogout}
+          >
+            <LogOut className="w-5 h-5" />
+            התנתק
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="lg:me-64 min-h-screen flex flex-col transition-all duration-300">
+        {/* Top Bar */}
+        <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden w-10 h-10 hover:bg-[rgba(0,0,0,0.04)] active:bg-[rgba(0,0,0,0.08)] transition-colors rounded-full"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="תפריט"
+            >
+              <Menu className="w-6 h-6 text-[#616161]" strokeWidth={2} />
+            </Button>
             <div className="flex items-center gap-3">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
                 alt="נתי"
-                className="h-10 w-auto object-contain"
+                className="h-8 w-auto object-contain lg:hidden"
               />
-              <span className="font-bold text-lg text-[#111827] hidden md:block">
-                NatID 360 Control
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-              aria-label="סגור תפריט"
-            >
-              <X className="w-5 h-5 text-[#616161]" />
-            </Button>
-          </div>
-
-          {/* Navigation - scrollable area */}
-          <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-            {navigationGroups.map((group, groupIdx) => {
-              // Hide groups where the user has no accessible items
-              const visibleItems = group.items.filter((item) => canAccessPage(item.href));
-              if (visibleItems.length === 0) return null;
-
-              return (
-                <div key={groupIdx} className="mb-2">
-                  <button
-                    onClick={() => toggleGroup(group.title)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-[#9E9E9E] uppercase tracking-wider hover:bg-gray-50 rounded transition-colors"
-                  >
-                    <span>{group.title}</span>
-                    {expandedGroups[group.title] ? (
-                      <ChevronDown className="w-4 h-4" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4" />
-                    )}
-                  </button>
-
-                  {expandedGroups[group.title] && (
-                    <div className="space-y-1 mt-1">
-                      {visibleItems.map((item) => {
-                        const isActive = currentPageName === item.href;
-                        return (
-                          <Link
-                            key={item.href}
-                            to={createPageUrl(item.href)}
-                            onClick={() => setSidebarOpen(false)}
-                            className={cn(
-                              'flex items-center gap-3 px-3 py-2 rounded-[4px] text-[15px] font-medium transition-all duration-200',
-                              isActive
-                                ? 'bg-[#F5F5F5] text-[#212121] shadow-sm border border-[#E0E0E0]'
-                                : 'text-[#424242] hover:bg-[#FAFAFA] hover:text-[#212121]'
-                            )}
-                          >
-                            {item.name}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
-
-          {/* User Section - fixed at bottom */}
-          <div className="flex-shrink-0 p-4 border-t border-[#E0E0E0]">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 text-[#616161] hover:text-[#D32F2F] hover:bg-red-50"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5" />
-              התנתק
-            </Button>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <div className="lg:mr-64 min-h-screen flex flex-col transition-all duration-300">
-          {/* Top Bar */}
-          <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden w-10 h-10 hover:bg-[rgba(0,0,0,0.04)] active:bg-[rgba(0,0,0,0.08)] transition-colors rounded-full"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="תפריט"
-              >
-                <Menu className="w-6 h-6 text-[#616161]" strokeWidth={2} />
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
+                <ChevronRight className="w-4 h-4" />
+                חזרה
               </Button>
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
-                  alt="נתי"
-                  className="h-8 w-auto object-contain lg:hidden"
-                />
-                <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
-                  <ChevronRight className="w-4 h-4" />
-                  חזרה
-                </Button>
-              </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative" aria-label="התראות">
-                    <Bell className="w-5 h-5 text-[#616161]" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-0" align="start">
-                  <div className="p-4 border-b border-gray-100 flex justify-between items-center">
-                    <h4 className="font-semibold text-sm">התראות</h4>
-                    <span className="text-xs text-gray-500">{unreadCount} חדשות</span>
-                  </div>
-                  <div className="max-h-80 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="p-8 text-center text-gray-500 text-sm">אין התראות חדשות</div>
-                    ) : (
-                      notifications.map((notification) => (
-                        <Link
-                          key={notification.id}
-                          to={
-                            notification.link
-                              ? createPageUrl(notification.link.replace(/^\//, ''))
-                              : '#'
-                          }
-                          onClick={() => handleNotificationClick(notification)}
+          <div className="flex items-center gap-4">
+            {/* Notifications */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative" aria-label="התראות">
+                  <Bell className="w-5 h-5 text-[#616161]" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-2 end-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" align="start">
+                <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                  <h4 className="font-semibold text-sm">התראות</h4>
+                  <span className="text-xs text-gray-500">{unreadCount} חדשות</span>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500 text-sm">אין התראות חדשות</div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <Link
+                        key={notification.id}
+                        to={
+                          notification.link
+                            ? createPageUrl(notification.link.replace(/^\//, ''))
+                            : '#'
+                        }
+                        onClick={() => handleNotificationClick(notification)}
+                        className={cn(
+                          'block p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors text-end',
+                          !notification.is_read && 'bg-blue-50/50'
+                        )}
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-xs text-gray-400">
+                            {notification.created_date
+                              ? format(parseISO(notification.created_date), 'HH:mm')
+                              : ''}
+                          </span>
+                          {!notification.is_read && (
+                            <span className="w-2 h-2 bg-blue-500 rounded-full mt-1" />
+                          )}
+                        </div>
+                        <h5
                           className={cn(
-                            'block p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors text-right',
-                            !notification.is_read && 'bg-blue-50/50'
+                            'text-sm font-medium mb-1',
+                            !notification.is_read ? 'text-blue-700' : 'text-gray-900'
                           )}
                         >
-                          <div className="flex justify-between items-start mb-1">
-                            <span className="text-xs text-gray-400">
-                              {notification.created_date
-                                ? format(parseISO(notification.created_date), 'HH:mm')
-                                : ''}
-                            </span>
-                            {!notification.is_read && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full mt-1" />
-                            )}
-                          </div>
-                          <h5
-                            className={cn(
-                              'text-sm font-medium mb-1',
-                              !notification.is_read ? 'text-blue-700' : 'text-gray-900'
-                            )}
-                          >
-                            {notification.title}
-                          </h5>
-                          <p className="text-xs text-gray-500 line-clamp-2">
-                            {notification.message}
-                          </p>
-                        </Link>
-                      ))
-                    )}
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              {/* User Profile - Clean Design */}
-              <div className="flex items-center gap-3 pl-2">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-[#212121] leading-none">
-                    {currentUser?.full_name || 'משתמש'}
-                  </p>
-                  <p className="text-[11px] text-[#616161] mt-1 leading-none">
-                    {currentUser?.email}
-                  </p>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-[#F5F5F5] border border-[#E0E0E0] flex items-center justify-center overflow-hidden">
-                  {currentUser?.profile_image ? (
-                    <img
-                      src={currentUser.profile_image}
-                      alt={currentUser.full_name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-[#616161] text-xs font-medium">
-                      {getInitials(currentUser?.full_name)}
-                    </span>
+                          {notification.title}
+                        </h5>
+                        <p className="text-xs text-gray-500 line-clamp-2">{notification.message}</p>
+                      </Link>
+                    ))
                   )}
                 </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* User Profile - Clean Design */}
+            <div className="flex items-center gap-3 ps-2">
+              <div className="text-end hidden sm:block">
+                <p className="text-sm font-medium text-[#212121] leading-none">
+                  {currentUser?.full_name || 'משתמש'}
+                </p>
+                <p className="text-[11px] text-[#616161] mt-1 leading-none">{currentUser?.email}</p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#F5F5F5] border border-[#E0E0E0] flex items-center justify-center overflow-hidden">
+                {currentUser?.profile_image ? (
+                  <img
+                    src={currentUser.profile_image}
+                    alt={currentUser.full_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[#616161] text-xs font-medium">
+                    {getInitials(currentUser?.full_name)}
+                  </span>
+                )}
               </div>
             </div>
-          </header>
-
-          {/* Notification Permission Banner */}
-          <Suspense fallback={null}>
-            <NotificationPermissionBanner />
-          </Suspense>
-
-          {/* Page Content */}
-          <main
-            id="main-content"
-            ref={mainContentRef}
-            role="main"
-            aria-live="polite"
-            className="flex-1 p-4 md:p-6"
-          >
-            {children}
-          </main>
-
-          <Suspense fallback={null}>
-            <AccessibilityWidget />
-          </Suspense>
-
-          {/* PWA Components */}
-          <Suspense fallback={null}>
-            <InstallPrompt />
-          </Suspense>
-          <Suspense fallback={null}>
-            <OfflineIndicator />
-          </Suspense>
-          <Suspense fallback={null}>
-            <UpdatePrompt />
-          </Suspense>
-
-          {/* Nati Assistant (floating) */}
-          <Suspense fallback={null}>
-            <NatiAssistant />
-          </Suspense>
-
-          {/* Connection Status (top left) */}
-          <div className="fixed top-20 left-4 z-40">
-            <Suspense fallback={null}>
-              <ConnectionStatusIndicator />
-            </Suspense>
           </div>
+        </header>
+
+        {/* Notification Permission Banner */}
+        <Suspense fallback={null}>
+          <NotificationPermissionBanner />
+        </Suspense>
+
+        {/* Page Content */}
+        <main
+          id="main-content"
+          ref={mainContentRef}
+          role="main"
+          aria-live="polite"
+          className="flex-1 p-4 md:p-6"
+        >
+          {children}
+        </main>
+
+        <Suspense fallback={null}>
+          <AccessibilityWidget />
+        </Suspense>
+
+        {/* PWA Components */}
+        <Suspense fallback={null}>
+          <InstallPrompt />
+        </Suspense>
+        <Suspense fallback={null}>
+          <OfflineIndicator />
+        </Suspense>
+        <Suspense fallback={null}>
+          <UpdatePrompt />
+        </Suspense>
+
+        {/* Nati Assistant (floating) */}
+        <Suspense fallback={null}>
+          <NatiAssistant />
+        </Suspense>
+
+        {/* Connection Status (top left) */}
+        <div className="fixed top-20 start-4 z-40">
           <Suspense fallback={null}>
-            <ToasterLazy position="top-center" richColors />
+            <ConnectionStatusIndicator />
           </Suspense>
         </div>
+        <Suspense fallback={null}>
+          <ToasterLazy position="top-center" richColors />
+        </Suspense>
       </div>
+    </div>
   );
 }
 

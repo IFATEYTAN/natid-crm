@@ -1,26 +1,29 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import React, { useEffect, useMemo, useState } from 'react';
+import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, Undo2, MoveUp, MoveDown } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Save, Undo2, MoveUp, MoveDown } from 'lucide-react';
 
-
-const PAGES = [
-  { value: "HistoricalDataAnalysis", label: "ניתוח נתונים היסטוריים" },
-];
+const PAGES = [{ value: 'HistoricalDataAnalysis', label: 'ניתוח נתונים היסטוריים' }];
 
 const DEFAULT_CARDS_BY_PAGE = {
   HistoricalDataAnalysis: [
-    { card_key: "onlyBot", label: "בוט בלבד", visible: true, order: 0 },
-    { card_key: "onlyManual", label: "ידני בלבד", visible: true, order: 1 },
-    { card_key: "both", label: "גם וגם", visible: true, order: 2 },
-    { card_key: "none", label: "לא טופל", visible: true, order: 3 },
+    { card_key: 'onlyBot', label: 'בוט בלבד', visible: true, order: 0 },
+    { card_key: 'onlyManual', label: 'ידני בלבד', visible: true, order: 1 },
+    { card_key: 'both', label: 'גם וגם', visible: true, order: 2 },
+    { card_key: 'none', label: 'לא טופל', visible: true, order: 3 },
   ],
 };
 
@@ -45,7 +48,10 @@ export default function AdminDisplaySettings() {
     queryKey: queryKeys.settings.display(selectedUserId, selectedPage),
     enabled: !!user && !!selectedPage,
     queryFn: async () => {
-      const list = await base44.entities.UserDisplayPreference.filter({ user_id: selectedUserId, page_name: selectedPage });
+      const list = await base44.entities.UserDisplayPreference.filter({
+        user_id: selectedUserId,
+        page_name: selectedPage,
+      });
       return list?.[0] || null;
     },
     initialData: null,
@@ -58,15 +64,15 @@ export default function AdminDisplaySettings() {
     const defaults = DEFAULT_CARDS_BY_PAGE[selectedPage] || [];
     if (pref?.cards?.length) {
       // merge saved with defaults (keep missing ones appended)
-      const savedMap = Object.fromEntries(pref.cards.map(c => [c.card_key, c]));
+      const savedMap = Object.fromEntries(pref.cards.map((c) => [c.card_key, c]));
       const merged = defaults.map((d, idx) => ({
         ...d,
         ...(savedMap[d.card_key] || {}),
-        order: (savedMap[d.card_key]?.order ?? idx),
+        order: savedMap[d.card_key]?.order ?? idx,
       }));
       // include any unknown saved cards
-      const extras = pref.cards.filter(c => !merged.find(m => m.card_key === c.card_key));
-      setCards([...merged, ...extras].sort((a,b)=> (a.order ?? 0) - (b.order ?? 0)));
+      const extras = pref.cards.filter((c) => !merged.find((m) => m.card_key === c.card_key));
+      setCards([...merged, ...extras].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
     } else {
       setCards(defaults);
     }
@@ -79,7 +85,8 @@ export default function AdminDisplaySettings() {
       }
       return base44.entities.UserDisplayPreference.create(payload);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.settings.display(user?.id, selectedPage) }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: queryKeys.settings.display(user?.id, selectedPage) }),
   });
 
   const handleReorder = (index, direction) => {
@@ -91,7 +98,7 @@ export default function AdminDisplaySettings() {
   };
 
   const handleChange = (idx, patch) => {
-    const updated = cards.map((c, i) => i === idx ? { ...c, ...patch } : c);
+    const updated = cards.map((c, i) => (i === idx ? { ...c, ...patch } : c));
     setCards(updated);
   };
 
@@ -106,7 +113,7 @@ export default function AdminDisplaySettings() {
       page_name: selectedPage,
       cards: cards.map((c, i) => ({
         card_key: c.card_key,
-        label: c.label?.trim() || "",
+        label: c.label?.trim() || '',
         visible: !!c.visible,
         order: i,
       })),
@@ -139,7 +146,9 @@ export default function AdminDisplaySettings() {
             </SelectTrigger>
             <SelectContent>
               {users.map((u) => (
-                <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
+                <SelectItem key={u.id} value={u.id}>
+                  {u.full_name || u.email}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -149,8 +158,10 @@ export default function AdminDisplaySettings() {
               <SelectValue placeholder="בחר מסך" />
             </SelectTrigger>
             <SelectContent>
-              {PAGES.map(p => (
-                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+              {PAGES.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -164,12 +175,27 @@ export default function AdminDisplaySettings() {
         <CardContent>
           <div className="space-y-3">
             {cards.map((c, idx) => (
-              <div key={c.card_key} className="flex items-center gap-3 p-3 border rounded-lg bg-white">
+              <div
+                key={c.card_key}
+                className="flex items-center gap-3 p-3 border rounded-lg bg-white"
+              >
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => handleReorder(idx, 'up')} disabled={idx === 0}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleReorder(idx, 'up')}
+                    disabled={idx === 0}
+                    aria-label="הזז למעלה"
+                  >
                     <MoveUp className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleReorder(idx, 'down')} disabled={idx === cards.length - 1}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleReorder(idx, 'down')}
+                    disabled={idx === cards.length - 1}
+                    aria-label="הזז למטה"
+                  >
                     <MoveDown className="w-4 h-4" />
                   </Button>
                 </div>
@@ -179,18 +205,31 @@ export default function AdminDisplaySettings() {
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-gray-500 mb-1">שם תצוגה</div>
-                  <Input value={c.label} onChange={(e)=>handleChange(idx, { label: e.target.value })} />
+                  <Input
+                    value={c.label}
+                    onChange={(e) => handleChange(idx, { label: e.target.value })}
+                  />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Checkbox id={`vis-${c.card_key}`} checked={!!c.visible} onCheckedChange={(v)=>handleChange(idx, { visible: !!v })} />
-                  <label htmlFor={`vis-${c.card_key}`} className="text-sm">מוצג</label>
+                  <Checkbox
+                    id={`vis-${c.card_key}`}
+                    checked={!!c.visible}
+                    onCheckedChange={(v) => handleChange(idx, { visible: !!v })}
+                  />
+                  <label htmlFor={`vis-${c.card_key}`} className="text-sm">
+                    מוצג
+                  </label>
                 </div>
               </div>
             ))}
           </div>
           <div className="flex justify-end gap-2 mt-4">
-            <Button variant="secondary" onClick={handleReset}><Undo2 className="w-4 h-4"/> שחזור ברירת מחדל</Button>
-            <Button onClick={handleSave} isLoading={saveMutation.isPending}><Save className="w-4 h-4"/> שמירה</Button>
+            <Button variant="secondary" onClick={handleReset}>
+              <Undo2 className="w-4 h-4" /> שחזור ברירת מחדל
+            </Button>
+            <Button onClick={handleSave} isLoading={saveMutation.isPending}>
+              <Save className="w-4 h-4" /> שמירה
+            </Button>
           </div>
         </CardContent>
       </Card>

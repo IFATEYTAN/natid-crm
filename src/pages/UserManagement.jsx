@@ -446,12 +446,12 @@ export default function UserManagementPage() {
           <CardContent className="p-3">
             <div className="flex gap-3">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
                 <Input
                   placeholder="חיפוש לפי שם או אימייל..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
+                  className="ps-10"
                 />
               </div>
               <Select value={filterRole} onValueChange={setFilterRole}>

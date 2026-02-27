@@ -197,7 +197,7 @@ export default function Customers() {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <Link to={createPageUrl(`CustomerDetails?id=${row.id}`)}>
-            <Button variant="ghost" size="icon" title="צפה בפרטים ואינטראקציות">
+            <Button variant="ghost" size="icon" title="צפה בפרטים ואינטראקציות" aria-label="צפה">
               <Building2 className="w-4 h-4 text-primary-soft-600" />
             </Button>
           </Link>
@@ -209,6 +209,7 @@ export default function Customers() {
               handleEdit(row);
             }}
             title="ערוך"
+            aria-label="עריכה"
           >
             <Edit className="w-4 h-4 text-neutral-soft-600" />
           </Button>
@@ -222,6 +223,7 @@ export default function Customers() {
               }
             }}
             title="מחק"
+            aria-label="מחיקה"
           >
             <Trash2 className="w-4 h-4 text-error-soft-600" />
           </Button>
@@ -288,12 +290,12 @@ export default function Customers() {
           className="card-base card-body"
         >
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-soft-500" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-soft-500" />
             <Input
               placeholder="חיפוש לפי שם, טלפון..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pr-10"
+              className="ps-10"
             />
           </div>
         </motion.div>

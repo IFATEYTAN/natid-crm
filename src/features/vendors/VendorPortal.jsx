@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatCard from '@/components/ui/StatCard';
@@ -66,7 +67,10 @@ export default function VendorPortal() {
       base44.functions.invoke('handleAssignmentResponse', { attemptId, response }),
     onSuccess: () => {
       refetchRequests();
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.calls() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.calls(currentVendor?.id) });
+    },
+    onError: () => {
+      toast.error('שגיאה בטיפול בבקשת השיבוץ');
     },
   });
 
@@ -183,7 +187,7 @@ export default function VendorPortal() {
       cell: (row) => (
         <div className="flex items-center gap-1">
           <Link to={createPageUrl(`CallDetailsVendor?id=${row.id}`)}>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="צפה">
               <Eye className="w-4 h-4" />
             </Button>
           </Link>
@@ -192,6 +196,7 @@ export default function VendorPortal() {
             size="icon"
             className="h-8 w-8"
             onClick={() => openNavigation(row.pickup_location_address)}
+            aria-label="ניווט"
           >
             <Navigation className="w-4 h-4" />
           </Button>
@@ -211,7 +216,7 @@ export default function VendorPortal() {
           <p className="text-sm text-[#616161] mb-4">
             המשתמש שלך ({user?.email}) אינו מקושר לכרטיס ספק במערכת.
           </p>
-          <div className="text-sm text-right bg-blue-50 p-4 rounded-lg text-blue-800">
+          <div className="text-sm text-end bg-blue-50 p-4 rounded-lg text-blue-800">
             <p className="font-medium mb-1">כיצד מסדרים זאת?</p>
             <ol className="list-decimal list-inside space-y-1 text-blue-700">
               <li>יש לוודא שקיים כרטיס ספק במערכת</li>
@@ -346,7 +351,7 @@ export default function VendorPortal() {
                         }
                         disabled={handleAssignmentResponse.isPending}
                       >
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        <CheckCircle2 className="w-4 h-4 me-2" />
                         קבל קריאה
                       </Button>
                     </div>

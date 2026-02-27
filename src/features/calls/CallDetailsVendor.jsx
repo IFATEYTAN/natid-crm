@@ -180,7 +180,7 @@ export default function CallDetailsVendor() {
 
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div className="flex-1">
@@ -523,7 +523,7 @@ function PhotoGallery({ callId, vendorId }) {
                 alt={photo.note || 'תמונה'}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+              <div className="absolute bottom-0 start-0 end-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                 <p className="text-white text-xs font-medium">{categoryLabels[photo.category]}</p>
               </div>
             </div>

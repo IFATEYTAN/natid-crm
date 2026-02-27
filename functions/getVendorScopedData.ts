@@ -94,6 +94,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('getVendorScopedData error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to get vendor data' }, { status: 500 });
   }
 });

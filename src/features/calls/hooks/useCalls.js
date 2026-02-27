@@ -142,8 +142,16 @@ export const useAssignVendor = () => {
  * Hook for creating call history
  */
 export const useCreateCallHistory = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: callsApi.createCallHistory,
+    onSuccess: (_, data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.callHistory.byCall(data.call_id) });
+    },
+    onError: () => {
+      toast.error('שגיאה ביצירת רשומת היסטוריה');
+    },
   });
 };
 
@@ -168,6 +176,9 @@ export const useCreateCallPhoto = () => {
     mutationFn: callsApi.createCallPhoto,
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(data.call_id) });
+    },
+    onError: () => {
+      toast.error('שגיאה בהעלאת תמונה');
     },
   });
 };

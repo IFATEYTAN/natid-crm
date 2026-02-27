@@ -270,7 +270,12 @@ export default function RoleManagement() {
                       <p className="text-sm text-gray-500 mt-1">{role.description}</p>
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditRole(role)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditRole(role)}
+                        aria-label="עריכה"
+                      >
                         <Pencil className="w-4 h-4" />
                       </Button>
                       {!role.is_system && (
@@ -278,6 +283,7 @@ export default function RoleManagement() {
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteRoleMutation.mutate(role.id)}
+                          aria-label="מחיקה"
                         >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
@@ -314,10 +320,10 @@ export default function RoleManagement() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="p-3 text-right font-medium">משתמש</th>
-                    <th className="p-3 text-right font-medium">אימייל</th>
-                    <th className="p-3 text-right font-medium">תפקיד בסיסי</th>
-                    <th className="p-3 text-right font-medium">תפקיד הרשאות</th>
+                    <th className="p-3 text-end font-medium">משתמש</th>
+                    <th className="p-3 text-end font-medium">אימייל</th>
+                    <th className="p-3 text-end font-medium">תפקיד בסיסי</th>
+                    <th className="p-3 text-end font-medium">תפקיד הרשאות</th>
                     <th className="p-3 text-center font-medium">פעולות</th>
                   </tr>
                 </thead>
@@ -346,7 +352,7 @@ export default function RoleManagement() {
                             size="sm"
                             onClick={() => handleEditUserPerm(user)}
                           >
-                            <Key className="w-4 h-4 ml-1" />
+                            <Key className="w-4 h-4 ms-1" />
                             הגדר הרשאות
                           </Button>
                         </td>
@@ -443,7 +449,7 @@ export default function RoleManagement() {
               onClick={() => saveRoleMutation.mutate(selectedRole)}
               disabled={!selectedRole?.name || !selectedRole?.display_name}
             >
-              <Save className="w-4 h-4 ml-2" />
+              <Save className="w-4 h-4 ms-2" />
               שמור
             </Button>
           </DialogFooter>
@@ -500,7 +506,7 @@ export default function RoleManagement() {
               ביטול
             </Button>
             <Button onClick={() => saveUserPermMutation.mutate(selectedUserPerm)}>
-              <Save className="w-4 h-4 ml-2" />
+              <Save className="w-4 h-4 ms-2" />
               שמור
             </Button>
           </DialogFooter>

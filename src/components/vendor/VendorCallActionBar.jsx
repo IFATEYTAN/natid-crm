@@ -19,7 +19,7 @@ export default function VendorCallActionBar({
           onClick={() => onStatusUpdate('vendor_enroute')}
           disabled={isPending}
         >
-          <Navigation className="w-5 h-5 ml-2" />
+          <Navigation className="w-5 h-5 ms-2" />
           יצאתי לדרך
         </Button>
       ) : callStatus === 'vendor_enroute' ? (
@@ -28,13 +28,13 @@ export default function VendorCallActionBar({
           onClick={() => onStatusUpdate('in_progress')}
           disabled={isPending}
         >
-          <CheckCircle className="w-5 h-5 ml-2" />
+          <CheckCircle className="w-5 h-5 ms-2" />
           הגעתי למקום
         </Button>
       ) : callStatus === 'in_progress' ? (
         <>
           <Button variant="outline" className="flex-1 h-12" onClick={onSignature}>
-            <Pencil className="w-5 h-5 ml-2" />
+            <Pencil className="w-5 h-5 ms-2" />
             חתימת לקוח
           </Button>
           <Button
@@ -42,7 +42,7 @@ export default function VendorCallActionBar({
             onClick={onComplete}
             disabled={isPending}
           >
-            <CheckCircle className="w-5 h-5 ml-2" />
+            <CheckCircle className="w-5 h-5 ms-2" />
             סיים קריאה
           </Button>
         </>

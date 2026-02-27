@@ -281,7 +281,7 @@ export default function CustomerFeedbackPage() {
               className="h-24 resize-none"
               maxLength={500}
             />
-            <p className="text-xs text-gray-400 mt-1 text-left">{feedbackText.length}/500</p>
+            <p className="text-xs text-gray-400 mt-1 text-start">{feedbackText.length}/500</p>
           </div>
 
           {/* Submit Button */}

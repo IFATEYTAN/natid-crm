@@ -156,7 +156,7 @@ export default function DashboardOperatorTab({
 
       {/* Urgent Calls Alert */}
       {urgentCalls.length > 0 && (
-        <Card className="border-r-4 border-r-red-500 bg-red-50/30">
+        <Card className="border-e-4 border-e-red-500 bg-red-50/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2 text-red-700">
               <AlertCircle className="w-5 h-5" />
@@ -200,7 +200,7 @@ export default function DashboardOperatorTab({
                         variant="outline"
                         className="border-gray-200 hover:bg-gray-50"
                       >
-                        <Eye className="w-4 h-4 ml-1" />
+                        <Eye className="w-4 h-4 ms-1" />
                         צפה
                       </Button>
                     </Link>

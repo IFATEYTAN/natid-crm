@@ -6,7 +6,7 @@ import PricingAgreementsTab from '@/components/contracts/PricingAgreementsTab.js
 
 export default function VendorContractsPage() {
   return (
-    <div className="space-y-6 text-right" dir="rtl">
+    <div className="space-y-6 text-end" dir="rtl">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[#111827]">ניהול חוזים והסכמי תמחור</h1>

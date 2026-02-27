@@ -506,7 +506,7 @@ export default function HistoricalDataAnalysisPage() {
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   placeholder="חיפוש לפי תיאור, רכב או אבחון..."
                   value={searchQuery}

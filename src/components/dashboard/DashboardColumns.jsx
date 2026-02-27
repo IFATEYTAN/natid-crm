@@ -139,7 +139,7 @@ export const getOperatorCallColumns = () => [
     header: '',
     cell: (row) => (
       <Link to={createPageUrl('CallDetails') + '?id=' + row.id}>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="צפה">
           <Eye className="w-4 h-4" />
         </Button>
       </Link>

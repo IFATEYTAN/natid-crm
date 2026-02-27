@@ -115,5 +115,8 @@ export const useCreateCustomerInteraction = () => {
         queryKey: queryKeys.customers.interactions(data.customer_id),
       });
     },
+    onError: () => {
+      toast.error('שגיאה ביצירת אינטראקציה עם לקוח');
+    },
   });
 };
