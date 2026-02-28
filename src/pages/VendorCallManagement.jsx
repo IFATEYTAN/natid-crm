@@ -123,8 +123,13 @@ export default function VendorCallManagementPage() {
     enabled: !!selectedCallId,
   });
 
+  // Server-side validated update (ownership check + field filtering)
   const updateCallMutation = useMutation({
-    mutationFn: (data) => base44.entities.Call.update(selectedCallId, data),
+    mutationFn: (data) =>
+      base44.functions.invoke('updateVendorCall', {
+        call_id: selectedCallId,
+        updates: data,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
