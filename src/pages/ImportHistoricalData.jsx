@@ -163,26 +163,32 @@ export default function ImportHistoricalDataPage() {
     setIsUploading(true);
 
     try {
-      // Import all rows as-is from the sheet, removing null values
+      // Import all rows, adding fallback values for required fields
       const recordsToInsert = currentSheet.rows
         .map((row) => {
           const record = {};
           currentSheet.headers.forEach((header) => {
             const value = row[header];
-            // Only include non-null/non-empty values
             if (value !== null && value !== undefined && value !== '') {
               record[header] = value;
             }
           });
+          // Ensure required fields always have a value
+          if (!record['serve_type']) record['serve_type'] = 'לא ידוע';
+          if (!record['description']) record['description'] = '-';
           return record;
         })
         .filter((record) => {
-          // Must have both required fields: serve_type and description
-          return record['serve_type'] && record['description'];
+          // Filter only completely empty rows (beyond the fallback fields)
+          const nonFallbackFields = Object.entries(record).filter(
+            ([k, v]) => !['serve_type', 'description'].includes(k) || 
+                        (v !== 'לא ידוע' && v !== '-')
+          );
+          return nonFallbackFields.length > 0;
         });
 
       if (recordsToInsert.length === 0) {
-        throw new Error('לא נמצאו רשומות עם שדות חובה (serve_type ו-description)');
+        throw new Error('הגיליון ריק - לא נמצאו רשומות לייבוא');
       }
 
       // Bulk create records directly to HistoricalCallData
