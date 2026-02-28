@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 export default function ImportHistoricalDataPage() {
   const [file, setFile] = useState(null);
@@ -24,8 +25,7 @@ export default function ImportHistoricalDataPage() {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       const fileName = selectedFile.name.toLowerCase();
-      const isValidExtension =
-        fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv');
+      const isValidExtension = fileName.endsWith('.csv') || fileName.endsWith('.xlsx');
 
       if (isValidExtension) {
         setFile(selectedFile);
@@ -34,7 +34,7 @@ export default function ImportHistoricalDataPage() {
         setColumnMapping({});
         previewFile(selectedFile);
       } else {
-        toast.error('נא להעלות קובץ אקסל (.xlsx, .xls) או CSV בלבד');
+        toast.error('נא לבחור קובץ CSV או XLSX');
       }
     }
   };
@@ -42,51 +42,111 @@ export default function ImportHistoricalDataPage() {
   const previewFile = async (selectedFile) => {
     try {
       toast.loading('עיבוד הקובץ...');
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedFile });
       const fileName = selectedFile.name.toLowerCase();
 
       if (fileName.endsWith('.csv')) {
-        const response = await fetch(file_url);
-        const csvText = await response.text();
-        const lines = csvText.split('\n').filter((line) => line.trim());
-        const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+        const csvText = await selectedFile.text();
+        
+        // Parse CSV properly, handling quoted values
+        const parseCSV = (text) => {
+          const lines = [];
+          let currentLine = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+            
+            if (char === '"') {
+              if (inQuotes && nextChar === '"') {
+                currentLine += '"';
+                i++;
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (char === '\n' && !inQuotes) {
+              if (currentLine.trim()) lines.push(currentLine);
+              currentLine = '';
+            } else {
+              currentLine += char;
+            }
+          }
+          if (currentLine.trim()) lines.push(currentLine);
+          return lines;
+        };
+        
+        const parseRow = (line) => {
+          const values = [];
+          let current = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+            
+            if (char === '"') {
+              if (inQuotes && nextChar === '"') {
+                current += '"';
+                i++;
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (char === ',' && !inQuotes) {
+              values.push(current.trim().replace(/^"|"$/g, ''));
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          values.push(current.trim().replace(/^"|"$/g, ''));
+          return values;
+        };
+        
+        const lines = parseCSV(csvText);
+        const headers = parseRow(lines[0]);
         const dataRows = lines.slice(1).map((line) => {
-          const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+          const values = parseRow(line);
           const row = {};
           headers.forEach((header, idx) => {
             row[header] = values[idx] || '';
           });
           return row;
         });
-        setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: file_url });
+        
+        setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }], url: null });
         toast.success('הקובץ טופל בהצלחה');
-      } else {
-        const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
-          file_url,
-          json_schema: {
-            type: 'object',
-            properties: {
-              sheets: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    name: { type: 'string' },
-                    headers: { type: 'array', items: { type: 'string' } },
-                    rows: { type: 'array', items: { type: 'object' } },
-                  },
-                },
-              },
-            },
-          },
+      } else if (fileName.endsWith('.xlsx')) {
+        // Parse Excel file using XLSX library
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        
+        const sheets = workbook.SheetNames.map((sheetName) => {
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            header: 1,
+            defval: ''
+          });
+          
+          if (jsonData.length === 0) {
+            return { name: sheetName, headers: [], rows: [] };
+          }
+          
+          const headers = jsonData[0].map(h => String(h || '').trim());
+          const rows = jsonData.slice(1).map((row) => {
+            const rowObj = {};
+            headers.forEach((header, idx) => {
+              rowObj[header] = String(row[idx] || '').trim();
+            });
+            return rowObj;
+          });
+          
+          return { name: sheetName, headers, rows };
         });
-
-        if (extractResult.status === 'success' && extractResult.output) {
-          setFilePreview({ sheets: extractResult.output.sheets || [], url: file_url });
-          toast.success('הקובץ טופל בהצלחה');
-        } else {
-          throw new Error('לא הצליח לעבד את הקובץ');
-        }
+        
+        setFilePreview({ sheets, url: null });
+        toast.success(`הקובץ טופל בהצלחה (${sheets.length} גליונות)`);
+      } else {
+        throw new Error('נא לבחור קובץ CSV או XLSX');
       }
     } catch (error) {
       console.error('Preview error:', error);
@@ -110,23 +170,24 @@ export default function ImportHistoricalDataPage() {
     setIsUploading(true);
 
     try {
-      // Import all rows as-is from the sheet, removing null values
+      // Import all rows, adding fallback values for required fields if missing
       const recordsToInsert = currentSheet.rows
         .map((row) => {
           const record = {};
           currentSheet.headers.forEach((header) => {
             const value = row[header];
-            // Only include non-null/non-empty values
             if (value !== null && value !== undefined && value !== '') {
               record[header] = value;
             }
           });
+          // Ensure required fields always have a value
+          if (!record['serve_type']) record['serve_type'] = 'לא ידוע';
+          if (!record['description']) record['description'] = '-';
           return record;
-        })
-        .filter((record) => Object.keys(record).length > 0); // Filter out empty records
+        });
 
       if (recordsToInsert.length === 0) {
-        throw new Error('לא נמצאו רשומות עם נתונים לייבוא');
+        throw new Error('הגיליון ריק - לא נמצאו רשומות לייבוא');
       }
 
       // Bulk create records directly to HistoricalCallData
@@ -176,7 +237,7 @@ export default function ImportHistoricalDataPage() {
           >
             <input
               type="file"
-              accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+              accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
@@ -191,9 +252,9 @@ export default function ImportHistoricalDataPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2">
-                  <Upload className="w-12 h-12 text-gray-400" />
-                  <span className="text-gray-600">גרור קובץ לכאן או לחץ לבחירה</span>
-                  <span className="text-sm text-gray-400">תומך ב-Excel (.xlsx, .xls) ו-CSV</span>
+                   <Upload className="w-12 h-12 text-gray-400" />
+                   <span className="text-gray-600">גרור קובץ לכאן או לחץ לבחירה</span>
+                   <span className="text-sm text-gray-400">CSV או XLSX</span>
                 </div>
               )}
             </label>
@@ -233,10 +294,12 @@ export default function ImportHistoricalDataPage() {
                 <CardDescription>בחר איזו עמודה מהקובץ מתאימה לכל שדה בדאטאבייס</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-blue-900">
-                    ✅ <strong>כל העמודות</strong> מהקובץ יועלו בדיוק כמו שהן. אין צורך במיפוי.
-                  </p>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-yellow-900 font-medium mb-2">📋 שדות חובה נדרשים:</p>
+                  <ul className="text-sm text-yellow-800 space-y-1">
+                    <li>✓ <strong>serve_type</strong> - סוג השירות (לא יכול להיות ריק)</li>
+                    <li>✓ <strong>description</strong> - תיאור התקלה (לא יכול להיות ריק)</li>
+                  </ul>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-medium text-gray-900 mb-3">עמודות שיעלו:</h4>
@@ -253,34 +316,50 @@ export default function ImportHistoricalDataPage() {
                 </div>
 
                 <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">תצוגה מקדימה:</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">📊 תצוגה מקדימה:</h4>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-blue-100">
                         <tr>
-                          {currentSheet.headers.slice(0, 5).map((h) => (
-                            <th key={h} className="px-2 py-1 text-end">
+                          {currentSheet.headers.map((h) => (
+                            <th
+                              key={`header-${h}`}
+                              className={`px-2 py-1 text-end text-xs font-semibold ${
+                                ['serve_type', 'description'].includes(h) ? 'bg-red-200 text-red-900' : ''
+                              }`}
+                            >
                               {h}
+                              {['serve_type', 'description'].includes(h) && <span className="text-red-600"> *</span>}
                             </th>
                           ))}
-                          {currentSheet.headers.length > 5 && (
-                            <th className="px-2 py-1 text-end">...</th>
-                          )}
                         </tr>
                       </thead>
                       <tbody>
-                        {currentSheet.rows.slice(0, 3).map((row, idx) => (
-                          <tr key={idx} className="border-t">
-                            {currentSheet.headers.slice(0, 5).map((h) => (
-                              <td key={h} className="px-2 py-1 text-end text-gray-600">
-                                {row[h]?.toString().substring(0, 30)}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
+                        {currentSheet.rows.slice(0, 3).map((row, idx) => {
+                          const hasRequiredFields = row['serve_type'] && row['description'];
+                          return (
+                            <tr key={`row-${idx}`} className={`border-t ${!hasRequiredFields ? 'bg-red-50' : ''}`}>
+                              {currentSheet.headers.map((h, hIdx) => (
+                                <td
+                                  key={`cell-${idx}-${hIdx}`}
+                                  className={`px-2 py-1 text-end text-xs ${
+                                    ['serve_type', 'description'].includes(h) && !row[h]
+                                      ? 'bg-red-100 text-red-700 font-semibold'
+                                      : 'text-gray-600'
+                                  }`}
+                                >
+                                  {row[h]?.toString().substring(0, 30) || '⚠️ ריק'}
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    * שדות בעלי כוכב הם חובה. אם שדה חובה ריק, הרשומה לא תיובא.
+                  </p>
                 </div>
               </CardContent>
             </Card>

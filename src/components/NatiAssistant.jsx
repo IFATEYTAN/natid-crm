@@ -472,7 +472,14 @@ export default function NatiAssistant() {
   const [isHidden, setIsHidden] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(true);
-  const location = useLocation();
+  
+  let location;
+  try {
+    location = useLocation();
+  } catch (error) {
+    // Fallback if not in Router context
+    location = { pathname: '/' };
+  }
 
   // Determine current page context
   const getPageKey = useCallback(() => {
