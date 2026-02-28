@@ -1,7 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { queryKeys } from '@/lib/queryKeys';
+import { useCustomer } from '@/features/customers/hooks/useCustomers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,19 +13,7 @@ export default function CustomerDetails() {
   const navigate = useNavigate();
   const id = searchParams.get('id');
 
-  const {
-    data: customer,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: queryKeys.customers.detail(id),
-    enabled: !!id,
-    queryFn: async () => {
-      const res = await base44.entities.Customer.filter({ id });
-      return res?.[0] || null;
-    },
-  });
+  const { data: customer, isLoading, isError, error } = useCustomer(id);
 
   if (!id) {
     return (

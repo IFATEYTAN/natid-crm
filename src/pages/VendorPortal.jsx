@@ -34,16 +34,28 @@ export default function VendorPortalPage() {
   const queryClient = useQueryClient();
 
   const isAdmin = effectiveRole === 'admin';
+  const isVendorUser = effectiveRole === 'vendor';
   const [activeTab, setActiveTab] = useState('vendor');
   const [callsTab, setCallsTab] = useState('all');
   useEffect(() => {
     if (isAdmin) setActiveTab('admin');
   }, [isAdmin]);
 
+  // Vendor profile: server-scoped for vendor users, direct for admin
   const vendorQuery = useQuery({
-    queryKey: queryKeys.vendors.profile(currentUser?.email),
+    queryKey: [...queryKeys.vendors.profile(currentUser?.email), effectiveRole],
     queryFn: async () => {
-      const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+      let vendors;
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+          sort: '-created_date',
+          limit: 1,
+        });
+        vendors = result.data?.data || [];
+      } else {
+        vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+      }
       if (vendors.length > 0) {
         setVendorProfile(vendors[0]);
         setIsAvailable(vendors[0].is_available_now);
@@ -54,17 +66,41 @@ export default function VendorPortalPage() {
     enabled: !!currentUser?.email,
   });
 
+  // Calls: server-scoped for vendor users, direct for admin
   const callsQuery = useQuery({
-    queryKey: queryKeys.vendors.calls(vendorProfile?.id),
-    queryFn: () =>
-      base44.entities.Call.filter({ assigned_vendor_id: vendorProfile.id }, '-created_date', 1000),
+    queryKey: [...queryKeys.vendors.calls(vendorProfile?.id), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'calls',
+          sort: '-created_date',
+          limit: 1000,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.Call.filter(
+        { assigned_vendor_id: vendorProfile.id },
+        '-created_date',
+        1000
+      );
+    },
     enabled: !!vendorProfile?.id,
     refetchInterval: 30000,
   });
 
+  // Contract: server-scoped for vendor users, direct for admin
   const contractQuery = useQuery({
-    queryKey: queryKeys.vendors.contracts(vendorProfile?.id),
+    queryKey: [...queryKeys.vendors.contracts(vendorProfile?.id), effectiveRole],
     queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'contracts',
+          sort: '-created_date',
+          limit: 10,
+        });
+        const contracts = result.data?.data || [];
+        return contracts.find((c) => c.status === 'active') || null;
+      }
       const contracts = await base44.entities.VendorContract.filter(
         { vendor_id: vendorProfile.id, status: 'active' },
         '-created_date',
@@ -75,9 +111,19 @@ export default function VendorPortalPage() {
     enabled: !!vendorProfile?.id,
   });
 
+  // Pending assignments: server-scoped for vendor users, direct for admin
   const pendingAssignmentsQuery = useQuery({
-    queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id),
+    queryKey: [...queryKeys.assignmentRequests.byVendor(vendorProfile?.id), effectiveRole],
     queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'attempts',
+          sort: '-created_date',
+          limit: 10,
+        });
+        const allAttempts = result.data?.data || [];
+        return allAttempts.filter((a) => a.status === 'pending');
+      }
       const attempts = await base44.entities.CallAssignmentAttempt.filter(
         { vendor_id: vendorProfile.id, status: 'pending' },
         '-created_date',
@@ -107,17 +153,12 @@ export default function VendorPortalPage() {
     }
   }, [pendingAssignmentsQuery.data, showNewCallAlert]);
 
+  // Accept/decline via server-side handleAssignmentResponse (ownership check, race condition, auto-reassign)
   const acceptCallMutation = useMutation({
     mutationFn: async (call) => {
-      await base44.entities.CallAssignmentAttempt.update(call.attemptId, {
-        status: 'accepted',
-        response_time_seconds: Math.round((new Date() - new Date(call.created_date)) / 1000),
-      });
-      await base44.entities.Call.update(call.id, {
-        call_status: 'vendor_enroute',
-        assigned_vendor_id: vendorProfile.id,
-        assigned_vendor_name: vendorProfile.vendor_name,
-        assigned_at: new Date().toISOString(),
+      await base44.functions.invoke('handleAssignmentResponse', {
+        attempt_id: call.attemptId,
+        action: 'accept',
       });
     },
     onSuccess: () => {
@@ -129,12 +170,17 @@ export default function VendorPortalPage() {
         queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id),
       });
     },
+    onError: (error) => {
+      const msg = error?.response?.data?.error || 'שגיאה בקבלת הקריאה';
+      showToast.error(msg);
+    },
   });
 
   const declineCallMutation = useMutation({
     mutationFn: async ({ attemptId, reason }) => {
-      await base44.entities.CallAssignmentAttempt.update(attemptId, {
-        status: 'declined',
+      await base44.functions.invoke('handleAssignmentResponse', {
+        attempt_id: attemptId,
+        action: 'decline',
         decline_reason: reason,
       });
     },
@@ -144,6 +190,10 @@ export default function VendorPortalPage() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id),
       });
+    },
+    onError: (error) => {
+      const msg = error?.response?.data?.error || 'שגיאה בדחיית הקריאה';
+      showToast.error(msg);
     },
   });
 

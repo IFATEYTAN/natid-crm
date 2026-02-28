@@ -1,9 +1,7 @@
 import React, { useState, useMemo, Suspense } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { queryKeys } from '@/lib/queryKeys';
 import { useCalls } from '@/features/calls/hooks/useCalls';
 import { useVendors } from '@/features/vendors/hooks/useVendors';
+import { useReportVendorRatings } from '@/features/reports/hooks/useReports';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -79,11 +77,8 @@ export default function ReportsPage() {
   // Fetch vendors - using shared hook for sync across screens
   const vendorsQuery = useVendors();
 
-  // Fetch ratings
-  const ratingsQuery = useQuery({
-    queryKey: queryKeys.reports.vendorRatings(),
-    queryFn: () => base44.entities.VendorRating.filter({}, '-created_date', 200),
-  });
+  // Fetch ratings via feature hook
+  const ratingsQuery = useReportVendorRatings('-created_date', 200);
 
   const calls = callsQuery.data || [];
   const vendors = vendorsQuery.data || [];
