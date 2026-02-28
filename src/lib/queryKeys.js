@@ -211,7 +211,6 @@ export const queryKeys = {
   // Settings feature
   settings: {
     automation: () => ['automationSettings'],
-    notifications: () => ['settings', 'notifications'],
     display: (userId, page) => ['userDisplayPref', userId, page],
   },
 

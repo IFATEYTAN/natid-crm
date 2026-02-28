@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
+import { useVendor, useUpdateVendor } from '@/features/vendors/hooks/useVendors';
 import { coverageAreas } from '@/config/coverageConstants';
 import { sanitizeVendorUpdate } from '@/lib/schemas/vendor';
 import { Button } from '@/components/ui/button';
@@ -66,11 +66,8 @@ export default function EditVendorPage() {
     is_active: true,
   });
 
-  const { data: vendor, isLoading } = useQuery({
-    queryKey: queryKeys.vendors.detail(id),
-    queryFn: () => base44.entities.Vendor.get(id),
-    enabled: !!id,
-  });
+  const { data: vendor, isLoading } = useVendor(id);
+  const updateMutation = useUpdateVendor();
 
   useEffect(() => {
     if (vendor) {
@@ -92,19 +89,6 @@ export default function EditVendorPage() {
       });
     }
   }, [vendor]);
-
-  const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Vendor.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() });
-      showToast.success('פרטי הספק עודכנו בהצלחה');
-      navigate(createPageUrl('ServiceProviders'));
-    },
-    onError: (error) => {
-      showToast.error('שגיאה בעדכון הספק: ' + error.message);
-    },
-  });
 
   const handleServiceTypeChange = (type, checked) => {
     setFormData((prev) => ({
@@ -142,7 +126,15 @@ export default function EditVendorPage() {
 
     try {
       const data = sanitizeVendorUpdate(formData);
-      updateMutation.mutate(data);
+      updateMutation.mutate(
+        { id, data },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() });
+            navigate(createPageUrl('ServiceProviders'));
+          },
+        }
+      );
     } catch (validationError) {
       showToast.error(validationError.message);
     }
