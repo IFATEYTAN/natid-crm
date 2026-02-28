@@ -163,7 +163,7 @@ export default function ImportHistoricalDataPage() {
     setIsUploading(true);
 
     try {
-      // Import all rows, adding fallback values for required fields
+      // Import all rows, adding fallback values for required fields if missing
       const recordsToInsert = currentSheet.rows
         .map((row) => {
           const record = {};
@@ -177,8 +177,7 @@ export default function ImportHistoricalDataPage() {
           if (!record['serve_type']) record['serve_type'] = 'לא ידוע';
           if (!record['description']) record['description'] = '-';
           return record;
-        })
-        .filter((record) => Object.keys(record).length > 2); // filter completely empty rows
+        });
 
       if (recordsToInsert.length === 0) {
         throw new Error('הגיליון ריק - לא נמצאו רשומות לייבוא');
