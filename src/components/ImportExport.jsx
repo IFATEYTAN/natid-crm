@@ -24,10 +24,14 @@ import {
   AlertTriangle,
   FileCode,
   FileType,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 // html2canvas and jsPDF are loaded dynamically to reduce bundle size
 import { format } from 'date-fns';
+import { customerCreateSchema } from '@/lib/schemas/customer';
+import { vendorCreateSchema } from '@/lib/schemas/vendor';
+import { callCreateSchema } from '@/lib/schemas/call';
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -39,11 +43,72 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+// Map entity names to their Zod schemas for validation
+const entitySchemas = {
+  Customer: customerCreateSchema,
+  Vendor: vendorCreateSchema,
+  Call: callCreateSchema,
+};
+
+// Generic field validators for entities without a Zod schema
+const PHONE_RE = /^0[2-9]\d{7,8}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function validateRecord(record, entityName, rowIndex) {
+  const errors = [];
+  const schema = entitySchemas[entityName];
+
+  if (schema) {
+    // Use Zod schema for known entities
+    const result = schema.safeParse(record);
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        errors.push(`שורה ${rowIndex}: ${issue.path.join('.')} - ${issue.message}`);
+      }
+    }
+    return { valid: errors.length === 0, errors, data: result.success ? result.data : record };
+  }
+
+  // Generic validation for unknown entities
+  for (const [key, value] of Object.entries(record)) {
+    if (!value && value !== 0 && value !== false) continue;
+    const val = String(value);
+    const lk = key.toLowerCase();
+
+    // Phone fields
+    if (lk.includes('phone') || lk === 'tel') {
+      const cleaned = val.replace(/[-\s()]/g, '');
+      if (cleaned && !PHONE_RE.test(cleaned)) {
+        errors.push(`שורה ${rowIndex}: ${key} - מספר טלפון לא תקין (${val})`);
+      }
+    }
+
+    // Email fields
+    if (lk.includes('email') || lk.includes('mail')) {
+      if (val && !EMAIL_RE.test(val)) {
+        errors.push(`שורה ${rowIndex}: ${key} - כתובת אימייל לא תקינה (${val})`);
+      }
+    }
+
+    // Date fields
+    if (lk.includes('date') || lk.includes('_at') || lk === 'created' || lk === 'updated') {
+      if (val && !DATE_RE.test(val)) {
+        errors.push(`שורה ${rowIndex}: ${key} - פורמט תאריך לא תקין, נדרש YYYY-MM-DD (${val})`);
+      }
+    }
+  }
+
+  return { valid: errors.length === 0, errors, data: record };
+}
+
 export default function ImportExport({ entityName, data, columns, title }) {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [validationResult, setValidationResult] = useState(null);
+  const [parsedRecords, setParsedRecords] = useState([]);
   const printRef = useRef(null);
 
   const getFilename = (ext) =>
@@ -261,17 +326,20 @@ export default function ImportExport({ entityName, data, columns, title }) {
         return;
       }
       setFile(selectedFile);
+      setValidationResult(null);
+      setParsedRecords([]);
+      setImportResult(null);
     }
   };
 
-  const handleImport = async () => {
+  const handleValidate = async () => {
     if (!file) {
       toast.error('נא לבחור קובץ');
       return;
     }
 
-    setImporting(true);
-    setImportResult(null);
+    setValidationResult(null);
+    setParsedRecords([]);
 
     try {
       const text = await file.text();
@@ -282,8 +350,9 @@ export default function ImportExport({ entityName, data, columns, title }) {
       }
 
       const headers = lines[0].split(',').map((h) => h.trim().replace(/"/g, ''));
-      const records = [];
-      const errors = [];
+      const validRecords = [];
+      const allErrors = [];
+      let invalidCount = 0;
 
       for (let i = 1; i < lines.length; i++) {
         try {
@@ -296,21 +365,55 @@ export default function ImportExport({ entityName, data, columns, title }) {
             }
           });
 
-          records.push(record);
+          const { valid, errors, data } = validateRecord(record, entityName, i + 1);
+          if (valid) {
+            validRecords.push(data);
+          } else {
+            invalidCount++;
+            allErrors.push(...errors);
+          }
         } catch (err) {
-          errors.push(`שורה ${i + 1}: ${err.message}`);
+          invalidCount++;
+          allErrors.push(`שורה ${i + 1}: ${err.message}`);
         }
       }
 
-      if (records.length === 0) {
-        throw new Error('לא נמצאו רשומות תקינות בקובץ');
-      }
+      setParsedRecords(validRecords);
+      setValidationResult({
+        total: lines.length - 1,
+        valid: validRecords.length,
+        invalid: invalidCount,
+        errors: allErrors.slice(0, 20),
+      });
 
-      // Import to database
+      if (validRecords.length === 0 && invalidCount > 0) {
+        toast.error('כל הרשומות נכשלו בולידציה');
+      } else if (invalidCount > 0) {
+        toast.warning(`${invalidCount} רשומות לא תקינות מתוך ${lines.length - 1}`);
+      } else {
+        toast.success(`כל ${validRecords.length} הרשומות תקינות`);
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+      toast.error(`שגיאה בבדיקת הקובץ: ${error.message}`);
+    }
+  };
+
+  const handleImport = async () => {
+    if (parsedRecords.length === 0) {
+      toast.error('אין רשומות תקינות לייבוא');
+      return;
+    }
+
+    setImporting(true);
+    setImportResult(null);
+
+    try {
       let successCount = 0;
       let failCount = 0;
+      const errors = [];
 
-      for (const record of records) {
+      for (const record of parsedRecords) {
         try {
           await base44.entities[entityName].create(record);
           successCount++;
@@ -406,6 +509,47 @@ export default function ImportExport({ entityName, data, columns, title }) {
               </ul>
             </div>
 
+            {/* Validation preview */}
+            {validationResult && !importResult && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-3 bg-[#F3F4F6] rounded-lg">
+                  <Eye className="w-5 h-5 text-[#6B7280]" />
+                  <span className="text-sm font-medium">
+                    סה&quot;כ {validationResult.total} שורות: {validationResult.valid} תקינות,{' '}
+                    {validationResult.invalid} לא תקינות
+                  </span>
+                </div>
+
+                {validationResult.valid > 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-[#E8F5E9] rounded-lg">
+                    <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
+                    <span className="text-sm font-medium">
+                      {validationResult.valid} רשומות מוכנות לייבוא
+                    </span>
+                  </div>
+                )}
+
+                {validationResult.errors.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-3 bg-[#FFF3E0] rounded-lg">
+                      <AlertTriangle className="w-5 h-5 text-[#E65100]" />
+                      <span className="text-sm font-medium">
+                        {validationResult.invalid} רשומות נכשלו בולידציה (יידלגו)
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#616161] max-h-32 overflow-y-auto border rounded p-2">
+                      {validationResult.errors.map((err, idx) => (
+                        <div key={idx} className="py-1">
+                          {err}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Import result */}
             {importResult && (
               <div className="space-y-2">
                 {importResult.success > 0 && (
@@ -447,17 +591,27 @@ export default function ImportExport({ entityName, data, columns, title }) {
                 setImportDialogOpen(false);
                 setFile(null);
                 setImportResult(null);
+                setValidationResult(null);
+                setParsedRecords([]);
               }}
             >
               סגור
             </Button>
-            <Button
-              onClick={handleImport}
-              disabled={!file || importing}
-              className="bg-[#0078D4] hover:bg-[#1976D2]"
-            >
-              {importing ? 'מייבא...' : 'ייבא נתונים'}
-            </Button>
+            {!validationResult && !importResult && (
+              <Button onClick={handleValidate} disabled={!file} variant="outline" className="gap-2">
+                <Eye className="w-4 h-4" />
+                בדוק קובץ
+              </Button>
+            )}
+            {validationResult && !importResult && (
+              <Button
+                onClick={handleImport}
+                disabled={parsedRecords.length === 0 || importing}
+                className="bg-[#0078D4] hover:bg-[#1976D2]"
+              >
+                {importing ? 'מייבא...' : `ייבא ${parsedRecords.length} רשומות`}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

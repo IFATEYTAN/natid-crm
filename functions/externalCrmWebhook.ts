@@ -1,7 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, getClientIP, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 Deno.serve(async (req) => {
   try {
+    // Rate limit: 100 webhook requests per IP per minute
+    const clientIP = getClientIP(req);
+    const rl = await limiter.check('crm_webhook', clientIP, 100, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
+
     const base44 = createClientFromRequest(req);
 
     // Verify webhook secret - fail closed if not configured

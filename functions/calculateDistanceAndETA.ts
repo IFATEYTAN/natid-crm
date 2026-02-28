@@ -1,4 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
+const DAILY_MAPS_QUOTA = 20_000;
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
 
 Deno.serve(async (req) => {
   try {
@@ -9,6 +15,10 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Rate limit: 30 requests per user per minute
+    const rl = await limiter.check('maps', user.id, 30, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const { callId, vendorId } = await req.json();
 
@@ -45,24 +55,51 @@ Deno.serve(async (req) => {
     let duration = Math.round((straightDistance / 60) * 60); // Assume 60 km/h
     let navigationUrl = `https://www.google.com/maps/dir/?api=1&origin=${vendorLocation.latitude},${vendorLocation.longitude}&destination=${call.pickup_location_lat},${call.pickup_location_lon}`;
 
-    // If API key exists, use Google Maps Directions API
+    // If API key exists, use Google Maps Directions API with caching
     if (apiKey) {
-      try {
-        const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${vendorLocation.latitude},${vendorLocation.longitude}&destination=${call.pickup_location_lat},${call.pickup_location_lon}&key=${apiKey}`;
-        
-        const response = await fetch(directionsUrl);
-        const data = await response.json();
+      // Round coordinates to ~100m precision for cache key
+      const cacheKey = [
+        'maps_cache',
+        `${vendorLocation.latitude.toFixed(3)},${vendorLocation.longitude.toFixed(3)}`,
+        `${call.pickup_location_lat.toFixed(3)},${call.pickup_location_lon.toFixed(3)}`,
+      ];
 
-        if (data.status === 'OK' && data.routes && data.routes.length > 0) {
-          const route = data.routes[0];
-          const leg = route.legs[0];
-          
-          roadDistance = leg.distance.value / 1000; // Convert to km
-          duration = Math.round(leg.duration.value / 60); // Convert to minutes
+      // Check cache first
+      const cached = await kv.get<{ roadDistance: number; duration: number }>(cacheKey);
+      if (cached.value) {
+        roadDistance = cached.value.roadDistance;
+        duration = cached.value.duration;
+      } else {
+        // Check daily quota before calling API
+        const dailyCount = await limiter.getDailyCount('google_maps');
+        if (dailyCount >= DAILY_MAPS_QUOTA) {
+          console.warn(`Google Maps daily quota reached: ${dailyCount}/${DAILY_MAPS_QUOTA}`);
+          // Fall through to Haversine calculation
+        } else {
+          try {
+            const directionsUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${vendorLocation.latitude},${vendorLocation.longitude}&destination=${call.pickup_location_lat},${call.pickup_location_lon}&key=${apiKey}`;
+
+            const response = await fetch(directionsUrl);
+            const data = await response.json();
+            await limiter.incrementDaily('google_maps');
+
+            if (data.status === 'OK' && data.routes && data.routes.length > 0) {
+              const route = data.routes[0];
+              const leg = route.legs[0];
+
+              roadDistance = leg.distance.value / 1000;
+              duration = Math.round(leg.duration.value / 60);
+
+              // Cache the result
+              await kv.set(cacheKey, { roadDistance, duration }, { expireIn: CACHE_TTL_MS });
+            } else if (data.status === 'OVER_QUERY_LIMIT') {
+              console.error('Google Maps OVER_QUERY_LIMIT - falling back to Haversine');
+            }
+          } catch (apiError) {
+            console.error('Google Maps API error:', apiError);
+            // Continue with straight-line calculation
+          }
         }
-      } catch (apiError) {
-        console.error('Google Maps API error:', apiError);
-        // Continue with straight-line calculation
       }
     }
 
