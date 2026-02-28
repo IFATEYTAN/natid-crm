@@ -41,7 +41,8 @@ const photoCategories = [
 ];
 
 export default function VendorCallManagementPage() {
-  const { currentUser } = usePermissions();
+  const { currentUser, effectiveRole } = usePermissions();
+  const isVendorUser = effectiveRole === 'vendor';
   const [vendorProfile, setVendorProfile] = useState(null);
   const [selectedCallId, setSelectedCallId] = useState(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
@@ -59,10 +60,21 @@ export default function VendorCallManagementPage() {
     if (id) setSelectedCallId(id);
   }, [searchParams]);
 
+  // Vendor profile: server-scoped for vendor users, direct for admin
   const vendorQuery = useQuery({
-    queryKey: queryKeys.vendors.profile(currentUser?.email),
+    queryKey: [...queryKeys.vendors.profile(currentUser?.email), effectiveRole],
     queryFn: async () => {
-      const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+      let vendors;
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+          sort: '-created_date',
+          limit: 1,
+        });
+        vendors = result.data?.data || [];
+      } else {
+        vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+      }
       if (vendors.length > 0) {
         setVendorProfile(vendors[0]);
         return vendors[0];
@@ -72,9 +84,26 @@ export default function VendorCallManagementPage() {
     enabled: !!currentUser?.email,
   });
 
+  // Call data: server-scoped for vendor users (ensures ownership), direct for admin
   const callQuery = useQuery({
-    queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
+    queryKey: [...queryKeys.vendors.call(selectedCallId, vendorProfile?.id), effectiveRole],
     queryFn: async () => {
+      if (isVendorUser) {
+        // Fetch only vendor's own calls via server-side filtering
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'calls',
+          sort: '-created_date',
+          limit: 1000,
+        });
+        const vendorCalls = result.data?.data || [];
+        const call = vendorCalls.find((c) => c.id === selectedCallId);
+        if (call) {
+          setVendorNotes(call.vendor_notes || '');
+          return call;
+        }
+        return null;
+      }
+      // Admin/operator: direct query with client-side ownership check
       const calls = await base44.entities.Call.filter({ id: selectedCallId });
       if (calls.length > 0) {
         if (vendorProfile && calls[0].assigned_vendor_id !== vendorProfile.id) {
@@ -94,8 +123,13 @@ export default function VendorCallManagementPage() {
     enabled: !!selectedCallId,
   });
 
+  // Server-side validated update (ownership check + field filtering)
   const updateCallMutation = useMutation({
-    mutationFn: (data) => base44.entities.Call.update(selectedCallId, data),
+    mutationFn: (data) =>
+      base44.functions.invoke('updateVendorCall', {
+        call_id: selectedCallId,
+        updates: data,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),

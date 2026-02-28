@@ -58,7 +58,8 @@ const coverageAreas = [
 ];
 
 export default function MyVendorProfilePage() {
-  const { currentUser } = usePermissions();
+  const { currentUser, effectiveRole } = usePermissions();
+  const isVendorUser = effectiveRole === 'vendor';
   const [formData, setFormData] = useState({
     vendor_name: '',
     contact_person: '',
@@ -78,10 +79,21 @@ export default function MyVendorProfilePage() {
   });
   const queryClient = useQueryClient();
 
+  // Vendor profile: server-scoped for vendor users, direct for admin
   const vendorQuery = useQuery({
-    queryKey: queryKeys.vendors.profile(currentUser?.email),
+    queryKey: [...queryKeys.vendors.profile(currentUser?.email), effectiveRole],
     queryFn: async () => {
-      const vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+      let vendors;
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+          sort: '-created_date',
+          limit: 1,
+        });
+        vendors = result.data?.data || [];
+      } else {
+        vendors = await base44.entities.Vendor.filter({ email: currentUser.email });
+      }
       if (vendors.length > 0) {
         const vendor = vendors[0];
         setFormData({

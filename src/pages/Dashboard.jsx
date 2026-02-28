@@ -1,10 +1,8 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { queryKeys } from '@/lib/queryKeys';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCalls } from '@/features/calls/hooks/useCalls';
 import { useVendors } from '@/features/vendors/hooks/useVendors';
+import { useWorkQueue } from '@/features/queue/hooks/useQueue';
 import { createPageUrl } from '@/components/utils';
 const StatCard = lazy(() => import('@/components/ui/StatCard'));
 import {
@@ -69,10 +67,7 @@ export default function Dashboard() {
     return 'ערב טוב';
   };
 
-  const { data: workQueue = [] } = useQuery({
-    queryKey: queryKeys.queue.all(),
-    queryFn: () => base44.entities.WorkQueue.list(),
-  });
+  const { data: workQueue = [] } = useWorkQueue();
 
   const {
     data: calls = [],
