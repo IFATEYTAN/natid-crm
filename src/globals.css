@@ -89,7 +89,8 @@
     @apply border-border;
   }
 
-  html, body {
+  html,
+  body {
     @apply h-full w-full overflow-x-hidden;
   }
 
@@ -100,7 +101,7 @@
     text-align: right;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   #root {
     @apply min-h-full flex flex-col;
   }
