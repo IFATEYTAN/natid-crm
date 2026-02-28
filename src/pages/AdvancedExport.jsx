@@ -33,7 +33,16 @@ import {
   Users,
   CheckCircle,
 } from 'lucide-react';
-import { format as formatDate, subDays, subYears, isAfter, isBefore, parseISO } from 'date-fns';
+import {
+  format as formatDate,
+  subDays,
+  subYears,
+  isAfter,
+  isBefore,
+  parseISO,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { PageLoader, InlineLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp, AnimatedCard } from '@/components/animations/AnimatedComponents';
@@ -205,11 +214,11 @@ export default function AdvancedExport() {
       const allCalls = await base44.entities.Call.list('-created_date', 1000);
       return allCalls.filter((call) => {
         const createdDate = parseISO(call.created_date);
-        const startDate = parseISO(callsDateRange.start);
-        const endDate = parseISO(callsDateRange.end);
+        const rangeStart = startOfDay(parseISO(callsDateRange.start));
+        const rangeEnd = endOfDay(parseISO(callsDateRange.end));
         const inDateRange =
-          (isAfter(createdDate, startDate) || createdDate.getTime() === startDate.getTime()) &&
-          (isBefore(createdDate, endDate) || createdDate.getTime() === endDate.getTime());
+          (isAfter(createdDate, rangeStart) || createdDate.getTime() === rangeStart.getTime()) &&
+          (isBefore(createdDate, rangeEnd) || createdDate.getTime() === rangeEnd.getTime());
         const matchesStatus = callsStatus === 'all' || call.call_status === callsStatus;
         return inDateRange && matchesStatus;
       });
@@ -222,11 +231,11 @@ export default function AdvancedExport() {
       const allCustomers = await base44.entities.Customer.list('-created_date', 1000);
       return allCustomers.filter((customer) => {
         const createdDate = parseISO(customer.created_date);
-        const startDate = parseISO(customersDateRange.start);
-        const endDate = parseISO(customersDateRange.end);
+        const rangeStart = startOfDay(parseISO(customersDateRange.start));
+        const rangeEnd = endOfDay(parseISO(customersDateRange.end));
         const inDateRange =
-          (isAfter(createdDate, startDate) || createdDate.getTime() === startDate.getTime()) &&
-          (isBefore(createdDate, endDate) || createdDate.getTime() === endDate.getTime());
+          (isAfter(createdDate, rangeStart) || createdDate.getTime() === rangeStart.getTime()) &&
+          (isBefore(createdDate, rangeEnd) || createdDate.getTime() === rangeEnd.getTime());
         const matchesStatus = customersStatus === 'all' || customer.status === customersStatus;
         return inDateRange && matchesStatus;
       });

@@ -27,6 +27,24 @@ import { Label } from './label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+// Security: escape HTML entities to prevent XSS in HTML exports
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Security: prevent CSV formula injection
+function sanitizeCsvValue(val) {
+  const str = String(val ?? '').replace(/"/g, '""');
+  if (/^[=+\-@\t\r]/.test(str)) return `'${str}`;
+  return str;
+}
+
 // Brand colors for exports
 const BRAND_COLORS = {
   primary: '#FF0000',
@@ -58,9 +76,7 @@ export const exportToCSV = (data, columns, filename = 'export') => {
           const value =
             typeof rawValue === 'object' ? JSON.stringify(rawValue) : String(rawValue || '');
 
-          // Escape quotes and wrap in quotes if contains comma
-          const escaped = value.replace(/"/g, '""');
-          return `"${escaped}"`;
+          return `"${sanitizeCsvValue(value)}"`;
         })
         .join(',')
     )
@@ -115,7 +131,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title || filename}</title>
+  <title>${escapeHtml(title || filename)}</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -201,8 +217,8 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
   <div class="container">
     <div class="header">
       <div class="title-section">
-        <h1>${title || filename}</h1>
-        ${subtitle ? `<p>${subtitle}</p>` : ''}
+        <h1>${escapeHtml(title || filename)}</h1>
+        ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
       </div>
       <img src="${LOGO_URL}" alt="NatID 360" class="logo" />
     </div>
@@ -215,7 +231,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
     <table>
       <thead>
         <tr>
-          ${columns.map((col) => `<th>${col.header}</th>`).join('')}
+          ${columns.map((col) => `<th>${escapeHtml(col.header)}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
@@ -230,7 +246,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
                   typeof rawValue === 'object' && rawValue !== null
                     ? rawValue.name || rawValue.label || '-'
                     : String(rawValue || '');
-                return `<td>${value}</td>`;
+                return `<td>${escapeHtml(value)}</td>`;
               })
               .join('')}
           </tr>
@@ -267,7 +283,7 @@ export const printData = (data, columns, options = {}) => {
 <html dir="rtl" lang="he">
 <head>
   <meta charset="UTF-8">
-  <title>${title || 'הדפסה'}</title>
+  <title>${escapeHtml(title || 'הדפסה')}</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap');
@@ -368,8 +384,8 @@ export const printData = (data, columns, options = {}) => {
 <body>
   <div class="header">
     <div class="header-text">
-      <h1>${title || 'דוח'}</h1>
-      ${subtitle ? `<p>${subtitle}</p>` : ''}
+      <h1>${escapeHtml(title || 'דוח')}</h1>
+      ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
       <p>תאריך הפקה: ${new Date().toLocaleDateString('he-IL', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
       <p>סה"כ רשומות: ${data.length}</p>
     </div>
@@ -379,7 +395,7 @@ export const printData = (data, columns, options = {}) => {
   <table>
     <thead>
       <tr>
-        ${columns.map((col) => `<th>${col.header}</th>`).join('')}
+        ${columns.map((col) => `<th>${escapeHtml(col.header)}</th>`).join('')}
       </tr>
     </thead>
     <tbody>
@@ -403,7 +419,7 @@ export const printData = (data, columns, options = {}) => {
               if (value === 'true') value = 'כן';
               if (value === 'false') value = 'לא';
 
-              return `<td>${value || '-'}</td>`;
+              return `<td>${escapeHtml(value || '-')}</td>`;
             })
             .join('')}
         </tr>
