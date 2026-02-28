@@ -178,14 +178,7 @@ export default function ImportHistoricalDataPage() {
           if (!record['description']) record['description'] = '-';
           return record;
         })
-        .filter((record) => {
-          // Filter only completely empty rows (beyond the fallback fields)
-          const nonFallbackFields = Object.entries(record).filter(
-            ([k, v]) => !['serve_type', 'description'].includes(k) || 
-                        (v !== 'לא ידוע' && v !== '-')
-          );
-          return nonFallbackFields.length > 0;
-        });
+        .filter((record) => Object.keys(record).length > 2); // filter completely empty rows
 
       if (recordsToInsert.length === 0) {
         throw new Error('הגיליון ריק - לא נמצאו רשומות לייבוא');
