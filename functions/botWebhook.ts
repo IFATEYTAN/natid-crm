@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
       has_key: data.questionnaire?.has_key,
       
       // Generate customer response code for identification
-      customer_response_code: Math.floor(1000 + Math.random() * 9000).toString(),
+      customer_response_code: String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000)),
       
       // SLA settings (30 minutes default)
       sla_target: 30,

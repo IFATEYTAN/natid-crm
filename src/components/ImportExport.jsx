@@ -29,6 +29,16 @@ import { toast } from 'sonner';
 // html2canvas and jsPDF are loaded dynamically to reduce bundle size
 import { format } from 'date-fns';
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export default function ImportExport({ entityName, data, columns, title }) {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [file, setFile] = useState(null);
@@ -137,7 +147,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
       <html dir="rtl" lang="he">
       <head>
         <meta charset="UTF-8">
-        <title>${pageTitle}</title>
+        <title>${escapeHtml(pageTitle)}</title>
         <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
         <style>
           body { font-family: 'Heebo', sans-serif; margin: 0; padding: 20px; background-color: #f9fafb; direction: rtl; }
@@ -175,7 +185,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
         ? columns
         : Object.keys(data[0] || {}).map((key) => ({ header: key, accessor: key }));
 
-    const headers = effectiveColumns.map((col) => `<th>${col.header}</th>`).join('');
+    const headers = effectiveColumns.map((col) => `<th>${escapeHtml(col.header)}</th>`).join('');
 
     const rows = data
       .map((row) => {
@@ -186,7 +196,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
             if (value === undefined || value === null) value = '';
             // Note: Complex React components in 'cell' prop won't render here. We rely on accessor or simple values.
             // For formatted exports, columns should ideally map to string values or we fallback to accessor.
-            return `<td>${value}</td>`;
+            return `<td>${escapeHtml(value)}</td>`;
           })
           .join('');
         return `<tr>${cells}</tr>`;
@@ -196,7 +206,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
     return `
       <div class="header">
         <div class="brand-logo">נתי - שירותי דרך</div>
-        <h1 class="report-title">${pageTitle}</h1>
+        <h1 class="report-title">${escapeHtml(pageTitle)}</h1>
         <div class="report-date">הופק בתאריך: ${today}</div>
       </div>
       <table>
@@ -213,12 +223,19 @@ export default function ImportExport({ entityName, data, columns, title }) {
     `;
   };
 
+  const sanitizeCsvValue = (val) => {
+    const str = String(val ?? '').replace(/"/g, '""');
+    // Prevent CSV formula injection
+    if (/^[=+\-@\t\r]/.test(str)) return `'${str}`;
+    return str;
+  };
+
   const convertToCSV = (data, columns) => {
     if (!columns || columns.length === 0) {
       const headers = Object.keys(data[0] || {}).join(',');
       const rows = data.map((row) =>
         Object.values(row)
-          .map((v) => `"${v || ''}"`)
+          .map((v) => `"${sanitizeCsvValue(v)}"`)
           .join(',')
       );
       return [headers, ...rows].join('\n');
@@ -229,7 +246,7 @@ export default function ImportExport({ entityName, data, columns, title }) {
       columns
         .map((col) => {
           const value = row[col.accessor] || '';
-          return `"${value}"`;
+          return `"${sanitizeCsvValue(value)}"`;
         })
         .join(',')
     );

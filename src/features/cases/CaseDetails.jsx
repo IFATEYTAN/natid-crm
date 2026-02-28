@@ -42,6 +42,7 @@ import { triggerNotification } from '@/components/NotificationsUtils';
 import CallChat from '@/components/chat/CallChat';
 import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
+import { toast } from 'sonner';
 
 const statusOptions = [
   { value: 'new', label: 'חדש' },
@@ -125,12 +126,18 @@ export default function CaseDetails() {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       setIsEditMode(false);
     },
+    onError: () => {
+      toast.error('שגיאה בעדכון הקריאה');
+    },
   });
 
   const addActivityMutation = useMutation({
     mutationFn: (data) => base44.entities.CaseActivity.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.activities(caseId) });
+    },
+    onError: () => {
+      toast.error('שגיאה בהוספת פעילות');
     },
   });
 
@@ -150,16 +157,20 @@ export default function CaseDetails() {
       }
     }
 
-    await updateMutation.mutateAsync({ id: caseId, data: updates });
+    try {
+      await updateMutation.mutateAsync({ id: caseId, data: updates });
 
-    await addActivityMutation.mutateAsync({
-      case_id: caseId,
-      case_number: caseData.case_number,
-      activity_type: 'status_change',
-      description: `סטטוס שונה מ-${previousStatus} ל-${newStatus}`,
-      previous_value: previousStatus,
-      new_value: newStatus,
-    });
+      await addActivityMutation.mutateAsync({
+        case_id: caseId,
+        case_number: caseData.case_number,
+        activity_type: 'status_change',
+        description: `סטטוס שונה מ-${previousStatus} ל-${newStatus}`,
+        previous_value: previousStatus,
+        new_value: newStatus,
+      });
+    } catch {
+      return;
+    }
 
     // Trigger Notification
     await triggerNotification(
@@ -193,7 +204,7 @@ export default function CaseDetails() {
         });
       }
     } catch (smsError) {
-      console.log('SMS not sent:', smsError.message);
+      console.error('SMS not sent:', smsError.message);
     }
   };
 
@@ -213,14 +224,18 @@ export default function CaseDetails() {
       updates.sla_response_met = new Date() <= new Date(caseData.sla_response_deadline);
     }
 
-    await updateMutation.mutateAsync({ id: caseId, data: updates });
+    try {
+      await updateMutation.mutateAsync({ id: caseId, data: updates });
 
-    await addActivityMutation.mutateAsync({
-      case_id: caseId,
-      case_number: caseData.case_number,
-      activity_type: 'assigned',
-      description: `שובץ לנותן שירות: ${provider.name}`,
-    });
+      await addActivityMutation.mutateAsync({
+        case_id: caseId,
+        case_number: caseData.case_number,
+        activity_type: 'assigned',
+        description: `שובץ לנותן שירות: ${provider.name}`,
+      });
+    } catch {
+      return;
+    }
 
     // Trigger Notification
     await triggerNotification(
@@ -270,14 +285,17 @@ export default function CaseDetails() {
   const handleAddNote = async () => {
     if (!noteText.trim()) return;
 
-    await addActivityMutation.mutateAsync({
-      case_id: caseId,
-      case_number: caseData.case_number,
-      activity_type: 'note',
-      description: noteText,
-    });
-
-    setNoteText('');
+    try {
+      await addActivityMutation.mutateAsync({
+        case_id: caseId,
+        case_number: caseData.case_number,
+        activity_type: 'note',
+        description: noteText,
+      });
+      setNoteText('');
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   const handleSaveEdit = () => {

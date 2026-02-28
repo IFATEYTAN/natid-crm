@@ -102,6 +102,9 @@ export default function VendorCallManagementPage() {
       });
       showToast.success('הקריאה עודכנה בהצלחה');
     },
+    onError: () => {
+      showToast.error('שגיאה בעדכון הקריאה');
+    },
   });
 
   const addPhotoMutation = useMutation({
@@ -111,10 +114,21 @@ export default function VendorCallManagementPage() {
       showToast.success('התמונה נוספה בהצלחה');
       setShowPhotoDialog(false);
     },
+    onError: () => {
+      showToast.error('שגיאה בהעלאת תמונה');
+    },
   });
 
   const addHistoryMutation = useMutation({
     mutationFn: (data) => base44.entities.CallHistory.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
+      });
+    },
+    onError: () => {
+      showToast.error('שגיאה בשמירת היסטוריית הקריאה');
+    },
   });
 
   const call = callQuery.data;

@@ -143,9 +143,7 @@ export default function Reports() {
 
   // Handle email send
   const handleEmailSend = async ({ email, subject, message }) => {
-    // This would integrate with your email service
-    console.log('Sending email to:', email, 'Subject:', subject);
-    // Simulate API call
+    // TODO: Integrate with email service
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return true;
   };

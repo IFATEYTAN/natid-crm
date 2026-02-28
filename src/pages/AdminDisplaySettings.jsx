@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Save, Undo2, MoveUp, MoveDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 const PAGES = [{ value: 'HistoricalDataAnalysis', label: 'ניתוח נתונים היסטוריים' }];
 
@@ -85,8 +86,13 @@ export default function AdminDisplaySettings() {
       }
       return base44.entities.UserDisplayPreference.create(payload);
     },
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: queryKeys.settings.display(user?.id, selectedPage) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.settings.display(user?.id, selectedPage) });
+      toast.success('ההגדרות נשמרו בהצלחה');
+    },
+    onError: () => {
+      toast.error('שגיאה בשמירת ההגדרות');
+    },
   });
 
   const handleReorder = (index, direction) => {
@@ -118,7 +124,11 @@ export default function AdminDisplaySettings() {
         order: i,
       })),
     };
-    await saveMutation.mutateAsync(payload);
+    try {
+      await saveMutation.mutateAsync(payload);
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   if (!user) {
