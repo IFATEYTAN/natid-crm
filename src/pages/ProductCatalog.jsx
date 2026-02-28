@@ -133,7 +133,7 @@ export default function ProductCatalogPage() {
       </div>
 
       <div className="relative">
-        <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Search className="w-4 h-4 absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -168,6 +168,7 @@ export default function ProductCatalogPage() {
                     size="icon"
                     className="h-7 w-7"
                     onClick={() => openEdit(product)}
+                    aria-label="עריכה"
                   >
                     <Pencil className="w-3 h-3" />
                   </Button>
@@ -176,6 +177,7 @@ export default function ProductCatalogPage() {
                     size="icon"
                     className="h-7 w-7 text-red-400"
                     onClick={() => handleDelete(product.id)}
+                    aria-label="מחיקה"
                   >
                     <Trash2 className="w-3 h-3" />
                   </Button>

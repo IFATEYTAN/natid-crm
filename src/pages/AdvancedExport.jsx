@@ -33,7 +33,16 @@ import {
   Users,
   CheckCircle,
 } from 'lucide-react';
-import moment from 'moment';
+import {
+  format as formatDate,
+  subDays,
+  subYears,
+  isAfter,
+  isBefore,
+  parseISO,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { PageLoader, InlineLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp, AnimatedCard } from '@/components/animations/AnimatedComponents';
@@ -174,14 +183,14 @@ const customerStatusOptions = [
 export default function AdvancedExport() {
   const [activeTab, setActiveTab] = useState('calls');
   // Enforce RTL on this page
-  const rtlProps = { dir: 'rtl', className: 'text-right' };
+  const rtlProps = { dir: 'rtl', className: 'text-end' };
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState(null);
 
   // Calls export state
   const [callsDateRange, setCallsDateRange] = useState({
-    start: moment().subtract(30, 'days').format('YYYY-MM-DD'),
-    end: moment().format('YYYY-MM-DD'),
+    start: formatDate(subDays(new Date(), 30), 'yyyy-MM-dd'),
+    end: formatDate(new Date(), 'yyyy-MM-dd'),
   });
   const [callsStatus, setCallsStatus] = useState('all');
   const [selectedCallFields, setSelectedCallFields] = useState(
@@ -190,8 +199,8 @@ export default function AdvancedExport() {
 
   // Customers export state
   const [customersDateRange, setCustomersDateRange] = useState({
-    start: moment().subtract(365, 'days').format('YYYY-MM-DD'),
-    end: moment().format('YYYY-MM-DD'),
+    start: formatDate(subYears(new Date(), 1), 'yyyy-MM-dd'),
+    end: formatDate(new Date(), 'yyyy-MM-dd'),
   });
   const [customersStatus, setCustomersStatus] = useState('all');
   const [selectedCustomerFields, setSelectedCustomerFields] = useState(
@@ -204,13 +213,12 @@ export default function AdvancedExport() {
     queryFn: async () => {
       const allCalls = await base44.entities.Call.list('-created_date', 1000);
       return allCalls.filter((call) => {
-        const createdDate = moment(call.created_date);
-        const inDateRange = createdDate.isBetween(
-          callsDateRange.start,
-          callsDateRange.end,
-          'day',
-          '[]'
-        );
+        const createdDate = parseISO(call.created_date);
+        const rangeStart = startOfDay(parseISO(callsDateRange.start));
+        const rangeEnd = endOfDay(parseISO(callsDateRange.end));
+        const inDateRange =
+          (isAfter(createdDate, rangeStart) || createdDate.getTime() === rangeStart.getTime()) &&
+          (isBefore(createdDate, rangeEnd) || createdDate.getTime() === rangeEnd.getTime());
         const matchesStatus = callsStatus === 'all' || call.call_status === callsStatus;
         return inDateRange && matchesStatus;
       });
@@ -222,13 +230,12 @@ export default function AdvancedExport() {
     queryFn: async () => {
       const allCustomers = await base44.entities.Customer.list('-created_date', 1000);
       return allCustomers.filter((customer) => {
-        const createdDate = moment(customer.created_date);
-        const inDateRange = createdDate.isBetween(
-          customersDateRange.start,
-          customersDateRange.end,
-          'day',
-          '[]'
-        );
+        const createdDate = parseISO(customer.created_date);
+        const rangeStart = startOfDay(parseISO(customersDateRange.start));
+        const rangeEnd = endOfDay(parseISO(customersDateRange.end));
+        const inDateRange =
+          (isAfter(createdDate, rangeStart) || createdDate.getTime() === rangeStart.getTime()) &&
+          (isBefore(createdDate, rangeEnd) || createdDate.getTime() === rangeEnd.getTime());
         const matchesStatus = customersStatus === 'all' || customer.status === customersStatus;
         return inDateRange && matchesStatus;
       });
@@ -338,7 +345,7 @@ export default function AdvancedExport() {
         return;
       }
 
-      const timestamp = moment().format('YYYY-MM-DD_HH-mm');
+      const timestamp = formatDate(new Date(), 'yyyy-MM-dd_HH-mm');
       const entityName = isCalls ? 'calls' : 'customers';
 
       switch (format) {
@@ -358,20 +365,23 @@ export default function AdvancedExport() {
         }
         case 'pdf': {
           const title = isCalls ? 'דוח קריאות' : 'דוח לקוחות';
-          const columns = fields.map(f => ({
+          const columns = fields.map((f) => ({
             header: allFieldLabels[f] || f,
-            accessor: f
+            accessor: f,
           }));
           printData(data, columns, { title, subtitle: `דוח ${entityName} - ייצוא מתקדם` });
           break;
         }
         case 'html': {
           const title = isCalls ? 'דוח קריאות' : 'דוח לקוחות';
-          const columns = fields.map(f => ({
+          const columns = fields.map((f) => ({
             header: allFieldLabels[f] || f,
-            accessor: f
+            accessor: f,
           }));
-          exportToHTML(data, columns, entityName, { title, subtitle: `דוח ${entityName} - ייצוא מתקדם` });
+          exportToHTML(data, columns, entityName, {
+            title,
+            subtitle: `דוח ${entityName} - ייצוא מתקדם`,
+          });
           break;
         }
       }
@@ -422,7 +432,7 @@ export default function AdvancedExport() {
                   {groupFieldKeys.length})
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-1 mr-6 text-right">
+              <div className="grid grid-cols-2 gap-1 me-6 text-end">
                 {Object.entries(group.fields).map(([fieldKey, fieldLabel]) => (
                   <label
                     key={fieldKey}
@@ -443,14 +453,14 @@ export default function AdvancedExport() {
         })}
       </ScrollArea>
 
-      <div className="text-sm text-gray-500 text-right">נבחרו {selectedFields.length} שדות</div>
+      <div className="text-sm text-gray-500 text-end">נבחרו {selectedFields.length} שדות</div>
     </div>
   );
 
   return (
     <SlideUp>
       <div className="max-w-5xl mx-auto space-y-6" dir="rtl">
-        <div className="text-right">
+        <div className="text-end">
           <h1 className="text-2xl font-bold text-[#111827]">ייצוא מתקדם</h1>
           <p className="text-[#6b7280]">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
         </div>
@@ -479,7 +489,7 @@ export default function AdvancedExport() {
                 </CardHeader>
                 <CardContent>
                   <Select value={callsStatus} onValueChange={setCallsStatus} dir="rtl">
-                    <SelectTrigger className="text-right">
+                    <SelectTrigger className="text-end">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -523,7 +533,7 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCallsDateRange({ ...callsDateRange, start: e.target.value })
                       }
-                      className="text-right"
+                      className="text-end"
                     />
                   </div>
                   <div>
@@ -534,7 +544,7 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCallsDateRange({ ...callsDateRange, end: e.target.value })
                       }
-                      className="text-right"
+                      className="text-end"
                     />
                   </div>
                 </CardContent>
@@ -548,7 +558,9 @@ export default function AdvancedExport() {
                   <CheckSquare className="w-4 h-4" />
                   בחירת שדות לייצוא
                 </CardTitle>
-                <CardDescription className="text-right">בחר את השדות שברצונך לכלול בקובץ המיוצא</CardDescription>
+                <CardDescription className="text-end">
+                  בחר את השדות שברצונך לכלול בקובץ המיוצא
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {renderFieldSelector(callFields, selectedCallFields, setSelectedCallFields)}
@@ -568,7 +580,7 @@ export default function AdvancedExport() {
                 </CardHeader>
                 <CardContent>
                   <Select value={customersStatus} onValueChange={setCustomersStatus} dir="rtl">
-                    <SelectTrigger className="text-right">
+                    <SelectTrigger className="text-end">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -612,7 +624,7 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCustomersDateRange({ ...customersDateRange, start: e.target.value })
                       }
-                      className="text-right"
+                      className="text-end"
                     />
                   </div>
                   <div>
@@ -623,7 +635,7 @@ export default function AdvancedExport() {
                       onChange={(e) =>
                         setCustomersDateRange({ ...customersDateRange, end: e.target.value })
                       }
-                      className="text-right"
+                      className="text-end"
                     />
                   </div>
                 </CardContent>
@@ -637,7 +649,9 @@ export default function AdvancedExport() {
                   <CheckSquare className="w-4 h-4" />
                   בחירת שדות לייצוא
                 </CardTitle>
-                <CardDescription className="text-right">בחר את השדות שברצונך לכלול בקובץ המיוצא</CardDescription>
+                <CardDescription className="text-end">
+                  בחר את השדות שברצונך לכלול בקובץ המיוצא
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {renderFieldSelector(
@@ -665,7 +679,7 @@ export default function AdvancedExport() {
               <Download className="w-4 h-4" />
               ייצוא
             </CardTitle>
-            <CardDescription className="text-right">בחר פורמט לייצוא הנתונים</CardDescription>
+            <CardDescription className="text-end">בחר פורמט לייצוא הנתונים</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-3 justify-end">

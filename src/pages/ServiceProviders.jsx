@@ -514,12 +514,12 @@ export default function ServiceProvidersPage() {
           <CardHeader className="pb-3">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
                 <Input
                   placeholder="חיפוש לפי שם, טלפון או אזור..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
+                  className="ps-10"
                   aria-label="חיפוש ספקים"
                 />
               </div>

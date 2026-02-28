@@ -3,9 +3,24 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, RefreshCw, ChevronDown, ChevronUp, Users, Truck, XCircle, Clock, Wrench } from 'lucide-react';
+import {
+  Sparkles,
+  Loader2,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  Users,
+  Truck,
+  XCircle,
+  Clock,
+  Wrench,
+} from 'lucide-react';
 
-const impactColors = { low: 'bg-gray-100 text-gray-700', medium: 'bg-blue-100 text-blue-700', high: 'bg-green-100 text-green-700' };
+const impactColors = {
+  low: 'bg-gray-100 text-gray-700',
+  medium: 'bg-blue-100 text-blue-700',
+  high: 'bg-green-100 text-green-700',
+};
 const impactLabels = { low: 'נמוכה', medium: 'בינונית', high: 'גבוהה' };
 
 const categoryIcons = {
@@ -23,7 +38,9 @@ export default function ProactiveRecommendationsWidget() {
 
   const analyze = async () => {
     setLoading(true);
-    const response = await base44.functions.invoke('analyzeHistoricalPatterns', { analysis_type: 'proactive_recommendations' });
+    const response = await base44.functions.invoke('analyzeHistoricalPatterns', {
+      analysis_type: 'proactive_recommendations',
+    });
     setResult(response.data);
     setLoading(false);
   };
@@ -40,12 +57,27 @@ export default function ProactiveRecommendationsWidget() {
           </CardTitle>
           <div className="flex gap-1">
             {result && (
-              <Button size="sm" variant="ghost" onClick={() => setExpanded(!expanded)} className="h-7 w-7 p-0">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setExpanded(!expanded)}
+                className="h-7 w-7 p-0"
+              >
                 {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             )}
-            <Button size="sm" variant="outline" onClick={analyze} disabled={loading} className="gap-1 h-7 text-xs">
-              {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={analyze}
+              disabled={loading}
+              className="gap-1 h-7 text-xs"
+            >
+              {loading ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3 h-3" />
+              )}
               {result ? 'רענן' : 'צור המלצות'}
             </Button>
           </div>
@@ -55,7 +87,7 @@ export default function ProactiveRecommendationsWidget() {
       {loading && (
         <CardContent>
           <div className="flex items-center justify-center py-8 text-emerald-600 text-sm">
-            <Loader2 className="w-5 h-5 animate-spin ml-2" />
+            <Loader2 className="w-5 h-5 animate-spin ms-2" />
             מנתח נתונים ויוצר המלצות...
           </div>
         </CardContent>
@@ -89,7 +121,10 @@ export default function ProactiveRecommendationsWidget() {
           {result.recommendations?.map((rec, i) => {
             const Icon = categoryIcons[rec.category] || Sparkles;
             return (
-              <div key={i} className="bg-white rounded-lg p-4 border hover:shadow-sm transition-shadow">
+              <div
+                key={i}
+                className="bg-white rounded-lg p-4 border hover:shadow-sm transition-shadow"
+              >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Icon className="w-4 h-4 text-emerald-600 shrink-0" />

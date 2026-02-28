@@ -3,9 +3,20 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2, Check, AlertTriangle } from 'lucide-react';
-import { serviceTypeLabels, priorityLabels, priorityColors, issueTypeLabels } from '@/config/labels';
+import {
+  serviceTypeLabels,
+  priorityLabels,
+  priorityColors,
+  issueTypeLabels,
+} from '@/config/labels';
 
-export default function AICategorization({ problemDescription, locationAddress, locationCity, vehicleType, onApply }) {
+export default function AICategorization({
+  problemDescription,
+  locationAddress,
+  locationCity,
+  vehicleType,
+  onApply,
+}) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -18,7 +29,7 @@ export default function AICategorization({ problemDescription, locationAddress, 
       problem_description: problemDescription,
       location_address: locationAddress,
       location_city: locationCity,
-      vehicle_type: vehicleType
+      vehicle_type: vehicleType,
     });
     setResult(response.data);
     setLoading(false);
@@ -28,7 +39,7 @@ export default function AICategorization({ problemDescription, locationAddress, 
     if (!result || !onApply) return;
     onApply({
       service_type: result.service_type,
-      priority: result.priority
+      priority: result.priority,
     });
     setApplied(true);
   };
@@ -43,8 +54,18 @@ export default function AICategorization({ problemDescription, locationAddress, 
           <span className="text-sm font-semibold">סיווג AI אוטומטי</span>
         </div>
         {!result && (
-          <Button size="sm" variant="outline" onClick={handleCategorize} disabled={loading} className="gap-1 text-indigo-700 border-indigo-300 hover:bg-indigo-100">
-            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCategorize}
+            disabled={loading}
+            className="gap-1 text-indigo-700 border-indigo-300 hover:bg-indigo-100"
+          >
+            {loading ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Sparkles className="w-3 h-3" />
+            )}
             {loading ? 'מנתח...' : 'נתח תקלה'}
           </Button>
         )}
@@ -52,7 +73,7 @@ export default function AICategorization({ problemDescription, locationAddress, 
 
       {loading && (
         <div className="flex items-center justify-center py-4 text-indigo-600 text-sm">
-          <Loader2 className="w-5 h-5 animate-spin ml-2" />
+          <Loader2 className="w-5 h-5 animate-spin ms-2" />
           מנתח את תיאור התקלה...
         </div>
       )}
@@ -62,16 +83,20 @@ export default function AICategorization({ problemDescription, locationAddress, 
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white rounded-lg p-3 border border-indigo-100">
               <div className="text-xs text-gray-500 mb-1">סוג תקלה</div>
-              <div className="font-medium text-sm">{issueTypeLabels[result.issue_type] || result.issue_type}</div>
+              <div className="font-medium text-sm">
+                {issueTypeLabels[result.issue_type] || result.issue_type}
+              </div>
             </div>
             <div className="bg-white rounded-lg p-3 border border-indigo-100">
               <div className="text-xs text-gray-500 mb-1">שירות מומלץ</div>
-              <div className="font-medium text-sm">{serviceTypeLabels[result.service_type] || result.service_type}</div>
+              <div className="font-medium text-sm">
+                {serviceTypeLabels[result.service_type] || result.service_type}
+              </div>
             </div>
             <div className="bg-white rounded-lg p-3 border border-indigo-100">
               <div className="text-xs text-gray-500 mb-1">עדיפות</div>
               <Badge className={`${priorityColors[result.priority]} text-xs`}>
-                {result.priority === 'urgent' && <AlertTriangle className="w-3 h-3 ml-1" />}
+                {result.priority === 'urgent' && <AlertTriangle className="w-3 h-3 ms-1" />}
                 {priorityLabels[result.priority]}
               </Badge>
             </div>
@@ -87,7 +112,12 @@ export default function AICategorization({ problemDescription, locationAddress, 
               <Sparkles className="w-3 h-3" />
               נתח שוב
             </Button>
-            <Button size="sm" onClick={handleApply} disabled={applied} className="gap-1 bg-indigo-600 hover:bg-indigo-700">
+            <Button
+              size="sm"
+              onClick={handleApply}
+              disabled={applied}
+              className="gap-1 bg-indigo-600 hover:bg-indigo-700"
+            >
               {applied ? <Check className="w-3 h-3" /> : null}
               {applied ? 'הוחל' : 'החל סיווג'}
             </Button>

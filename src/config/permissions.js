@@ -28,6 +28,7 @@ export const PAGE_PERMISSIONS = {
   // Admin + Operator - daily operations
   AdvancedExport: ['admin', 'operator'],
   Agents: ['admin', 'operator'],
+  EditCustomer: ['admin', 'operator'],
   AllVendorsMap: ['admin', 'operator'],
   Calendar: ['admin', 'operator'],
   CallDetails: ['admin', 'operator'],
@@ -54,9 +55,13 @@ export const PAGE_PERMISSIONS = {
   VendorTracking: ['admin', 'operator'],
 
   // Vendor only
+  CallDetailsVendor: ['vendor'],
+  MyCallsVendor: ['vendor'],
   MyVendorProfile: ['vendor'],
   VendorCallManagement: ['vendor'],
   VendorGuide: ['vendor'],
+  VendorMap: ['vendor'],
+  VendorPayments: ['vendor'],
   VendorPortal: ['vendor'],
 
   // All roles

@@ -179,9 +179,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto text-right" dir="rtl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto text-end" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-right">
+          <DialogTitle className="flex items-center gap-2 text-end">
             <FileText className="w-5 h-5" />
             {isEdit ? 'עריכת חוזה' : 'יצירת חוזה חדש'}
           </DialogTitle>
@@ -196,7 +196,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               <TabsTrigger value="terms">תנאים</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-4 mt-4 text-right" dir="rtl">
+            <TabsContent value="basic" className="space-y-4 mt-4 text-end" dir="rtl">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>ספק *</Label>
@@ -309,7 +309,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
             </TabsContent>
 
-            <TabsContent value="pricing" className="space-y-4 mt-4 text-right" dir="rtl">
+            <TabsContent value="pricing" className="space-y-4 mt-4 text-end" dir="rtl">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-medium text-blue-800 mb-3 flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
@@ -451,7 +451,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
             </TabsContent>
 
-            <TabsContent value="coverage" className="space-y-4 mt-4 text-right" dir="rtl">
+            <TabsContent value="coverage" className="space-y-4 mt-4 text-end" dir="rtl">
               <div>
                 <Label className="mb-3 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
@@ -518,7 +518,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
             </TabsContent>
 
-            <TabsContent value="terms" className="space-y-4 mt-4 text-right" dir="rtl">
+            <TabsContent value="terms" className="space-y-4 mt-4 text-end" dir="rtl">
               <div className="p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-medium mb-3 flex items-center gap-2">
                   <Shield className="w-4 h-4" />
@@ -563,6 +563,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                         size="icon"
                         onClick={() => setFormData({ ...formData, document_url: '' })}
                         className="text-red-500 hover:bg-red-50"
+                        aria-label="הסר מסמך"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -622,7 +623,7 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
             <Button type="submit" disabled={isPending} className="bg-[#3b82f6] hover:bg-[#2563eb]">
               {isPending ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                  <Loader2 className="w-4 h-4 animate-spin ms-2" />
                   שומר...
                 </>
               ) : isEdit ? (

@@ -103,7 +103,7 @@ export default function MyVendorProfile() {
   const updateVendorMutation = useMutation({
     mutationFn: (data) => base44.entities.Vendor.update(vendorId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.myProfile() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.myProfile(user?.email) });
       toast.success('הפרופיל עודכן בהצלחה');
       setIsEditOpen(false);
     },
@@ -117,8 +117,11 @@ export default function MyVendorProfile() {
         availability_status: newStatus ? 'available' : 'offline',
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.myProfile() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.myProfile(user?.email) });
       toast.success('סטטוס זמינות עודכן');
+    },
+    onError: () => {
+      toast.error('שגיאה בעדכון סטטוס זמינות');
     },
   });
 

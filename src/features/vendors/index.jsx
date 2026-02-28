@@ -292,7 +292,7 @@ export default function ServiceProviders() {
       cell: (row) => (
         <div className="flex items-center gap-2">
           <Link to={createPageUrl('VendorProfile') + '?id=' + row.id}>
-            <Button variant="ghost" size="icon" title="היסטוריה">
+            <Button variant="ghost" size="icon" title="היסטוריה" aria-label="צפה">
               <Eye className="w-4 h-4 text-primary-soft-600" />
             </Button>
           </Link>
@@ -304,6 +304,7 @@ export default function ServiceProviders() {
               handleEdit(row);
             }}
             title="עריכה"
+            aria-label="עריכה"
           >
             <Edit className="w-4 h-4 text-neutral-soft-600" />
           </Button>
@@ -317,6 +318,7 @@ export default function ServiceProviders() {
               }
             }}
             title="מחיקה"
+            aria-label="מחיקה"
           >
             <Trash2 className="w-4 h-4 text-error-soft-600" />
           </Button>
@@ -392,12 +394,12 @@ export default function ServiceProviders() {
         >
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-soft-500" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-soft-500" />
               <Input
                 placeholder="חיפוש לפי שם, טלפון..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pr-10"
+                className="ps-10"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -451,7 +453,8 @@ export default function ServiceProviders() {
                       <button
                         type="button"
                         onClick={removeImage}
-                        className="absolute -top-1 -right-1 bg-error-soft-600 text-white rounded-full p-1 hover:bg-error-soft-700"
+                        className="absolute -top-1 -end-1 bg-error-soft-600 text-white rounded-full p-1 hover:bg-error-soft-700"
+                        aria-label="הסר תמונה"
                       >
                         <X className="w-3 h-3" />
                       </button>

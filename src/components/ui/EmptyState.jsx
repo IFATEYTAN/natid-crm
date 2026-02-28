@@ -124,7 +124,7 @@ export default function EmptyState({
           onClick={onAction}
           className={cn('bg-[#FF0000] hover:bg-[#CC0000] text-white', sizes.button)}
         >
-          <ActionIcon className="w-4 h-4 ml-2" />
+          <ActionIcon className="w-4 h-4 ms-2" />
           {displayActionLabel}
         </Button>
       )}

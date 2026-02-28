@@ -34,7 +34,7 @@ const AppAccessDeniedError = () => {
           </p>
           <div className="p-4 bg-slate-50 rounded-md text-sm text-slate-600 mb-6">
             <p>This could happen because:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-right" dir="rtl">
+            <ul className="list-disc list-inside mt-2 space-y-1 text-end" dir="rtl">
               <li>The app is private and requires special permissions</li>
               <li>Your account doesn't have the required access level</li>
               <li>The app link you used may be incorrect</li>

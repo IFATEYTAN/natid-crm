@@ -53,9 +53,9 @@ const actionColors = {
 };
 
 const severityColors = {
-  info: 'border-l-blue-400',
-  warning: 'border-l-yellow-400',
-  critical: 'border-l-red-500',
+  info: 'border-s-blue-400',
+  warning: 'border-s-yellow-400',
+  critical: 'border-s-red-500',
 };
 
 export default function AuditLogPage() {
@@ -234,7 +234,7 @@ export default function AuditLogPage() {
               <div className="text-sm text-[#6B778C]">עדכונים</div>
             </CardContent>
           </Card>
-          <Card className="bg-white border-l-4 border-l-red-500">
+          <Card className="bg-white border-s-4 border-s-red-500">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-red-600">
                 {
@@ -260,12 +260,12 @@ export default function AuditLogPage() {
           <CardHeader className="pb-3">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
                 <Input
                   placeholder="חיפוש לפי משתמש, ישות או פרטים..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
+                  className="ps-10"
                 />
               </div>
               <Select value={actionFilter} onValueChange={setActionFilter}>

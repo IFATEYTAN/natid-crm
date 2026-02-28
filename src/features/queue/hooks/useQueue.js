@@ -84,6 +84,9 @@ export const useStartQueueItem = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
     },
+    onError: () => {
+      toast.error('שגיאה בהתחלת עבודה על פריט בתור');
+    },
   });
 };
 
@@ -98,6 +101,10 @@ export const useCompleteQueueItem = () => {
       queueApi.completeQueueItem(queueId, timeToComplete),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+      toast.success('פריט בתור הושלם');
+    },
+    onError: () => {
+      toast.error('שגיאה בהשלמת פריט בתור');
     },
   });
 };
@@ -113,6 +120,9 @@ export const useCreateQueueItem = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
     },
+    onError: () => {
+      toast.error('שגיאה ביצירת פריט בתור');
+    },
   });
 };
 
@@ -126,6 +136,9 @@ export const useDeleteQueueItem = () => {
     mutationFn: queueApi.deleteQueueItem,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+    },
+    onError: () => {
+      toast.error('שגיאה במחיקת פריט מהתור');
     },
   });
 };

@@ -153,7 +153,7 @@ export default function NewVendorPage() {
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
             <ArrowRight className="w-5 h-5" />
           </Button>
           <div>
@@ -196,11 +196,11 @@ export default function NewVendorPage() {
                 <div>
                   <Label>טלפון ראשי *</Label>
                   <div className="relative">
-                    <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="pr-10"
+                      className="ps-10"
                       dir="ltr"
                       placeholder="050-1234567"
                       required
@@ -210,11 +210,11 @@ export default function NewVendorPage() {
                 <div>
                   <Label>טלפון משני</Label>
                   <div className="relative">
-                    <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
                       value={formData.phone_2}
                       onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
-                      className="pr-10"
+                      className="ps-10"
                       dir="ltr"
                     />
                   </div>
@@ -224,12 +224,12 @@ export default function NewVendorPage() {
               <div>
                 <Label>אימייל {sendInvite && '*'}</Label>
                 <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="pr-10"
+                    className="ps-10"
                     dir="ltr"
                     placeholder="vendor@example.com"
                     required={sendInvite}

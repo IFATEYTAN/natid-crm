@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, BellOff, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 // Check if push notifications are supported
 export const isPushSupported = () => {
@@ -244,7 +244,7 @@ export function NotificationPermissionBanner() {
               onClick={handleEnable}
               className="bg-white text-blue-600 hover:bg-blue-50"
             >
-              <Bell className="w-4 h-4 mr-2" />
+              <Bell className="w-4 h-4 me-2" />
               הפעל
             </Button>
           </div>

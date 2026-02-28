@@ -144,7 +144,7 @@ export default function CallDetailsInfoTab({
                 <Badge className={priorityColors[call?.call_priority] || priorityColors.normal}>
                   {priorityLabels[call?.call_priority] || 'רגיל'}
                 </Badge>
-                {call?.is_vip && <Badge className="bg-purple-100 text-purple-800 mr-1">VIP</Badge>}
+                {call?.is_vip && <Badge className="bg-purple-100 text-purple-800 me-1">VIP</Badge>}
               </div>
             </div>
             <InfoField
@@ -450,7 +450,7 @@ export default function CallDetailsInfoTab({
                     className="flex justify-between items-center py-1.5 border-b border-gray-50 last:border-0"
                   >
                     <span className="text-sm text-[#6B778C]">
-                      <span className="text-xs text-gray-400 ml-1">#{idx + 1}</span>
+                      <span className="text-xs text-gray-400 ms-1">#{idx + 1}</span>
                       {key}
                     </span>
                     <span
@@ -608,7 +608,7 @@ export default function CallDetailsInfoTab({
                       className={`w-5 h-5 ${s <= call.customer_rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                     />
                   ))}
-                  <span className="font-bold mr-2">{call.customer_rating}/5</span>
+                  <span className="font-bold me-2">{call.customer_rating}/5</span>
                 </div>
               )}
             </div>

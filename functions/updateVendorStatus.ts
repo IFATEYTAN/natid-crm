@@ -81,6 +81,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Update status error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to update vendor status' }, { status: 500 });
   }
 });

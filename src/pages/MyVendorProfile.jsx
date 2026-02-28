@@ -78,7 +78,6 @@ export default function MyVendorProfilePage() {
   });
   const queryClient = useQueryClient();
 
-
   const vendorQuery = useQuery({
     queryKey: queryKeys.vendors.profile(currentUser?.email),
     queryFn: async () => {
@@ -262,11 +261,11 @@ export default function MyVendorProfilePage() {
                 <div>
                   <Label>טלפון ראשי</Label>
                   <div className="relative">
-                    <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="pr-10"
+                      className="ps-10"
                       dir="ltr"
                     />
                   </div>
@@ -274,11 +273,11 @@ export default function MyVendorProfilePage() {
                 <div>
                   <Label>טלפון משני</Label>
                   <div className="relative">
-                    <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                    <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
                       value={formData.phone_2}
                       onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
-                      className="pr-10"
+                      className="ps-10"
                       dir="ltr"
                     />
                   </div>
@@ -288,12 +287,12 @@ export default function MyVendorProfilePage() {
               <div>
                 <Label>אימייל</Label>
                 <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
+                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                   <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="pr-10"
+                    className="ps-10"
                     dir="ltr"
                     disabled
                   />
@@ -370,11 +369,11 @@ export default function MyVendorProfilePage() {
               <div>
                 <Label>ערים ספציפיות</Label>
                 <div className="relative">
-                  <MapPin className="absolute right-3 top-3 w-4 h-4 text-[#6b7280]" />
+                  <MapPin className="absolute start-3 top-3 w-4 h-4 text-[#6b7280]" />
                   <Textarea
                     value={formData.coverage_cities}
                     onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
-                    className="pr-10 min-h-[80px]"
+                    className="ps-10 min-h-[80px]"
                     placeholder="רשום את הערים בהם אתה מספק שירות"
                   />
                 </div>

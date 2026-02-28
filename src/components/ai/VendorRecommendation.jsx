@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Trophy, MapPin, Clock } from 'lucide-react';
@@ -8,7 +9,7 @@ import { getCoverageLabel } from '@/config/coverageConstants';
 
 export default function VendorRecommendation({ callDetails, onSelectVendor }) {
   const { data, isLoading } = useQuery({
-    queryKey: ['vendor-recommendation', callDetails?.id],
+    queryKey: queryKeys.ai.vendorRecommendation(callDetails?.id),
     queryFn: () =>
       base44.functions
         .invoke('recommendVendor', { call_details: callDetails })
@@ -50,7 +51,7 @@ export default function VendorRecommendation({ callDetails, onSelectVendor }) {
             onClick={() => onSelectVendor && rec.vendor && onSelectVendor(rec.vendor)}
           >
             {index === 0 && (
-              <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+              <div className="absolute -top-2 -end-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
                 <Trophy className="w-3 h-3" />
                 מומלץ ביותר
               </div>

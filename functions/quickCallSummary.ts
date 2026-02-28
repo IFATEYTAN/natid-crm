@@ -96,6 +96,6 @@ ${messagesText ? 'הודעות:\n' + messagesText : ''}
 
   } catch (error) {
     console.error('Quick summary error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to generate quick summary' }, { status: 500 });
   }
 });

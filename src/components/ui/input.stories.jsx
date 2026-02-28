@@ -93,8 +93,8 @@ export const Disabled = {
 export const WithIcon = {
   render: () => (
     <div className="relative w-[300px]" dir="rtl">
-      <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-      <Input className="pr-10" placeholder="חיפוש..." />
+      <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <Input className="ps-10" placeholder="חיפוש..." />
     </div>
   ),
 };
@@ -111,24 +111,24 @@ export const FormExample = {
       <div className="space-y-2">
         <label className="text-sm font-medium">טלפון</label>
         <div className="relative">
-          <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input className="pr-10" type="tel" placeholder="050-0000000" />
+          <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input className="ps-10" type="tel" placeholder="050-0000000" />
         </div>
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium">אימייל</label>
         <div className="relative">
-          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input className="pr-10" type="email" placeholder="email@example.com" />
+          <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input className="ps-10" type="email" placeholder="email@example.com" />
         </div>
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium">סיסמה</label>
         <div className="relative">
-          <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input className="pr-10" type="password" placeholder="••••••••" />
+          <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input className="ps-10" type="password" placeholder="••••••••" />
         </div>
       </div>
     </form>
@@ -139,8 +139,8 @@ export const FormExample = {
 export const SearchInput = {
   render: () => (
     <div className="relative w-[400px]" dir="rtl">
-      <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-      <Input className="pr-10" type="search" placeholder="חיפוש לפי שם, מספר קריאה או טלפון..." />
+      <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <Input className="ps-10" type="search" placeholder="חיפוש לפי שם, מספר קריאה או טלפון..." />
     </div>
   ),
 };

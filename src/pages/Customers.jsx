@@ -152,20 +152,20 @@ export default function CustomersPage() {
       cell: (customer) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="אפשרויות נוספות">
               <MoreVertical className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
               <Link to={createPageUrl(`CustomerDetails?id=${customer.id}`)}>
-                <Eye className="w-4 h-4 ml-2" />
+                <Eye className="w-4 h-4 ms-2" />
                 צפייה בפרטים
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to={createPageUrl(`EditCustomer?id=${customer.id}`)}>
-                <Pencil className="w-4 h-4 ml-2" />
+                <Pencil className="w-4 h-4 ms-2" />
                 עריכה
               </Link>
             </DropdownMenuItem>
@@ -177,7 +177,7 @@ export default function CustomersPage() {
                 }
               }}
             >
-              <Trash2 className="w-4 h-4 ml-2" />
+              <Trash2 className="w-4 h-4 ms-2" />
               מחיקה
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -235,12 +235,12 @@ export default function CustomersPage() {
         <CardHeader className="pb-3">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
               <Input
                 placeholder="חיפוש לפי שם, טלפון או אימייל..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pr-10"
+                className="ps-10"
               />
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>

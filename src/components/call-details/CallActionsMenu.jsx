@@ -48,7 +48,7 @@ export default function CallActionsMenu({
     <>
       <DropdownMenu dir="rtl">
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" aria-label="אפשרויות נוספות">
             <MoreVertical className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -58,19 +58,19 @@ export default function CallActionsMenu({
             <>
               {call?.call_status !== 'vendor_arrived' && (
                 <DropdownMenuItem onClick={() => onStatusChange('vendor_arrived')}>
-                  <MapPin className="w-4 h-4 ml-2" />
+                  <MapPin className="w-4 h-4 ms-2" />
                   נותן השירות הגיע
                 </DropdownMenuItem>
               )}
               {call?.call_status !== 'in_progress' && (
                 <DropdownMenuItem onClick={() => onStatusChange('in_progress')}>
-                  <Truck className="w-4 h-4 ml-2" />
+                  <Truck className="w-4 h-4 ms-2" />
                   נותן השירות במקום
                 </DropdownMenuItem>
               )}
               {call?.call_status !== 'vendor_enroute' && (
                 <DropdownMenuItem onClick={() => onStatusChange('vendor_enroute')}>
-                  <Truck className="w-4 h-4 ml-2" />
+                  <Truck className="w-4 h-4 ms-2" />
                   ספק בדרך
                 </DropdownMenuItem>
               )}
@@ -81,14 +81,14 @@ export default function CallActionsMenu({
           {/* Assign vendor */}
           {canAssign && !isClosedOrCancelled && (
             <DropdownMenuItem onClick={onOpenAssignDialog}>
-              <Truck className="w-4 h-4 ml-2" />
+              <Truck className="w-4 h-4 ms-2" />
               שבץ ספק
             </DropdownMenuItem>
           )}
 
           {/* Add reminder */}
           <DropdownMenuItem onClick={onNavigateToReminders}>
-            <Bell className="w-4 h-4 ml-2" />
+            <Bell className="w-4 h-4 ms-2" />
             הוסף תזכורת
           </DropdownMenuItem>
 
@@ -100,7 +100,7 @@ export default function CallActionsMenu({
                 onClick={onOpenCancelDialog}
                 className="text-red-600 focus:text-red-600"
               >
-                <Ban className="w-4 h-4 ml-2" />
+                <Ban className="w-4 h-4 ms-2" />
                 ביטול קריאה
               </DropdownMenuItem>
             </>
@@ -111,7 +111,7 @@ export default function CallActionsMenu({
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowReopenDialog(true)}>
-                <RotateCcw className="w-4 h-4 ml-2" />
+                <RotateCcw className="w-4 h-4 ms-2" />
                 תיקון קריאה / פתיחה מחדש
               </DropdownMenuItem>
             </>
@@ -120,7 +120,7 @@ export default function CallActionsMenu({
           {/* Complete */}
           {canEdit && !isClosedOrCancelled && (
             <DropdownMenuItem onClick={() => onStatusChange('completed')}>
-              <CheckCircle className="w-4 h-4 ml-2" />
+              <CheckCircle className="w-4 h-4 ms-2" />
               סגור קריאה
             </DropdownMenuItem>
           )}
@@ -153,7 +153,7 @@ export default function CallActionsMenu({
               ביטול
             </Button>
             <Button onClick={handleReopen} disabled={!reopenReason.trim()}>
-              <RotateCcw className="w-4 h-4 ml-2" />
+              <RotateCcw className="w-4 h-4 ms-2" />
               פתח מחדש
             </Button>
           </DialogFooter>

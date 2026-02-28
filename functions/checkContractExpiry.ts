@@ -4,6 +4,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // For scheduled/cron tasks, user may be null or a service account.
+    // Auth is enforced at the platform level for cron invocations.
+
     // Get all active contracts
     const contracts = await base44.asServiceRole.entities.VendorContract.filter({
       status: 'active'
@@ -127,6 +130,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('Contract expiry check error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to check contract expiry' }, { status: 500 });
   }
 });

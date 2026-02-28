@@ -3,6 +3,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
+
+        // Verify caller is authenticated
+        const user = await base44.auth.me();
+        if (!user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { location, service_type, time_of_day, vehicle_type } = await req.json();
 
         const prompt = `
@@ -39,6 +46,6 @@ Deno.serve(async (req) => {
         return Response.json(response);
 
     } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
+        return Response.json({ error: 'Failed to predict call times' }, { status: 500 });
     }
 });

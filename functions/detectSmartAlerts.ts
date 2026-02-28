@@ -13,6 +13,10 @@ import { differenceInMinutes, subHours } from 'npm:date-fns@3.6.0';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // For scheduled/cron tasks, user may be null or a service account.
+    // Auth is enforced at the platform level for cron invocations.
+
     // Use service role for system tasks
     const client = base44.asServiceRole;
 
@@ -202,6 +206,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Smart alerts error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to detect alerts' }, { status: 500 });
   }
 });

@@ -42,6 +42,7 @@ import { triggerNotification } from '@/components/NotificationsUtils';
 import CallChat from '@/components/chat/CallChat';
 import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
+import { toast } from 'sonner';
 
 const statusOptions = [
   { value: 'new', label: 'חדש' },
@@ -125,12 +126,18 @@ export default function CaseDetails() {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       setIsEditMode(false);
     },
+    onError: () => {
+      toast.error('שגיאה בעדכון הקריאה');
+    },
   });
 
   const addActivityMutation = useMutation({
     mutationFn: (data) => base44.entities.CaseActivity.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.activities(caseId) });
+    },
+    onError: () => {
+      toast.error('שגיאה בהוספת פעילות');
     },
   });
 
@@ -150,16 +157,20 @@ export default function CaseDetails() {
       }
     }
 
-    await updateMutation.mutateAsync({ id: caseId, data: updates });
+    try {
+      await updateMutation.mutateAsync({ id: caseId, data: updates });
 
-    await addActivityMutation.mutateAsync({
-      case_id: caseId,
-      case_number: caseData.case_number,
-      activity_type: 'status_change',
-      description: `סטטוס שונה מ-${previousStatus} ל-${newStatus}`,
-      previous_value: previousStatus,
-      new_value: newStatus,
-    });
+      await addActivityMutation.mutateAsync({
+        case_id: caseId,
+        case_number: caseData.case_number,
+        activity_type: 'status_change',
+        description: `סטטוס שונה מ-${previousStatus} ל-${newStatus}`,
+        previous_value: previousStatus,
+        new_value: newStatus,
+      });
+    } catch {
+      return;
+    }
 
     // Trigger Notification
     await triggerNotification(
@@ -193,7 +204,7 @@ export default function CaseDetails() {
         });
       }
     } catch (smsError) {
-      console.log('SMS not sent:', smsError.message);
+      console.error('SMS not sent:', smsError.message);
     }
   };
 
@@ -213,14 +224,18 @@ export default function CaseDetails() {
       updates.sla_response_met = new Date() <= new Date(caseData.sla_response_deadline);
     }
 
-    await updateMutation.mutateAsync({ id: caseId, data: updates });
+    try {
+      await updateMutation.mutateAsync({ id: caseId, data: updates });
 
-    await addActivityMutation.mutateAsync({
-      case_id: caseId,
-      case_number: caseData.case_number,
-      activity_type: 'assigned',
-      description: `שובץ לנותן שירות: ${provider.name}`,
-    });
+      await addActivityMutation.mutateAsync({
+        case_id: caseId,
+        case_number: caseData.case_number,
+        activity_type: 'assigned',
+        description: `שובץ לנותן שירות: ${provider.name}`,
+      });
+    } catch {
+      return;
+    }
 
     // Trigger Notification
     await triggerNotification(
@@ -270,14 +285,17 @@ export default function CaseDetails() {
   const handleAddNote = async () => {
     if (!noteText.trim()) return;
 
-    await addActivityMutation.mutateAsync({
-      case_id: caseId,
-      case_number: caseData.case_number,
-      activity_type: 'note',
-      description: noteText,
-    });
-
-    setNoteText('');
+    try {
+      await addActivityMutation.mutateAsync({
+        case_id: caseId,
+        case_number: caseData.case_number,
+        activity_type: 'note',
+        description: noteText,
+      });
+      setNoteText('');
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   const handleSaveEdit = () => {
@@ -319,7 +337,7 @@ export default function CaseDetails() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link to={createPageUrl('Cases')}>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="חזרה">
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
@@ -360,7 +378,7 @@ export default function CaseDetails() {
                 className="bg-[#0D47A1] hover:bg-[#1565C0] w-full sm:w-auto"
                 onClick={() => setIsAssignDialogOpen(true)}
               >
-                <Truck className="w-4 h-4 ml-2" />
+                <Truck className="w-4 h-4 ms-2" />
                 <span className="hidden sm:inline">שבץ נותן שירות</span>
                 <span className="sm:hidden">שבץ ספק</span>
               </Button>
@@ -655,7 +673,7 @@ export default function CaseDetails() {
                   activities.map((activity) => (
                     <div
                       key={activity.id}
-                      className="text-sm border-r-2 border-[#0D47A1] pr-3 py-1"
+                      className="text-sm border-e-2 border-[#0D47A1] pe-3 py-1"
                     >
                       <p className="text-[#212121]">{activity.description}</p>
                       <p className="text-xs text-[#9E9E9E]">

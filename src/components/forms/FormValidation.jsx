@@ -174,7 +174,7 @@ export function FieldSuccess({ show }) {
   if (!show) return null;
 
   return (
-    <CheckCircle className="w-4 h-4 text-green-500 absolute left-3 top-1/2 -translate-y-1/2" />
+    <CheckCircle className="w-4 h-4 text-green-500 absolute start-3 top-1/2 -translate-y-1/2" />
   );
 }
 

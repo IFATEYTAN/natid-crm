@@ -38,13 +38,21 @@ export default function VendorMapWidget() {
           <div className="flex gap-2">
             <Badge className="bg-green-100 text-green-800 text-xs">{availableCount} זמינים</Badge>
             <Badge className="bg-orange-100 text-orange-800 text-xs">{busyCount} עסוקים</Badge>
-            <Badge className="bg-blue-100 text-blue-800 text-xs">{vendorsWithLocation.length} עם מיקום</Badge>
+            <Badge className="bg-blue-100 text-blue-800 text-xs">
+              {vendorsWithLocation.length} עם מיקום
+            </Badge>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <div className="h-[300px]">
-          <Suspense fallback={<div className="h-full w-full bg-gray-50 flex items-center justify-center text-gray-400">טוען מפה...</div>}>
+          <Suspense
+            fallback={
+              <div className="h-full w-full bg-gray-50 flex items-center justify-center text-gray-400">
+                טוען מפה...
+              </div>
+            }
+          >
             <VendorTrackingLeafletMap vendors={vendorsWithLocation} />
           </Suspense>
         </div>

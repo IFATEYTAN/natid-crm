@@ -153,7 +153,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">סה"כ הכנסות</div>
             <div className="text-2xl font-bold text-[#22C55E] mt-1">
               ₪{totalRevenue.toLocaleString()}
@@ -161,7 +161,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">שולם</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">
               ₪{totalPaid.toLocaleString()}
@@ -169,7 +169,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">ממתין לתשלום</div>
             <div className="text-2xl font-bold text-[#F59E0B] mt-1">
               ₪{totalPending.toLocaleString()}
@@ -177,7 +177,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">ממוצע לספק</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">
               ₪
@@ -192,7 +192,7 @@ export default function RevenueReport({ payments, vendors, calls }) {
       {/* Monthly Trend */}
       <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
         <CardHeader>
-          <CardTitle className="text-[20px] font-medium text-[#212121] text-right">
+          <CardTitle className="text-[20px] font-medium text-[#212121] text-end">
             מגמת הכנסות חודשית
           </CardTitle>
         </CardHeader>
@@ -241,12 +241,12 @@ export default function RevenueReport({ payments, vendors, calls }) {
       {/* Tables */}
       <div className="space-y-6" dir="rtl">
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">הכנסות לפי ספק</h3>
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-end">הכנסות לפי ספק</h3>
           <DataTable columns={vendorColumns} data={vendorStats} emptyMessage="אין נתוני הכנסות" />
         </div>
 
         <div>
-          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-right">
+          <h3 className="text-[20px] font-medium text-[#212121] mb-4 text-end">
             הכנסות לפי סוג שירות
           </h3>
           <DataTable columns={issueColumns} data={issueStats} emptyMessage="אין נתונים" />

@@ -1,7 +1,8 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { createPageUrl, cn, formatDate, formatDateTime } from '@/components/utils';
+import { createPageUrl, formatDate, formatDateTime } from '@/components/utils';
+import { cn } from '@/lib/utils';
 import { useWorkQueue } from '@/features/queue/hooks/useQueue';
 import { useCalls } from '@/features/calls/hooks/useCalls';
 import { useCurrentUserRole } from '@/components/auth/RoleGuard';
@@ -407,7 +408,7 @@ export default function QueueMonitor() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setPriorityDialog({ open: true, item })}>
-                <Gauge className="w-4 h-4 ml-2" />
+                <Gauge className="w-4 h-4 ms-2" />
                 שנה עדיפות
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -419,14 +420,14 @@ export default function QueueMonitor() {
                   })
                 }
               >
-                <UserPlus className="w-4 h-4 ml-2" />
+                <UserPlus className="w-4 h-4 ms-2" />
                 {item.assigned_to_agent ? 'העבר לנציג אחר' : 'שבץ לנציג'}
               </DropdownMenuItem>
               {isAdmin && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => openEditDialog(item)}>
-                    <Edit className="w-4 h-4 ml-2" />
+                    <Edit className="w-4 h-4 ms-2" />
                     עריכת קריאה (מנהל)
                   </DropdownMenuItem>
                 </>
@@ -436,7 +437,7 @@ export default function QueueMonitor() {
                 className="text-red-600"
                 onClick={() => handleRemoveFromQueue(item)}
               >
-                <Trash2 className="w-4 h-4 ml-2" />
+                <Trash2 className="w-4 h-4 ms-2" />
                 הסר מהתור
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -528,12 +529,12 @@ export default function QueueMonitor() {
             <CardContent>
               <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="relative flex-1">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="חיפוש לפי שם לקוח או מספר קריאה..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pr-10"
+                    className="ps-10"
                     aria-label="חיפוש בתור"
                   />
                 </div>

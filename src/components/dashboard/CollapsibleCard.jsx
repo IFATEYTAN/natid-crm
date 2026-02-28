@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-export default function CollapsibleCard({ 
-  title, 
-  description, 
-  headerRight, 
-  children, 
+export default function CollapsibleCard({
+  title,
+  description,
+  headerRight,
+  children,
   defaultOpen = true,
   className = '',
-  headerClassName = ''
+  headerClassName = '',
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -29,13 +29,12 @@ export default function CollapsibleCard({
                 <ChevronDown className="w-5 h-5 text-gray-400" />
               )}
             </button>
-            <div 
-              className="cursor-pointer select-none" 
-              onClick={() => setIsOpen(!isOpen)}
-            >
+            <div className="cursor-pointer select-none" onClick={() => setIsOpen(!isOpen)}>
               {typeof title === 'string' ? (
                 <CardTitle className="text-lg font-bold text-gray-800">{title}</CardTitle>
-              ) : title}
+              ) : (
+                title
+              )}
               {description && <CardDescription>{description}</CardDescription>}
             </div>
           </div>

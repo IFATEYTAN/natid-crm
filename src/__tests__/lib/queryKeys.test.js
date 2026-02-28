@@ -10,7 +10,7 @@ describe('queryKeys', () => {
     expect(queryKeys).toHaveProperty('users');
     expect(queryKeys).toHaveProperty('queue');
     expect(queryKeys).toHaveProperty('notifications');
-    expect(queryKeys).toHaveProperty('messages');
+    expect(queryKeys).toHaveProperty('callMessages');
     expect(queryKeys).toHaveProperty('activities');
     expect(queryKeys).toHaveProperty('callPhotos');
     expect(queryKeys).toHaveProperty('assignmentAttempts');
@@ -39,7 +39,7 @@ describe('queryKeys', () => {
     it('should return unique keys', () => {
       expect(queryKeys.vendors.all()).toEqual(['vendors']);
       expect(queryKeys.vendors.detail('v1')).toEqual(['vendors', 'v1']);
-      expect(queryKeys.vendors.available()).toEqual(['vendors', 'available']);
+      expect(queryKeys.vendors.available()).toEqual(['availableVendors']);
     });
 
     it('should have vendor sub-resource keys', () => {
@@ -54,7 +54,7 @@ describe('queryKeys', () => {
     it('should return unique keys', () => {
       expect(queryKeys.customers.all()).toEqual(['customers']);
       expect(queryKeys.customers.detail('c1')).toEqual(['customers', 'c1']);
-      expect(queryKeys.customers.interactions('c1')).toEqual(['customers', 'c1', 'interactions']);
+      expect(queryKeys.customers.interactions('c1')).toEqual(['customer-interactions', 'c1']);
     });
   });
 

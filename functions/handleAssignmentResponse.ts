@@ -217,6 +217,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Handle assignment error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to handle assignment response' }, { status: 500 });
   }
 });

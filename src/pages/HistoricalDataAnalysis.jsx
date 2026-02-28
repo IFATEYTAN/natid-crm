@@ -506,7 +506,7 @@ export default function HistoricalDataAnalysisPage() {
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   placeholder="חיפוש לפי תיאור, רכב או אבחון..."
                   value={searchQuery}
@@ -643,14 +643,14 @@ export default function HistoricalDataAnalysisPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-gray-50">
-                  <th className="p-3 text-right font-medium">סוג שירות</th>
-                  <th className="p-3 text-right font-medium">רכב</th>
-                  <th className="p-3 text-right font-medium">שנה</th>
-                  <th className="p-3 text-right font-medium">תיאור</th>
-                  <th className="p-3 text-right font-medium">המלצת בוט</th>
+                  <th className="p-3 text-end font-medium">סוג שירות</th>
+                  <th className="p-3 text-end font-medium">רכב</th>
+                  <th className="p-3 text-end font-medium">שנה</th>
+                  <th className="p-3 text-end font-medium">תיאור</th>
+                  <th className="p-3 text-end font-medium">המלצת בוט</th>
                   <th className="p-3 text-center font-medium">התאמה</th>
                   <th className="p-3 text-center font-medium">תיקון תפעול</th>
-                  <th className="p-3 text-right font-medium">אבחון</th>
+                  <th className="p-3 text-end font-medium">אבחון</th>
                 </tr>
               </thead>
               <tbody>

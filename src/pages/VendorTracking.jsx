@@ -245,7 +245,7 @@ export default function VendorTrackingPage() {
             <CardTitle className="text-base">רשימת ספקים</CardTitle>
             <div className="space-y-2 mt-2">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
                 <Input
                   placeholder="חיפוש..."
                   value={searchQuery}

@@ -59,7 +59,6 @@ export default function VendorCallManagementPage() {
     if (id) setSelectedCallId(id);
   }, [searchParams]);
 
-
   const vendorQuery = useQuery({
     queryKey: queryKeys.vendors.profile(currentUser?.email),
     queryFn: async () => {
@@ -98,8 +97,13 @@ export default function VendorCallManagementPage() {
   const updateCallMutation = useMutation({
     mutationFn: (data) => base44.entities.Call.update(selectedCallId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
+      });
       showToast.success('הקריאה עודכנה בהצלחה');
+    },
+    onError: () => {
+      showToast.error('שגיאה בעדכון הקריאה');
     },
   });
 
@@ -110,10 +114,21 @@ export default function VendorCallManagementPage() {
       showToast.success('התמונה נוספה בהצלחה');
       setShowPhotoDialog(false);
     },
+    onError: () => {
+      showToast.error('שגיאה בהעלאת תמונה');
+    },
   });
 
   const addHistoryMutation = useMutation({
     mutationFn: (data) => base44.entities.CallHistory.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
+      });
+    },
+    onError: () => {
+      showToast.error('שגיאה בשמירת היסטוריית הקריאה');
+    },
   });
 
   const call = callQuery.data;
@@ -258,7 +273,7 @@ export default function VendorCallManagementPage() {
     <div className="space-y-4 pb-24">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div>
@@ -325,7 +340,7 @@ export default function VendorCallManagementPage() {
                         alt={photo.file_name}
                         className="w-full h-32 object-cover rounded-lg"
                       />
-                      <Badge className="absolute bottom-2 right-2 text-xs">
+                      <Badge className="absolute bottom-2 end-2 text-xs">
                         {photoCategories.find((c) => c.key === photo.category)?.label ||
                           photo.category}
                       </Badge>

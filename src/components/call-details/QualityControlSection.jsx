@@ -74,7 +74,9 @@ export default function QualityControlSection({ call, callId, currentUser }) {
             <div>
               <span className="font-medium text-green-700">אושר בבקרה</span>
               {call.quality_controller_name && (
-                <span className="text-sm text-gray-500 mr-2">ע"י {call.quality_controller_name}</span>
+                <span className="text-sm text-gray-500 me-2">
+                  ע"י {call.quality_controller_name}
+                </span>
               )}
             </div>
           </div>
@@ -91,7 +93,7 @@ export default function QualityControlSection({ call, callId, currentUser }) {
             <XCircle className="w-5 h-5 text-red-600" />
             <div>
               <span className="font-medium text-red-700">הוחזר למוקדן</span>
-              <Badge className="bg-red-100 text-red-700 mr-2 text-xs">דורש תיקון</Badge>
+              <Badge className="bg-red-100 text-red-700 me-2 text-xs">דורש תיקון</Badge>
             </div>
           </div>
         </CardContent>
@@ -124,20 +126,35 @@ export default function QualityControlSection({ call, callId, currentUser }) {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="destructive" onClick={handleReject} disabled={processing} className="gap-2">
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                disabled={processing}
+                className="gap-2"
+              >
                 <ShieldX className="w-4 h-4" />
                 {processing ? 'שולח...' : 'החזר למוקדן'}
               </Button>
-              <Button variant="outline" onClick={() => setShowRejectForm(false)}>ביטול</Button>
+              <Button variant="outline" onClick={() => setShowRejectForm(false)}>
+                ביטול
+              </Button>
             </div>
           </div>
         ) : (
           <div className="flex gap-3">
-            <Button onClick={handleApprove} disabled={processing} className="gap-2 bg-green-600 hover:bg-green-700">
+            <Button
+              onClick={handleApprove}
+              disabled={processing}
+              className="gap-2 bg-green-600 hover:bg-green-700"
+            >
               <CheckCircle2 className="w-4 h-4" />
               {processing ? 'מאשר...' : 'אישור - עומד בכת"ש'}
             </Button>
-            <Button variant="outline" onClick={() => setShowRejectForm(true)} className="gap-2 text-red-600 border-red-300 hover:bg-red-50">
+            <Button
+              variant="outline"
+              onClick={() => setShowRejectForm(true)}
+              className="gap-2 text-red-600 border-red-300 hover:bg-red-50"
+            >
               <ShieldX className="w-4 h-4" />
               לא עומד בכת"ש
             </Button>

@@ -167,19 +167,19 @@ export default function NotificationSettingsPage() {
                         <div className="flex items-center gap-2 mt-1">
                           {setting.channels?.inApp && (
                             <Badge variant="outline" className="text-xs">
-                              <Bell className="w-3 h-3 ml-1" />
+                              <Bell className="w-3 h-3 ms-1" />
                               באפליקציה
                             </Badge>
                           )}
                           {setting.channels?.email && (
                             <Badge variant="outline" className="text-xs">
-                              <Mail className="w-3 h-3 ml-1" />
+                              <Mail className="w-3 h-3 ms-1" />
                               אימייל
                             </Badge>
                           )}
                           {setting.channels?.sms && (
                             <Badge variant="outline" className="text-xs">
-                              <Smartphone className="w-3 h-3 ml-1" />
+                              <Smartphone className="w-3 h-3 ms-1" />
                               SMS
                             </Badge>
                           )}
@@ -195,6 +195,7 @@ export default function NotificationSettingsPage() {
                           size="icon"
                           className="text-[#6b7280] hover:text-[#ef4444]"
                           onClick={() => deleteMutation.mutate(setting.id)}
+                          aria-label="מחיקה"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

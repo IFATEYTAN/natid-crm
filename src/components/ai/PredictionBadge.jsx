@@ -39,7 +39,7 @@ export default function PredictionBadge({ call }) {
             <span>צפי: {Math.round(data.estimated_response_minutes)} דק'</span>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs text-xs p-3 text-right" dir="rtl">
+        <TooltipContent side="top" className="max-w-xs text-xs p-3 text-end" dir="rtl">
           <p className="font-semibold mb-1">תחזית AI:</p>
           <ul className="list-disc list-inside space-y-1 text-gray-300">
             <li>זמן הגעה משוער: {data.estimated_response_minutes} דקות</li>

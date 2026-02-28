@@ -58,7 +58,7 @@ function HeroIllustration() {
           r="160"
           fill="#FEE2E2"
           animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         />
       </motion.g>
       <motion.g
@@ -72,7 +72,7 @@ function HeroIllustration() {
           r="120"
           fill="#FECACA"
           animate={{ scale: [1, 1.03, 1] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
         />
       </motion.g>
       <motion.path
@@ -102,7 +102,7 @@ function HeroIllustration() {
       >
         <motion.g
           animate={{ y: [0, -3, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         >
           <rect x="140" y="240" width="80" height="40" rx="4" fill="#DC2626" />
           <rect x="220" y="250" width="40" height="30" rx="3" fill="#B91C1C" />
@@ -271,9 +271,9 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png" 
-              alt="NatID 360 Control" 
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
+              alt="NatID 360 Control"
               className="h-10 w-auto object-contain"
             />
             <span className="text-xl font-bold text-gray-900">NatID 360 Control</span>
@@ -376,13 +376,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-
-
       <footer className="py-8 border-t border-gray-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/94c28994a_image.png" 
-            alt="Nati Road Services" 
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/94c28994a_image.png"
+            alt="Nati Road Services"
             className="h-10 md:h-12 w-auto object-contain"
           />
           <p className="text-gray-500 text-sm font-medium">מערכת ניהול קריאות שירות מתקדמת</p>

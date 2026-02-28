@@ -279,6 +279,39 @@ export const queryKeys = {
     customers: (dateRange, status) => ['customers-export-preview', dateRange, status],
     calls: (dateRange, status) => ['calls-export-preview', dateRange, status],
   },
+
+  // Admin Calls (VendorPortalAdminTab)
+  adminCalls: {
+    all: () => ['adminCalls'],
+  },
+
+  // AI Features
+  ai: {
+    vendorRecommendation: (callId) => ['vendor-recommendation', callId],
+    vendorAnalysis: (vendorId) => ['vendor-analysis', vendorId],
+  },
+
+  // Vendor Live Map
+  vendorLiveMap: {
+    location: (vendorId) => ['vendor-location', vendorId],
+    locationHistory: (callId) => ['vendor-location-history', callId],
+  },
+
+  // Report Data Sources
+  reportData: {
+    deposits: () => ['deposits-report'],
+    callProducts: () => ['callProducts-report'],
+    vendorPayments: () => ['vendorPayments-report'],
+    customersReport: () => ['customers-report'],
+    callsFleet: () => ['calls-fleet'],
+    callsAnnual: () => ['calls-annual'],
+  },
+
+  // Reminders
+  reminders: {
+    all: () => ['reminders-all'],
+    byCall: (callId) => ['reminders', callId],
+  },
 };
 
 export default queryKeys;

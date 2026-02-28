@@ -48,7 +48,11 @@ export default function EditCustomer() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState(null);
 
-  const { data: customer, isLoading, isError } = useQuery({
+  const {
+    data: customer,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.customers.detail(id),
     enabled: !!id,
     queryFn: async () => {
@@ -136,37 +140,62 @@ export default function EditCustomer() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>שם לקוח / חברה *</Label>
-              <Input value={form.name || ''} onChange={(e) => handleChange('name', e.target.value)} required />
+              <Input
+                value={form.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
+                required
+              />
             </div>
             <div>
               <Label>סוג לקוח</Label>
-              <Select value={form.customer_type || ''} onValueChange={(v) => handleChange('customer_type', v)}>
-                <SelectTrigger><SelectValue placeholder="בחר סוג" /></SelectTrigger>
+              <Select
+                value={form.customer_type || ''}
+                onValueChange={(v) => handleChange('customer_type', v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר סוג" />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.entries(customerTypeLabels).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>סטטוס</Label>
-              <Select value={form.status || 'active'} onValueChange={(v) => handleChange('status', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.status || 'active'}
+                onValueChange={(v) => handleChange('status', v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.entries(statusLabels).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>סוג חוזה</Label>
-              <Select value={form.contract_type || 'none'} onValueChange={(v) => handleChange('contract_type', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.contract_type || 'none'}
+                onValueChange={(v) => handleChange('contract_type', v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.entries(contractTypeLabels).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -181,23 +210,42 @@ export default function EditCustomer() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>איש קשר</Label>
-              <Input value={form.contact_person || ''} onChange={(e) => handleChange('contact_person', e.target.value)} />
+              <Input
+                value={form.contact_person || ''}
+                onChange={(e) => handleChange('contact_person', e.target.value)}
+              />
             </div>
             <div>
               <Label>טלפון *</Label>
-              <Input value={form.phone || ''} onChange={(e) => handleChange('phone', e.target.value)} required dir="ltr" />
+              <Input
+                value={form.phone || ''}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                required
+                dir="ltr"
+              />
             </div>
             <div>
               <Label>אימייל</Label>
-              <Input type="email" value={form.email || ''} onChange={(e) => handleChange('email', e.target.value)} dir="ltr" />
+              <Input
+                type="email"
+                value={form.email || ''}
+                onChange={(e) => handleChange('email', e.target.value)}
+                dir="ltr"
+              />
             </div>
             <div>
               <Label>כתובת</Label>
-              <Input value={form.address || ''} onChange={(e) => handleChange('address', e.target.value)} />
+              <Input
+                value={form.address || ''}
+                onChange={(e) => handleChange('address', e.target.value)}
+              />
             </div>
             <div>
               <Label>עיר</Label>
-              <Input value={form.city || ''} onChange={(e) => handleChange('city', e.target.value)} />
+              <Input
+                value={form.city || ''}
+                onChange={(e) => handleChange('city', e.target.value)}
+              />
             </div>
           </CardContent>
         </Card>
@@ -209,15 +257,39 @@ export default function EditCustomer() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>SLA תגובה (דקות)</Label>
-              <Input type="number" value={form.sla_response_minutes || ''} onChange={(e) => handleChange('sla_response_minutes', e.target.value ? Number(e.target.value) : null)} />
+              <Input
+                type="number"
+                value={form.sla_response_minutes || ''}
+                onChange={(e) =>
+                  handleChange(
+                    'sla_response_minutes',
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+              />
             </div>
             <div>
               <Label>SLA הגעה (דקות)</Label>
-              <Input type="number" value={form.sla_arrival_minutes || ''} onChange={(e) => handleChange('sla_arrival_minutes', e.target.value ? Number(e.target.value) : null)} />
+              <Input
+                type="number"
+                value={form.sla_arrival_minutes || ''}
+                onChange={(e) =>
+                  handleChange(
+                    'sla_arrival_minutes',
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+              />
             </div>
             <div>
               <Label>תקציב חודשי</Label>
-              <Input type="number" value={form.monthly_budget || ''} onChange={(e) => handleChange('monthly_budget', e.target.value ? Number(e.target.value) : null)} />
+              <Input
+                type="number"
+                value={form.monthly_budget || ''}
+                onChange={(e) =>
+                  handleChange('monthly_budget', e.target.value ? Number(e.target.value) : null)
+                }
+              />
             </div>
           </CardContent>
         </Card>
@@ -237,7 +309,9 @@ export default function EditCustomer() {
         </Card>
 
         <div className="flex gap-3 justify-end">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>ביטול</Button>
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+            ביטול
+          </Button>
           <Button type="submit" className="gap-2" isLoading={updateMutation.isPending}>
             <Save className="w-4 h-4" />
             שמור שינויים

@@ -176,7 +176,7 @@ export const AllSizes = {
       <Button size="sm">קטן</Button>
       <Button size="default">רגיל</Button>
       <Button size="lg">גדול</Button>
-      <Button size="icon">
+      <Button size="icon" aria-label="הוסף">
         <Plus className="w-4 h-4" />
       </Button>
     </div>

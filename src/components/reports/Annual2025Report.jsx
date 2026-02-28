@@ -1,18 +1,50 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
-import { TrendingUp, Truck, MapPin, Wrench, Settings } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
+} from 'recharts';
+import { TrendingUp, Truck, MapPin, Settings } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#6366f1', '#8b5cf6', '#ec4899'];
 
-const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+const monthNames = [
+  'ינואר',
+  'פברואר',
+  'מרץ',
+  'אפריל',
+  'מאי',
+  'יוני',
+  'יולי',
+  'אוגוסט',
+  'ספטמבר',
+  'אוקטובר',
+  'נובמבר',
+  'דצמבר',
+];
 
 export default function Annual2025Report() {
-  const { data: calls = [], isLoading, error } = useQuery({
-    queryKey: ['calls-annual'],
+  const {
+    data: calls = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.reportData.callsAnnual(),
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
   });
 
@@ -22,12 +54,12 @@ export default function Annual2025Report() {
       monthlyMap[i] = { name, calls: 0, cost: 0 };
     });
 
-    calls.forEach(call => {
+    calls.forEach((call) => {
       const date = new Date(call.created_date);
       const month = date.getMonth();
       if (monthlyMap[month]) {
         monthlyMap[month].calls += 1;
-        monthlyMap[month].cost += (call.total_cost || 0);
+        monthlyMap[month].cost += call.total_cost || 0;
       }
     });
 
@@ -36,34 +68,40 @@ export default function Annual2025Report() {
 
   const regionData = useMemo(() => {
     const regions = {};
-    calls.forEach(call => {
+    calls.forEach((call) => {
       const region = call.pickup_location_area || 'לא מוגדר';
       regions[region] = (regions[region] || 0) + 1;
     });
-    return Object.entries(regions).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    return Object.entries(regions)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
   }, [calls]);
 
   const issueData = useMemo(() => {
     const issues = {};
-    calls.forEach(call => {
+    calls.forEach((call) => {
       const issue = call.issue_type || 'אחר';
       issues[issue] = (issues[issue] || 0) + 1;
     });
-    return Object.entries(issues).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    return Object.entries(issues)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
   }, [calls]);
 
   const serviceTypeData = useMemo(() => {
     const services = {};
-    calls.forEach(call => {
+    calls.forEach((call) => {
       const service = call.service_category || 'אחר';
       services[service] = (services[service] || 0) + 1;
     });
-    return Object.entries(services).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    return Object.entries(services)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
   }, [calls]);
 
   const fleetVsExternalData = useMemo(() => {
-    const fleetCalls = calls.filter(c => c.provider_type === 'fleet');
-    const externalCalls = calls.filter(c => c.provider_type === 'external');
+    const fleetCalls = calls.filter((c) => c.provider_type === 'fleet');
+    const externalCalls = calls.filter((c) => c.provider_type === 'external');
     const fleetCost = fleetCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
     const externalCost = externalCalls.reduce((sum, c) => sum + (c.total_cost || 0), 0);
 
@@ -111,7 +149,9 @@ export default function Annual2025Report() {
         <Card className="bg-gradient-to-br from-red-50 to-white">
           <CardContent className="p-4">
             <div className="text-sm text-red-600 mb-1 font-medium">עלות כוללת</div>
-            <div className="text-2xl font-bold text-gray-900">₪{(totalCost / 1000000).toFixed(1)}M</div>
+            <div className="text-2xl font-bold text-gray-900">
+              ₪{(totalCost / 1000000).toFixed(1)}M
+            </div>
             <div className="text-xs text-gray-500 mt-1">סה"כ הוצאות</div>
           </CardContent>
         </Card>
@@ -126,7 +166,9 @@ export default function Annual2025Report() {
           <CardContent className="p-4">
             <div className="text-sm text-purple-600 mb-1 font-medium">ממוצע ק"מ</div>
             <div className="text-2xl font-bold text-gray-900">
-              {(calls.reduce((sum, c) => sum + (c.actual_distance_km || 0), 0) / (calls.length || 1)).toFixed(1)}
+              {(
+                calls.reduce((sum, c) => sum + (c.actual_distance_km || 0), 0) / (calls.length || 1)
+              ).toFixed(1)}
             </div>
             <div className="text-xs text-gray-500 mt-1">קילומטרים</div>
           </CardContent>
@@ -145,12 +187,23 @@ export default function Annual2025Report() {
           <CardContent>
             <div className="h-80 w-full" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyTrendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <LineChart
+                  data={monthlyTrendData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="calls" name="קריאות" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="calls"
+                    name="קריאות"
+                    stroke="#3b82f6"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -171,7 +224,11 @@ export default function Annual2025Report() {
           <CardContent>
             <div className="h-80 w-full" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={regionData} layout="vertical" margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
+                <BarChart
+                  data={regionData}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" />
                   <YAxis dataKey="name" type="category" width={80} />
@@ -240,16 +297,24 @@ export default function Annual2025Report() {
                 <div className="text-sm text-gray-500">ספקים חיצוניים (41,671 קריאות)</div>
               </div>
             </div>
-            
+
             <div className="h-56 w-full" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={fleetVsExternalData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart
+                  data={fleetVsExternalData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="avgCost" name="עלות ממוצעת לקריאה (₪)" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="avgCost"
+                    name="עלות ממוצעת לקריאה (₪)"
+                    fill="#8b5cf6"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

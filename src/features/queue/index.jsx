@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import StatCard from '@/components/ui/StatCard';
@@ -24,6 +25,7 @@ export default function MyQueue() {
     queryKey: queryKeys.queue.my(user?.email),
     queryFn: () => base44.entities.WorkQueue.list('-priority_score'),
     refetchInterval: 15000, // Refresh every 15 seconds
+    staleTime: 1000 * 10, // 10 seconds
   });
 
   const { data: calls = [] } = useQuery({
@@ -75,11 +77,14 @@ export default function MyQueue() {
       });
     },
     onSuccess: (_, queueId) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my(user?.email) });
       const queue = queueItems.find((q) => q.id === queueId);
       if (queue?.call_id) {
         navigate(createPageUrl(`CaseDetails?id=${queue.call_id}`));
       }
+    },
+    onError: () => {
+      toast.error('שגיאה בהתחלת עבודה על הקריאה');
     },
   });
 
@@ -91,7 +96,10 @@ export default function MyQueue() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my(user?.email) });
+    },
+    onError: () => {
+      toast.error('שגיאה בדחיית הקריאה');
     },
   });
 
@@ -114,7 +122,10 @@ export default function MyQueue() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.queue.my(user?.email) });
+    },
+    onError: () => {
+      toast.error('שגיאה בסגירת הקריאה');
     },
   });
 

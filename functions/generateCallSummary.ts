@@ -157,6 +157,6 @@ ${callData.historyNotes ? `\nהיסטוריית פעולות:\n${callData.histor
 
   } catch (error) {
     console.error('Generate summary error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to generate call summary' }, { status: 500 });
   }
 });

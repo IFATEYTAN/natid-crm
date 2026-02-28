@@ -213,7 +213,7 @@ export default function VendorProfile() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to={createPageUrl('ServiceProviders')}>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" aria-label="חזרה">
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
@@ -382,15 +382,15 @@ export default function VendorProfile() {
       <Tabs defaultValue="calls" className="space-y-4">
         <TabsList>
           <TabsTrigger value="calls">
-            <Activity className="w-4 h-4 ml-2" />
+            <Activity className="w-4 h-4 ms-2" />
             קריאות ({calls.length})
           </TabsTrigger>
           <TabsTrigger value="ratings">
-            <Star className="w-4 h-4 ml-2" />
+            <Star className="w-4 h-4 ms-2" />
             דירוגים ({ratings.length})
           </TabsTrigger>
           <TabsTrigger value="payments">
-            <DollarSign className="w-4 h-4 ml-2" />
+            <DollarSign className="w-4 h-4 ms-2" />
             תשלומים ({payments.length})
           </TabsTrigger>
         </TabsList>

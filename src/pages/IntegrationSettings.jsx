@@ -147,7 +147,7 @@ export default function IntegrationSettingsPage() {
                       >
                         שמור
                       </Button>
-                      <Button variant="outline" size="icon">
+                      <Button variant="outline" size="icon" aria-label="רענן">
                         <RefreshCw className="w-4 h-4" />
                       </Button>
                     </div>

@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     console.error('Submit rating error:', error);
     return Response.json({
       success: false,
-      error: error.message
+      error: 'Failed to submit vendor rating'
     }, { status: 500 });
   }
 });

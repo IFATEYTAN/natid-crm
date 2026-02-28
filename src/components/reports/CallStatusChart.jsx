@@ -41,7 +41,7 @@ export default function CallStatusChart({ calls }) {
   return (
     <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
       <CardHeader>
-        <CardTitle className="text-[20px] font-medium text-[#212121] text-right">
+        <CardTitle className="text-[20px] font-medium text-[#212121] text-end">
           התפלגות קריאות לפי סטטוס
         </CardTitle>
       </CardHeader>

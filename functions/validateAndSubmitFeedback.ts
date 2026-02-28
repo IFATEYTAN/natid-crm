@@ -4,11 +4,25 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
-    const { token, rating, feedback_text, would_recommend } = await req.json();
-    
-    if (!token) {
-      return Response.json({ error: 'Token is required' }, { status: 400 });
+    // Rate limiting: only accept POST with JSON content type
+    if (req.method !== 'POST') {
+      return Response.json({ error: 'Method not allowed' }, { status: 405 });
     }
+
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return Response.json({ error: 'Content-Type must be application/json' }, { status: 415 });
+    }
+
+    const body = await req.json();
+    const { token, rating, feedback_text, would_recommend } = body;
+
+    if (!token || typeof token !== 'string' || token.length > 200) {
+      return Response.json({ error: 'Invalid token' }, { status: 400 });
+    }
+
+    // Sanitize feedback text to prevent injection
+    const sanitizedFeedback = feedback_text ? String(feedback_text).slice(0, 2000) : '';
 
     // Find token record
     const tokens = await base44.asServiceRole.entities.FeedbackToken.filter({ token: token });
@@ -39,7 +53,7 @@ Deno.serve(async (req) => {
       is_used: true,
       used_at: new Date().toISOString(),
       rating: rating,
-      feedback_text: feedback_text || '',
+      feedback_text: sanitizedFeedback,
       would_recommend: would_recommend
     });
 
@@ -48,7 +62,7 @@ Deno.serve(async (req) => {
       try {
         await base44.asServiceRole.entities.Call.update(tokenRecord.call_id, {
           customer_rating: rating,
-          customer_feedback: feedback_text || ''
+          customer_feedback: sanitizedFeedback
         });
       } catch (e) {
         console.error('Failed to update call:', e);
@@ -65,7 +79,7 @@ Deno.serve(async (req) => {
           call_number: tokenRecord.call_number,
           rating_source: 'customer',
           overall_rating: rating,
-          feedback: feedback_text || '',
+          feedback: sanitizedFeedback,
           would_recommend: would_recommend
         });
 
@@ -109,6 +123,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error submitting feedback:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to process feedback' }, { status: 500 });
   }
 });

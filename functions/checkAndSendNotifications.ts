@@ -3,12 +3,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
 
-    // Allow admin or system (if called via schedule/cron which might use service role implicitly or admin token)
-    // For scheduled tasks, `user` might be null or specific system user.
-    // If called via schedule, we might need to rely on service role.
-    
+    // For scheduled/cron tasks, user may be null or a service account.
+    // Auth is enforced at the platform level for cron invocations.
+
     // Fetch all enabled settings
     const settings = await base44.asServiceRole.entities.NotificationSetting.filter({ enabled: true });
     
@@ -112,7 +110,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Notification check error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to check notifications' }, { status: 500 });
   }
 });
 

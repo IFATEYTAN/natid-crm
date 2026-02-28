@@ -108,22 +108,56 @@ Read: `docs/CLAUDE_WORKFLOW.md` → section "יוזר קיים - מה השתנה
 - `docs/CLAUDE_WORKFLOW.md` - Claude Code workflow guide (includes onboarding for new & existing users)
 
 ## Skills (Reusable Workflows)
-Located in `.claude/skills/`:
-- `plan-and-review.md` - Plan before coding + senior review
-- `ci-build-check.md` - Run lint, format, typecheck, build
-- `update-docs.md` - Systematic documentation updates
-- `code-review.md` - Security, performance, RTL review
-- `analytics.md` - Codebase analysis and metrics
-- `learning-mode.md` - Explanations, presentations, spaced repetition
-- `subagents.md` - Break complex tasks into parallel agents
-- `prompt-patterns.md` - Effective prompt templates
+Located in `.claude/skills/`. Use by name in prompts (e.g., "הרץ ci-build-check").
+
+### Core Skills (auto-triggered)
+| Skill | File | Auto-trigger |
+|-------|------|--------------|
+| Plan & Review | `plan-and-review.md` | **Before any new feature/bug/refactor** - always plan first |
+| CI/Build Check | `ci-build-check.md` | **Before every commit** - run `npm run lint && npm run build` |
+| Update Docs | `update-docs.md` | **After significant changes** - update LESSONS_LEARNED.md |
+| Code Review | `code-review.md` | **Before merge/PR** - security, performance, RTL review |
+
+### Analysis Skills (run on demand or via "הרץ full-system-test")
+| Skill | File | When to use |
+|-------|------|-------------|
+| Security Audit | `security-audit.md` | Before release, after adding auth/API changes |
+| RTL & Accessibility | `rtl-accessibility.md` | After adding/changing UI components |
+| Vendor Portal Check | `vendor-portal-check.md` | After changing vendor features |
+| Hooks & Queries | `hooks-and-queries.md` | After adding/changing React Query hooks |
+| Analytics | `analytics.md` | For codebase statistics and health metrics |
+| Full System Test | `full-system-test.md` | Before release - runs ALL skills sequentially |
+
+### Utility Skills
+| Skill | File | When to use |
+|-------|------|-------------|
+| Subagents | `subagents.md` | For complex tasks - prefix with "use subagents" |
+| Learning Mode | `learning-mode.md` | To understand code, generate visual explanations |
+| Prompt Patterns | `prompt-patterns.md` | Reference for effective prompt templates |
+
+### Running Skills
+```bash
+# Run a single skill:
+"הרץ ci-build-check"
+
+# Run all skills in parallel (uses subagents):
+"use subagents - הרץ full-system-test"
+
+# Run specific analysis:
+"הרץ security-audit על functions/"
+```
+
+## Automation & Hooks
+- **SessionStart hook** (`scripts/session-start.sh`) - Runs automatically when Claude Code starts. Shows health check + available skills.
+- **Pre-commit hook** (`.husky/pre-commit`) - Runs lint-staged automatically on every commit.
+- **PreToolUse hook** - Reminds to run ci-build-check before git commit.
 
 ## Workflow Rules
-1. **Always start with a plan** - Use plan mode before implementing any feature
-2. **Update docs after changes** - After significant fixes or features, update LESSONS_LEARNED.md
-3. **Run lint before committing** - `npm run lint` must pass
-4. **Check build** - `npm run build` must succeed
-5. **Use skills** - Check `.claude/skills/` for reusable workflows
-6. **Use subagents** - For complex tasks, break into subagents to keep context clean
-7. **Voice dictation** - Use fn+fn (macOS) or Win+H (Windows) for faster, richer prompts
-8. **Challenge mode** - Ask Claude to challenge and verify changes before merging
+1. **Always start with a plan** - Use plan mode before implementing any feature. Read `.claude/skills/plan-and-review.md`.
+2. **Update docs after changes** - After significant fixes or features, update LESSONS_LEARNED.md per `.claude/skills/update-docs.md`.
+3. **Run CI before committing** - `npm run lint && npm run build` must pass. Use `.claude/skills/ci-build-check.md`.
+4. **Code review before merge** - Run `.claude/skills/code-review.md` on all changes before creating a PR.
+5. **Use skills by name** - Say "הרץ [skill-name]" to activate any skill from `.claude/skills/`.
+6. **Use subagents** - For complex tasks, prefix with "use subagents" to break into parallel agents.
+7. **Full system test before release** - Run `.claude/skills/full-system-test.md` before any version release.
+8. **Challenge mode** - Ask Claude to challenge and verify changes before merging.

@@ -401,7 +401,7 @@ export default function ShiftScheduleTab() {
           <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b">
-                <th className="p-3 text-right text-sm font-semibold text-gray-600 w-32 bg-gray-50 sticky right-0">
+                <th className="p-3 text-end text-sm font-semibold text-gray-600 w-32 bg-gray-50 sticky end-0">
                   נציג
                 </th>
                 {weekDays.map((day, i) => {
@@ -432,7 +432,7 @@ export default function ShiftScheduleTab() {
               )}
               {agentNames.map((agentName) => (
                 <tr key={agentName} className="border-b hover:bg-gray-50/50">
-                  <td className="p-3 text-sm font-medium text-gray-800 bg-white sticky right-0 border-l">
+                  <td className="p-3 text-sm font-medium text-gray-800 bg-white sticky end-0 border-s">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold">
                         {agentName.charAt(0)}
@@ -627,7 +627,7 @@ export default function ShiftScheduleTab() {
                     closeDialog();
                   }}
                 >
-                  <Trash2 className="w-4 h-4 ml-1" /> מחק
+                  <Trash2 className="w-4 h-4 ms-1" /> מחק
                 </Button>
               )}
             </div>

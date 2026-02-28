@@ -9,10 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { ShieldCheck, Plus, CheckCircle2, XCircle, AlertTriangle, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -40,7 +48,12 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
   const [showDialog, setShowDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    check_type: 'general', question: '', answer: '', result: 'pending_review', reason: '', notes: '',
+    check_type: 'general',
+    question: '',
+    answer: '',
+    result: 'pending_review',
+    reason: '',
+    notes: '',
   });
 
   const { data: checks = [] } = useQuery({
@@ -70,7 +83,14 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
     });
     queryClient.invalidateQueries({ queryKey: queryKeys.eligibilityChecks.byCall(callId) });
     setShowDialog(false);
-    setForm({ check_type: 'general', question: '', answer: '', result: 'pending_review', reason: '', notes: '' });
+    setForm({
+      check_type: 'general',
+      question: '',
+      answer: '',
+      result: 'pending_review',
+      reason: '',
+      notes: '',
+    });
     setSaving(false);
     toast.success('בדיקת זכאות נשמרה');
   };
@@ -113,17 +133,28 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={rc.class}>
-                        <ResultIcon className="w-3 h-3 ml-1" />
+                        <ResultIcon className="w-3 h-3 ms-1" />
                         {rc.label}
                       </Badge>
-                      <Badge variant="outline" className="text-xs">{checkTypeLabels[check.check_type]}</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {checkTypeLabels[check.check_type]}
+                      </Badge>
                     </div>
                     {check.result === 'pending_review' && (
                       <div className="flex gap-1">
-                        <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700" onClick={() => handleUpdateResult(check.id, 'eligible')}>
+                        <Button
+                          size="sm"
+                          className="h-7 text-xs bg-green-600 hover:bg-green-700"
+                          onClick={() => handleUpdateResult(check.id, 'eligible')}
+                        >
                           אשר זכאות
                         </Button>
-                        <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => handleUpdateResult(check.id, 'not_eligible')}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-7 text-xs"
+                          onClick={() => handleUpdateResult(check.id, 'not_eligible')}
+                        >
                           דחה
                         </Button>
                       </div>
@@ -131,14 +162,20 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
                   </div>
                   <div>
                     <p className="font-medium text-sm">{check.question}</p>
-                    {check.answer && <p className="text-xs text-gray-600 mt-1">תשובה: {check.answer}</p>}
-                    {check.reason && <p className="text-xs text-gray-500 mt-1">נימוק: {check.reason}</p>}
+                    {check.answer && (
+                      <p className="text-xs text-gray-600 mt-1">תשובה: {check.answer}</p>
+                    )}
+                    {check.reason && (
+                      <p className="text-xs text-gray-500 mt-1">נימוק: {check.reason}</p>
+                    )}
                   </div>
                   <div className="flex gap-3 text-xs text-gray-400">
                     {check.checked_by && <span>בדק: {check.checked_by}</span>}
                     {check.approved_by && <span>אישר: {check.approved_by}</span>}
                     {check.insurance_company && <span>חב' ביטוח: {check.insurance_company}</span>}
-                    <span>{format(new Date(check.created_date), 'dd/MM/yy HH:mm', { locale: he })}</span>
+                    <span>
+                      {format(new Date(check.created_date), 'dd/MM/yy HH:mm', { locale: he })}
+                    </span>
                   </div>
                 </div>
               );
@@ -148,48 +185,81 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
 
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent>
-            <DialogHeader><DialogTitle>בדיקת זכאות חדשה</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>בדיקת זכאות חדשה</DialogTitle>
+            </DialogHeader>
             <div className="space-y-4">
               <div>
                 <Label>סוג בדיקה</Label>
-                <Select value={form.check_type} onValueChange={v => setForm({ ...form, check_type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={form.check_type}
+                  onValueChange={(v) => setForm({ ...form, check_type: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {Object.entries(checkTypeLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                      <SelectItem key={k} value={k}>
+                        {v}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>שאלה / חריגה</Label>
-                <Textarea value={form.question} onChange={e => setForm({ ...form, question: e.target.value })} placeholder="למשל: האם הלקוח מכוסה לגרירה מעל 50 ק&quot;מ?" className="h-16" />
+                <Textarea
+                  value={form.question}
+                  onChange={(e) => setForm({ ...form, question: e.target.value })}
+                  placeholder='למשל: האם הלקוח מכוסה לגרירה מעל 50 ק"מ?'
+                  className="h-16"
+                />
               </div>
               <div>
                 <Label>תשובה</Label>
-                <Textarea value={form.answer} onChange={e => setForm({ ...form, answer: e.target.value })} placeholder="תשובה מחברת הביטוח..." className="h-16" />
+                <Textarea
+                  value={form.answer}
+                  onChange={(e) => setForm({ ...form, answer: e.target.value })}
+                  placeholder="תשובה מחברת הביטוח..."
+                  className="h-16"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>תוצאה</Label>
-                  <Select value={form.result} onValueChange={v => setForm({ ...form, result: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.result}
+                    onValueChange={(v) => setForm({ ...form, result: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {Object.entries(resultConfig).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                        <SelectItem key={k} value={k}>
+                          {v.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>נימוק</Label>
-                  <Input value={form.reason} onChange={e => setForm({ ...form, reason: e.target.value })} />
+                  <Input
+                    value={form.reason}
+                    onChange={(e) => setForm({ ...form, reason: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>ביטול</Button>
-              <Button onClick={handleCreate} isLoading={saving}>שמור בדיקה</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>
+                ביטול
+              </Button>
+              <Button onClick={handleCreate} isLoading={saving}>
+                שמור בדיקה
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

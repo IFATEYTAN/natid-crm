@@ -368,12 +368,12 @@ export default function DelaysTab({ queueItems, calls }) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-right p-2 font-semibold text-gray-600">קריאה</th>
-                    <th className="text-right p-2 font-semibold text-gray-600">לקוח</th>
-                    <th className="text-right p-2 font-semibold text-gray-600">סטטוס</th>
-                    <th className="text-right p-2 font-semibold text-gray-600">זמן בתור</th>
-                    <th className="text-right p-2 font-semibold text-gray-600">נציג מטפל</th>
-                    <th className="text-right p-2 font-semibold text-gray-600">סיווג</th>
+                    <th className="text-end p-2 font-semibold text-gray-600">קריאה</th>
+                    <th className="text-end p-2 font-semibold text-gray-600">לקוח</th>
+                    <th className="text-end p-2 font-semibold text-gray-600">סטטוס</th>
+                    <th className="text-end p-2 font-semibold text-gray-600">זמן בתור</th>
+                    <th className="text-end p-2 font-semibold text-gray-600">נציג מטפל</th>
+                    <th className="text-end p-2 font-semibold text-gray-600">סיווג</th>
                   </tr>
                 </thead>
                 <tbody>

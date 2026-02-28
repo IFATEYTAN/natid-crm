@@ -166,6 +166,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error sending status update:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to send status update' }, { status: 500 });
   }
 });

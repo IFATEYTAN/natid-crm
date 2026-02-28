@@ -279,6 +279,7 @@ export default function FileUploader({
                           variant="ghost"
                           size="icon"
                           onClick={() => removeFile(fileItem.id)}
+                          aria-label="הסר קובץ"
                         >
                           <X className="w-4 h-4 text-[#6B778C]" />
                         </Button>

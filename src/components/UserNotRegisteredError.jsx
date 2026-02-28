@@ -57,7 +57,7 @@ const UserNotRegisteredError = () => {
           </p>
           <div className="p-4 bg-slate-50 rounded-md text-sm text-slate-600 mb-6">
             <p>אם אתה חושב שזו טעות:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-right">
+            <ul className="list-disc list-inside mt-2 space-y-1 text-end">
               <li>ודא שאתה מחובר עם החשבון הנכון</li>
               <li>פנה למנהל המערכת לקבלת גישה</li>
               <li>נסה להתנתק ולהתחבר מחדש</li>

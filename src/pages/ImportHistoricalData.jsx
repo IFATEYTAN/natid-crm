@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
+import {
+  Upload,
+  FileSpreadsheet,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  ChevronRight,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
@@ -284,9 +291,7 @@ export default function ImportHistoricalDataPage() {
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>שלב 3: מיפוי עמודות</CardTitle>
-                <CardDescription>
-                  בחר איזו עמודה מהקובץ מתאימה לכל שדה בדאטאבייס
-                </CardDescription>
+                <CardDescription>בחר איזו עמודה מהקובץ מתאימה לכל שדה בדאטאבייס</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
@@ -317,9 +322,9 @@ export default function ImportHistoricalDataPage() {
                       <thead className="bg-blue-100">
                         <tr>
                           {currentSheet.headers.map((h) => (
-                            <th 
-                              key={`header-${h}`} 
-                              className={`px-2 py-1 text-right text-xs font-semibold ${
+                            <th
+                              key={`header-${h}`}
+                              className={`px-2 py-1 text-end text-xs font-semibold ${
                                 ['serve_type', 'description'].includes(h) ? 'bg-red-200 text-red-900' : ''
                               }`}
                             >
@@ -335,9 +340,9 @@ export default function ImportHistoricalDataPage() {
                           return (
                             <tr key={`row-${idx}`} className={`border-t ${!hasRequiredFields ? 'bg-red-50' : ''}`}>
                               {currentSheet.headers.map((h, hIdx) => (
-                                <td 
-                                  key={`cell-${idx}-${hIdx}`} 
-                                  className={`px-2 py-1 text-right text-xs ${
+                                <td
+                                  key={`cell-${idx}-${hIdx}`}
+                                  className={`px-2 py-1 text-end text-xs ${
                                     ['serve_type', 'description'].includes(h) && !row[h]
                                       ? 'bg-red-100 text-red-700 font-semibold'
                                       : 'text-gray-600'
@@ -369,12 +374,12 @@ export default function ImportHistoricalDataPage() {
               >
                 {isUploading ? (
                   <>
-                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 ms-2 animate-spin" />
                     מייבא נתונים...
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4 ml-2" />
+                    <Upload className="w-4 h-4 ms-2" />
                     ייבא {currentSheet?.rows.length || 0} רשומות
                   </>
                 )}
@@ -389,7 +394,9 @@ export default function ImportHistoricalDataPage() {
               {importResult.success ? (
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle className="w-5 h-5" />
-                  <span>יובאו {importResult.count} רשומות מ-"{importResult.sheet}" בהצלחה! ✅</span>
+                  <span>
+                    יובאו {importResult.count} רשומות מ-"{importResult.sheet}" בהצלחה! ✅
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-700">

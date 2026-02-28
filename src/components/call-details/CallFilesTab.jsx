@@ -58,8 +58,14 @@ function PhotoCard({ photo, onEdit, onDelete }) {
         </div>
       </a>
       {/* Overlay actions */}
-      <div className="absolute top-1 left-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => onEdit(photo)}>
+      <div className="absolute top-1 start-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          size="icon"
+          variant="secondary"
+          className="h-7 w-7"
+          onClick={() => onEdit(photo)}
+          aria-label="עריכה"
+        >
           <Pencil className="w-3 h-3" />
         </Button>
         <Button
@@ -67,6 +73,7 @@ function PhotoCard({ photo, onEdit, onDelete }) {
           variant="destructive"
           className="h-7 w-7"
           onClick={() => onDelete(photo)}
+          aria-label="מחיקה"
         >
           <Trash2 className="w-3 h-3" />
         </Button>

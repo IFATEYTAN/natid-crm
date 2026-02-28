@@ -269,7 +269,7 @@ const profileTips = [
   { field: 'אזורי כיסוי', desc: 'מרכז, שרון, צפון, דרום, ירושלים, שפלה + ערים ספציפיות' },
   { field: 'שעות פעילות', desc: 'הגדר שעות עבודה או סמן 24/7. המערכת משבצת רק בשעות הזמינות שלך' },
   { field: 'תעריפים', desc: 'תעריף בסיס + תעריף לק"מ. משפיע על חישוב העלות בכל קריאה' },
-  { field: 'ציוד מיוחד', desc: 'ציין אם יש לך ציוד מיוחד (מנוף, גרר כבד וכו\')' },
+  { field: 'ציוד מיוחד', desc: "ציין אם יש לך ציוד מיוחד (מנוף, גרר כבד וכו')" },
 ];
 
 const proTips = [
@@ -340,7 +340,7 @@ function Section({ title, icon: Icon, children, defaultOpen = false }) {
     <Card className="bg-white overflow-hidden">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors text-right"
+        className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors text-end"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
@@ -378,13 +378,13 @@ function FaqItem({ question, answer }) {
     <div className="border-b border-gray-100 last:border-0">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full flex items-center justify-between py-4 text-right hover:text-red-600 transition-colors"
+        className="w-full flex items-center justify-between py-4 text-end hover:text-red-600 transition-colors"
       >
         <span className="font-medium text-sm">{question}</span>
         {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-gray-400 shrink-0 mr-2" />
+          <ChevronUp className="w-4 h-4 text-gray-400 shrink-0 me-2" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 mr-2" />
+          <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 me-2" />
         )}
       </button>
       <AnimatePresence>
@@ -418,8 +418,12 @@ export default function VendorGuide() {
         <div className="flex justify-center mb-4">
           <HeroTruck />
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">המדריך לספק - NatID 360 Control</h1>
-        <p className="text-gray-500 text-lg">כל מה שצריך לדעת כדי לעבוד עם פורטל הספקים מקצה לקצה</p>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
+          המדריך לספק - NatID 360 Control
+        </h1>
+        <p className="text-gray-500 text-lg">
+          כל מה שצריך לדעת כדי לעבוד עם פורטל הספקים מקצה לקצה
+        </p>
       </motion.div>
 
       {/* Quick Navigation */}
@@ -582,15 +586,24 @@ export default function VendorGuide() {
           <div className="space-y-3">
             <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
               <h4 className="font-bold text-sm text-blue-800 mb-1">צ'אט בתוך הקריאה</h4>
-              <p className="text-sm text-blue-700">כל קריאה מכילה צ'אט ישיר עם המוקד. עדכוני סטטוס (יצאת לדרך, הגעת, סיימת) נשלחים אוטומטית. תוכל לשלוח הודעות, תמונות ומסמכים.</p>
+              <p className="text-sm text-blue-700">
+                כל קריאה מכילה צ'אט ישיר עם המוקד. עדכוני סטטוס (יצאת לדרך, הגעת, סיימת) נשלחים
+                אוטומטית. תוכל לשלוח הודעות, תמונות ומסמכים.
+              </p>
             </div>
             <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
               <h4 className="font-bold text-sm text-blue-800 mb-1">הערות ספק</h4>
-              <p className="text-sm text-blue-700">לשונית "הערות" בעמוד ניהול הקריאה - מיועדת לרישום מידע חשוב. ההערות נשמרות ונראות למוקד.</p>
+              <p className="text-sm text-blue-700">
+                לשונית "הערות" בעמוד ניהול הקריאה - מיועדת לרישום מידע חשוב. ההערות נשמרות ונראות
+                למוקד.
+              </p>
             </div>
             <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
               <h4 className="font-bold text-sm text-blue-800 mb-1">משוב לאחר סיום</h4>
-              <p className="text-sm text-blue-700">לאחר סיום קריאה, לשונית "משוב" מופיעה - ניתן לתת דירוג ומשוב על הקריאה מנקודת המבט שלך כספק.</p>
+              <p className="text-sm text-blue-700">
+                לאחר סיום קריאה, לשונית "משוב" מופיעה - ניתן לתת דירוג ומשוב על הקריאה מנקודת המבט
+                שלך כספק.
+              </p>
             </div>
           </div>
         </Section>
@@ -618,7 +631,10 @@ export default function VendorGuide() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
       >
-        <Button className="bg-red-600 hover:bg-red-700 gap-2 px-8 py-3" onClick={() => navigate(-1)}>
+        <Button
+          className="bg-red-600 hover:bg-red-700 gap-2 px-8 py-3"
+          onClick={() => navigate(-1)}
+        >
           <ArrowRight className="w-4 h-4" />
           חזרה
         </Button>

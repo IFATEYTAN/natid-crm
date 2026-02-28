@@ -222,7 +222,10 @@ export default function FleetManagementPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4" dir="rtl">
           <Card
             className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterType === 'all' && filterStatus === 'all' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'}`}
-            onClick={() => { setFilterType('all'); setFilterStatus('all'); }}
+            onClick={() => {
+              setFilterType('all');
+              setFilterStatus('all');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -238,7 +241,10 @@ export default function FleetManagementPage() {
           </Card>
           <Card
             className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterType === 'tow_truck' && filterStatus === 'active' ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]' : 'border-[#e5e7eb] hover:border-[#f59e0b]'}`}
-            onClick={() => { setFilterType('tow_truck'); setFilterStatus('active'); }}
+            onClick={() => {
+              setFilterType('tow_truck');
+              setFilterStatus('active');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -254,7 +260,10 @@ export default function FleetManagementPage() {
           </Card>
           <Card
             className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterType === 'mobile_unit' && filterStatus === 'active' ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]' : 'border-[#e5e7eb] hover:border-[#3b82f6]'}`}
-            onClick={() => { setFilterType('mobile_unit'); setFilterStatus('active'); }}
+            onClick={() => {
+              setFilterType('mobile_unit');
+              setFilterStatus('active');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -270,7 +279,10 @@ export default function FleetManagementPage() {
           </Card>
           <Card
             className={`bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${filterStatus === 'inactive' && filterType === 'all' ? 'border-[#ef4444] ring-1 ring-[#ef4444]' : 'border-[#e5e7eb] hover:border-[#ef4444]'}`}
-            onClick={() => { setFilterType('all'); setFilterStatus('inactive'); }}
+            onClick={() => {
+              setFilterType('all');
+              setFilterStatus('inactive');
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -291,12 +303,12 @@ export default function FleetManagementPage() {
           <CardContent className="p-3">
             <div className="flex flex-col md:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
                 <Input
                   placeholder="חיפוש לפי שם, מספר רכב או נהג..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pr-10"
+                  className="ps-10"
                 />
               </div>
               <Select value={filterType} onValueChange={setFilterType}>
@@ -339,13 +351,13 @@ export default function FleetManagementPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">מספר</TableHead>
-                      <TableHead className="text-right">שם</TableHead>
-                      <TableHead className="text-right">סוג</TableHead>
-                      <TableHead className="text-right">סטטוס</TableHead>
-                      <TableHead className="text-right">אזור שירות</TableHead>
-                      <TableHead className="text-right">טלפון נהג</TableHead>
-                      <TableHead className="text-right">פעולות</TableHead>
+                      <TableHead className="text-end">מספר</TableHead>
+                      <TableHead className="text-end">שם</TableHead>
+                      <TableHead className="text-end">סוג</TableHead>
+                      <TableHead className="text-end">סטטוס</TableHead>
+                      <TableHead className="text-end">אזור שירות</TableHead>
+                      <TableHead className="text-end">טלפון נהג</TableHead>
+                      <TableHead className="text-end">פעולות</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

@@ -3,7 +3,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
+
+    // Verify caller is authenticated admin or operator
+    const user = await base44.auth.me();
+    if (!user || !['admin', 'operator'].includes(user.role)) {
+      return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
+    }
+
     const { call_id } = await req.json();
     
     if (!call_id) {
@@ -76,6 +82,6 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error sending feedback SMS:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to send feedback SMS' }, { status: 500 });
   }
 });

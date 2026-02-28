@@ -202,6 +202,9 @@ export const useUpdateServiceProvider = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.available() });
     },
+    onError: () => {
+      toast.error('שגיאה בעדכון נותן שירות');
+    },
   });
 };
 

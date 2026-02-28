@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { queryKeys } from '@/lib/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, CreditCard, Wallet } from 'lucide-react';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
@@ -9,17 +10,17 @@ const COLORS = ['#3b82f6', '#111827', '#6b7280', '#ef4444', '#10b981'];
 
 export default function FinancialReport({ calls }) {
   const { data: deposits = [] } = useQuery({
-    queryKey: ['deposits-report'],
+    queryKey: queryKeys.reportData.deposits(),
     queryFn: () => base44.entities.Deposit.list(),
   });
 
   const { data: callProducts = [] } = useQuery({
-    queryKey: ['callProducts-report'],
+    queryKey: queryKeys.reportData.callProducts(),
     queryFn: () => base44.entities.CallProduct.list(),
   });
 
   const { data: vendorPayments = [] } = useQuery({
-    queryKey: ['vendorPayments-report'],
+    queryKey: queryKeys.reportData.vendorPayments(),
     queryFn: () => base44.entities.VendorPayment.list(),
   });
 

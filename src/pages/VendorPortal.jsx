@@ -19,14 +19,7 @@ const VendorAvailabilityToggleLazy = lazy(
 );
 const VendorPortalAdminTabLazy = lazy(() => import('@/components/vendor/VendorPortalAdminTab'));
 
-import {
-  Phone,
-  MapPin,
-  Navigation,
-  AlertCircle,
-  Settings,
-  RefreshCw,
-} from 'lucide-react';
+import { Phone, MapPin, Navigation, AlertCircle, Settings, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -132,7 +125,9 @@ export default function VendorPortalPage() {
       setShowNewCallAlert(false);
       setPendingCall(null);
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors.calls(vendorProfile?.id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id),
+      });
     },
   });
 
@@ -146,7 +141,9 @@ export default function VendorPortalPage() {
     onSuccess: () => {
       setShowNewCallAlert(false);
       setPendingCall(null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.assignmentRequests.byVendor(vendorProfile?.id),
+      });
     },
   });
 
@@ -384,17 +381,19 @@ export default function VendorPortalPage() {
               </Suspense>
 
               <Suspense fallback={<Skeleton className="h-32" />}>
-                <VendorStatsLazy 
-                  vendor={vendorProfile} 
-                  calls={calls} 
+                <VendorStatsLazy
+                  vendor={vendorProfile}
+                  calls={calls}
                   onStatClick={(statId) => {
                     if (statId === 'completed') setCallsTab('completed');
                     if (statId === 'active' || statId === 'pending') setCallsTab('active');
                     if (statId === 'all' || statId === 'month') setCallsTab('all');
-                    
+
                     // Scroll to table
-                    document.getElementById('calls-table-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }} 
+                    document
+                      .getElementById('calls-table-section')
+                      ?.scrollIntoView({ behavior: 'smooth' });
+                  }}
                 />
               </Suspense>
 

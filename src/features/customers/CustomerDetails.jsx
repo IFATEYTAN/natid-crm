@@ -160,7 +160,7 @@ export default function CustomerDetails() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link to={createPageUrl('Customers')}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label="חזרה">
             <ArrowRight className="w-5 h-5" />
           </Button>
         </Link>

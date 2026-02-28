@@ -10,20 +10,20 @@ export default function FormView() {
   const pdfContentRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const employeeName = "ישראל ישראלי";
+  const employeeName = 'ישראל ישראלי';
 
   const handleDownloadPDF = async () => {
     if (!pdfContentRef.current) return;
 
     try {
       setIsGenerating(true);
-      
+
       // Dynamically import libraries to reduce bundle size
       const { default: html2canvas } = await import('html2canvas');
       const { default: jsPDF } = await import('jspdf');
 
       const element = pdfContentRef.current;
-      
+
       // Capture with html2canvas using requested settings
       const canvas = await html2canvas(element, {
         scale: 2,
@@ -38,20 +38,20 @@ export default function FormView() {
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      
+
       // Create PDF
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const margin = 10; // 10mm margins
-      
+
       const imgProps = pdf.getImageProperties(imgData);
-      const contentWidth = pdfWidth - (margin * 2);
+      const contentWidth = pdfWidth - margin * 2;
       const contentHeight = (imgProps.height * contentWidth) / imgProps.width;
-      
+
       let heightLeft = contentHeight;
       let position = margin;
-      let pageHeight = pdfHeight - (margin * 2);
+      let pageHeight = pdfHeight - margin * 2;
 
       // Add first page
       pdf.addImage(imgData, 'JPEG', margin, position, contentWidth, contentHeight);
@@ -83,19 +83,22 @@ export default function FormView() {
           <h1 className="text-2xl font-bold text-gray-900">טופס עובד</h1>
           <p className="text-gray-500 text-sm">צפייה ועריכת פרטי עובד</p>
         </div>
-        <Button 
-          onClick={handleDownloadPDF} 
+        <Button
+          onClick={handleDownloadPDF}
           disabled={isGenerating}
           className="bg-red-600 hover:bg-red-700 text-white gap-2"
         >
-          {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          {isGenerating ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
           הורד PDF
         </Button>
       </div>
 
       {/* Main Content Area - Included in PDF */}
       <div ref={pdfContentRef} className="space-y-6 bg-white p-6 rounded-xl">
-        
         {/* Employee Info Card */}
         <Card>
           <CardHeader>
@@ -146,7 +149,7 @@ export default function FormView() {
                 </div>
               </div>
             </div>
-            
+
             <div className="border rounded-lg p-4 bg-gray-50">
               <h3 className="font-semibold mb-2">תחנת יעד</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -162,7 +165,6 @@ export default function FormView() {
             </div>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Dialogs - Excluded from PDF */}

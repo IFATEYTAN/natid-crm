@@ -262,7 +262,9 @@ export default function AllVendorsMapPage() {
                           )}
                           {vendor.service_type?.length > 0 && (
                             <div className="text-xs text-[#6b7280]">
-                              {vendor.service_type.map((t) => vendorServiceTypeLabels[t] || t).join(', ')}
+                              {vendor.service_type
+                                .map((t) => vendorServiceTypeLabels[t] || t)
+                                .join(', ')}
                             </div>
                           )}
                         </div>

@@ -47,7 +47,7 @@ export default function StatCard({
   const iconStyle = variantStyles[variant] || variantStyles.default;
 
   const cardContent = (
-    <div className="text-right relative">
+    <div className="text-end relative">
       <div className="flex justify-between items-start">
         <div>
           <p className="text-[13px] font-medium text-[#6B7280] mb-2">{title}</p>

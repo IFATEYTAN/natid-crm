@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Auto-assign error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: 'Failed to auto-assign vendor' }, { status: 500 });
   }
 });
 

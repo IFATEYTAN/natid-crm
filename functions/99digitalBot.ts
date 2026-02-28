@@ -3,7 +3,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
+
+    // Verify webhook secret
+    const webhookSecret = req.headers.get('x-webhook-secret') || req.headers.get('x-bot-api-key');
+    const expectedSecret = Deno.env.get('BOT_WEBHOOK_SECRET');
+
+    if (!expectedSecret || webhookSecret !== expectedSecret) {
+      return Response.json({
+        success: false,
+        error_code: 'UNAUTHORIZED',
+        message: 'Invalid or missing webhook secret'
+      }, { status: 401 });
+    }
+
     // Parse incoming data from 99 Digital Bot
     const data = await req.json();
     
@@ -54,7 +66,9 @@ Deno.serve(async (req) => {
     // Generate customer response code if not provided
     let customerResponseCode = data.questionnaire?.customer_response_code;
     if (!customerResponseCode) {
-      customerResponseCode = `NC${Math.floor(100000 + Math.random() * 900000)}`;
+      const randomBytes = new Uint32Array(1);
+      crypto.getRandomValues(randomBytes);
+      customerResponseCode = `NC${(randomBytes[0] % 900000 + 100000).toString()}`;
     }
     
     // Calculate priority score
@@ -239,7 +253,7 @@ Deno.serve(async (req) => {
       success: false,
       error_code: 'INTERNAL_ERROR',
       message: 'שגיאה ביצירת קריאה',
-      details: error.message
+      details: 'Internal server error'
     }, { status: 500 });
   }
 });

@@ -21,15 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  Bell,
-  Plus,
-  Trash2,
-  AlertTriangle,
-  MessageSquare,
-  Mail,
-  Smartphone,
-} from 'lucide-react';
+import { Bell, Plus, Trash2, AlertTriangle, MessageSquare, Mail, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 
 const eventTemplates = [
@@ -581,6 +573,7 @@ export default function NotificationSettings() {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleEditNotification(notification)}
+                    aria-label="עריכה"
                   >
                     <MessageSquare className="w-4 h-4" />
                   </Button>
@@ -588,6 +581,7 @@ export default function NotificationSettings() {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDeleteNotification(notification.id)}
+                    aria-label="מחיקה"
                   >
                     <Trash2 className="w-4 h-4 text-[#DC2626]" />
                   </Button>

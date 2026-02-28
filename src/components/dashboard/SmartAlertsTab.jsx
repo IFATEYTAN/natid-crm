@@ -115,7 +115,7 @@ export default function SmartAlertsTab({ currentUser }) {
                   handleMarkAllRead();
                 }}
               >
-                <Check className="w-4 h-4 ml-2" />
+                <Check className="w-4 h-4 ms-2" />
                 סמן הכל כנקרא
               </Button>
             )}
@@ -147,7 +147,7 @@ export default function SmartAlertsTab({ currentUser }) {
                   return (
                     <div
                       key={alert.id}
-                      className="flex items-start gap-4 p-4 rounded-lg border border-l-4 border-l-orange-500 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+                      className="flex items-start gap-4 p-4 rounded-lg border border-s-4 border-s-orange-500 bg-white hover:bg-gray-50 transition-colors shadow-sm"
                     >
                       <div className="p-2 bg-orange-50 rounded-full shrink-0">
                         <Icon className="w-6 h-6 text-orange-600" />
@@ -168,7 +168,7 @@ export default function SmartAlertsTab({ currentUser }) {
                           {alert.link && (
                             <Link to={alert.link}>
                               <Button variant="link" size="sm" className="h-auto p-0 text-blue-600">
-                                טפל בבעיה <ExternalLink className="w-3 h-3 mr-1" />
+                                טפל בבעיה <ExternalLink className="w-3 h-3 me-1" />
                               </Button>
                             </Link>
                           )}

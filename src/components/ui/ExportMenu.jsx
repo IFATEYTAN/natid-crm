@@ -27,6 +27,24 @@ import { Label } from './label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+// Security: escape HTML entities to prevent XSS in HTML exports
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Security: prevent CSV formula injection
+function sanitizeCsvValue(val) {
+  const str = String(val ?? '').replace(/"/g, '""');
+  if (/^[=+\-@\t\r]/.test(str)) return `'${str}`;
+  return str;
+}
+
 // Brand colors for exports
 const BRAND_COLORS = {
   primary: '#FF0000',
@@ -38,7 +56,8 @@ const BRAND_COLORS = {
   textSecondary: '#616161',
 };
 
-const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png';
+const LOGO_URL =
+  'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png';
 
 // Export to CSV with Hebrew support
 export const exportToCSV = (data, columns, filename = 'export') => {
@@ -54,11 +73,10 @@ export const exportToCSV = (data, columns, filename = 'export') => {
         .map((col) => {
           // Handle React elements (like badges) by extracting text content if possible, or using raw data
           const rawValue = col.accessor ? row[col.accessor] : '';
-          const value = typeof rawValue === 'object' ? JSON.stringify(rawValue) : String(rawValue || '');
-          
-          // Escape quotes and wrap in quotes if contains comma
-          const escaped = value.replace(/"/g, '""');
-          return `"${escaped}"`;
+          const value =
+            typeof rawValue === 'object' ? JSON.stringify(rawValue) : String(rawValue || '');
+
+          return `"${sanitizeCsvValue(value)}"`;
         })
         .join(',')
     )
@@ -84,11 +102,12 @@ export const exportToText = (data, columns, filename = 'export', options = {}) =
 
   data.forEach((row, index) => {
     content += `רשומה #${index + 1}:\n`;
-    columns.forEach(col => {
+    columns.forEach((col) => {
       const rawValue = col.accessor ? row[col.accessor] : '';
-      const value = typeof rawValue === 'object' && rawValue !== null 
-        ? (rawValue.name || rawValue.label || JSON.stringify(rawValue)) 
-        : String(rawValue || '-');
+      const value =
+        typeof rawValue === 'object' && rawValue !== null
+          ? rawValue.name || rawValue.label || JSON.stringify(rawValue)
+          : String(rawValue || '-');
       content += `${col.header}: ${value}\n`;
     });
     content += '\n';
@@ -112,7 +131,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title || filename}</title>
+  <title>${escapeHtml(title || filename)}</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -198,8 +217,8 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
   <div class="container">
     <div class="header">
       <div class="title-section">
-        <h1>${title || filename}</h1>
-        ${subtitle ? `<p>${subtitle}</p>` : ''}
+        <h1>${escapeHtml(title || filename)}</h1>
+        ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
       </div>
       <img src="${LOGO_URL}" alt="NatID 360" class="logo" />
     </div>
@@ -212,7 +231,7 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
     <table>
       <thead>
         <tr>
-          ${columns.map((col) => `<th>${col.header}</th>`).join('')}
+          ${columns.map((col) => `<th>${escapeHtml(col.header)}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
@@ -220,13 +239,16 @@ export const exportToHTML = (data, columns, filename = 'export', options = {}) =
           .map(
             (row) => `
           <tr>
-            ${columns.map((col) => {
-              const rawValue = col.accessor ? row[col.accessor] : '';
-              const value = typeof rawValue === 'object' && rawValue !== null 
-                ? (rawValue.name || rawValue.label || '-') 
-                : String(rawValue || '');
-              return `<td>${value}</td>`;
-            }).join('')}
+            ${columns
+              .map((col) => {
+                const rawValue = col.accessor ? row[col.accessor] : '';
+                const value =
+                  typeof rawValue === 'object' && rawValue !== null
+                    ? rawValue.name || rawValue.label || '-'
+                    : String(rawValue || '');
+                return `<td>${escapeHtml(value)}</td>`;
+              })
+              .join('')}
           </tr>
         `
           )
@@ -261,7 +283,7 @@ export const printData = (data, columns, options = {}) => {
 <html dir="rtl" lang="he">
 <head>
   <meta charset="UTF-8">
-  <title>${title || 'הדפסה'}</title>
+  <title>${escapeHtml(title || 'הדפסה')}</title>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap');
@@ -362,8 +384,8 @@ export const printData = (data, columns, options = {}) => {
 <body>
   <div class="header">
     <div class="header-text">
-      <h1>${title || 'דוח'}</h1>
-      ${subtitle ? `<p>${subtitle}</p>` : ''}
+      <h1>${escapeHtml(title || 'דוח')}</h1>
+      ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
       <p>תאריך הפקה: ${new Date().toLocaleDateString('he-IL', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
       <p>סה"כ רשומות: ${data.length}</p>
     </div>
@@ -373,7 +395,7 @@ export const printData = (data, columns, options = {}) => {
   <table>
     <thead>
       <tr>
-        ${columns.map((col) => `<th>${col.header}</th>`).join('')}
+        ${columns.map((col) => `<th>${escapeHtml(col.header)}</th>`).join('')}
       </tr>
     </thead>
     <tbody>
@@ -381,23 +403,25 @@ export const printData = (data, columns, options = {}) => {
         .map(
           (row) => `
         <tr>
-          ${columns.map((col) => {
-            const rawValue = col.accessor ? row[col.accessor] : '';
-            // Try to extract text from objects or use raw value
-            let value = '';
-            if (typeof rawValue === 'object' && rawValue !== null) {
-              value = rawValue.name || rawValue.label || rawValue.id || '-';
-            } else {
-              value = String(rawValue || '');
-              if (value === 'undefined' || value === 'null') value = '';
-            }
-            
-            // Basic formatting
-            if (value === 'true') value = 'כן';
-            if (value === 'false') value = 'לא';
+          ${columns
+            .map((col) => {
+              const rawValue = col.accessor ? row[col.accessor] : '';
+              // Try to extract text from objects or use raw value
+              let value = '';
+              if (typeof rawValue === 'object' && rawValue !== null) {
+                value = rawValue.name || rawValue.label || rawValue.id || '-';
+              } else {
+                value = String(rawValue || '');
+                if (value === 'undefined' || value === 'null') value = '';
+              }
 
-            return `<td>${value || '-'}</td>`;
-          }).join('')}
+              // Basic formatting
+              if (value === 'true') value = 'כן';
+              if (value === 'false') value = 'לא';
+
+              return `<td>${escapeHtml(value || '-')}</td>`;
+            })
+            .join('')}
         </tr>
       `
         )
@@ -425,10 +449,10 @@ export const printData = (data, columns, options = {}) => {
   // Use Blob to ensure UTF-8 encoding is respected
   const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  
+
   // Open the Blob URL
   const printWindow = window.open(url, '_blank');
-  
+
   if (!printWindow) {
     toast.error('הדפדפן חסם את החלונית הקופצת. אנא אפשר חלוניות קופצות.');
   }
@@ -480,7 +504,7 @@ function EmailDialog({ open, onOpenChange, onSend, title }) {
               placeholder="example@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="text-left"
+              className="text-start"
               dir="ltr"
             />
           </div>
@@ -512,7 +536,7 @@ function EmailDialog({ open, onOpenChange, onSend, title }) {
             loadingText="שולח..."
             className="bg-[#FF0000] hover:bg-[#CC0000] text-white"
           >
-            <Mail className="w-4 h-4 ml-2" />
+            <Mail className="w-4 h-4 ms-2" />
             שלח
           </Button>
         </DialogFooter>
@@ -555,7 +579,7 @@ export default function ExportMenu({
           break;
         case 'excel':
           // Reusing CSV logic for Excel compatibility
-          exportToCSV(data, columns, filename); 
+          exportToCSV(data, columns, filename);
           toast.success('קובץ Excel הורד בהצלחה');
           break;
         case 'pdf':
@@ -580,10 +604,34 @@ export default function ExportMenu({
   };
 
   const exportOptions = [
-    { type: 'html', label: 'HTML', icon: FileCode, description: 'דף אינטרנט מעוצב', color: 'bg-purple-100 text-purple-600' },
-    { type: 'pdf', label: 'PDF', icon: FileText, description: 'שמירה כ-PDF', color: 'bg-red-100 text-red-600' },
-    { type: 'text', label: 'Text', icon: AlignRight, description: 'קובץ טקסט רגיל', color: 'bg-gray-100 text-gray-600' },
-    { type: 'csv', label: 'CSV/Excel', icon: FileSpreadsheet, description: 'גיליון נתונים', color: 'bg-green-100 text-green-600' },
+    {
+      type: 'html',
+      label: 'HTML',
+      icon: FileCode,
+      description: 'דף אינטרנט מעוצב',
+      color: 'bg-purple-100 text-purple-600',
+    },
+    {
+      type: 'pdf',
+      label: 'PDF',
+      icon: FileText,
+      description: 'שמירה כ-PDF',
+      color: 'bg-red-100 text-red-600',
+    },
+    {
+      type: 'text',
+      label: 'Text',
+      icon: AlignRight,
+      description: 'קובץ טקסט רגיל',
+      color: 'bg-gray-100 text-gray-600',
+    },
+    {
+      type: 'csv',
+      label: 'CSV/Excel',
+      icon: FileSpreadsheet,
+      description: 'גיליון נתונים',
+      color: 'bg-green-100 text-green-600',
+    },
   ];
 
   return (
@@ -632,7 +680,7 @@ export default function ExportMenu({
                         <option.icon className="w-4 h-4" />
                       )}
                     </div>
-                    <div className="flex-1 text-right">
+                    <div className="flex-1 text-end">
                       <div className="font-medium text-sm">{option.label}</div>
                       <div className="text-xs text-gray-500">{option.description}</div>
                     </div>
@@ -653,7 +701,7 @@ export default function ExportMenu({
                 <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                   <Printer className="w-4 h-4 text-slate-600" />
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div className="font-medium text-sm">הדפסה</div>
                   <div className="text-xs text-gray-500">תצוגה מקדימה</div>
                 </div>
@@ -662,12 +710,15 @@ export default function ExportMenu({
           )}
 
           {showEmail && onEmailSend && (
-            <DropdownMenuItem onClick={() => setEmailDialogOpen(true)} className="cursor-pointer py-3">
+            <DropdownMenuItem
+              onClick={() => setEmailDialogOpen(true)}
+              className="cursor-pointer py-3"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4 text-orange-600" />
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div className="font-medium text-sm">שליחה במייל</div>
                   <div className="text-xs text-gray-500">שלח לכתובת מייל</div>
                 </div>

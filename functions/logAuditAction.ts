@@ -44,9 +44,9 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Audit log error:', error);
-    return Response.json({ 
-      error: error.message,
-      success: false 
+    return Response.json({
+      error: 'Failed to log audit action',
+      success: false
     }, { status: 500 });
   }
 });

@@ -43,7 +43,7 @@ export default function AgentCard({ agent, onToggle, isLoading = false }) {
           <Badge
             variant={isActive ? 'default' : 'secondary'}
             className={cn(
-              'mr-2 whitespace-nowrap',
+              'me-2 whitespace-nowrap',
               isActive ? 'bg-primary/10 text-primary hover:bg-primary/20 border-primary/20' : ''
             )}
           >

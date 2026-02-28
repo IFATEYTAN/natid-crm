@@ -141,14 +141,14 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to={createPageUrl('ServiceProviders')} className="block">
           <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:shadow-md hover:border-[#D1D5DB] transition-all duration-200">
-            <CardContent className="pt-6 text-right" dir="rtl">
+            <CardContent className="pt-6 text-end" dir="rtl">
               <div className="text-sm text-[#616161]">סה"כ ספקים</div>
               <div className="text-2xl font-bold text-[#212121] mt-1">{vendors.length}</div>
             </CardContent>
           </Card>
         </Link>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">ממוצע קריאות לספק</div>
             <div className="text-2xl font-bold text-[#212121] mt-1">
               {vendors.length > 0 ? Math.round(calls.length / vendors.length) : 0}
@@ -156,7 +156,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
           </CardContent>
         </Card>
         <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
-          <CardContent className="pt-6 text-right" dir="rtl">
+          <CardContent className="pt-6 text-end" dir="rtl">
             <div className="text-sm text-[#616161]">דירוג ממוצע כללי</div>
             <div className="text-2xl font-bold text-[#212121] mt-1 flex items-center justify-end gap-2">
               {ratings.length > 0
@@ -175,7 +175,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
           className="block"
         >
           <Card className="bg-white border border-[#E0E0E0] shadow-[0_1px_3px_rgba(0,0,0,0.06)] cursor-pointer hover:shadow-md hover:border-[#D1D5DB] transition-all duration-200">
-            <CardContent className="pt-6 text-right" dir="rtl">
+            <CardContent className="pt-6 text-end" dir="rtl">
               <div className="text-sm text-[#616161]">ספק מוביל</div>
               <div className="text-xl font-bold text-[#212121] mt-1">
                 {vendorStats.length > 0 ? vendorStats[0].vendor_name : '-'}
