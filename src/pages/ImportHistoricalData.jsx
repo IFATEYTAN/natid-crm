@@ -338,17 +338,24 @@ export default function ImportHistoricalDataPage() {
       console.log('[Import] Starting import for target:', target.entity);
       console.log('[Import] Total rows in sheet:', currentSheet.rows.length);
       const columnMap = COLUMN_MAPS[target.entity] || {};
+      const ignoredFields = IGNORED_FIELDS[target.entity] || [];
       const recordsToInsert = currentSheet.rows.map((row) => {
         const record = {};
         currentSheet.headers.forEach((header) => {
           const value = row[header];
+          const normalizedHeader = header.toLowerCase().replace(/[\s_\-]/g, '');
+          // Skip ignored fields
+          if (ignoredFields.includes(normalizedHeader)) return;
           if (value !== null && value !== undefined && value !== '') {
-            // Normalize header: lowercase, remove spaces/underscores/hyphens
-            const normalizedHeader = header.toLowerCase().replace(/[\s_\-]/g, '');
             const mappedKey = columnMap[normalizedHeader] || header;
             record[mappedKey] = value;
           }
         });
+        // Case-specific normalizations
+        if (target.entity === 'Case') {
+          if (record.service_type) record.service_type = normalizeCaseServiceType(record.service_type);
+          if (record.vehicle_type) record.vehicle_type = normalizeVehicleType(record.vehicle_type);
+        }
         // Convert numeric fields
         const numericFields = NUMERIC_FIELDS[target.entity] || [];
         numericFields.forEach((key) => {
