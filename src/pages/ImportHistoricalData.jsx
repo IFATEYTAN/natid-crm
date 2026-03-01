@@ -207,10 +207,11 @@ export default function ImportHistoricalDataPage() {
         });
         return record;
       }).filter((record) => {
-        // Filter out rows missing required fields with no fallback
-        return target.requiredFields.every(({ key, fallback }) => {
-          return record[key] || fallback !== null;
-        });
+        // Keep only records that have all required fields (with no fallback)
+        // For Vendor: only vendor_name is required
+        return target.requiredFields
+          .filter(({ fallback }) => fallback === null)
+          .every(({ key }) => record[key] && String(record[key]).trim() !== '');
       });
 
       if (recordsToInsert.length === 0) {
