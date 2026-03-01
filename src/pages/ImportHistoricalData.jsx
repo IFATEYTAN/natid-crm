@@ -403,7 +403,14 @@ export default function ImportHistoricalDataPage() {
 
       console.log('[Import] Records to insert:', recordsToInsert.length, 'to entity:', target.entity);
       console.log('[Import] Sample record:', recordsToInsert[0]);
-      await base44.entities[target.entity].bulkCreate(recordsToInsert);
+
+      // Send in batches of 500
+      const BATCH_SIZE = 500;
+      for (let i = 0; i < recordsToInsert.length; i += BATCH_SIZE) {
+        const batch = recordsToInsert.slice(i, i + BATCH_SIZE);
+        console.log(`[Import] Sending batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(recordsToInsert.length / BATCH_SIZE)} (${batch.length} records)`);
+        await base44.entities[target.entity].bulkCreate(batch);
+      }
 
       setImportResult({ success: true, count: recordsToInsert.length, sheet: currentSheet.name });
       toast.success(`יובאו ${recordsToInsert.length} רשומות ל-${target.label} בהצלחה`);
