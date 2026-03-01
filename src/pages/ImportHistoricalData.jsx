@@ -41,6 +41,19 @@ const normalizeServiceType = (value) => {
   return SERVICE_TYPE_MAP[key] || SERVICE_TYPE_MAP[value.toString().toLowerCase().trim()] || value;
 };
 
+// Fields that must be arrays for each entity
+const ARRAY_FIELDS = {
+  Vendor: ['service_type', 'vehicle_types_supported', 'coverage_areas'],
+  HistoricalCallData: [],
+  Customer: [],
+};
+
+const toArray = (value) => {
+  if (!value || value === '') return [];
+  if (Array.isArray(value)) return value;
+  return String(value).split(',').map(s => s.trim()).filter(Boolean);
+};
+
 const IMPORT_TARGETS = {
   HistoricalCallData: {
     label: 'קריאות היסטוריות',
