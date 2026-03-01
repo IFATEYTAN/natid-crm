@@ -13,6 +13,34 @@ import {
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
+const SERVICE_TYPE_MAP = {
+  grira: 'גרירה',
+  greira: 'גרירה',
+  towing: 'גרירה',
+  nayedet: 'נייד',
+  mobile: 'נייד',
+  mobile_unit: 'נייד',
+  shamenet: 'שמנת',
+  oil: 'שמנת',
+  tire: 'פנצ\'ר',
+  flat_tire: 'פנצ\'ר',
+  puncture: 'פנצ\'ר',
+  battery: 'סוללה',
+  jump_start: 'סוללה',
+  fuel: 'דלק',
+  lockout: 'נעילה',
+  locked: 'נעילה',
+  accident: 'תאונה',
+  storage: 'אחסנה',
+  other: 'אחר',
+};
+
+const normalizeServiceType = (value) => {
+  if (!value) return value;
+  const key = value.toString().toLowerCase().trim().replace(/[-_ ]/g, '_');
+  return SERVICE_TYPE_MAP[key] || SERVICE_TYPE_MAP[value.toString().toLowerCase().trim()] || value;
+};
+
 const IMPORT_TARGETS = {
   HistoricalCallData: {
     label: 'קריאות היסטוריות',
