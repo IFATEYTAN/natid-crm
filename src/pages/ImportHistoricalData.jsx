@@ -220,6 +220,8 @@ export default function ImportHistoricalDataPage() {
         throw new Error('לא נמצאו רשומות תקינות לייבוא (בדוק שיש ערכים בשדות החובה)');
       }
 
+      console.log('[Import] Records to insert:', recordsToInsert.length, 'to entity:', target.entity);
+      console.log('[Import] Sample record:', recordsToInsert[0]);
       await base44.entities[target.entity].bulkCreate(recordsToInsert);
 
       setImportResult({ success: true, count: recordsToInsert.length, sheet: currentSheet.name });
