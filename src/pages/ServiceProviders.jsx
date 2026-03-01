@@ -291,7 +291,7 @@ export default function ServiceProvidersPage() {
       header: 'קריאות פתוחות',
       accessor: 'open_calls',
       cell: (vendor) => {
-        const stats = vendorCallStats[vendor.id] || { open: 0, closed: 0 };
+        const stats = vendorCallStats[vendor.id] || vendorCallStats[vendor.vendor_name] || { open: 0, closed: 0 };
         return (
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5 text-[#3b82f6]" />
@@ -304,7 +304,7 @@ export default function ServiceProvidersPage() {
       header: 'קריאות סגורות',
       accessor: 'closed_calls',
       cell: (vendor) => {
-        const stats = vendorCallStats[vendor.id] || { open: 0, closed: 0 };
+        const stats = vendorCallStats[vendor.id] || vendorCallStats[vendor.vendor_name] || { open: 0, closed: 0 };
         return (
           <div className="flex items-center gap-1">
             <CheckCircle className="w-3.5 h-3.5 text-[#111827]" />
