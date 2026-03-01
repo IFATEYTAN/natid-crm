@@ -163,8 +163,9 @@ export default function NewVendorPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>שם הספק/חברה *</Label>
+                  <Label htmlFor="vendor-name">שם הספק/חברה *</Label>
                   <Input
+                    id="vendor-name"
                     value={formData.vendor_name}
                     onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
                     placeholder="לדוגמה: גרר הצפון"
@@ -172,8 +173,9 @@ export default function NewVendorPage() {
                   />
                 </div>
                 <div>
-                  <Label>איש קשר</Label>
+                  <Label htmlFor="vendor-contact-person">איש קשר</Label>
                   <Input
+                    id="vendor-contact-person"
                     value={formData.contact_person}
                     onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                     placeholder="שם איש הקשר"
@@ -183,10 +185,11 @@ export default function NewVendorPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>טלפון ראשי *</Label>
+                  <Label htmlFor="vendor-phone">טלפון ראשי *</Label>
                   <div className="relative">
                     <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
+                      id="vendor-phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="ps-10"
@@ -197,10 +200,11 @@ export default function NewVendorPage() {
                   </div>
                 </div>
                 <div>
-                  <Label>טלפון משני</Label>
+                  <Label htmlFor="vendor-phone-secondary">טלפון משני</Label>
                   <div className="relative">
                     <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
+                      id="vendor-phone-secondary"
                       value={formData.phone_2}
                       onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                       className="ps-10"
@@ -211,10 +215,11 @@ export default function NewVendorPage() {
               </div>
 
               <div>
-                <Label>אימייל {sendInvite && '*'}</Label>
+                <Label htmlFor="vendor-email">אימייל {sendInvite && '*'}</Label>
                 <div className="relative">
                   <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                   <Input
+                    id="vendor-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -304,8 +309,9 @@ export default function NewVendorPage() {
               </div>
 
               <div>
-                <Label>ערים ספציפיות</Label>
+                <Label htmlFor="vendor-coverage-cities">ערים ספציפיות</Label>
                 <Textarea
+                  id="vendor-coverage-cities"
                   value={formData.coverage_cities}
                   onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
                   placeholder="תל אביב, רמת גן, גבעתיים..."
@@ -331,8 +337,9 @@ export default function NewVendorPage() {
               {!formData.works_24_7 && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>שעת התחלה</Label>
+                    <Label htmlFor="vendor-working-hours-start">שעת התחלה</Label>
                     <Input
+                      id="vendor-working-hours-start"
                       type="time"
                       value={formData.working_hours_start}
                       onChange={(e) =>
@@ -341,8 +348,9 @@ export default function NewVendorPage() {
                     />
                   </div>
                   <div>
-                    <Label>שעת סיום</Label>
+                    <Label htmlFor="vendor-working-hours-end">שעת סיום</Label>
                     <Input
+                      id="vendor-working-hours-end"
                       type="time"
                       value={formData.working_hours_end}
                       onChange={(e) =>

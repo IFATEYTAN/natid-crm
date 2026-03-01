@@ -89,19 +89,21 @@ const paymentTypeOptions = [
   { value: 'bank_transfer', label: 'העברה בנקאית' },
 ];
 
-function FieldRow({ label, children }) {
+function FieldRow({ label, children, htmlFor }) {
   return (
     <div>
-      <Label className="text-xs text-gray-500 mb-1">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-xs text-gray-500 mb-1">
+        {label}
+      </Label>
       {children}
     </div>
   );
 }
 
-function SelectField({ value, onValueChange, options, placeholder }) {
+function SelectField({ value, onValueChange, options, placeholder, id }) {
   return (
     <Select value={value || ''} onValueChange={onValueChange}>
-      <SelectTrigger className="h-9">
+      <SelectTrigger id={id} className="h-9">
         <SelectValue placeholder={placeholder || 'בחר...'} />
       </SelectTrigger>
       <SelectContent>
@@ -181,41 +183,47 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           {/* Customer */}
           <TabsContent value="customer" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="שם לקוח">
+              <FieldRow label="שם לקוח" htmlFor="call-customer-name">
                 <Input
+                  id="call-customer-name"
                   value={form.customer_name || ''}
                   onChange={(e) => set('customer_name', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="תעודת זהות">
+              <FieldRow label="תעודת זהות" htmlFor="call-customer-id-number">
                 <Input
+                  id="call-customer-id-number"
                   value={form.customer_id_number || ''}
                   onChange={(e) => set('customer_id_number', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="טלפון ראשי">
+              <FieldRow label="טלפון ראשי" htmlFor="call-customer-phone">
                 <Input
+                  id="call-customer-phone"
                   value={form.customer_phone || ''}
                   onChange={(e) => set('customer_phone', e.target.value)}
                   dir="ltr"
                 />
               </FieldRow>
-              <FieldRow label="טלפון משני">
+              <FieldRow label="טלפון משני" htmlFor="call-customer-phone-2">
                 <Input
+                  id="call-customer-phone-2"
                   value={form.customer_phone_2 || ''}
                   onChange={(e) => set('customer_phone_2', e.target.value)}
                   dir="ltr"
                 />
               </FieldRow>
-              <FieldRow label="אימייל">
+              <FieldRow label="אימייל" htmlFor="call-customer-email">
                 <Input
+                  id="call-customer-email"
                   value={form.customer_email || ''}
                   onChange={(e) => set('customer_email', e.target.value)}
                   dir="ltr"
                 />
               </FieldRow>
-              <FieldRow label="כתובת מגורים">
+              <FieldRow label="כתובת מגורים" htmlFor="call-customer-address">
                 <Input
+                  id="call-customer-address"
                   value={form.customer_address || ''}
                   onChange={(e) => set('customer_address', e.target.value)}
                 />
@@ -226,28 +234,32 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           {/* Insurance */}
           <TabsContent value="insurance" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="חברת ביטוח">
+              <FieldRow label="חברת ביטוח" htmlFor="call-insurance-company">
                 <Input
+                  id="call-insurance-company"
                   value={form.insurance_company || ''}
                   onChange={(e) => set('insurance_company', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="חבילה">
+              <FieldRow label="חבילה" htmlFor="call-membership-package">
                 <Input
+                  id="call-membership-package"
                   value={form.membership_package || ''}
                   onChange={(e) => set('membership_package', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="מספר מנוי">
+              <FieldRow label="מספר מנוי" htmlFor="call-membership-number">
                 <Input
+                  id="call-membership-number"
                   value={form.membership_number || ''}
                   onChange={(e) => set('membership_number', e.target.value)}
                   dir="ltr"
                 />
               </FieldRow>
             </div>
-            <FieldRow label="פירוט כיסוי">
+            <FieldRow label="פירוט כיסוי" htmlFor="call-coverage-details">
               <Textarea
+                id="call-coverage-details"
                 value={form.coverage_details || ''}
                 onChange={(e) => set('coverage_details', e.target.value)}
                 className="h-24"
@@ -258,21 +270,24 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           {/* Vehicle */}
           <TabsContent value="vehicle" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="מספר רכב">
+              <FieldRow label="מספר רכב" htmlFor="call-vehicle-plate">
                 <Input
+                  id="call-vehicle-plate"
                   value={form.vehicle_plate || ''}
                   onChange={(e) => set('vehicle_plate', e.target.value)}
                   dir="ltr"
                 />
               </FieldRow>
-              <FieldRow label="דגם רכב">
+              <FieldRow label="דגם רכב" htmlFor="call-vehicle-model">
                 <Input
+                  id="call-vehicle-model"
                   value={form.vehicle_model || ''}
                   onChange={(e) => set('vehicle_model', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="שנת ייצור">
+              <FieldRow label="שנת ייצור" htmlFor="call-vehicle-year">
                 <Input
+                  id="call-vehicle-year"
                   type="number"
                   value={form.vehicle_year || ''}
                   onChange={(e) =>
@@ -280,22 +295,25 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
                   }
                 />
               </FieldRow>
-              <FieldRow label="סוג רכב">
+              <FieldRow label="סוג רכב" htmlFor="call-vehicle-type">
                 <SelectField
+                  id="call-vehicle-type"
                   value={form.vehicle_type}
                   onValueChange={(v) => set('vehicle_type', v)}
                   options={vehicleTypeOptions}
                 />
               </FieldRow>
-              <FieldRow label="סוג דלק">
+              <FieldRow label="סוג דלק" htmlFor="call-fuel-type">
                 <SelectField
+                  id="call-fuel-type"
                   value={form.fuel_type}
                   onValueChange={(v) => set('fuel_type', v)}
                   options={fuelTypeOptions}
                 />
               </FieldRow>
-              <FieldRow label="קודן לרכב">
+              <FieldRow label="קודן לרכב" htmlFor="call-vehicle-code">
                 <Input
+                  id="call-vehicle-code"
                   value={form.vehicle_code || ''}
                   onChange={(e) => set('vehicle_code', e.target.value)}
                 />
@@ -306,29 +324,33 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           {/* Issue */}
           <TabsContent value="issue" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="סוג תקלה">
+              <FieldRow label="סוג תקלה" htmlFor="call-issue-type">
                 <SelectField
+                  id="call-issue-type"
                   value={form.issue_type}
                   onValueChange={(v) => set('issue_type', v)}
                   options={issueTypeOptions}
                 />
               </FieldRow>
-              <FieldRow label="מיקום מפתח">
+              <FieldRow label="מיקום מפתח" htmlFor="call-key-location">
                 <Input
+                  id="call-key-location"
                   value={form.key_location || ''}
                   onChange={(e) => set('key_location', e.target.value)}
                 />
               </FieldRow>
             </div>
-            <FieldRow label="תיאור התקלה">
+            <FieldRow label="תיאור התקלה" htmlFor="call-issue-description">
               <Textarea
+                id="call-issue-description"
                 value={form.issue_description || ''}
                 onChange={(e) => set('issue_description', e.target.value)}
                 className="h-24"
               />
             </FieldRow>
-            <FieldRow label="הוראות תפעול">
+            <FieldRow label="הוראות תפעול" htmlFor="call-operation-instructions">
               <Textarea
+                id="call-operation-instructions"
                 value={form.operation_instructions || ''}
                 onChange={(e) => set('operation_instructions', e.target.value)}
                 className="h-20"

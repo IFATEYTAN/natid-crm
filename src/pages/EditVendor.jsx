@@ -181,16 +181,18 @@ export default function EditVendorPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>שם הספק/חברה *</Label>
+                  <Label htmlFor="edit-vendor-name">שם הספק/חברה *</Label>
                   <Input
+                    id="edit-vendor-name"
                     value={formData.vendor_name}
                     onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <Label>איש קשר</Label>
+                  <Label htmlFor="edit-vendor-contact">איש קשר</Label>
                   <Input
+                    id="edit-vendor-contact"
                     value={formData.contact_person}
                     onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                   />
@@ -199,8 +201,9 @@ export default function EditVendorPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>טלפון ראשי *</Label>
+                  <Label htmlFor="edit-vendor-phone">טלפון ראשי *</Label>
                   <Input
+                    id="edit-vendor-phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     dir="ltr"
@@ -209,8 +212,9 @@ export default function EditVendorPage() {
                   />
                 </div>
                 <div>
-                  <Label>טלפון משני</Label>
+                  <Label htmlFor="edit-vendor-phone-2">טלפון משני</Label>
                   <Input
+                    id="edit-vendor-phone-2"
                     value={formData.phone_2}
                     onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                     dir="ltr"
@@ -220,8 +224,9 @@ export default function EditVendorPage() {
               </div>
 
               <div>
-                <Label>אימייל</Label>
+                <Label htmlFor="edit-vendor-email">אימייל</Label>
                 <Input
+                  id="edit-vendor-email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -232,10 +237,11 @@ export default function EditVendorPage() {
 
               <div className="flex items-center gap-2 pt-2">
                 <Switch
+                  id="edit-vendor-is-active"
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
-                <Label>ספק פעיל</Label>
+                <Label htmlFor="edit-vendor-is-active">ספק פעיל</Label>
               </div>
             </CardContent>
           </Card>
@@ -313,8 +319,9 @@ export default function EditVendorPage() {
               </div>
 
               <div>
-                <Label>ערים ספציפיות</Label>
+                <Label htmlFor="edit-vendor-coverage-cities">ערים ספציפיות</Label>
                 <Textarea
+                  id="edit-vendor-coverage-cities"
                   value={formData.coverage_cities}
                   onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
                   placeholder="תל אביב, רמת גן..."
@@ -330,17 +337,19 @@ export default function EditVendorPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
                 <Switch
+                  id="edit-vendor-works-24-7"
                   checked={formData.works_24_7}
                   onCheckedChange={(checked) => setFormData({ ...formData, works_24_7: checked })}
                 />
-                <Label>עובד 24/7</Label>
+                <Label htmlFor="edit-vendor-works-24-7">עובד 24/7</Label>
               </div>
 
               {!formData.works_24_7 && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>שעת התחלה</Label>
+                    <Label htmlFor="edit-vendor-working-hours-start">שעת התחלה</Label>
                     <Input
+                      id="edit-vendor-working-hours-start"
                       type="time"
                       value={formData.working_hours_start}
                       onChange={(e) =>
@@ -349,8 +358,9 @@ export default function EditVendorPage() {
                     />
                   </div>
                   <div>
-                    <Label>שעת סיום</Label>
+                    <Label htmlFor="edit-vendor-working-hours-end">שעת סיום</Label>
                     <Input
+                      id="edit-vendor-working-hours-end"
                       type="time"
                       value={formData.working_hours_end}
                       onChange={(e) =>
