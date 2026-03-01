@@ -259,7 +259,7 @@ export default function Dashboard() {
 
           {/* ניהול איחורים */}
           <Suspense fallback={<Skeleton className="h-48" />}>
-            <VendorDelaysWidget calls={calls} isLoading={isLoading} />
+            <VendorDelaysWidget calls={cases} isLoading={isLoading} />
           </Suspense>
 
           {/* קריאות במעקב - פאנל קריאות פעילות מעל המפה */}
