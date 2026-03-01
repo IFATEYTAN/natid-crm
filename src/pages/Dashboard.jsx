@@ -265,7 +265,7 @@ export default function Dashboard() {
           {/* קריאות במעקב - פאנל קריאות פעילות מעל המפה */}
           <Suspense fallback={<Skeleton className="h-64" />}>
             <TrackedCallsPanel
-              calls={calls}
+              calls={cases}
               isLoading={isLoading}
               onCallClick={(callId) => navigate(createPageUrl(`CallDetails?id=${callId}`))}
             />
