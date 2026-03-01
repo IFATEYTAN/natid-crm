@@ -41,6 +41,68 @@ const normalizeServiceType = (value) => {
   return SERVICE_TYPE_MAP[key] || SERVICE_TYPE_MAP[value.toString().toLowerCase().trim()] || value;
 };
 
+// Column name mapping: CSV column -> entity field
+const COLUMN_MAPS = {
+  Vendor: {
+    vendorname: 'vendor_name',
+    vendornumber: 'vendor_number',
+    contactperson: 'contact_person',
+    phone: 'phone',
+    phone2: 'phone_2',
+    email: 'email',
+    servicetype: 'service_type',
+    vehicletypessupported: 'vehicle_types_supported',
+    coverageareas: 'coverage_areas',
+    coveragecities: 'coverage_cities',
+    baserate: 'base_rate',
+    rateperkm: 'rate_per_km',
+    rateperkmregular: 'rate_per_km_regular',
+    rateperkmdouble: 'rate_per_km_double',
+    rateperkmtow: 'rate_per_km_tow',
+    ratefkatkm: 'rate_flat_km',
+    rateflatkm: 'rate_flat_km',
+    rateemptykm: 'rate_empty_km',
+    rateroadtoll: 'rate_road_toll',
+    contractstartdate: 'contract_start_date',
+    contractenddate: 'contract_end_date',
+    isactive: 'is_active',
+    isavailablenow: 'is_available_now',
+    works247: 'works_24_7',
+    totalcallscompleted: 'total_calls_completed',
+    totalcallsassigned: 'total_calls_assigned',
+    averagerating: 'average_rating',
+    totalratings: 'total_ratings',
+    averageresponsetime: 'average_response_time',
+    averagecompletiontime: 'average_completion_time',
+    completionrate: 'completion_rate',
+    paymentratepercall: 'payment_rate_per_call',
+    totalrevenue: 'total_revenue',
+    pendingpayments: 'pending_payments',
+    notes: 'notes',
+    specialequipment: 'special_equipment',
+  },
+};
+
+// Numeric fields per entity
+const NUMERIC_FIELDS = {
+  Vendor: ['vendor_number', 'base_rate', 'rate_per_km', 'rate_per_km_regular', 'rate_per_km_double',
+    'rate_per_km_tow', 'rate_flat_km', 'rate_empty_km', 'rate_road_toll',
+    'total_calls_completed', 'total_calls_assigned', 'average_rating', 'total_ratings',
+    'average_response_time', 'average_completion_time', 'completion_rate',
+    'payment_rate_per_call', 'total_revenue', 'pending_payments'],
+};
+
+// Boolean fields per entity
+const BOOLEAN_FIELDS = {
+  Vendor: ['is_active', 'is_available_now', 'works_24_7', 'deposit_required', 'is_location_sharing_enabled'],
+};
+
+const toBoolean = (value) => {
+  if (typeof value === 'boolean') return value;
+  const v = String(value).toLowerCase().trim();
+  return v === 'true' || v === '1' || v === 'yes' || v === 'כן';
+};
+
 // Fields that must be arrays for each entity
 const ARRAY_FIELDS = {
   Vendor: ['service_type', 'vehicle_types_supported', 'coverage_areas'],
