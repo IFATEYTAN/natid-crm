@@ -25,7 +25,6 @@ import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { statusLabels, openStatuses } from '@/components/dashboard/dashboardConstants';
 
 // Lazy load sub-components
 const CallsTrendChart = lazy(() =>
