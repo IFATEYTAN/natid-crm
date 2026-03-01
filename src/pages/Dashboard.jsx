@@ -315,9 +315,9 @@ export default function Dashboard() {
                       <span className="text-sm text-gray-500 ms-1">דקות</span>
                     </div>
                   </div>
-                  {recentCallsWithEta.length > 0 && (
+                  {avgEta > 0 && (
                     <p className="text-xs text-gray-400 mt-2">
-                      מבוסס על {recentCallsWithEta.length} קריאות ב-7 ימים
+                      מבוסס על 7 ימים אחרונים
                     </p>
                   )}
                 </CardContent>
