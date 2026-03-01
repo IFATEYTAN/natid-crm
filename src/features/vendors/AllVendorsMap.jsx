@@ -317,7 +317,7 @@ export default function AllVendorsMap() {
                 className="flex-1"
                 onClick={() => setSelectedTab('vendors')}
               >
-                <Users className="w-4 h-4 ml-1" />
+                <Users className="w-4 h-4 ms-1" />
                 ספקים ({vendorsWithLocations.length})
               </Button>
               <Button
@@ -326,7 +326,7 @@ export default function AllVendorsMap() {
                 className="flex-1"
                 onClick={() => setSelectedTab('calls')}
               >
-                <MapPin className="w-4 h-4 ml-1" />
+                <MapPin className="w-4 h-4 ms-1" />
                 קריאות ({activeCalls.length})
               </Button>
             </div>

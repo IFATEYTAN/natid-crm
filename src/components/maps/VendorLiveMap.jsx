@@ -157,7 +157,7 @@ export default function VendorLiveMap({
                     </strong>
                     {vendor.last_location_update && (
                       <p className="text-xs text-gray-500 mt-1">
-                        <Clock className="w-3 h-3 inline ml-1" />
+                        <Clock className="w-3 h-3 inline ms-1" />
                         עדכון: {format(new Date(vendor.last_location_update), 'HH:mm:ss')}
                       </p>
                     )}
