@@ -89,6 +89,28 @@ export default function Reports() {
             <RefreshCw className="w-4 h-4 ms-1" />
             רענן
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-1">
+                <Download className="w-4 h-4" />
+                ייצוא מלא
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem onClick={() => exportToExcel(buildFullExport(), `annual-report-${selectedYear}`, `דוח שנתי ${selectedYear}`)}>
+                <FileSpreadsheet className="w-4 h-4 me-2 text-green-600" />
+                Excel (.xlsx)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportToHTML(buildFullExport(), `annual-report-${selectedYear}`, `דוח שנתי ${selectedYear}`)}>
+                <FileText className="w-4 h-4 me-2 text-blue-600" />
+                HTML מעוצב
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportToPDF(buildFullExport(), `annual-report-${selectedYear}`, `דוח שנתי ${selectedYear}`)}>
+                <File className="w-4 h-4 me-2 text-red-600" />
+                PDF / הדפסה
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
             <SelectTrigger className="w-36">
               <Calendar className="w-4 h-4 ms-1 text-gray-500" />
