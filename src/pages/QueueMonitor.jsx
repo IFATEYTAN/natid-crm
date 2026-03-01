@@ -593,7 +593,7 @@ export default function QueueMonitor() {
         {/* Delays Tab */}
         <TabsContent value="delays">
           <Suspense fallback={<Skeleton className="h-[400px] rounded-lg" />}>
-            <DelaysTab queueItems={enrichedItems} calls={calls} />
+            <DelaysTab queueItems={enrichedItems} calls={directCases} />
           </Suspense>
         </TabsContent>
       </Tabs>
