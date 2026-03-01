@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
@@ -44,6 +45,9 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
       onOpenChange(false);
       setSelectedAgent('');
       setNotes('');
+    },
+    onError: () => {
+      toast.error('שגיאה בשיבוץ נציג');
     },
   });
 
