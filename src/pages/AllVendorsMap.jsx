@@ -73,7 +73,7 @@ export default function AllVendorsMapPage() {
     refetch,
   } = useQuery({
     queryKey: queryKeys.vendors.map(),
-    queryFn: () => base44.entities.Vendor.list('-updated_date', 500),
+    queryFn: () => base44.entities.Vendor.list('-updated_date', 1000),
     refetchInterval: 30000, // Auto refresh every 30 seconds
   });
 

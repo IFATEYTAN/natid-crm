@@ -98,10 +98,10 @@ export default function ServiceProvidersPage() {
 
   const vendors = vendorsQuery.data || [];
 
-  // Fetch calls to calculate open/closed per vendor
+  // Fetch cases to calculate open/closed per vendor (from Case entity)
   const { data: calls = [] } = useQuery({
-    queryKey: queryKeys.calls.forVendors(),
-    queryFn: () => base44.entities.Case.list('-created_date', 2000),
+    queryKey: ['service-providers-cases'],
+    queryFn: () => base44.entities.Case.list('-created_date', 5000),
   });
 
   // Calculate case stats per vendor using assigned_provider_id from Case entity
