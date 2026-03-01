@@ -56,9 +56,8 @@ const IMPORT_TARGETS = {
     entity: 'Vendor',
     requiredFields: [
       { key: 'vendor_name', fallback: null },
-      { key: 'phone', fallback: null },
     ],
-    info: 'שדות חובה: vendor_name, phone',
+    info: 'שדות חובה: vendor_name',
   },
   Customer: {
     label: 'לקוחות',
