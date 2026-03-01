@@ -189,6 +189,8 @@ export default function ImportHistoricalDataPage() {
 
     setIsUploading(true);
     try {
+      console.log('[Import] Starting import for target:', target.entity);
+      console.log('[Import] Total rows in sheet:', currentSheet.rows.length);
       const recordsToInsert = currentSheet.rows.map((row) => {
         const record = {};
         currentSheet.headers.forEach((header) => {

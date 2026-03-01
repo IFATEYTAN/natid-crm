@@ -88,12 +88,12 @@ import Settings from './pages/Settings';
 import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
 import UserProfile from './pages/UserProfile';
+import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorDetails from './pages/VendorDetails';
 import VendorGuide from './pages/VendorGuide';
-import VendorTracking from './pages/VendorTracking';
-import VendorCallManagement from './pages/VendorCallManagement';
 import VendorPortal from './pages/VendorPortal';
+import VendorTracking from './pages/VendorTracking';
 import __Layout from './Layout.jsx';
 
 
@@ -139,12 +139,12 @@ export const PAGES = {
     "UserGuide": UserGuide,
     "UserManagement": UserManagement,
     "UserProfile": UserProfile,
+    "VendorCallManagement": VendorCallManagement,
     "VendorContracts": VendorContracts,
     "VendorDetails": VendorDetails,
     "VendorGuide": VendorGuide,
-    "VendorTracking": VendorTracking,
-    "VendorCallManagement": VendorCallManagement,
     "VendorPortal": VendorPortal,
+    "VendorTracking": VendorTracking,
 }
 
 export const pagesConfig = {
