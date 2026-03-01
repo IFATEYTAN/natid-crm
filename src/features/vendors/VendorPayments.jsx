@@ -42,28 +42,51 @@ export default function VendorPayments() {
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const tableRef = useRef(null);
 
-  const { currentUser: user } = usePermissions();
+  const { currentUser: user, effectiveRole } = usePermissions();
+  const isVendorUser = effectiveRole === 'vendor';
 
-  const { data: vendors = [] } = useQuery({
-    queryKey: queryKeys.vendors.all(),
-    queryFn: () => base44.entities.Vendor.list(),
+  // Vendor profile: server-scoped for vendor users, direct for admin/operator
+  const vendorQuery = useQuery({
+    queryKey: [...queryKeys.vendors.profile(user?.email), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+        });
+        const vendors = result.data?.data || [];
+        return vendors[0] || null;
+      }
+      const vendors = await base44.entities.Vendor.filter({ email: user.email });
+      return vendors[0] || null;
+    },
+    enabled: !!user?.email,
   });
 
-  const currentVendor = vendors.find((v) => v.email === user?.email);
+  const currentVendor = vendorQuery.data;
 
+  // Calls: server-scoped for vendor users, direct for admin/operator
   const { data: allCalls = [], isLoading } = useQuery({
-    queryKey: queryKeys.vendors.vendorPayments(currentVendor?.id),
-    queryFn: () => base44.entities.Call.list('-closed_at', 1000),
-    enabled: !!currentVendor,
+    queryKey: [...queryKeys.vendors.vendorPayments(currentVendor?.id), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'calls',
+          sort: '-closed_at',
+          limit: 1000,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.Call.filter(
+        { assigned_vendor_id: currentVendor.id },
+        '-closed_at',
+        1000
+      );
+    },
+    enabled: !!currentVendor?.id,
   });
 
-  // Filter vendor's completed calls
-  const vendorCalls = allCalls.filter(
-    (c) =>
-      c.assigned_vendor_id === currentVendor?.id &&
-      c.call_status === 'completed' &&
-      c.cost_to_vendor
-  );
+  // Filter completed calls with cost
+  const vendorCalls = allCalls.filter((c) => c.call_status === 'completed' && c.cost_to_vendor);
 
   // Current month calls
   const monthStart = startOfMonth(new Date(selectedYear, selectedMonth));

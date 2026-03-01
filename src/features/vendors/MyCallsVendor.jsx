@@ -21,6 +21,7 @@ import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { issueTypeLabels } from '@/config/labels';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
+import { PageLoader } from '@/components/ui/LoadingSpinner';
 
 const statusOptions = [
   { value: 'all', label: 'כל הסטטוסים' },
@@ -38,23 +39,48 @@ export default function MyCallsVendor() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const { currentUser: user } = usePermissions();
+  const { currentUser: user, effectiveRole } = usePermissions();
+  const isVendorUser = effectiveRole === 'vendor';
 
-  const { data: vendors = [] } = useQuery({
-    queryKey: queryKeys.vendors.all(),
-    queryFn: () => base44.entities.Vendor.list(),
+  // Vendor profile: server-scoped for vendor users, direct for admin/operator
+  const vendorQuery = useQuery({
+    queryKey: [...queryKeys.vendors.profile(user?.email), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+        });
+        const vendors = result.data?.data || [];
+        return vendors[0] || null;
+      }
+      const vendors = await base44.entities.Vendor.filter({ email: user.email });
+      return vendors[0] || null;
+    },
+    enabled: !!user?.email,
   });
 
-  const currentVendor = vendors.find((v) => v.email === user?.email);
+  const currentVendor = vendorQuery.data;
 
-  const { data: allCalls = [], isLoading } = useQuery({
-    queryKey: queryKeys.vendors.calls(currentVendor?.id),
-    queryFn: () => base44.entities.Call.list('-created_date', 500),
-    enabled: !!currentVendor,
+  // Calls: server-scoped for vendor users, direct for admin/operator
+  const { data: myCalls = [], isLoading } = useQuery({
+    queryKey: [...queryKeys.vendors.calls(currentVendor?.id), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'calls',
+          sort: '-created_date',
+          limit: 500,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.Call.filter(
+        { assigned_vendor_id: currentVendor.id },
+        '-created_date',
+        500
+      );
+    },
+    enabled: !!currentVendor?.id,
   });
-
-  // Filter only this vendor's calls
-  const myCalls = allCalls.filter((call) => call.assigned_vendor_id === currentVendor?.id);
 
   // Apply filters
   const filteredCalls = myCalls.filter((call) => {
@@ -182,6 +208,10 @@ export default function MyCallsVendor() {
       ),
     },
   ];
+
+  if (vendorQuery.isLoading) {
+    return <PageLoader text="טוען נתוני ספק..." />;
+  }
 
   if (!currentVendor) {
     return (

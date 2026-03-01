@@ -44,14 +44,21 @@ export default function MyVendorProfile() {
   const [editForm, setEditForm] = useState({});
 
   // 1. Get Current User
-  const { currentUser: user } = usePermissions();
+  const { currentUser: user, effectiveRole } = usePermissions();
+  const isVendorUser = effectiveRole === 'vendor';
 
-  // 2. Get Vendor associated with user email
+  // 2. Get Vendor associated with user email - server-scoped for vendor users
   const { data: vendor, isLoading: vendorLoading } = useQuery({
-    queryKey: queryKeys.vendors.myProfile(user?.email),
+    queryKey: [...queryKeys.vendors.myProfile(user?.email), effectiveRole],
     queryFn: async () => {
       if (!user?.email) return null;
-      // Assuming vendor email matches user email
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+        });
+        const vendors = result.data?.data || [];
+        return vendors[0] || null;
+      }
       const vendors = await base44.entities.Vendor.filter(
         { email: user.email },
         '-created_date',
@@ -64,25 +71,52 @@ export default function MyVendorProfile() {
 
   const vendorId = vendor?.id;
 
-  // 3. Data Queries
+  // 3. Data Queries - server-scoped for vendor users
   const { data: calls = [], isLoading: callsLoading } = useQuery({
-    queryKey: queryKeys.vendors.myCalls(vendorId),
-    queryFn: () =>
-      base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50),
+    queryKey: [...queryKeys.vendors.myCalls(vendorId), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'calls',
+          sort: '-created_date',
+          limit: 50,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.Call.filter({ assigned_vendor_id: vendorId }, '-created_date', 50);
+    },
     enabled: !!vendorId,
   });
 
   const { data: ratings = [] } = useQuery({
-    queryKey: queryKeys.vendors.myRatings(vendorId),
-    queryFn: () =>
-      base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20),
+    queryKey: [...queryKeys.vendors.myRatings(vendorId), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'ratings',
+          sort: '-created_date',
+          limit: 20,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.VendorRating.filter({ vendor_id: vendorId }, '-created_date', 20);
+    },
     enabled: !!vendorId,
   });
 
   const { data: payments = [] } = useQuery({
-    queryKey: queryKeys.vendors.myPayments(vendorId),
-    queryFn: () =>
-      base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20),
+    queryKey: [...queryKeys.vendors.myPayments(vendorId), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'payments',
+          sort: '-created_date',
+          limit: 20,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.VendorPayment.filter({ vendor_id: vendorId }, '-created_date', 20);
+    },
     enabled: !!vendorId,
   });
 

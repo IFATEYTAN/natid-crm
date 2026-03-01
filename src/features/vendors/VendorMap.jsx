@@ -64,30 +64,57 @@ export default function VendorMap() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapCenter, setMapCenter] = useState([31.7683, 35.2137]); // Jerusalem default
 
-  const { currentUser: user } = usePermissions();
+  const { currentUser: user, effectiveRole } = usePermissions();
+  const isVendorUser = effectiveRole === 'vendor';
 
-  const { data: vendors = [] } = useQuery({
-    queryKey: queryKeys.vendors.all(),
-    queryFn: () => base44.entities.Vendor.list(),
+  // Vendor profile: server-scoped for vendor users, direct for admin/operator
+  const vendorQuery = useQuery({
+    queryKey: [...queryKeys.vendors.profile(user?.email), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+        });
+        const vendors = result.data?.data || [];
+        return vendors[0] || null;
+      }
+      const vendors = await base44.entities.Vendor.filter({ email: user.email });
+      return vendors[0] || null;
+    },
+    enabled: !!user?.email,
   });
 
-  const currentVendor = vendors.find((v) => v.email === user?.email);
+  const currentVendor = vendorQuery.data;
 
+  // Calls: server-scoped for vendor users, direct for admin/operator
   const {
     data: allCalls = [],
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: queryKeys.vendors.mapCalls(currentVendor?.id),
-    queryFn: () => base44.entities.Call.list('-created_date', 200),
-    enabled: !!currentVendor,
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    queryKey: [...queryKeys.vendors.mapCalls(currentVendor?.id), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'calls',
+          sort: '-created_date',
+          limit: 200,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.Call.filter(
+        { assigned_vendor_id: currentVendor.id },
+        '-created_date',
+        200
+      );
+    },
+    enabled: !!currentVendor?.id,
+    refetchInterval: 30000,
   });
 
-  // Filter active calls for this vendor
+  // Filter active calls with location data
   const activeCalls = allCalls.filter(
     (c) =>
-      c.assigned_vendor_id === currentVendor?.id &&
       !['completed', 'cancelled'].includes(c.call_status) &&
       c.pickup_location_lat &&
       c.pickup_location_lon

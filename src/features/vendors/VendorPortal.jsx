@@ -28,37 +28,69 @@ import { usePermissions } from '@/components/permissions/PermissionsContext';
 
 export default function VendorPortal() {
   const queryClient = useQueryClient();
-  const { currentUser: user } = usePermissions();
+  const { currentUser: user, effectiveRole } = usePermissions();
+  const isVendorUser = effectiveRole === 'vendor';
 
-  const { data: vendors = [] } = useQuery({
-    queryKey: queryKeys.vendors.all(),
-    queryFn: () => base44.entities.Vendor.list(),
+  // Vendor profile: server-scoped for vendor users, direct for admin/operator
+  const vendorQuery = useQuery({
+    queryKey: [...queryKeys.vendors.profile(user?.email), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'profile',
+        });
+        const vendors = result.data?.data || [];
+        return vendors[0] || null;
+      }
+      const vendors = await base44.entities.Vendor.filter({ email: user.email });
+      return vendors[0] || null;
+    },
+    enabled: !!user?.email,
   });
 
-  // Find current vendor by user email or explicit link
-  const currentVendor = vendors.find((v) => v.id === user?.vendor_id || v.email === user?.email);
+  const currentVendor = vendorQuery.data;
 
-  const { data: allCalls = [], isLoading } = useQuery({
-    queryKey: queryKeys.vendors.calls(currentVendor?.id),
-    queryFn: () => base44.entities.Call.list('-created_date', 500),
-    enabled: !!currentVendor,
+  // Calls: server-scoped for vendor users, direct for admin/operator
+  const { data: myCalls = [], isLoading } = useQuery({
+    queryKey: [...queryKeys.vendors.calls(currentVendor?.id), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'calls',
+          sort: '-created_date',
+          limit: 500,
+        });
+        return result.data?.data || [];
+      }
+      return base44.entities.Call.filter(
+        { assigned_vendor_id: currentVendor.id },
+        '-created_date',
+        500
+      );
+    },
+    enabled: !!currentVendor?.id,
   });
-
-  // Filter only this vendor's calls
-  const myCalls = allCalls.filter((call) => call.assigned_vendor_id === currentVendor?.id);
 
   // Active calls (not completed or cancelled)
   const activeCalls = myCalls.filter((c) => !['completed', 'cancelled'].includes(c.call_status));
 
-  // Auto-Assignment Requests
+  // Auto-Assignment Requests: server-scoped for vendor users
   const { data: assignmentRequests = [], refetch: refetchRequests } = useQuery({
-    queryKey: queryKeys.assignmentRequests.byVendorPortal(currentVendor?.id),
-    queryFn: () =>
-      base44.entities.CallAssignmentAttempt.filter({
+    queryKey: [...queryKeys.assignmentRequests.byVendorPortal(currentVendor?.id), effectiveRole],
+    queryFn: async () => {
+      if (isVendorUser) {
+        const result = await base44.functions.invoke('getVendorScopedData', {
+          entity_type: 'attempts',
+        });
+        const allAttempts = result.data?.data || [];
+        return allAttempts.filter((a) => a.status === 'pending');
+      }
+      return base44.entities.CallAssignmentAttempt.filter({
         vendor_id: currentVendor.id,
         status: 'pending',
-      }),
-    enabled: !!currentVendor,
+      });
+    },
+    enabled: !!currentVendor?.id,
     refetchInterval: 5000,
   });
 
@@ -290,7 +322,7 @@ export default function VendorPortal() {
               בקשות קריאה חדשות ({assignmentRequests.length})
             </h3>
             {assignmentRequests.map((request) => {
-              const call = allCalls.find((c) => c.id === request.call_id);
+              const call = myCalls.find((c) => c.id === request.call_id);
               if (!call) return null;
 
               return (
