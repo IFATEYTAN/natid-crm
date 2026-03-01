@@ -38,9 +38,7 @@ export default function InsuranceBreakdownSection({ cases }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-right">פילוח לפי חברת ביטוח</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => exportToExcel(exportData, 'insurance-breakdown')}>
-          <Download className="w-4 h-4 ms-1" /> Excel
-        </Button>
+        <ExportMenu data={exportData} filename="insurance-breakdown" title="פילוח לפי חברת ביטוח" />
       </CardHeader>
       <CardContent className="space-y-6">
         <ResponsiveContainer width="100%" height={300}>

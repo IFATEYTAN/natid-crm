@@ -33,9 +33,7 @@ export default function TopVendorsDetailSection({ cases }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-right">ספקים מובילים - פירוט (Top 15)</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => exportToExcel(exportData, 'top-vendors-detail')}>
-          <Download className="w-4 h-4 ms-1" /> Excel
-        </Button>
+        <ExportMenu data={exportData} filename="top-vendors-detail" title="ספקים מובילים - פירוט" />
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

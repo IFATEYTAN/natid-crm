@@ -44,9 +44,7 @@ export default function MonthlyTrendSection({ cases }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-right">מגמה חודשית</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => exportToExcel(exportData, 'monthly-trend')}>
-          <Download className="w-4 h-4 ms-1" /> Excel
-        </Button>
+        <ExportMenu data={exportData} filename="monthly-trend" title="מגמה חודשית" />
       </CardHeader>
       <CardContent className="space-y-6">
         <ResponsiveContainer width="100%" height={280}>

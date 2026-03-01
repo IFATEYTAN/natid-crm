@@ -33,9 +33,7 @@ export default function InsuranceMonthMatrix({ cases }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-right">חברת ביטוח × חודש</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => exportToExcel(exportData, 'insurance-month-matrix')}>
-          <Download className="w-4 h-4 ms-1" /> Excel
-        </Button>
+        <ExportMenu data={exportData} filename="insurance-month-matrix" title="חברת ביטוח × חודש" />
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

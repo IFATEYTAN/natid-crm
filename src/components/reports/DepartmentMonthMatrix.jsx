@@ -32,9 +32,7 @@ export default function DepartmentMonthMatrix({ cases }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-right">מחלקה × חודש</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => exportToExcel(exportData, 'department-month-matrix')}>
-          <Download className="w-4 h-4 ms-1" /> Excel
-        </Button>
+        <ExportMenu data={exportData} filename="department-month-matrix" title="מחלקה × חודש" />
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

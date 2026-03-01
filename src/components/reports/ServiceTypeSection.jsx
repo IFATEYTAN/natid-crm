@@ -34,9 +34,7 @@ export default function ServiceTypeSection({ cases }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-right">פילוח לפי סוג שירות</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => exportToExcel(exportData, 'service-type')}>
-          <Download className="w-4 h-4 ms-1" /> Excel
-        </Button>
+        <ExportMenu data={exportData} filename="service-type" title="פילוח לפי סוג שירות" />
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid md:grid-cols-2 gap-6">

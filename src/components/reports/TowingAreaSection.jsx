@@ -37,9 +37,7 @@ export default function TowingAreaSection({ cases }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-right">פילוח לפי אזור גרירה</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => exportToExcel(exportData, 'towing-area')}>
-          <Download className="w-4 h-4 ms-1" /> Excel
-        </Button>
+        <ExportMenu data={exportData} filename="towing-area" title="פילוח לפי אזור גרירה" />
       </CardHeader>
       <CardContent className="space-y-6">
         <ResponsiveContainer width="100%" height={280}>
