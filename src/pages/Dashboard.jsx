@@ -278,7 +278,7 @@ export default function Dashboard() {
 
           {/* תור מתפעל בזמן אמת */}
           <Suspense fallback={<Skeleton className="h-64" />}>
-            <WorkQueueOverview calls={calls} isLoading={isLoading} />
+            <WorkQueueOverview calls={cases} isLoading={isLoading} />
           </Suspense>
 
           {/* KPI Cards */}
