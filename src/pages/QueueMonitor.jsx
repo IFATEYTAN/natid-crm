@@ -470,13 +470,11 @@ export default function QueueMonitor() {
     },
   ];
 
-  if (workQueueQuery.isError || callsQuery.isError) {
+  if (workQueueQuery.isError || casesQuery.isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
-        <p className="text-gray-500 text-sm">
-          {workQueueQuery.error?.message || callsQuery.error?.message || 'נסה לרענן את הדף'}
-        </p>
+        <p className="text-gray-500 text-sm">נסה לרענן את הדף</p>
       </div>
     );
   }
