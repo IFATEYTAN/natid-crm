@@ -60,6 +60,44 @@ const normalizeVehicleType = (value) => {
 
 // Column name mapping: CSV column -> entity field
 const COLUMN_MAPS = {
+  Customer: {
+    name: 'name',
+    phone: 'phone',
+    address: 'address',
+    city: 'city',
+    // ignored: subscriptionid, vehiclenumber, vehiclemodel, vehicletype
+  },
+  Case: {
+    casenumber: 'case_number',
+    customerid: 'customer_id',
+    customername: 'customer_name',
+    callername: 'caller_name',
+    callerphone: 'caller_phone',
+    vehiclenumber: 'vehicle_number',
+    vehicletype: 'vehicle_type',
+    vehiclemodel: 'vehicle_model',
+    servicetype: 'service_type',
+    locationaddress: 'location_address',
+    locationcity: 'location_city',
+    destinationaddress: 'destination_address',
+    destinationcity: 'destination_city',
+    status: 'status',
+    priority: 'priority',
+    assignedproviderid: 'assigned_provider_id',
+    assignedprovidername: 'assigned_provider_name',
+    assignedat: 'assigned_at',
+    arrivedat: 'arrived_at',
+    completedat: 'completed_at',
+    distancekm: 'distance_km',
+    price: 'price',
+    cost: 'cost',
+    paymentstatus: 'payment_status',
+    problemdescription: 'problem_description',
+    resolutionnotes: 'resolution_notes',
+    internalnotes: 'internal_notes',
+    customerrating: 'customer_rating',
+    // ignored: source, createdat
+  },
   Vendor: {
     vendorname: 'vendor_name',
     vendornumber: 'vendor_number',
