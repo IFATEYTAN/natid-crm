@@ -247,7 +247,7 @@ function LayoutContent({ children, currentPageName }) {
   if (!currentUser) return null;
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#FAFAFA]">
+    <div dir="rtl" className="min-h-screen bg-[#FAFAFA] flex">
       {/* Skip to main content link - visible on keyboard focus */}
       <a
         href="#main-content"
