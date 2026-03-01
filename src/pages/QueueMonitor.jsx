@@ -101,17 +101,40 @@ export default function QueueMonitor() {
   const [saving, setSaving] = useState(false);
 
   const workQueueQuery = useWorkQueue();
-  const callsQuery = useCalls();
+
+  // Read active cases directly from Case entity
+  const casesQuery = useQuery({
+    queryKey: ['queue-cases'],
+    queryFn: () => base44.entities.Case.filter({ status: 'new' }, '-created_date', 500)
+      .catch(() => base44.entities.Case.list('-created_date', 500)),
+  });
 
   const queueItems = workQueueQuery.data || [];
-  const calls = callsQuery.data || [];
-  const isLoading = workQueueQuery.isLoading;
+  const directCases = casesQuery.data || [];
+  const isLoading = workQueueQuery.isLoading || casesQuery.isLoading;
 
-  // Enrich queue items with call details
-  const enrichedItems = queueItems.map((item) => {
-    const call = calls.find((c) => c.id === item.call_id);
-    return { ...item, call };
-  });
+  // Build enriched items from work queue + case lookups
+  // If queue is empty, show active cases directly as pseudo-queue items
+  const enrichedItems = queueItems.length > 0
+    ? queueItems.map((item) => {
+        const call = directCases.find((c) => c.id === item.call_id);
+        return { ...item, call };
+      })
+    : directCases.map((c) => ({
+        id: c.id,
+        call_id: c.id,
+        queue_status: 'waiting_in_queue',
+        priority_score: c.priority === 'urgent' ? 90 : c.priority === 'high' ? 70 : 50,
+        added_to_queue_at: c.created_date,
+        assigned_to_agent: null,
+        call: {
+          call_number: c.case_number,
+          customer_name: c.customer_name,
+          customer_phone: c.caller_phone,
+          pickup_location_address: c.location_address || c.location_city,
+          call_status: c.status,
+        },
+      }));
 
   const filteredItems = enrichedItems.filter((item) => {
     const matchesStatus = filterStatus === 'all' || item.queue_status === filterStatus;
