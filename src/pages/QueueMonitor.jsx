@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { createPageUrl, formatDate, formatDateTime } from '@/components/utils';
 import { cn } from '@/lib/utils';
 import { useWorkQueue } from '@/features/queue/hooks/useQueue';
-import { useCalls } from '@/features/calls/hooks/useCalls';
+import { useQuery } from '@tanstack/react-query';
 import { useCurrentUserRole } from '@/components/auth/RoleGuard';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
