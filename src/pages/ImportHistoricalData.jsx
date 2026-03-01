@@ -145,6 +145,8 @@ const NUMERIC_FIELDS = {
     'total_calls_completed', 'total_calls_assigned', 'average_rating', 'total_ratings',
     'average_response_time', 'average_completion_time', 'completion_rate',
     'payment_rate_per_call', 'total_revenue', 'pending_payments'],
+  Case: ['distance_km', 'price', 'cost', 'customer_rating'],
+  Customer: ['sla_response_minutes', 'sla_arrival_minutes', 'monthly_budget'],
 };
 
 // Boolean fields per entity
@@ -163,6 +165,13 @@ const ARRAY_FIELDS = {
   Vendor: ['service_type', 'vehicle_types_supported', 'coverage_areas'],
   HistoricalCallData: [],
   Customer: [],
+  Case: [],
+};
+
+// Fields to ignore per entity (CSV columns with no matching entity field)
+const IGNORED_FIELDS = {
+  Customer: ['subscriptionid', 'vehiclenumber', 'vehiclemodel', 'vehicletype'],
+  Case: ['source', 'createdat'],
 };
 
 const toArray = (value) => {
