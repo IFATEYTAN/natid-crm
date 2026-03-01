@@ -216,6 +216,15 @@ export default function ImportHistoricalDataPage() {
         if (record.service_type) {
           record.service_type = normalizeServiceType(record.service_type);
         }
+        // Convert array fields from string to array
+        const arrayFields = ARRAY_FIELDS[target.entity] || [];
+        arrayFields.forEach((key) => {
+          if (key in record) {
+            record[key] = toArray(record[key]);
+          } else {
+            record[key] = [];
+          }
+        });
         // Apply fallbacks for required fields
         target.requiredFields.forEach(({ key, fallback }) => {
           if (!record[key] && fallback !== null) record[key] = fallback;
