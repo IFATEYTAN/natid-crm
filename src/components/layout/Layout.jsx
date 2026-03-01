@@ -438,7 +438,7 @@ function LayoutContent({ children, currentPageName }) {
       </aside>
 
       {/* Main Content */}
-      <div className="lg:me-64 min-h-screen flex flex-col transition-all duration-300">
+      <div className="flex-1 lg:mr-64 min-h-screen flex flex-col transition-all duration-300 overflow-x-hidden">
         {/* Top Bar */}
         <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
           <div className="flex items-center gap-4">
