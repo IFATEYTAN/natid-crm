@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 Deno.serve(async (req) => {
   try {
@@ -8,6 +12,9 @@ Deno.serve(async (req) => {
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
+
+    const rl = await limiter.check('inviteTestUsers', user.id, 5, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const { emails } = await req.json();
     

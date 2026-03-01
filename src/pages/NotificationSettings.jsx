@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { queryKeys } from '@/lib/queryKeys';
+import React from 'react';
+import {
+  useNotificationSettings,
+  useUpdateNotificationSetting,
+  useDeleteNotificationSetting,
+} from '@/features/settings/hooks/useSettings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,37 +55,15 @@ const eventIcons = {
 };
 
 export default function NotificationSettingsPage() {
-  const queryClient = useQueryClient();
-
-  const { data: settings = [], isLoading } = useQuery({
-    queryKey: queryKeys.settings.notifications(),
-    queryFn: () => base44.entities.NotificationSetting.list('-created_date', 50),
-  });
-
-  const toggleMutation = useMutation({
-    mutationFn: ({ id, enabled }) => base44.entities.NotificationSetting.update(id, { enabled }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings.notifications() });
-      showToast.success('ההגדרה עודכנה');
-    },
-    onError: () => {
-      showToast.error('שגיאה בעדכון ההגדרה');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.NotificationSetting.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings.notifications() });
-      showToast.success('ההגדרה נמחקה');
-    },
-    onError: () => {
-      showToast.error('שגיאה במחיקת ההגדרה');
-    },
-  });
+  const { data: settings = [], isLoading } = useNotificationSettings();
+  const updateMutation = useUpdateNotificationSetting();
+  const deleteMutation = useDeleteNotificationSetting();
 
   const handleToggle = (id, currentEnabled) => {
-    toggleMutation.mutate({ id, enabled: !currentEnabled });
+    updateMutation.mutate(
+      { id, data: { enabled: !currentEnabled } },
+      { onSuccess: () => showToast.success('ההגדרה עודכנה') }
+    );
   };
 
   if (isLoading) {
@@ -194,7 +174,11 @@ export default function NotificationSettingsPage() {
                           variant="ghost"
                           size="icon"
                           className="text-[#6b7280] hover:text-[#ef4444]"
-                          onClick={() => deleteMutation.mutate(setting.id)}
+                          onClick={() =>
+                            deleteMutation.mutate(setting.id, {
+                              onSuccess: () => showToast.success('ההגדרה נמחקה'),
+                            })
+                          }
                           aria-label="מחיקה"
                         >
                           <Trash2 className="w-4 h-4" />

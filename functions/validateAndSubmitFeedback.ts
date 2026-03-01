@@ -1,10 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, getClientIP, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Rate limiting: only accept POST with JSON content type
+
+    // Rate limit by IP (no auth - public feedback endpoint)
+    const ip = getClientIP(req);
+    const rl = await limiter.check('submitFeedback', ip, 5, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
+
+    // Only accept POST with JSON content type
     if (req.method !== 'POST') {
       return Response.json({ error: 'Method not allowed' }, { status: 405 });
     }

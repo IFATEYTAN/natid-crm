@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 const STATUS_MESSAGES = {
   awaiting_assignment: 'הקריאה התקבלה ואנחנו מחפשים ספק זמין',
@@ -21,6 +25,9 @@ Deno.serve(async (req) => {
     if (!['admin', 'operator', 'vendor'].includes(user.role)) {
       return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
     }
+
+    const rl = await limiter.check('sendCallStatusUpdate', user.id, 20, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const { call_id, status, eta, custom_message } = await req.json();
 

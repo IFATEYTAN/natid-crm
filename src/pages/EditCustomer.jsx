@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { queryKeys } from '@/lib/queryKeys';
+import { useCustomer, useUpdateCustomer } from '@/features/customers/hooks/useCustomers';
 import { createPageUrl } from '@/components/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +16,6 @@ import {
 } from '@/components/ui/select';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { AlertCircle, ArrowRight, Save } from 'lucide-react';
-import { toast } from 'sonner';
 
 const customerTypeLabels = {
   insurance_company: 'חברת ביטוח',
@@ -45,36 +42,16 @@ export default function EditCustomer() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const id = searchParams.get('id');
-  const queryClient = useQueryClient();
   const [form, setForm] = useState(null);
 
-  const {
-    data: customer,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: queryKeys.customers.detail(id),
-    enabled: !!id,
-    queryFn: async () => {
-      const res = await base44.entities.Customer.filter({ id });
-      return res?.[0] || null;
-    },
-  });
+  const { data: customer, isLoading, isError } = useCustomer(id);
+  const updateMutation = useUpdateCustomer();
 
   useEffect(() => {
     if (customer && !form) {
       setForm({ ...customer });
     }
   }, [customer]);
-
-  const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Customer.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
-      toast.success('הלקוח עודכן בהצלחה');
-    },
-  });
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -83,7 +60,7 @@ export default function EditCustomer() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const { id: _id, created_date, updated_date, created_by, ...data } = form;
-    updateMutation.mutate(data);
+    updateMutation.mutate({ id, data });
   };
 
   if (!id) {

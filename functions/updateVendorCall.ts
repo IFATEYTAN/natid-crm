@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 // Fields a vendor is allowed to update on a call
 const ALLOWED_VENDOR_FIELDS = [
@@ -24,6 +28,9 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const rl = await limiter.check('updateVendorCall', user.id, 30, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const { call_id, updates } = await req.json();
 

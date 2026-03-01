@@ -67,10 +67,9 @@ export default function IntegrationSettings() {
   };
 
   const generateWebhookSecret = () => {
-    const secret =
-      'whsec_' +
-      Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15);
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    const secret = 'whsec_' + Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
     setSettings((prev) => ({ ...prev, webhookSecret: secret }));
     toast.success('נוצר מפתח חדש');
   };

@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 /**
  * Update vendor location - called from vendor GPS tracker
@@ -17,6 +21,9 @@ Deno.serve(async (req) => {
     if (!['admin', 'vendor'].includes(user.role)) {
       return Response.json({ error: 'Forbidden - vendor role required' }, { status: 403 });
     }
+
+    const rl = await limiter.check('updateVendorLocation', user.id, 60, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const {
       vendor_id,

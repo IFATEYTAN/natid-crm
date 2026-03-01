@@ -1,33 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, getClientIP, rateLimitResponse } from './_shared/rateLimit.ts';
 
-// In-memory rate limiter: max 10 requests per IP per minute
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 10;
-const RATE_LIMIT_WINDOW_MS = 60_000;
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-
-  entry.count++;
-  return entry.count > RATE_LIMIT_MAX;
-}
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 Deno.serve(async (req) => {
   try {
-    // Rate limiting by IP
-    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-    if (isRateLimited(clientIp)) {
-      return Response.json({
-        error: 'Too many requests - please try again later',
-        message: 'יותר מדי בקשות, נסה שוב בעוד דקה'
-      }, { status: 429 });
-    }
+    // Rate limiting by IP (persisted in Deno KV)
+    const ip = getClientIP(req);
+    const rl = await limiter.check('getFeedbackTokenInfo', ip, 10, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const base44 = createClientFromRequest(req);
 

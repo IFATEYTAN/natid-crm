@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useCreateVendor } from '@/features/vendors/hooks/useVendors';
 import { coverageAreas } from '@/config/coverageConstants';
 import { sanitizeVendorCreate } from '@/lib/schemas/vendor';
 import { Button } from '@/components/ui/button';
@@ -73,32 +73,7 @@ export default function NewVendorPage() {
     availability_status: 'available',
   });
 
-  const createMutation = useMutation({
-    mutationFn: async (data) => {
-      // Create vendor
-      const vendor = await base44.entities.Vendor.create(data);
-
-      // Send invite email if requested
-      if (sendInvite && data.email) {
-        try {
-          await base44.users.inviteUser(data.email, 'vendor');
-          showToast.success('הזמנה נשלחה לספק');
-        } catch (e) {
-          console.error('Failed to send invite:', e);
-          showToast.warning('הספק נוצר אך ההזמנה לא נשלחה');
-        }
-      }
-
-      return vendor;
-    },
-    onSuccess: () => {
-      showToast.success(feedbackMessages.create.success);
-      navigate(createPageUrl('ServiceProviders'));
-    },
-    onError: (error) => {
-      showToast.error(feedbackMessages.create.error + ': ' + error.message);
-    },
-  });
+  const createMutation = useCreateVendor();
 
   const handleServiceTypeChange = (type, checked) => {
     setFormData((prev) => ({
@@ -142,7 +117,21 @@ export default function NewVendorPage() {
 
     try {
       const data = sanitizeVendorCreate(formData);
-      createMutation.mutate(data);
+      createMutation.mutate(data, {
+        onSuccess: async () => {
+          // Send invite email if requested
+          if (sendInvite && data.email) {
+            try {
+              await base44.users.inviteUser(data.email, 'vendor');
+              showToast.success('הזמנה נשלחה לספק');
+            } catch (e) {
+              console.error('Failed to send invite:', e);
+              showToast.warning('הספק נוצר אך ההזמנה לא נשלחה');
+            }
+          }
+          navigate(createPageUrl('ServiceProviders'));
+        },
+      });
     } catch (validationError) {
       showToast.error(validationError.message);
     }
