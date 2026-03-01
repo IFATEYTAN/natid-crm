@@ -65,75 +65,53 @@ export default function Dashboard() {
     return 'ערב טוב';
   };
 
-  const { data: workQueue = [] } = useWorkQueue();
+  // Read from Case entity (real data)
+  const { data: cases = [], isLoading: casesLoading } = useQuery({
+    queryKey: ['dashboard-cases'],
+    queryFn: () => base44.entities.Case.list('-created_date', 10000),
+  });
 
-  const {
-    data: calls = [],
-    isLoading: callsLoading,
-    isError: callsError,
-    error: callsErrorData,
-  } = useCalls();
-  const {
-    data: vendors = [],
-    isLoading: vendorsLoading,
-    isError: vendorsError,
-    error: vendorsErrorData,
-  } = useVendors();
+  // Read from Vendor entity (real data)
+  const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
+    queryKey: ['dashboard-vendors'],
+    queryFn: () => base44.entities.Vendor.list('-updated_date', 500),
+  });
+
+  const isLoading = casesLoading || vendorsLoading;
+
+  // Use cases as "calls" for all downstream components that expect call data
+  const calls = cases;
 
   const availableVendors = vendors.filter(
     (v) => v.is_active && v.availability_status === 'available'
   );
 
-  const isLoading = callsLoading || vendorsLoading;
-
-  if (callsError || vendorsError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
-        <p className="text-gray-500 text-sm">
-          {callsErrorData?.message || vendorsErrorData?.message || 'נסה לרענן את הדף'}
-        </p>
-      </div>
-    );
-  }
-
-  // Calculate stats
-  const openCalls = calls.filter((c) => openStatuses.includes(c.call_status));
-  const waitingCalls = calls.filter((c) => c.call_status === 'waiting_treatment');
-  const completedToday = calls.filter((call) => {
-    const callDate = new Date(call.created_date);
-    return (
-      call.call_status === 'completed' &&
-      callDate >= startOfDay(today) &&
-      callDate <= endOfDay(today)
-    );
-  });
-
-  // Operator stats
-  const myWorkItems = workQueue.filter((wq) => wq.assigned_to_agent === currentUser?.email);
-  const myCallIds = myWorkItems.map((wq) => wq.call_id);
-  const myOpenCalls = openCalls.filter((c) => myCallIds.includes(c.id));
-  const myCompletedToday = calls.filter((call) => {
-    const callDate = new Date(call.created_date);
-    return (
-      call.call_status === 'completed' &&
-      myCallIds.includes(call.id) &&
-      callDate >= startOfDay(today) &&
-      callDate <= endOfDay(today)
-    );
-  });
-  const myUrgentCalls = myOpenCalls.filter(
-    (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
+  // Calculate stats from Case entity
+  const openCalls = useMemo(
+    () => cases.filter((c) => c.status !== 'completed' && c.status !== 'cancelled'),
+    [cases]
   );
-  const unassignedCalls = openCalls.filter((c) => !c.assigned_vendor_id);
-  const urgentCalls = openCalls.filter(
-    (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
+  const waitingCalls = useMemo(() => cases.filter((c) => c.status === 'new'), [cases]);
+  const completedToday = useMemo(
+    () =>
+      cases.filter((c) => {
+        const d = new Date(c.created_date);
+        return c.status === 'completed' && d >= startOfDay(today) && d <= endOfDay(today);
+      }),
+    [cases]
   );
+
+  // Operator stats (simplified - no work queue dependency)
+  const myOpenCalls = [];
+  const myCompletedToday = [];
+  const myUrgentCalls = [];
+  const unassignedCalls = openCalls.filter((c) => !c.assigned_provider_id);
+  const urgentCalls = openCalls.filter((c) => c.priority === 'urgent');
 
   // KPI stats (last 7 days)
   const sevenDaysAgo = subDays(new Date(), 7);
-  const recentRatedCalls = calls.filter(
-    (c) => c.customer_rating && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
+  const recentRatedCalls = cases.filter(
+    (c) => c.customer_rating && c.created_date && new Date(c.created_date) >= sevenDaysAgo
   );
   const avgRating =
     recentRatedCalls.length > 0
@@ -141,38 +119,33 @@ export default function Dashboard() {
           recentRatedCalls.reduce((sum, c) => sum + c.customer_rating, 0) / recentRatedCalls.length
         ).toFixed(1)
       : '0.0';
-  const recentCallsWithEta = calls.filter(
-    (c) => c.vendor_eta && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
+  const avgEta = 0;
+  const recentCompleted = cases.filter(
+    (c) => c.status === 'completed' && c.created_date && new Date(c.created_date) >= sevenDaysAgo
   );
-  const avgEta =
-    recentCallsWithEta.length > 0
-      ? Math.round(
-          recentCallsWithEta.reduce((sum, c) => sum + c.vendor_eta, 0) / recentCallsWithEta.length
-        )
-      : 0;
-  const recentCompleted = calls.filter(
-    (c) =>
-      c.call_status === 'completed' && c.created_date && parseISO(c.created_date) >= sevenDaysAgo
-  );
-  const resolvedInField = recentCompleted.filter((c) => c.resolution_type !== 'tow');
   const fieldResolutionRate =
     recentCompleted.length > 0
-      ? Math.round((resolvedInField.length / recentCompleted.length) * 100)
+      ? Math.round(
+          (recentCompleted.filter((c) => c.service_type !== 'towing').length /
+            recentCompleted.length) *
+            100
+        )
       : 0;
 
-  // Chart data
-  const statusData = Object.keys(statusLabels)
-    .map((status) => ({
-      name: statusLabels[status],
-      value: calls.filter((c) => c.call_status === status).length,
+  // Chart data using Case entity fields
+  const statusLabelsMap = { new: 'חדש', assigned: 'שובץ', en_route: 'בדרך', on_site: 'באתר', in_progress: 'בטיפול', completed: 'הושלם', cancelled: 'בוטל' };
+  const statusData = Object.entries(statusLabelsMap)
+    .map(([status, name]) => ({
+      name,
+      value: cases.filter((c) => c.status === status).length,
     }))
     .filter((d) => d.value > 0);
 
   const trendData = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(new Date(), 6 - i);
     const dateStr = format(date, 'yyyy-MM-dd');
-    const count = calls.filter(
-      (c) => c.created_date && format(parseISO(c.created_date), 'yyyy-MM-dd') === dateStr
+    const count = cases.filter(
+      (c) => c.created_date && format(new Date(c.created_date), 'yyyy-MM-dd') === dateStr
     ).length;
     return {
       name: format(date, 'dd/MM', { locale: he }),
