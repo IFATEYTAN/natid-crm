@@ -266,18 +266,37 @@ export default function ImportHistoricalDataPage() {
     try {
       console.log('[Import] Starting import for target:', target.entity);
       console.log('[Import] Total rows in sheet:', currentSheet.rows.length);
+      const columnMap = COLUMN_MAPS[target.entity] || {};
       const recordsToInsert = currentSheet.rows.map((row) => {
         const record = {};
         currentSheet.headers.forEach((header) => {
           const value = row[header];
           if (value !== null && value !== undefined && value !== '') {
-            record[header] = value;
+            // Normalize header: lowercase, remove spaces/underscores/hyphens
+            const normalizedHeader = header.toLowerCase().replace(/[\s_\-]/g, '');
+            const mappedKey = columnMap[normalizedHeader] || header;
+            record[mappedKey] = value;
           }
         });
         // Normalize service_type from English to Hebrew
         if (record.service_type) {
           record.service_type = normalizeServiceType(record.service_type);
         }
+        // Convert numeric fields
+        const numericFields = NUMERIC_FIELDS[target.entity] || [];
+        numericFields.forEach((key) => {
+          if (record[key] !== undefined && record[key] !== '') {
+            const parsed = parseFloat(record[key]);
+            record[key] = isNaN(parsed) ? undefined : parsed;
+          }
+        });
+        // Convert boolean fields
+        const booleanFields = BOOLEAN_FIELDS[target.entity] || [];
+        booleanFields.forEach((key) => {
+          if (record[key] !== undefined && record[key] !== '') {
+            record[key] = toBoolean(record[key]);
+          }
+        });
         // Convert array fields from string to array
         const arrayFields = ARRAY_FIELDS[target.entity] || [];
         arrayFields.forEach((key) => {
