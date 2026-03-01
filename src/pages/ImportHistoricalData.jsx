@@ -203,10 +203,17 @@ const IMPORT_TARGETS = {
     entity: 'Customer',
     requiredFields: [
       { key: 'name', fallback: null },
-      { key: 'customer_type', fallback: 'other' },
-      { key: 'phone', fallback: null },
+      { key: 'customer_type', fallback: 'individual' },
     ],
-    info: 'שדות חובה: name, phone, customer_type',
+    info: 'שדה חובה: name',
+  },
+  Case: {
+    label: 'קריאות',
+    entity: 'Case',
+    requiredFields: [
+      { key: 'service_type', fallback: 'other' },
+    ],
+    info: 'שדה חובה: service_type',
   },
 };
 
