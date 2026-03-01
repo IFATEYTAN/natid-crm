@@ -104,19 +104,27 @@ export default function ServiceProvidersPage() {
     queryFn: () => base44.entities.Case.list('-created_date', 2000),
   });
 
-  // Calculate call stats per vendor
+  // Calculate case stats per vendor using assigned_provider_id from Case entity
   const vendorCallStats = useMemo(() => {
     const stats = {};
-    calls.forEach((call) => {
-      const vendorId = call.assigned_vendor_id;
+    calls.forEach((c) => {
+      const vendorId = c.assigned_provider_id;
       if (vendorId) {
-        if (!stats[vendorId]) {
-          stats[vendorId] = { open: 0, closed: 0 };
-        }
-        if (call.call_status === 'completed' || call.call_status === 'cancelled') {
+        if (!stats[vendorId]) stats[vendorId] = { open: 0, closed: 0 };
+        if (c.status === 'completed' || c.status === 'cancelled') {
           stats[vendorId].closed++;
         } else {
           stats[vendorId].open++;
+        }
+      }
+      // Also try by vendor name match
+      const vendorName = c.assigned_provider_name;
+      if (vendorName && !vendorId) {
+        if (!stats[vendorName]) stats[vendorName] = { open: 0, closed: 0 };
+        if (c.status === 'completed' || c.status === 'cancelled') {
+          stats[vendorName].closed++;
+        } else {
+          stats[vendorName].open++;
         }
       }
     });
