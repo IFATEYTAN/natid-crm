@@ -293,15 +293,22 @@ export default function ImportHistoricalDataPage() {
             record[key] = toBoolean(record[key]);
           }
         });
-        // Convert array fields from string to array
+        // Convert array fields: always convert to array, even if single value
         const arrayFields = ARRAY_FIELDS[target.entity] || [];
         arrayFields.forEach((key) => {
-          if (key in record) {
-            record[key] = toArray(record[key]);
+          const val = record[key];
+          if (Array.isArray(val)) {
+            // already array, fine
+          } else if (val && String(val).trim() !== '') {
+            record[key] = String(val).split(',').map(s => s.trim()).filter(Boolean);
           } else {
             record[key] = [];
           }
         });
+        // Normalize service_type entries from English to Hebrew
+        if (record.service_type && Array.isArray(record.service_type)) {
+          record.service_type = record.service_type.map(normalizeServiceType);
+        }
         // Apply fallbacks for required fields
         target.requiredFields.forEach(({ key, fallback }) => {
           if (!record[key] && fallback !== null) record[key] = fallback;
