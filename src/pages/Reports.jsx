@@ -55,6 +55,27 @@ export default function Reports() {
 
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  // Build full-report export data (all sections combined)
+  const buildFullExport = () => {
+    const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    return cases.map(c => ({
+      'מספר קריאה': c.case_number || '',
+      'שם לקוח': c.customer_name || '',
+      'סוג שירות': c.service_type || '',
+      'מחלקה': c.department || '',
+      'חברת ביטוח': c.insurance_company || '',
+      'אזור גרירה': c.towing_area || '',
+      'ספק': c.assigned_provider_name || '',
+      'סטטוס': c.status || '',
+      'מחיר': c.price || 0,
+      'עלות': c.cost || 0,
+      'ק"מ': c.distance_km || 0,
+      'חודש': c.created_date ? MONTHS_HE[new Date(c.created_date).getMonth()] : '',
+      'שנה': c.created_date ? new Date(c.created_date).getFullYear() : '',
+      'תאריך': c.created_date ? new Date(c.created_date).toLocaleDateString('he-IL') : '',
+    }));
+  };
+
   return (
     <div className="space-y-8 pb-16" dir="rtl">
       {/* Header */}
