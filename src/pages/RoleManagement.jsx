@@ -375,8 +375,9 @@ export default function RoleManagement() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>שם מזהה (באנגלית)</Label>
+                  <Label htmlFor="role-name">שם מזהה (באנגלית)</Label>
                   <Input
+                    id="role-name"
                     value={selectedRole.name}
                     onChange={(e) => setSelectedRole((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="manager"
@@ -384,8 +385,9 @@ export default function RoleManagement() {
                   />
                 </div>
                 <div>
-                  <Label>שם תצוגה</Label>
+                  <Label htmlFor="role-display-name">שם תצוגה</Label>
                   <Input
+                    id="role-display-name"
                     value={selectedRole.display_name}
                     onChange={(e) =>
                       setSelectedRole((prev) => ({ ...prev, display_name: e.target.value }))
@@ -395,8 +397,9 @@ export default function RoleManagement() {
                 </div>
               </div>
               <div>
-                <Label>תיאור</Label>
+                <Label htmlFor="role-description">תיאור</Label>
                 <Input
+                  id="role-description"
                   value={selectedRole.description}
                   onChange={(e) =>
                     setSelectedRole((prev) => ({ ...prev, description: e.target.value }))
@@ -464,7 +467,7 @@ export default function RoleManagement() {
           {selectedUserPerm && (
             <div className="space-y-4">
               <div>
-                <Label>בחר תפקיד</Label>
+                <Label htmlFor="role-user-role">בחר תפקיד</Label>
                 <Select
                   value={selectedUserPerm.role_id || 'none'}
                   onValueChange={(value) => {
@@ -476,7 +479,7 @@ export default function RoleManagement() {
                     }));
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="role-user-role">
                     <SelectValue placeholder="בחר תפקיד" />
                   </SelectTrigger>
                   <SelectContent>

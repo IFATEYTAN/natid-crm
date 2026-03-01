@@ -132,9 +132,14 @@ export default function IntegrationSettings() {
           {settings.webhookEnabled && (
             <>
               <div>
-                <Label>Webhook URL</Label>
+                <Label htmlFor="integration-webhook-url">Webhook URL</Label>
                 <div className="flex gap-2 mt-1">
-                  <Input value={settings.webhookUrl} readOnly className="font-mono text-sm" />
+                  <Input
+                    id="integration-webhook-url"
+                    value={settings.webhookUrl}
+                    readOnly
+                    className="font-mono text-sm"
+                  />
                   <Button
                     variant="outline"
                     size="icon"
@@ -152,9 +157,10 @@ export default function IntegrationSettings() {
               </div>
 
               <div>
-                <Label>Webhook Secret</Label>
+                <Label htmlFor="integration-webhook-secret">Webhook Secret</Label>
                 <div className="flex gap-2 mt-1">
                   <Input
+                    id="integration-webhook-secret"
                     value={settings.webhookSecret}
                     onChange={(e) =>
                       setSettings((prev) => ({ ...prev, webhookSecret: e.target.value }))
@@ -196,12 +202,12 @@ export default function IntegrationSettings() {
         <h3 className="mb-4">חיבור CRM</h3>
         <div className="space-y-6">
           <div>
-            <Label>סוג CRM</Label>
+            <Label htmlFor="integration-crm-type">סוג CRM</Label>
             <Select
               value={settings.crmType}
               onValueChange={(value) => setSettings((prev) => ({ ...prev, crmType: value }))}
             >
-              <SelectTrigger className="mt-1">
+              <SelectTrigger id="integration-crm-type" className="mt-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -214,8 +220,9 @@ export default function IntegrationSettings() {
           </div>
 
           <div>
-            <Label>API Key / Access Token</Label>
+            <Label htmlFor="integration-api-key">API Key / Access Token</Label>
             <Input
+              id="integration-api-key"
               type="password"
               value={settings.apiKey}
               onChange={(e) => setSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
@@ -229,8 +236,9 @@ export default function IntegrationSettings() {
 
           {settings.crmType === 'custom' && (
             <div>
-              <Label>API Endpoint</Label>
+              <Label htmlFor="integration-api-endpoint">API Endpoint</Label>
               <Input
+                id="integration-api-endpoint"
                 value={settings.apiEndpoint}
                 onChange={(e) => setSettings((prev) => ({ ...prev, apiEndpoint: e.target.value }))}
                 placeholder="https://api.yourcrm.com/v1"
@@ -278,9 +286,12 @@ export default function IntegrationSettings() {
           {Object.entries(settings.fieldMapping).map(([key, value]) => (
             <div key={key} className="grid grid-cols-2 gap-4 items-center">
               <div>
-                <Label className="text-sm text-[#6B7280]">{key.replace(/_/g, ' ')}</Label>
+                <Label htmlFor={`integration-field-${key}`} className="text-sm text-[#6B7280]">
+                  {key.replace(/_/g, ' ')}
+                </Label>
               </div>
               <Input
+                id={`integration-field-${key}`}
                 value={value}
                 onChange={(e) =>
                   setSettings((prev) => ({

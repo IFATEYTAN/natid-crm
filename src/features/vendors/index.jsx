@@ -525,8 +525,11 @@ export default function ServiceProviders() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="form-group">
-                  <Label className="form-label">שם ספק *</Label>
+                  <Label htmlFor="vendors-vendor-name" className="form-label">
+                    שם ספק *
+                  </Label>
                   <Input
+                    id="vendors-vendor-name"
                     className="form-input"
                     value={formData.vendor_name}
                     onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
@@ -534,16 +537,22 @@ export default function ServiceProviders() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">איש קשר</Label>
+                  <Label htmlFor="vendors-contact-person" className="form-label">
+                    איש קשר
+                  </Label>
                   <Input
+                    id="vendors-contact-person"
                     className="form-input"
                     value={formData.contact_person}
                     onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">טלפון ראשי *</Label>
+                  <Label htmlFor="vendors-phone" className="form-label">
+                    טלפון ראשי *
+                  </Label>
                   <Input
+                    id="vendors-phone"
                     className="form-input"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -551,16 +560,22 @@ export default function ServiceProviders() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">טלפון משני</Label>
+                  <Label htmlFor="vendors-phone-2" className="form-label">
+                    טלפון משני
+                  </Label>
                   <Input
+                    id="vendors-phone-2"
                     className="form-input"
                     value={formData.phone_2}
                     onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">דוא"ל</Label>
+                  <Label htmlFor="vendors-email" className="form-label">
+                    דוא"ל
+                  </Label>
                   <Input
+                    id="vendors-email"
                     className="form-input"
                     type="email"
                     value={formData.email}
@@ -572,14 +587,16 @@ export default function ServiceProviders() {
                   </p>
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">סטטוס זמינות</Label>
+                  <Label htmlFor="vendors-availability-status" className="form-label">
+                    סטטוס זמינות
+                  </Label>
                   <Select
                     value={formData.availability_status}
                     onValueChange={(value) =>
                       setFormData({ ...formData, availability_status: value })
                     }
                   >
-                    <SelectTrigger className="form-input">
+                    <SelectTrigger id="vendors-availability-status" className="form-input">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -603,8 +620,11 @@ export default function ServiceProviders() {
                   </Label>
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">שעת התחלה</Label>
+                  <Label htmlFor="vendors-working-hours-start" className="form-label">
+                    שעת התחלה
+                  </Label>
                   <Input
+                    id="vendors-working-hours-start"
                     className="form-input"
                     type="time"
                     value={formData.working_hours_start}
@@ -614,8 +634,11 @@ export default function ServiceProviders() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">שעת סיום</Label>
+                  <Label htmlFor="vendors-working-hours-end" className="form-label">
+                    שעת סיום
+                  </Label>
                   <Input
+                    id="vendors-working-hours-end"
                     className="form-input"
                     type="time"
                     value={formData.working_hours_end}
@@ -637,8 +660,11 @@ export default function ServiceProviders() {
                   </Label>
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">תעריף לקריאה (₪)</Label>
+                  <Label htmlFor="vendors-payment-rate" className="form-label">
+                    תעריף לקריאה (₪)
+                  </Label>
                   <Input
+                    id="vendors-payment-rate"
                     className="form-input"
                     type="number"
                     value={formData.payment_rate_per_call}
@@ -648,8 +674,11 @@ export default function ServiceProviders() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">סוגי שירות</Label>
+                  <Label htmlFor="vendors-service-type" className="form-label">
+                    סוגי שירות
+                  </Label>
                   <Input
+                    id="vendors-service-type"
                     className="form-input"
                     placeholder="גרירה, פנצ'ר, רדיו דיסק (מופרד בפסיקים)"
                     value={(formData.service_type || []).join(', ')}
@@ -665,8 +694,11 @@ export default function ServiceProviders() {
                   />
                 </div>
                 <div className="col-span-2 form-group">
-                  <Label className="form-label">אזורי כיסוי</Label>
+                  <Label htmlFor="vendors-coverage-areas" className="form-label">
+                    אזורי כיסוי
+                  </Label>
                   <Input
+                    id="vendors-coverage-areas"
                     className="form-input"
                     placeholder="מרכז, צפון, דרום (מופרד בפסיקים)"
                     value={(formData.coverage_areas || []).join(', ')}
@@ -682,8 +714,11 @@ export default function ServiceProviders() {
                   />
                 </div>
                 <div className="col-span-2 form-group">
-                  <Label className="form-label">הערות</Label>
+                  <Label htmlFor="vendors-notes" className="form-label">
+                    הערות
+                  </Label>
                   <Textarea
+                    id="vendors-notes"
                     className="form-input"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}

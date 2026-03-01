@@ -259,19 +259,20 @@ export default function OperationalRatesPage() {
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>שם תעריף</Label>
+                <Label htmlFor="rate-name">שם תעריף</Label>
                 <Input
+                  id="rate-name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
               </div>
               <div>
-                <Label>סוג</Label>
+                <Label htmlFor="rate-type">סוג</Label>
                 <Select
                   value={form.rate_type}
                   onValueChange={(v) => setForm({ ...form, rate_type: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="rate-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -286,8 +287,9 @@ export default function OperationalRatesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>סכום</Label>
+                <Label htmlFor="rate-amount">סכום</Label>
                 <Input
+                  id="rate-amount"
                   type="number"
                   value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
@@ -306,8 +308,9 @@ export default function OperationalRatesPage() {
               </div>
             </div>
             <div>
-              <Label>תיאור תנאי</Label>
+              <Label htmlFor="rate-condition-label">תיאור תנאי</Label>
               <Input
+                id="rate-condition-label"
                 value={form.condition_label}
                 onChange={(e) => setForm({ ...form, condition_label: e.target.value })}
                 placeholder="למשל: תוספת לילה, תוספת צפון..."
@@ -316,8 +319,9 @@ export default function OperationalRatesPage() {
             {form.rate_type === 'time_surcharge' && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>משעה</Label>
+                  <Label htmlFor="rate-from-hour">משעה</Label>
                   <Input
+                    id="rate-from-hour"
                     type="number"
                     min={0}
                     max={23}
@@ -327,8 +331,9 @@ export default function OperationalRatesPage() {
                   />
                 </div>
                 <div>
-                  <Label>עד שעה</Label>
+                  <Label htmlFor="rate-to-hour">עד שעה</Label>
                   <Input
+                    id="rate-to-hour"
                     type="number"
                     min={0}
                     max={23}
@@ -379,8 +384,9 @@ export default function OperationalRatesPage() {
               <Label className="mb-0">תעריף פעיל</Label>
             </div>
             <div>
-              <Label>הערות</Label>
+              <Label htmlFor="rate-notes">הערות</Label>
               <Textarea
+                id="rate-notes"
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 className="h-16"

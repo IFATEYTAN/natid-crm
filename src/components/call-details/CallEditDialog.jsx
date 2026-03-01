@@ -362,20 +362,23 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           <TabsContent value="location" className="space-y-4 mt-4">
             <h3 className="font-semibold text-sm">מיקום למתן שירות</h3>
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="כתובת">
+              <FieldRow label="כתובת" htmlFor="call-pickup-address">
                 <Input
+                  id="call-pickup-address"
                   value={form.pickup_location_address || ''}
                   onChange={(e) => set('pickup_location_address', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="עיר">
+              <FieldRow label="עיר" htmlFor="call-pickup-city">
                 <Input
+                  id="call-pickup-city"
                   value={form.pickup_location_city || ''}
                   onChange={(e) => set('pickup_location_city', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="אזור">
+              <FieldRow label="אזור" htmlFor="call-pickup-area">
                 <SelectField
+                  id="call-pickup-area"
                   value={form.pickup_location_area}
                   onValueChange={(v) => set('pickup_location_area', v)}
                   options={areaOptions}
@@ -385,33 +388,38 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
 
             <h3 className="font-semibold text-sm border-t pt-3">יעד פריקה (מוסך)</h3>
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="שם מוסך">
+              <FieldRow label="שם מוסך" htmlFor="call-dropoff-garage-name">
                 <Input
+                  id="call-dropoff-garage-name"
                   value={form.dropoff_garage_name || ''}
                   onChange={(e) => set('dropoff_garage_name', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="טלפון מוסך">
+              <FieldRow label="טלפון מוסך" htmlFor="call-dropoff-garage-phone">
                 <Input
+                  id="call-dropoff-garage-phone"
                   value={form.dropoff_garage_phone || ''}
                   onChange={(e) => set('dropoff_garage_phone', e.target.value)}
                   dir="ltr"
                 />
               </FieldRow>
-              <FieldRow label="כתובת יעד">
+              <FieldRow label="כתובת יעד" htmlFor="call-dropoff-address">
                 <Input
+                  id="call-dropoff-address"
                   value={form.dropoff_location_address || ''}
                   onChange={(e) => set('dropoff_location_address', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="עיר יעד">
+              <FieldRow label="עיר יעד" htmlFor="call-dropoff-city">
                 <Input
+                  id="call-dropoff-city"
                   value={form.dropoff_location_city || ''}
                   onChange={(e) => set('dropoff_location_city', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="אזור יעד">
+              <FieldRow label="אזור יעד" htmlFor="call-dropoff-area">
                 <SelectField
+                  id="call-dropoff-area"
                   value={form.dropoff_location_area}
                   onValueChange={(v) => set('dropoff_location_area', v)}
                   options={areaOptions}
@@ -421,27 +429,31 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
 
             <h3 className="font-semibold text-sm border-t pt-3">מיקום אחסנה</h3>
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="כתובת אחסנה">
+              <FieldRow label="כתובת אחסנה" htmlFor="call-storage-address">
                 <Input
+                  id="call-storage-address"
                   value={form.storage_location_address || ''}
                   onChange={(e) => set('storage_location_address', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="עיר אחסנה">
+              <FieldRow label="עיר אחסנה" htmlFor="call-storage-city">
                 <Input
+                  id="call-storage-city"
                   value={form.storage_location_city || ''}
                   onChange={(e) => set('storage_location_city', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="אזור אחסנה">
+              <FieldRow label="אזור אחסנה" htmlFor="call-storage-area">
                 <SelectField
+                  id="call-storage-area"
                   value={form.storage_location_area}
                   onValueChange={(v) => set('storage_location_area', v)}
                   options={areaOptions}
                 />
               </FieldRow>
-              <FieldRow label="ימי אחסנה">
+              <FieldRow label="ימי אחסנה" htmlFor="call-storage-days">
                 <Input
+                  id="call-storage-days"
                   type="number"
                   value={form.storage_days || ''}
                   onChange={(e) =>
@@ -455,21 +467,24 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           {/* Vendor */}
           <TabsContent value="vendor" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="שם נותן שירות">
+              <FieldRow label="שם נותן שירות" htmlFor="call-vendor-name">
                 <Input
+                  id="call-vendor-name"
                   value={form.assigned_vendor_name || ''}
                   onChange={(e) => set('assigned_vendor_name', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="אזור נותן שירות">
+              <FieldRow label="אזור נותן שירות" htmlFor="call-vendor-area">
                 <SelectField
+                  id="call-vendor-area"
                   value={form.assigned_vendor_area}
                   onValueChange={(v) => set('assigned_vendor_area', v)}
                   options={areaOptions}
                 />
               </FieldRow>
-              <FieldRow label="הודעה מוקדמת (דקות)">
+              <FieldRow label="הודעה מוקדמת (דקות)" htmlFor="call-early-notification-minutes">
                 <Input
+                  id="call-early-notification-minutes"
                   type="number"
                   value={form.early_notification_minutes ?? 30}
                   onChange={(e) =>
@@ -480,8 +495,9 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
                   }
                 />
               </FieldRow>
-              <FieldRow label="מרחק ק״מ">
+              <FieldRow label="מרחק ק״מ" htmlFor="call-estimated-distance">
                 <Input
+                  id="call-estimated-distance"
                   type="number"
                   value={form.estimated_distance_km || ''}
                   onChange={(e) =>
@@ -490,15 +506,17 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
                 />
               </FieldRow>
             </div>
-            <FieldRow label="הערות נותן שירות">
+            <FieldRow label="הערות נותן שירות" htmlFor="call-vendor-notes">
               <Textarea
+                id="call-vendor-notes"
                 value={form.vendor_notes || ''}
                 onChange={(e) => set('vendor_notes', e.target.value)}
                 className="h-20"
               />
             </FieldRow>
-            <FieldRow label="הערות מוקדן">
+            <FieldRow label="הערות מוקדן" htmlFor="call-operator-notes">
               <Textarea
+                id="call-operator-notes"
                 value={form.operator_notes || ''}
                 onChange={(e) => set('operator_notes', e.target.value)}
                 className="h-20"
@@ -558,8 +576,9 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           {/* Payment */}
           <TabsContent value="payment" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="עלות לספק (לפני מע״מ)">
+              <FieldRow label="עלות לספק (לפני מע״מ)" htmlFor="call-cost-to-vendor">
                 <Input
+                  id="call-cost-to-vendor"
                   type="number"
                   value={form.cost_to_vendor || ''}
                   onChange={(e) =>
@@ -567,8 +586,9 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
                   }
                 />
               </FieldRow>
-              <FieldRow label="סכום מהלקוח">
+              <FieldRow label="סכום מהלקוח" htmlFor="call-payment-amount-customer">
                 <Input
+                  id="call-payment-amount-customer"
                   type="number"
                   value={form.payment_amount_customer || ''}
                   onChange={(e) =>
@@ -576,22 +596,25 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
                   }
                 />
               </FieldRow>
-              <FieldRow label="אמצעי תשלום">
+              <FieldRow label="אמצעי תשלום" htmlFor="call-payment-type">
                 <SelectField
+                  id="call-payment-type"
                   value={form.payment_type}
                   onValueChange={(v) => set('payment_type', v)}
                   options={paymentTypeOptions}
                 />
               </FieldRow>
-              <FieldRow label="תאריך תשלום">
+              <FieldRow label="תאריך תשלום" htmlFor="call-payment-date">
                 <Input
+                  id="call-payment-date"
                   type="date"
                   value={form.payment_date || ''}
                   onChange={(e) => set('payment_date', e.target.value)}
                 />
               </FieldRow>
-              <FieldRow label="סיבת תשלום">
+              <FieldRow label="סיבת תשלום" htmlFor="call-payment-reason">
                 <Input
+                  id="call-payment-reason"
                   value={form.payment_reason || ''}
                   onChange={(e) => set('payment_reason', e.target.value)}
                 />
@@ -607,22 +630,25 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
           {/* Status */}
           <TabsContent value="status" className="space-y-3 mt-4">
             <div className="grid grid-cols-2 gap-3">
-              <FieldRow label="סטטוס קריאה">
+              <FieldRow label="סטטוס קריאה" htmlFor="call-status">
                 <SelectField
+                  id="call-status"
                   value={form.call_status}
                   onValueChange={(v) => set('call_status', v)}
                   options={statusOptions}
                 />
               </FieldRow>
-              <FieldRow label="עדיפות">
+              <FieldRow label="עדיפות" htmlFor="call-priority">
                 <SelectField
+                  id="call-priority"
                   value={form.call_priority}
                   onValueChange={(v) => set('call_priority', v)}
                   options={priorityOptions}
                 />
               </FieldRow>
-              <FieldRow label="מקור הקריאה">
+              <FieldRow label="מקור הקריאה" htmlFor="call-created-by-source">
                 <SelectField
+                  id="call-created-by-source"
                   value={form.created_by_source}
                   onValueChange={(v) => set('created_by_source', v)}
                   options={[
@@ -633,8 +659,9 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
                   ]}
                 />
               </FieldRow>
-              <FieldRow label="יעד SLA (דקות)">
+              <FieldRow label="יעד SLA (דקות)" htmlFor="call-sla-target">
                 <Input
+                  id="call-sla-target"
                   type="number"
                   value={form.sla_target ?? 30}
                   onChange={(e) =>
@@ -643,15 +670,17 @@ export default function CallEditDialog({ open, onOpenChange, call, callId, curre
                 />
               </FieldRow>
             </div>
-            <FieldRow label="שירות עתידי - תאריך">
+            <FieldRow label="שירות עתידי - תאריך" htmlFor="call-future-service-date">
               <Input
+                id="call-future-service-date"
                 type="date"
                 value={form.future_service_date || ''}
                 onChange={(e) => set('future_service_date', e.target.value)}
               />
             </FieldRow>
-            <FieldRow label="שירות עתידי - טווח שעות">
+            <FieldRow label="שירות עתידי - טווח שעות" htmlFor="call-future-service-time-range">
               <Input
+                id="call-future-service-time-range"
                 value={form.future_service_time_range || ''}
                 onChange={(e) => set('future_service_time_range', e.target.value)}
                 placeholder="09:00-12:00"

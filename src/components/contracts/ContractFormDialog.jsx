@@ -508,8 +508,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 <h4 className="font-medium text-purple-800 mb-3">SLA - רמת שירות</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>זמן תגובה מקסימלי (דקות)</Label>
+                    <Label htmlFor="contract-sla-response">זמן תגובה מקסימלי (דקות)</Label>
                     <Input
+                      id="contract-sla-response"
                       type="number"
                       value={formData.sla_response_minutes || ''}
                       onChange={(e) =>
@@ -518,8 +519,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     />
                   </div>
                   <div>
-                    <Label>זמן הגעה מקסימלי (דקות)</Label>
+                    <Label htmlFor="contract-sla-arrival">זמן הגעה מקסימלי (דקות)</Label>
                     <Input
+                      id="contract-sla-arrival"
                       type="number"
                       value={formData.sla_arrival_minutes || ''}
                       onChange={(e) =>
@@ -548,8 +550,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 </div>
                 {formData.insurance_required && (
                   <div>
-                    <Label>סכום ביטוח מינימלי (₪)</Label>
+                    <Label htmlFor="contract-insurance-amount">סכום ביטוח מינימלי (₪)</Label>
                     <Input
+                      id="contract-insurance-amount"
                       type="number"
                       value={formData.insurance_minimum_amount || ''}
                       onChange={(e) =>
@@ -608,8 +611,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
 
               <div>
-                <Label>תנאים מיוחדים</Label>
+                <Label htmlFor="contract-special-terms">תנאים מיוחדים</Label>
                 <Textarea
+                  id="contract-special-terms"
                   rows={4}
                   value={formData.special_terms}
                   onChange={(e) => setFormData({ ...formData, special_terms: e.target.value })}
@@ -618,8 +622,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
 
               <div>
-                <Label>הערות פנימיות</Label>
+                <Label htmlFor="contract-internal-notes">הערות פנימיות</Label>
                 <Textarea
+                  id="contract-internal-notes"
                   rows={3}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
