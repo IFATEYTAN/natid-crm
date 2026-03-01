@@ -278,10 +278,6 @@ export default function ImportHistoricalDataPage() {
             record[mappedKey] = value;
           }
         });
-        // Normalize service_type from English to Hebrew
-        if (record.service_type) {
-          record.service_type = normalizeServiceType(record.service_type);
-        }
         // Convert numeric fields
         const numericFields = NUMERIC_FIELDS[target.entity] || [];
         numericFields.forEach((key) => {
