@@ -80,7 +80,7 @@ export default function CallsPage() {
 
   const { data: cases = [], isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ['cases-list'],
-    queryFn: () => base44.entities.Case.list('-created_date', 5000),
+    queryFn: () => base44.entities.Case.list('-created_date', 50000),
   });
 
   const filtered = useMemo(() => {

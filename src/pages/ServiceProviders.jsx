@@ -101,7 +101,7 @@ export default function ServiceProvidersPage() {
   // Fetch calls to calculate open/closed per vendor
   const { data: calls = [] } = useQuery({
     queryKey: queryKeys.calls.forVendors(),
-    queryFn: () => base44.entities.Call.list('-created_date', 1000),
+    queryFn: () => base44.entities.Case.list('-created_date', 2000),
   });
 
   // Calculate call stats per vendor
