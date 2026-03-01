@@ -221,8 +221,9 @@ export default function NotificationSettings() {
                 {/* Basic Info */}
                 <div className="space-y-4">
                   <div>
-                    <Label>שם ההתראה</Label>
+                    <Label htmlFor="notif-name">שם ההתראה</Label>
                     <Input
+                      id="notif-name"
                       value={editingNotification.name}
                       onChange={(e) =>
                         setEditingNotification({
@@ -236,7 +237,7 @@ export default function NotificationSettings() {
                   </div>
 
                   <div>
-                    <Label>סוג אירוע</Label>
+                    <Label htmlFor="notif-event-type">סוג אירוע</Label>
                     <Select
                       value={editingNotification.event}
                       onValueChange={(value) =>
@@ -246,7 +247,7 @@ export default function NotificationSettings() {
                         })
                       }
                     >
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger id="notif-event-type" className="mt-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -317,7 +318,7 @@ export default function NotificationSettings() {
                   <p className="text-[13px] font-medium text-[#111827] mb-3">תנאים</p>
                   <div className="space-y-4">
                     <div>
-                      <Label>עדיפות קריאה</Label>
+                      <Label htmlFor="notif-priority">עדיפות קריאה</Label>
                       <Select
                         value={editingNotification.conditions.priority}
                         onValueChange={(value) =>
@@ -327,7 +328,7 @@ export default function NotificationSettings() {
                           })
                         }
                       >
-                        <SelectTrigger className="mt-1">
+                        <SelectTrigger id="notif-priority" className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -341,8 +342,9 @@ export default function NotificationSettings() {
 
                     {editingNotification.event === 'call_unassigned' && (
                       <div>
-                        <Label>זמן ממתין (דקות)</Label>
+                        <Label htmlFor="notif-time-threshold">זמן ממתין (דקות)</Label>
                         <Input
+                          id="notif-time-threshold"
                           type="number"
                           value={editingNotification.conditions.timeThreshold}
                           onChange={(e) =>
@@ -361,8 +363,9 @@ export default function NotificationSettings() {
 
                     {editingNotification.event === 'sla_near_breach' && (
                       <div>
-                        <Label>התראה לפני חריגה (דקות)</Label>
+                        <Label htmlFor="notif-minutes-before">התראה לפני חריגה (דקות)</Label>
                         <Input
+                          id="notif-minutes-before"
                           type="number"
                           value={editingNotification.conditions.minutesBefore || 5}
                           onChange={(e) =>
@@ -380,7 +383,7 @@ export default function NotificationSettings() {
                     )}
 
                     <div>
-                      <Label>אזור</Label>
+                      <Label htmlFor="notif-area">אזור</Label>
                       <Select
                         value={editingNotification.conditions.area}
                         onValueChange={(value) =>
@@ -390,7 +393,7 @@ export default function NotificationSettings() {
                           })
                         }
                       >
-                        <SelectTrigger className="mt-1">
+                        <SelectTrigger id="notif-area" className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -458,8 +461,9 @@ export default function NotificationSettings() {
                   <p className="text-[13px] font-medium text-[#111827] mb-3">תוכן ההתראה</p>
                   <div className="space-y-4">
                     <div>
-                      <Label>כותרת</Label>
+                      <Label htmlFor="notif-message-title">כותרת</Label>
                       <Input
+                        id="notif-message-title"
                         value={editingNotification.message.title}
                         onChange={(e) =>
                           setEditingNotification({
@@ -471,8 +475,9 @@ export default function NotificationSettings() {
                       />
                     </div>
                     <div>
-                      <Label>תוכן</Label>
+                      <Label htmlFor="notif-message-body">תוכן</Label>
                       <Textarea
+                        id="notif-message-body"
                         value={editingNotification.message.body}
                         onChange={(e) =>
                           setEditingNotification({

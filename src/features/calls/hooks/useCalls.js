@@ -22,6 +22,7 @@ export const useCall = (callId) => {
     queryKey: queryKeys.calls.detail(callId),
     queryFn: () => callsApi.getCallById(callId),
     enabled: !!callId,
+    staleTime: 1000 * 60, // 1 minute
   });
 };
 
@@ -33,6 +34,7 @@ export const useFilteredCalls = (filters, sort = '-created_date', limit = 500) =
     queryKey: queryKeys.calls.list(filters),
     queryFn: () => callsApi.filterCalls(filters, sort, limit),
     enabled: !!filters,
+    staleTime: 1000 * 60, // 1 minute
   });
 };
 
@@ -44,6 +46,7 @@ export const useCallsByVendor = (vendorId, sort = '-created_date', limit = 50) =
     queryKey: queryKeys.calls.byVendor(vendorId),
     queryFn: () => callsApi.getCallsByVendor(vendorId, sort, limit),
     enabled: !!vendorId,
+    staleTime: 1000 * 60, // 1 minute
   });
 };
 
@@ -55,6 +58,7 @@ export const useCallsByCustomer = (customerId, sort = '-created_date') => {
     queryKey: queryKeys.calls.byCustomer(customerId),
     queryFn: () => callsApi.getCallsByCustomer(customerId, sort),
     enabled: !!customerId,
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
 

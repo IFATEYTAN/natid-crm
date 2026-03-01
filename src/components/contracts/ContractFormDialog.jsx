@@ -199,14 +199,14 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
             <TabsContent value="basic" className="space-y-4 mt-4 text-end" dir="rtl">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>ספק *</Label>
+                  <Label htmlFor="contract-vendor">ספק *</Label>
                   <Select
                     value={formData.vendor_id}
                     onValueChange={handleVendorChange}
                     disabled={isEdit}
                     dir="rtl"
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="contract-vendor">
                       <SelectValue placeholder="בחר ספק" />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
@@ -219,8 +219,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   </Select>
                 </div>
                 <div>
-                  <Label>מספר חוזה</Label>
+                  <Label htmlFor="contract-number">מספר חוזה</Label>
                   <Input
+                    id="contract-number"
                     value={formData.contract_number}
                     onChange={(e) => setFormData({ ...formData, contract_number: e.target.value })}
                   />
@@ -229,13 +230,13 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>סוג חוזה *</Label>
+                  <Label htmlFor="contract-type">סוג חוזה *</Label>
                   <Select
                     value={formData.contract_type}
                     onValueChange={(v) => setFormData({ ...formData, contract_type: v })}
                     dir="rtl"
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="contract-type">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
@@ -247,13 +248,13 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   </Select>
                 </div>
                 <div>
-                  <Label>סטטוס</Label>
+                  <Label htmlFor="contract-status">סטטוס</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(v) => setFormData({ ...formData, status: v })}
                     dir="rtl"
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="contract-status">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
@@ -267,16 +268,18 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>תאריך התחלה *</Label>
+                  <Label htmlFor="contract-start-date">תאריך התחלה *</Label>
                   <Input
+                    id="contract-start-date"
                     type="date"
                     value={formData.start_date}
                     onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                   />
                 </div>
                 <div>
-                  <Label>תאריך סיום *</Label>
+                  <Label htmlFor="contract-end-date">תאריך סיום *</Label>
                   <Input
+                    id="contract-end-date"
                     type="date"
                     value={formData.end_date}
                     onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
@@ -295,8 +298,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 </div>
                 {formData.auto_renew && (
                   <div className="mr-auto">
-                    <Label>תקופת חידוש (חודשים)</Label>
+                    <Label htmlFor="contract-renewal-period">תקופת חידוש (חודשים)</Label>
                     <Input
+                      id="contract-renewal-period"
                       type="number"
                       className="w-20"
                       value={formData.renewal_period_months}
@@ -318,8 +322,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 <div className="grid grid-cols-2 gap-4">
                   {formData.contract_type === 'per_call' && (
                     <div>
-                      <Label>תעריף לקריאה (₪)</Label>
+                      <Label htmlFor="contract-rate-per-call">תעריף לקריאה (₪)</Label>
                       <Input
+                        id="contract-rate-per-call"
                         type="number"
                         value={formData.rate_per_call || ''}
                         onChange={(e) =>
@@ -330,8 +335,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   )}
                   {formData.contract_type === 'monthly' && (
                     <div>
-                      <Label>דמי חודש (₪)</Label>
+                      <Label htmlFor="contract-monthly-fee">דמי חודש (₪)</Label>
                       <Input
+                        id="contract-monthly-fee"
                         type="number"
                         value={formData.monthly_fee || ''}
                         onChange={(e) =>
@@ -342,8 +348,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   )}
                   {formData.contract_type === 'hourly' && (
                     <div>
-                      <Label>תעריף שעתי (₪)</Label>
+                      <Label htmlFor="contract-hourly-rate">תעריף שעתי (₪)</Label>
                       <Input
+                        id="contract-hourly-rate"
                         type="number"
                         value={formData.hourly_rate || ''}
                         onChange={(e) =>
@@ -357,8 +364,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>מינימום קריאות</Label>
+                  <Label htmlFor="contract-minimum-calls">מינימום קריאות</Label>
                   <Input
+                    id="contract-minimum-calls"
                     type="number"
                     value={formData.minimum_calls || ''}
                     onChange={(e) =>
@@ -367,8 +375,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                   />
                 </div>
                 <div>
-                  <Label>מקסימום קריאות</Label>
+                  <Label htmlFor="contract-maximum-calls">מקסימום קריאות</Label>
                   <Input
+                    id="contract-maximum-calls"
                     type="number"
                     value={formData.maximum_calls || ''}
                     onChange={(e) =>
@@ -382,8 +391,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 <h4 className="font-medium text-green-800 mb-3">בונוסים</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>סף לבונוס (קריאות)</Label>
+                    <Label htmlFor="contract-bonus-threshold">סף לבונוס (קריאות)</Label>
                     <Input
+                      id="contract-bonus-threshold"
                       type="number"
                       value={formData.bonus_threshold || ''}
                       onChange={(e) =>
@@ -392,8 +402,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     />
                   </div>
                   <div>
-                    <Label>אחוז בונוס (%)</Label>
+                    <Label htmlFor="contract-bonus-rate">אחוז בונוס (%)</Label>
                     <Input
+                      id="contract-bonus-rate"
                       type="number"
                       value={formData.bonus_rate || ''}
                       onChange={(e) =>
@@ -408,8 +419,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 <h4 className="font-medium text-red-800 mb-3">קנסות</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>קנס איחור בהגעה (₪)</Label>
+                    <Label htmlFor="contract-penalty-late-arrival">קנס איחור בהגעה (₪)</Label>
                     <Input
+                      id="contract-penalty-late-arrival"
                       type="number"
                       value={formData.penalty_late_arrival || ''}
                       onChange={(e) =>
@@ -418,8 +430,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     />
                   </div>
                   <div>
-                    <Label>קנס ביטול (₪)</Label>
+                    <Label htmlFor="contract-penalty-cancellation">קנס ביטול (₪)</Label>
                     <Input
+                      id="contract-penalty-cancellation"
                       type="number"
                       value={formData.penalty_cancellation || ''}
                       onChange={(e) =>
@@ -431,13 +444,13 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
 
               <div>
-                <Label>תנאי תשלום</Label>
+                <Label htmlFor="contract-payment-terms">תנאי תשלום</Label>
                 <Select
                   value={formData.payment_terms}
                   onValueChange={(v) => setFormData({ ...formData, payment_terms: v })}
                   dir="rtl"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="contract-payment-terms">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent dir="rtl">
@@ -495,8 +508,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 <h4 className="font-medium text-purple-800 mb-3">SLA - רמת שירות</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>זמן תגובה מקסימלי (דקות)</Label>
+                    <Label htmlFor="contract-sla-response">זמן תגובה מקסימלי (דקות)</Label>
                     <Input
+                      id="contract-sla-response"
                       type="number"
                       value={formData.sla_response_minutes || ''}
                       onChange={(e) =>
@@ -505,8 +519,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                     />
                   </div>
                   <div>
-                    <Label>זמן הגעה מקסימלי (דקות)</Label>
+                    <Label htmlFor="contract-sla-arrival">זמן הגעה מקסימלי (דקות)</Label>
                     <Input
+                      id="contract-sla-arrival"
                       type="number"
                       value={formData.sla_arrival_minutes || ''}
                       onChange={(e) =>
@@ -535,8 +550,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
                 </div>
                 {formData.insurance_required && (
                   <div>
-                    <Label>סכום ביטוח מינימלי (₪)</Label>
+                    <Label htmlFor="contract-insurance-amount">סכום ביטוח מינימלי (₪)</Label>
                     <Input
+                      id="contract-insurance-amount"
                       type="number"
                       value={formData.insurance_minimum_amount || ''}
                       onChange={(e) =>
@@ -595,8 +611,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
 
               <div>
-                <Label>תנאים מיוחדים</Label>
+                <Label htmlFor="contract-special-terms">תנאים מיוחדים</Label>
                 <Textarea
+                  id="contract-special-terms"
                   rows={4}
                   value={formData.special_terms}
                   onChange={(e) => setFormData({ ...formData, special_terms: e.target.value })}
@@ -605,8 +622,9 @@ export default function ContractFormDialog({ open, onOpenChange, vendors, contra
               </div>
 
               <div>
-                <Label>הערות פנימיות</Label>
+                <Label htmlFor="contract-internal-notes">הערות פנימיות</Label>
                 <Textarea
+                  id="contract-internal-notes"
                   rows={3}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}

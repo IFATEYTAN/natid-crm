@@ -182,7 +182,7 @@ export default function AllVendorsMapPage() {
                   placeholder="חיפוש לפי שם או אזור..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pr-10"
+                  className="pe-10"
                 />
               </div>
               <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>

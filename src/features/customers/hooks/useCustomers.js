@@ -22,6 +22,7 @@ export const useCustomer = (customerId) => {
     queryKey: queryKeys.customers.detail(customerId),
     queryFn: () => customersApi.getCustomerById(customerId),
     enabled: !!customerId,
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
 
@@ -33,6 +34,7 @@ export const useFilteredCustomers = (filters, sort = '-created_date', limit) => 
     queryKey: queryKeys.customers.list(filters),
     queryFn: () => customersApi.filterCustomers(filters, sort, limit),
     enabled: !!filters,
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
 
@@ -99,6 +101,7 @@ export const useCustomerInteractions = (customerId, sort = '-interaction_date') 
     queryKey: queryKeys.customers.interactions(customerId),
     queryFn: () => customersApi.getCustomerInteractions(customerId, sort),
     enabled: !!customerId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 

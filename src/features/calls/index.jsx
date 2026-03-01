@@ -397,13 +397,16 @@ export default function Calls() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">
-              <Label className="text-[#616161] text-sm mb-2 block">חיפוש</Label>
+              <Label htmlFor="calls-search" className="text-[#616161] text-sm mb-2 block">
+                חיפוש
+              </Label>
               <div className="relative">
                 <Search
                   className="absolute start-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#9E9E9E]"
                   strokeWidth={2}
                 />
                 <Input
+                  id="calls-search"
                   placeholder="מספר קריאה, שם לקוח, טלפון, מספר רכב..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -414,9 +417,11 @@ export default function Calls() {
 
             {/* Status Filter */}
             <div>
-              <Label className="text-[#616161] text-sm mb-2 block">סטטוס</Label>
+              <Label htmlFor="calls-status" className="text-[#616161] text-sm mb-2 block">
+                סטטוס
+              </Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger id="calls-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -431,9 +436,11 @@ export default function Calls() {
 
             {/* City Filter */}
             <div>
-              <Label className="text-[#616161] text-sm mb-2 block">עיר</Label>
+              <Label htmlFor="calls-city" className="text-[#616161] text-sm mb-2 block">
+                עיר
+              </Label>
               <Select value={cityFilter} onValueChange={setCityFilter}>
-                <SelectTrigger>
+                <SelectTrigger id="calls-city">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -449,21 +456,37 @@ export default function Calls() {
 
             {/* Date From */}
             <div>
-              <Label className="text-[#616161] text-sm mb-2 block">מתאריך</Label>
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+              <Label htmlFor="calls-date-from" className="text-[#616161] text-sm mb-2 block">
+                מתאריך
+              </Label>
+              <Input
+                id="calls-date-from"
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
             </div>
 
             {/* Date To */}
             <div>
-              <Label className="text-[#616161] text-sm mb-2 block">עד תאריך</Label>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+              <Label htmlFor="calls-date-to" className="text-[#616161] text-sm mb-2 block">
+                עד תאריך
+              </Label>
+              <Input
+                id="calls-date-to"
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
             </div>
 
             {/* Vendor Filter */}
             <div>
-              <Label className="text-[#616161] text-sm mb-2 block">ספק</Label>
+              <Label htmlFor="calls-vendor" className="text-[#616161] text-sm mb-2 block">
+                ספק
+              </Label>
               <Select value={vendorFilter} onValueChange={setVendorFilter}>
-                <SelectTrigger>
+                <SelectTrigger id="calls-vendor">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

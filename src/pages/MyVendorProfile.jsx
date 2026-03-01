@@ -251,8 +251,9 @@ export default function MyVendorProfilePage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>שם הספק/חברה</Label>
+                  <Label htmlFor="profile-vendor-name">שם הספק/חברה</Label>
                   <Input
+                    id="profile-vendor-name"
                     value={formData.vendor_name}
                     onChange={(e) => setFormData({ ...formData, vendor_name: e.target.value })}
                     disabled
@@ -261,8 +262,9 @@ export default function MyVendorProfilePage() {
                   <p className="text-xs text-[#6B778C] mt-1">לשינוי שם פנה למנהל</p>
                 </div>
                 <div>
-                  <Label>איש קשר</Label>
+                  <Label htmlFor="profile-contact-person">איש קשר</Label>
                   <Input
+                    id="profile-contact-person"
                     value={formData.contact_person}
                     onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                   />
@@ -271,10 +273,11 @@ export default function MyVendorProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>טלפון ראשי</Label>
+                  <Label htmlFor="profile-phone">טלפון ראשי</Label>
                   <div className="relative">
                     <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
+                      id="profile-phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="ps-10"
@@ -283,10 +286,11 @@ export default function MyVendorProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <Label>טלפון משני</Label>
+                  <Label htmlFor="profile-phone-2">טלפון משני</Label>
                   <div className="relative">
                     <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                     <Input
+                      id="profile-phone-2"
                       value={formData.phone_2}
                       onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                       className="ps-10"
@@ -297,10 +301,11 @@ export default function MyVendorProfilePage() {
               </div>
 
               <div>
-                <Label>אימייל</Label>
+                <Label htmlFor="profile-email">אימייל</Label>
                 <div className="relative">
                   <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B778C]" />
                   <Input
+                    id="profile-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -379,10 +384,11 @@ export default function MyVendorProfilePage() {
               </div>
 
               <div>
-                <Label>ערים ספציפיות</Label>
+                <Label htmlFor="profile-coverage-cities">ערים ספציפיות</Label>
                 <div className="relative">
                   <MapPin className="absolute start-3 top-3 w-4 h-4 text-[#6b7280]" />
                   <Textarea
+                    id="profile-coverage-cities"
                     value={formData.coverage_cities}
                     onChange={(e) => setFormData({ ...formData, coverage_cities: e.target.value })}
                     className="ps-10 min-h-[80px]"
@@ -406,8 +412,9 @@ export default function MyVendorProfilePage() {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>תעריף בסיס (₪)</Label>
+                <Label htmlFor="profile-base-rate">תעריף בסיס (₪)</Label>
                 <Input
+                  id="profile-base-rate"
                   type="number"
                   value={formData.base_rate || ''}
                   onChange={(e) => setFormData({ ...formData, base_rate: Number(e.target.value) })}
@@ -416,8 +423,9 @@ export default function MyVendorProfilePage() {
                 <p className="text-xs text-[#6b7280] mt-1">תעריף מינימום לכל קריאה</p>
               </div>
               <div>
-                <Label>תעריף לק"מ (₪)</Label>
+                <Label htmlFor="profile-rate-per-km">תעריף לק"מ (₪)</Label>
                 <Input
+                  id="profile-rate-per-km"
                   type="number"
                   value={formData.rate_per_km || ''}
                   onChange={(e) =>
@@ -442,17 +450,19 @@ export default function MyVendorProfilePage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Switch
+                id="profile-works-24-7"
                 checked={formData.works_24_7}
                 onCheckedChange={(checked) => setFormData({ ...formData, works_24_7: checked })}
               />
-              <Label>עובד 24/7</Label>
+              <Label htmlFor="profile-works-24-7">עובד 24/7</Label>
             </div>
 
             {!formData.works_24_7 && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>שעת התחלה</Label>
+                  <Label htmlFor="profile-working-hours-start">שעת התחלה</Label>
                   <Input
+                    id="profile-working-hours-start"
                     type="time"
                     value={formData.working_hours_start}
                     onChange={(e) =>
@@ -461,8 +471,9 @@ export default function MyVendorProfilePage() {
                   />
                 </div>
                 <div>
-                  <Label>שעת סיום</Label>
+                  <Label htmlFor="profile-working-hours-end">שעת סיום</Label>
                   <Input
+                    id="profile-working-hours-end"
                     type="time"
                     value={formData.working_hours_end}
                     onChange={(e) =>

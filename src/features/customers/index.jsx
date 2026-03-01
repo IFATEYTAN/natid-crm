@@ -324,8 +324,11 @@ export default function Customers() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="form-group">
-                  <Label className="form-label">שם לקוח *</Label>
+                  <Label htmlFor="customers-name" className="form-label">
+                    שם לקוח *
+                  </Label>
                   <Input
+                    id="customers-name"
                     className="form-input"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -333,12 +336,14 @@ export default function Customers() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">סוג לקוח</Label>
+                  <Label htmlFor="customers-customer-type" className="form-label">
+                    סוג לקוח
+                  </Label>
                   <Select
                     value={formData.customer_type}
                     onValueChange={(value) => setFormData({ ...formData, customer_type: value })}
                   >
-                    <SelectTrigger className="form-input">
+                    <SelectTrigger id="customers-customer-type" className="form-input">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -351,16 +356,22 @@ export default function Customers() {
                   </Select>
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">איש קשר</Label>
+                  <Label htmlFor="customers-contact-person" className="form-label">
+                    איש קשר
+                  </Label>
                   <Input
+                    id="customers-contact-person"
                     className="form-input"
                     value={formData.contact_person}
                     onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">טלפון *</Label>
+                  <Label htmlFor="customers-phone" className="form-label">
+                    טלפון *
+                  </Label>
                   <Input
+                    id="customers-phone"
                     className="form-input"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -368,8 +379,11 @@ export default function Customers() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">דוא"ל</Label>
+                  <Label htmlFor="customers-email" className="form-label">
+                    דוא"ל
+                  </Label>
                   <Input
+                    id="customers-email"
                     className="form-input"
                     type="email"
                     value={formData.email}
@@ -377,28 +391,36 @@ export default function Customers() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">עיר</Label>
+                  <Label htmlFor="customers-city" className="form-label">
+                    עיר
+                  </Label>
                   <Input
+                    id="customers-city"
                     className="form-input"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   />
                 </div>
                 <div className="col-span-2 form-group">
-                  <Label className="form-label">כתובת</Label>
+                  <Label htmlFor="customers-address" className="form-label">
+                    כתובת
+                  </Label>
                   <Input
+                    id="customers-address"
                     className="form-input"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">סוג חוזה</Label>
+                  <Label htmlFor="customers-contract-type" className="form-label">
+                    סוג חוזה
+                  </Label>
                   <Select
                     value={formData.contract_type}
                     onValueChange={(value) => setFormData({ ...formData, contract_type: value })}
                   >
-                    <SelectTrigger className="form-input">
+                    <SelectTrigger id="customers-contract-type" className="form-input">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -411,12 +433,14 @@ export default function Customers() {
                   </Select>
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">סטטוס</Label>
+                  <Label htmlFor="customers-status" className="form-label">
+                    סטטוס
+                  </Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value) => setFormData({ ...formData, status: value })}
                   >
-                    <SelectTrigger className="form-input">
+                    <SelectTrigger id="customers-status" className="form-input">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -427,8 +451,11 @@ export default function Customers() {
                   </Select>
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">SLA תגובה (דקות)</Label>
+                  <Label htmlFor="customers-sla-response" className="form-label">
+                    SLA תגובה (דקות)
+                  </Label>
                   <Input
+                    id="customers-sla-response"
                     className="form-input"
                     type="number"
                     value={formData.sla_response_minutes}
@@ -438,8 +465,11 @@ export default function Customers() {
                   />
                 </div>
                 <div className="form-group">
-                  <Label className="form-label">SLA הגעה (דקות)</Label>
+                  <Label htmlFor="customers-sla-arrival" className="form-label">
+                    SLA הגעה (דקות)
+                  </Label>
                   <Input
+                    id="customers-sla-arrival"
                     className="form-input"
                     type="number"
                     value={formData.sla_arrival_minutes}
@@ -449,8 +479,11 @@ export default function Customers() {
                   />
                 </div>
                 <div className="col-span-2 form-group">
-                  <Label className="form-label">הערות</Label>
+                  <Label htmlFor="customers-notes" className="form-label">
+                    הערות
+                  </Label>
                   <Textarea
+                    id="customers-notes"
                     className="form-input"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}

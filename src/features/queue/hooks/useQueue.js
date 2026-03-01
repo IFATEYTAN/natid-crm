@@ -23,6 +23,7 @@ export const useQueueItem = (itemId) => {
     queryKey: queryKeys.queue.detail(itemId),
     queryFn: () => queueApi.getQueueItemById(itemId),
     enabled: !!itemId,
+    staleTime: 1000 * 30, // 30 seconds - queue data changes frequently
   });
 };
 
@@ -34,6 +35,7 @@ export const useFilteredQueue = (filters, sort = '-priority_score', limit) => {
     queryKey: queryKeys.queue.list(filters),
     queryFn: () => queueApi.filterWorkQueue(filters, sort, limit),
     enabled: !!filters,
+    staleTime: 1000 * 30, // 30 seconds - queue data changes frequently
   });
 };
 
