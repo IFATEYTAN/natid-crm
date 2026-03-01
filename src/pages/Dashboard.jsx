@@ -403,7 +403,7 @@ export default function Dashboard() {
         {/* Totals Tab */}
         <TabsContent value="totals" className="space-y-6 mt-6 focus-visible:outline-none">
           <Suspense fallback={<Skeleton className="h-96" />}>
-            <DashboardTotalsTab calls={calls} callsLoading={callsLoading} />
+            <DashboardTotalsTab calls={cases} callsLoading={casesLoading} />
           </Suspense>
         </TabsContent>
       </Tabs>
