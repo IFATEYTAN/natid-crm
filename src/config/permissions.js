@@ -55,13 +55,9 @@ export const PAGE_PERMISSIONS = {
   VendorTracking: ['admin', 'operator'],
 
   // Vendor only
-  CallDetailsVendor: ['vendor'],
-  MyCallsVendor: ['vendor'],
   MyVendorProfile: ['vendor'],
   VendorCallManagement: ['vendor'],
   VendorGuide: ['vendor'],
-  VendorMap: ['vendor'],
-  VendorPayments: ['vendor'],
   VendorPortal: ['vendor'],
 
   // All roles

@@ -140,9 +140,22 @@ export default function VendorPortalPage() {
     if (pendingAttempts.length > 0 && !showNewCallAlert) {
       const fetchCall = async () => {
         try {
-          const calls = await base44.entities.Call.filter({ id: pendingAttempts[0].call_id });
-          if (calls.length > 0) {
-            setPendingCall({ ...calls[0], attemptId: pendingAttempts[0].id });
+          // Use server-scoped data for vendor users, direct for admin
+          let callData = null;
+          if (isVendorUser) {
+            const result = await base44.functions.invoke('getVendorScopedData', {
+              entity_type: 'calls',
+              sort: '-created_date',
+              limit: 1000,
+            });
+            const scopedCalls = result.data?.data || [];
+            callData = scopedCalls.find((c) => c.id === pendingAttempts[0].call_id);
+          } else {
+            const calls = await base44.entities.Call.filter({ id: pendingAttempts[0].call_id });
+            callData = calls[0] || null;
+          }
+          if (callData) {
+            setPendingCall({ ...callData, attemptId: pendingAttempts[0].id });
             setShowNewCallAlert(true);
           }
         } catch (e) {
@@ -151,7 +164,7 @@ export default function VendorPortalPage() {
       };
       fetchCall();
     }
-  }, [pendingAssignmentsQuery.data, showNewCallAlert]);
+  }, [pendingAssignmentsQuery.data, showNewCallAlert, isVendorUser]);
 
   // Accept/decline via server-side handleAssignmentResponse (ownership check, race condition, auto-reassign)
   const acceptCallMutation = useMutation({
@@ -233,8 +246,13 @@ export default function VendorPortalPage() {
       updateData.vendor_arrival_time_actual = new Date().toISOString();
     } else if (newStatus === 'completed') {
       updateData.closed_at = new Date().toISOString();
+      updateData.closed_by = vendorProfile?.vendor_name;
     }
-    await base44.entities.Call.update(callId, updateData);
+    // Use server-validated function with ownership check and field whitelisting
+    await base44.functions.invoke('updateVendorCall', {
+      call_id: callId,
+      updates: updateData,
+    });
     callsQuery.refetch();
   };
 

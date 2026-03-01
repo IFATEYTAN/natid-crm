@@ -117,10 +117,11 @@ export default function VendorCallManagementPage() {
     enabled: !!selectedCallId && !!vendorProfile?.id,
   });
 
+  // Photos: only load after call ownership is verified via server-scoped data
   const photosQuery = useQuery({
     queryKey: queryKeys.callPhotos.byCall(selectedCallId),
     queryFn: () => base44.entities.CallPhoto.filter({ call_id: selectedCallId, is_deleted: false }),
-    enabled: !!selectedCallId,
+    enabled: !!selectedCallId && !!callQuery.data,
   });
 
   // Server-side validated update (ownership check + field filtering)
