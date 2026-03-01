@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 /**
  * Send notification to customer or vendor
@@ -17,6 +21,9 @@ Deno.serve(async (req) => {
     if (!['admin', 'operator'].includes(user.role)) {
       return Response.json({ error: 'Forbidden - admin or operator role required' }, { status: 403 });
     }
+
+    const rl = await limiter.check('sendNotification', user.id, 20, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const {
       recipient_type, // 'customer' | 'vendor' | 'user'

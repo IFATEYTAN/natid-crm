@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 Deno.serve(async (req) => {
   try {
@@ -13,6 +17,9 @@ Deno.serve(async (req) => {
     if (!['admin', 'operator'].includes(user.role)) {
       return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
     }
+
+    const rl = await limiter.check('logAuditAction', user.id, 60, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const body = await req.json();
     const { action, entity_type, entity_id, details, severity = 'info' } = body;

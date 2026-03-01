@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 Deno.serve(async (req) => {
     try {
@@ -9,6 +13,9 @@ Deno.serve(async (req) => {
         if (!user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        const rl = await limiter.check('predictCallTimes', user.id, 10, 60_000);
+        if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
         const { location, service_type, time_of_day, vehicle_type } = await req.json();
 

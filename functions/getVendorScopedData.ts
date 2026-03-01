@@ -1,4 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+
+const kv = await Deno.openKv();
+const limiter = createRateLimiter(kv);
 
 /**
  * Get vendor-scoped data - returns only data belonging to the authenticated vendor.
@@ -19,6 +23,9 @@ Deno.serve(async (req) => {
     if (user.role !== 'vendor') {
       return Response.json({ error: 'This endpoint is for vendor role only' }, { status: 403 });
     }
+
+    const rl = await limiter.check('getVendorScopedData', user.id, 60, 60_000);
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const { entity_type, sort = '-created_date', limit = 100 } = await req.json();
 
