@@ -5,6 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { exportToExcel, exportToHTML, exportToPDF } from '@/components/reports/ExportUtils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FileSpreadsheet, FileText, File, Download } from 'lucide-react';
 
 import ReportKPICards from '@/components/reports/ReportKPICards';
 import MonthlyTrendSection from '@/components/reports/MonthlyTrendSection';
