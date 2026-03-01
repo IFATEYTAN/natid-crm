@@ -1,9 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { COLORS, fmtNum, fmtCurrency, fmtPct, exportToExcel } from './ReportUtils';
+import { COLORS, fmtNum, fmtCurrency, fmtPct } from './ReportUtils';
+import ExportMenu from './ExportMenu';
 
 export default function TowingAreaSection({ cases }) {
   const map = {};

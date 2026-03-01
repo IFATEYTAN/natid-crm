@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
-import { MONTHS_HE, fmtNum, exportToExcel, getMonth } from './ReportUtils';
+import { MONTHS_HE, fmtNum, getMonth } from './ReportUtils';
+import ExportMenu from './ExportMenu';
 
 export default function InsuranceMonthMatrix({ cases }) {
   const companies = [...new Set(cases.map(c => c.insurance_company || 'לא ידוע'))];

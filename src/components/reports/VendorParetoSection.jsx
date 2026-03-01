@@ -1,9 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { COLORS, fmtNum, fmtPct, exportToExcel } from './ReportUtils';
+import { COLORS, fmtNum, fmtPct } from './ReportUtils';
+import ExportMenu from './ExportMenu';
 
 export default function VendorParetoSection({ cases }) {
   const map = {};

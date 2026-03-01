@@ -1,9 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { MONTHS_HE, COLORS, fmtNum, fmtCurrency, fmtPct, exportToExcel, getMonth } from './ReportUtils';
+import { MONTHS_HE, COLORS, fmtNum, fmtCurrency, fmtPct, getMonth } from './ReportUtils';
+import ExportMenu from './ExportMenu';
 
 export default function InsuranceBreakdownSection({ cases }) {
   const map = {};

@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
-import { MONTHS_HE, fmtNum, exportToExcel, getMonth } from './ReportUtils';
+import { MONTHS_HE, fmtNum, getMonth } from './ReportUtils';
+import ExportMenu from './ExportMenu';
 
 export default function DepartmentMonthMatrix({ cases }) {
   const depts = [...new Set(cases.map(c => c.department || 'לא ידוע'))];

@@ -1,9 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { SERVICE_TYPE_HE, COLORS, fmtNum, fmtCurrency, fmtPct, exportToExcel } from './ReportUtils';
+import { SERVICE_TYPE_HE, COLORS, fmtNum, fmtCurrency, fmtPct } from './ReportUtils';
+import ExportMenu from './ExportMenu';
 
 export default function ServiceTypeSection({ cases }) {
   const map = {};

@@ -1,9 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { MONTHS_HE, fmtNum, fmtCurrency, fmtPct, exportToExcel, getMonth } from './ReportUtils';
+import { MONTHS_HE, fmtNum, fmtCurrency, fmtPct, getMonth } from './ReportUtils';
+import ExportMenu from './ExportMenu';
 
 export default function MonthlyTrendSection({ cases }) {
   const byMonth = Array.from({ length: 12 }, (_, i) => {
