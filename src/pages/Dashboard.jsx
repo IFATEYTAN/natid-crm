@@ -393,9 +393,9 @@ export default function Dashboard() {
               myUrgentCalls={myUrgentCalls}
               urgentCalls={urgentCalls}
               availableVendors={availableVendors}
-              callsLoading={callsLoading}
+              callsLoading={casesLoading}
               vendorsLoading={vendorsLoading}
-              allCalls={calls}
+              allCalls={cases}
             />
           </Suspense>
         </TabsContent>
