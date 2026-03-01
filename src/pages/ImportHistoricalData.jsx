@@ -13,32 +13,49 @@ import {
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
-const SERVICE_TYPE_MAP = {
-  grira: 'גרירה',
-  greira: 'גרירה',
-  towing: 'גרירה',
-  nayedet: 'נייד',
-  mobile: 'נייד',
-  mobile_unit: 'נייד',
-  shamenet: 'שמנת',
-  oil: 'שמנת',
-  tire: 'פנצ\'ר',
-  flat_tire: 'פנצ\'ר',
-  puncture: 'פנצ\'ר',
-  battery: 'סוללה',
-  jump_start: 'סוללה',
-  fuel: 'דלק',
-  lockout: 'נעילה',
-  locked: 'נעילה',
-  accident: 'תאונה',
-  storage: 'אחסנה',
-  other: 'אחר',
+// Maps any input value -> Case.service_type enum
+const CASE_SERVICE_TYPE_MAP = {
+  // English passthrough
+  towing: 'towing',
+  flat_tire: 'flat_tire',
+  battery: 'battery',
+  lockout: 'lockout',
+  fuel: 'fuel',
+  accident: 'accident',
+  mechanical: 'mechanical',
+  other: 'other',
+  // Hebrew transliterations
+  grira: 'towing',
+  greira: 'towing',
+  grirh: 'towing',
+  nayedet: 'other',
+  nayedat: 'other',
+  shmshot: 'flat_tire',
+  shmasha: 'flat_tire',
+  puncture: 'flat_tire',
+  tire: 'flat_tire',
+  masger: 'lockout',
+  delek: 'fuel',
+  matne: 'mechanical',
+  teuna: 'accident',
+  accident2: 'accident',
+  mobile: 'other',
+  mobile_unit: 'other',
 };
 
-const normalizeServiceType = (value) => {
-  if (!value) return value;
-  const key = value.toString().toLowerCase().trim().replace(/[-_ ]/g, '_');
-  return SERVICE_TYPE_MAP[key] || SERVICE_TYPE_MAP[value.toString().toLowerCase().trim()] || value;
+const normalizeCaseServiceType = (value) => {
+  if (!value) return 'other';
+  const key = value.toString().toLowerCase().trim().replace(/[\s\-]/g, '_');
+  return CASE_SERVICE_TYPE_MAP[key] || 'other';
+};
+
+const VEHICLE_TYPE_ENUM = ['car', 'motorcycle', 'truck', 'bus', 'van', 'other'];
+const normalizeVehicleType = (value) => {
+  if (!value) return 'car';
+  const v = value.toString().toLowerCase().trim();
+  if (VEHICLE_TYPE_ENUM.includes(v)) return v;
+  // numeric or unknown -> default car
+  return 'car';
 };
 
 // Column name mapping: CSV column -> entity field
