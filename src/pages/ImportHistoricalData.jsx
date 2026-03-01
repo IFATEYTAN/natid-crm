@@ -198,6 +198,10 @@ export default function ImportHistoricalDataPage() {
             record[header] = value;
           }
         });
+        // Normalize service_type from English to Hebrew
+        if (record.service_type) {
+          record.service_type = normalizeServiceType(record.service_type);
+        }
         // Apply fallbacks for required fields
         target.requiredFields.forEach(({ key, fallback }) => {
           if (!record[key] && fallback !== null) record[key] = fallback;
