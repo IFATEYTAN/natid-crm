@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { useCalls } from '@/features/calls/hooks/useCalls';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,192 +14,112 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DataTable from '@/components/ui/DataTable';
-import StatusBadge from '@/components/ui/StatusBadge';
-import ExportMenu from '@/components/ui/ExportMenu';
 import {
-  Phone,
   Plus,
   Search,
-  Filter,
-  MapPin,
-  Clock,
-  AlertTriangle,
   RefreshCw,
-  Calendar,
+  MapPin,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, formatDistanceToNow } from 'date-fns';
-import { he } from 'date-fns/locale';
-import { issueTypeLabels, priorityLabels, priorityColors, openStatuses } from '@/config/labels';
+import { format } from 'date-fns';
+
+const PAGE_SIZE = 100;
+
+const SERVICE_TYPE_LABELS = {
+  towing: 'גרירה',
+  flat_tire: 'פנצ׳ר',
+  battery: 'סוללה',
+  lockout: 'נעילה',
+  fuel: 'דלק',
+  accident: 'תאונה',
+  mechanical: 'מכאני',
+  other: 'אחר',
+};
+
+const STATUS_LABELS = {
+  new: 'חדש',
+  assigned: 'שובץ',
+  en_route: 'בדרך',
+  on_site: 'באתר',
+  in_progress: 'בטיפול',
+  completed: 'הושלם',
+  cancelled: 'בוטל',
+};
+
+const STATUS_COLORS = {
+  new: 'bg-yellow-100 text-yellow-800',
+  assigned: 'bg-blue-100 text-blue-800',
+  en_route: 'bg-indigo-100 text-indigo-800',
+  on_site: 'bg-purple-100 text-purple-800',
+  in_progress: 'bg-orange-100 text-orange-800',
+  completed: 'bg-green-100 text-green-800',
+  cancelled: 'bg-gray-100 text-gray-600',
+};
+
+const PRIORITY_LABELS = {
+  low: 'נמוך',
+  normal: 'רגיל',
+  high: 'גבוה',
+  urgent: 'דחוף',
+};
+
+const PRIORITY_COLORS = {
+  low: 'bg-gray-100 text-gray-600',
+  normal: 'bg-blue-100 text-blue-700',
+  high: 'bg-orange-100 text-orange-700',
+  urgent: 'bg-red-100 text-red-700',
+};
 
 export default function CallsPage() {
-  const [searchParams] = useSearchParams();
-  const initialStatus = searchParams.get('status') || 'all';
-  const initialPriority = searchParams.get('priority') || 'all';
-
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState(initialStatus);
-  const [priorityFilter, setPriorityFilter] = useState(initialPriority);
-  const [activeTab, setActiveTab] = useState(
-    initialStatus !== 'all' || initialPriority !== 'all' ? 'all' : 'active'
-  );
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
 
-  const {
-    data: calls = [],
-    isLoading,
-    isError,
-    error: callsError,
-    refetch,
-    isFetching,
-  } = useCalls();
+  const { data: cases = [], isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ['cases-list'],
+    queryFn: () => base44.entities.Case.list('-created_date', 5000),
+  });
 
-  // Filter calls
-  const filteredCalls = useMemo(() => {
-    return calls.filter((call) => {
+  const filtered = useMemo(() => {
+    return cases.filter((c) => {
+      const q = searchQuery.toLowerCase();
       const matchesSearch =
         !searchQuery ||
-        call.call_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        call.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        call.customer_phone?.includes(searchQuery) ||
-        call.vehicle_plate?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === 'all' ||
-        (statusFilter === 'active' && openStatuses.includes(call.call_status)) ||
-        call.call_status === statusFilter;
-      const matchesPriority = priorityFilter === 'all' || call.call_priority === priorityFilter;
-
-      return matchesSearch && matchesStatus && matchesPriority;
+        c.case_number?.toLowerCase().includes(q) ||
+        c.customer_name?.toLowerCase().includes(q) ||
+        c.caller_phone?.includes(searchQuery) ||
+        c.vehicle_number?.includes(searchQuery);
+      const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+      const matchesService = serviceTypeFilter === 'all' || c.service_type === serviceTypeFilter;
+      return matchesSearch && matchesStatus && matchesService;
     });
-  }, [calls, searchQuery, statusFilter, priorityFilter]);
+  }, [cases, searchQuery, statusFilter, serviceTypeFilter]);
 
-  // Separate active and completed calls
-  const activeCalls = filteredCalls.filter((c) =>
-    [
-      'waiting_treatment',
-      'awaiting_assignment',
-      'assigning',
-      'vendor_enroute',
-      'in_progress',
-      'vendor_arrived',
-      'future_service',
-      'in_followup',
-      'in_storage',
-      'continued_treatment',
-      'awaiting_payment',
-    ].includes(c.call_status)
-  );
-  const completedCalls = filteredCalls.filter((c) =>
-    ['completed', 'cancelled'].includes(c.call_status)
-  );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  // Stats
-  const stats = useMemo(
-    () => ({
-      total: calls.length,
-      waiting: calls.filter((c) => c.call_status === 'waiting_treatment').length,
-      inProgress: calls.filter((c) => ['vendor_enroute', 'in_progress'].includes(c.call_status))
-        .length,
-      urgent: calls.filter((c) => c.call_priority === 'urgent' || c.call_priority === 'critical')
-        .length,
-    }),
-    [calls]
-  );
+  // Reset page on filter change
+  const handleFilterChange = (setter) => (val) => {
+    setter(val);
+    setPage(1);
+  };
 
-  const columns = [
-    {
-      header: 'מספר קריאה',
-      accessor: 'call_number',
-      cell: (call) => (
-        <Link
-          to={createPageUrl(`CallDetails?id=${call.id}`)}
-          className="font-medium text-blue-600 hover:underline"
-        >
-          {call.call_number || call.id.slice(0, 8)}
-        </Link>
-      ),
-    },
-    {
-      header: 'עדיפות',
-      accessor: 'call_priority',
-      cell: (call) => (
-        <Badge
-          className={cn('text-xs', priorityColors[call.call_priority] || priorityColors.normal)}
-        >
-          {priorityLabels[call.call_priority] || 'רגיל'}
-        </Badge>
-      ),
-    },
-    {
-      header: 'לקוח',
-      accessor: 'customer_name',
-      cell: (call) => (
-        <div>
-          <div className="font-medium">{call.customer_name}</div>
-          <div className="text-xs text-[#6B778C]" dir="ltr">
-            {call.customer_phone}
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'סוג תקלה',
-      accessor: 'issue_type',
-      cell: (call) => issueTypeLabels[call.issue_type] || call.issue_type || '-',
-    },
-    {
-      header: 'מיקום',
-      accessor: 'pickup_location_address',
-      cell: (call) => (
-        <div className="flex items-center gap-1 text-sm max-w-[200px]">
-          <MapPin className="w-3 h-3 text-[#6B778C] shrink-0" />
-          <span className="truncate">
-            {call.pickup_location_city || call.pickup_location_address || '-'}
-          </span>
-        </div>
-      ),
-    },
-    {
-      header: 'ספק',
-      accessor: 'assigned_vendor_name',
-      cell: (call) => call.assigned_vendor_name || <span className="text-[#6B778C]">לא שובץ</span>,
-    },
-    {
-      header: 'סטטוס',
-      accessor: 'call_status',
-      cell: (call) => <StatusBadge status={call.call_status} />,
-    },
-    {
-      header: 'נוצר',
-      accessor: 'created_date',
-      cell: (call) => (
-        <div className="text-sm">
-          <div>{format(new Date(call.created_date), 'dd/MM HH:mm')}</div>
-          <div className="text-xs text-[#6B778C]">
-            {formatDistanceToNow(new Date(call.created_date), { addSuffix: true, locale: he })}
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'פעולות',
-      cell: (call) => (
-        <Link to={createPageUrl(`CallDetails?id=${call.id}`)}>
-          <Button size="sm" variant="outline">
-            צפה
-          </Button>
-        </Link>
-      ),
-    },
-  ];
+  const stats = useMemo(() => ({
+    total: cases.length,
+    new: cases.filter((c) => c.status === 'new').length,
+    inProgress: cases.filter((c) => ['assigned', 'en_route', 'on_site', 'in_progress'].includes(c.status)).length,
+    completed: cases.filter((c) => c.status === 'completed').length,
+  }), [cases]);
 
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
-        <p className="text-gray-500 text-sm">{callsError?.message || 'נסה לרענן את הדף'}</p>
+        <Button variant="outline" onClick={() => refetch()}>נסה שוב</Button>
       </div>
     );
   }
@@ -212,12 +133,6 @@ export default function CallsPage() {
           <p className="text-[#6B778C] text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
         <div className="flex items-center gap-3">
-          <ExportMenu
-            data={filteredCalls}
-            columns={columns}
-            filename="calls_export"
-            title="דוח קריאות שירות"
-          />
           <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
             <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן
@@ -233,30 +148,19 @@ export default function CallsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-[#172B4D]">{stats.total}</div>
-            <div className="text-sm text-[#6B778C]">סה"כ קריאות</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{stats.waiting}</div>
-            <div className="text-sm text-[#6B778C]">ממתינות לטיפול</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
-            <div className="text-sm text-[#6B778C]">בטיפול</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{stats.urgent}</div>
-            <div className="text-sm text-[#6B778C]">דחופות</div>
-          </CardContent>
-        </Card>
+        {[
+          { label: 'סה"כ קריאות', value: stats.total, color: 'text-[#172B4D]' },
+          { label: 'חדשות', value: stats.new, color: 'text-yellow-600' },
+          { label: 'בטיפול', value: stats.inProgress, color: 'text-blue-600' },
+          { label: 'הושלמו', value: stats.completed, color: 'text-green-600' },
+        ].map(({ label, value, color }) => (
+          <Card key={label} className="bg-white">
+            <CardContent className="p-4">
+              <div className={cn('text-2xl font-bold', color)}>{isLoading ? '...' : value}</div>
+              <div className="text-sm text-[#6B778C]">{label}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Filters */}
@@ -266,88 +170,151 @@ export default function CallsPage() {
             <div className="relative flex-1">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
               <Input
-                placeholder="חיפוש לפי מספר קריאה, שם לקוח, טלפון או מספר רכב..."
+                placeholder="חיפוש לפי מספר קריאה, שם לקוח, טלפון..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pe-9"
-                aria-label="חיפוש קריאות"
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                className="ps-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+            <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
+              <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="סטטוס" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">כל הסטטוסים</SelectItem>
-                <SelectItem value="active">כל הפעילות</SelectItem>
-                <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
-                <SelectItem value="awaiting_assignment">ממתין לשיבוץ</SelectItem>
-                <SelectItem value="assigning">בתהליך שיבוץ</SelectItem>
-                <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
-                <SelectItem value="in_progress">בטיפול</SelectItem>
-                <SelectItem value="vendor_arrived">נותן השירות הגיע</SelectItem>
-                <SelectItem value="future_service">שירות עתידי</SelectItem>
-                <SelectItem value="in_followup">במעקב</SelectItem>
-                <SelectItem value="in_storage">באחסנה</SelectItem>
-                <SelectItem value="continued_treatment">המשך טיפול</SelectItem>
-                <SelectItem value="awaiting_payment">המתנה לחיוב</SelectItem>
-                <SelectItem value="completed">הושלם</SelectItem>
-                <SelectItem value="cancelled">בוטל</SelectItem>
+                {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="עדיפות" />
+            <Select value={serviceTypeFilter} onValueChange={handleFilterChange(setServiceTypeFilter)}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="סוג שירות" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">כל העדיפויות</SelectItem>
-                <SelectItem value="normal">רגיל</SelectItem>
-                <SelectItem value="urgent">דחוף</SelectItem>
-                <SelectItem value="critical">קריטי</SelectItem>
+                <SelectItem value="all">כל הסוגים</SelectItem>
+                {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Calls Table */}
+      {/* Table */}
       <Card className="bg-white">
-        <CardHeader className="pb-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
-              <TabsTrigger value="completed">הושלמו ({completedCalls.length})</TabsTrigger>
-              <TabsTrigger value="all">הכל ({filteredCalls.length})</TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-semibold text-[#172B4D]">
+            {isLoading ? 'טוען...' : `${filtered.length} קריאות | עמוד ${currentPage} מתוך ${totalPages}`}
+          </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
-          {activeTab === 'active' && (
-            <DataTable
-              columns={columns}
-              data={activeCalls}
-              isLoading={isLoading}
-              emptyMessage="אין קריאות פעילות"
-              rowColorField="call_status"
-            />
-          )}
-          {activeTab === 'completed' && (
-            <DataTable
-              columns={columns}
-              data={completedCalls}
-              isLoading={isLoading}
-              emptyMessage="אין קריאות שהושלמו"
-              rowColorField="call_status"
-            />
-          )}
-          {activeTab === 'all' && (
-            <DataTable
-              columns={columns}
-              data={filteredCalls}
-              isLoading={isLoading}
-              emptyMessage="אין קריאות להצגה"
-              rowColorField="call_status"
-            />
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-right">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  {['מספר קריאה', 'שם לקוח', 'טלפון', 'סוג שירות', 'סטטוס', 'עדיפות', 'עיר', 'ספק', 'תאריך', ''].map((h) => (
+                    <th key={h} className="px-4 py-3 text-xs font-semibold text-[#6B778C] whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {isLoading ? (
+                  Array.from({ length: 10 }).map((_, i) => (
+                    <tr key={i}>
+                      {Array.from({ length: 9 }).map((_, j) => (
+                        <td key={j} className="px-4 py-3">
+                          <div className="h-4 bg-gray-100 rounded animate-pulse w-20" />
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="px-4 py-12 text-center text-[#6B778C]">אין קריאות להצגה</td>
+                  </tr>
+                ) : (
+                  paginated.map((c) => (
+                    <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 font-medium text-blue-600">
+                        <Link to={createPageUrl(`CallDetails?id=${c.id}`)} className="hover:underline">
+                          {c.case_number || c.id.slice(0, 8)}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-[#172B4D] whitespace-nowrap">{c.customer_name || '-'}</td>
+                      <td className="px-4 py-3 text-[#6B778C]" dir="ltr">{c.caller_phone || '-'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {c.service_type ? (
+                          <Badge variant="outline" className="text-xs">
+                            {SERVICE_TYPE_LABELS[c.service_type] || c.service_type}
+                          </Badge>
+                        ) : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {c.status ? (
+                          <Badge className={cn('text-xs', STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600')}>
+                            {STATUS_LABELS[c.status] || c.status}
+                          </Badge>
+                        ) : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {c.priority ? (
+                          <Badge className={cn('text-xs', PRIORITY_COLORS[c.priority] || 'bg-gray-100 text-gray-600')}>
+                            {PRIORITY_LABELS[c.priority] || c.priority}
+                          </Badge>
+                        ) : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-[#6B778C]">
+                        <div className="flex items-center gap-1">
+                          {c.location_city && <MapPin className="w-3 h-3 shrink-0" />}
+                          <span className="truncate max-w-[120px]">{c.location_city || '-'}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-[#6B778C] max-w-[150px]">
+                        <span className="truncate block">{c.assigned_provider_name || <span className="text-gray-400">לא שובץ</span>}</span>
+                      </td>
+                      <td className="px-4 py-3 text-[#6B778C] whitespace-nowrap text-xs">
+                        {c.created_date ? format(new Date(c.created_date), 'dd/MM/yy HH:mm') : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link to={createPageUrl(`CallDetails?id=${c.id}`)}>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs">צפה</Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+              <span className="text-sm text-[#6B778C]">
+                מציג {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} מתוך {filtered.length}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                <span className="text-sm font-medium">{currentPage} / {totalPages}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
