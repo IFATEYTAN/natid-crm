@@ -430,7 +430,7 @@ export default function ImportHistoricalDataPage() {
             <FileSpreadsheet className="w-5 h-5 text-blue-600" />
             שלב 1: בחר סוג ייבוא
           </CardTitle>
-          <CardDescription>לאיזה אנטיטי לייבא את הנתונים?</CardDescription>
+          <CardDescription>בחר את סוג הנתונים לייבוא (ספקים, לקוחות, קריאות ועוד)</CardDescription>
         </CardHeader>
         <CardContent>
           <Select value={importTarget} onValueChange={handleTargetChange}>
