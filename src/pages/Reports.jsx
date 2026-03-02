@@ -32,12 +32,20 @@ export default function Reports() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Determine the "effective date" of each case:
+  // prefer completed_at or arrived_at (actual service date) over created_date (import date)
+  const getEffectiveYear = (c) => {
+    const dateFields = [c.completed_at, c.arrived_at, c.assigned_at, c.created_date];
+    for (const d of dateFields) {
+      if (d) return new Date(d).getFullYear();
+    }
+    return null;
+  };
+
   const cases = useMemo(() => {
     if (selectedYear === 'all') return allCases;
-    return allCases.filter(c => {
-      if (!c.created_date) return false;
-      return new Date(c.created_date).getFullYear() === parseInt(selectedYear);
-    });
+    const yr = parseInt(selectedYear);
+    return allCases.filter(c => getEffectiveYear(c) === yr);
   }, [allCases, selectedYear]);
 
   const sections = [
