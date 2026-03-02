@@ -530,6 +530,33 @@ export default function NatiAssistant() {
     setCurrentTipIndex(0);
   }, [pageKey]);
 
+  // Scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  const sendChatMessage = async () => {
+    const text = chatInput.trim();
+    if (!text || isChatLoading) return;
+    setChatInput('');
+    const userMsg = { role: 'user', text };
+    setChatMessages(prev => [...prev, userMsg]);
+    setIsChatLoading(true);
+    const history = [...chatMessages, userMsg]
+      .map(m => `${m.role === 'user' ? 'משתמש' : 'נתי'}: ${m.text}`)
+      .join('\n');
+    const response = await base44.integrations.Core.InvokeLLM({
+      prompt: `אתה "נתי הגרר" - עוזר חכם ואדיב של מערכת Natid CRM לניהול קריאות שירות גרירה ושירותי דרך.
+ענה בעברית, בצורה קצרה וברורה, על שאלות הקשורות לשימוש במערכת, תהליכי עבודה, פתרון בעיות, וניהול קריאות.
+היסטוריית השיחה:
+${history}
+
+שאלת המשתמש: ${text}`,
+    });
+    setChatMessages(prev => [...prev, { role: 'nati', text: typeof response === 'string' ? response : response?.result || 'סליחה, לא הצלחתי לענות כרגע.' }]);
+    setIsChatLoading(false);
+  };
+
   const handleHide = () => {
     setIsHidden(true);
     setIsOpen(false);
