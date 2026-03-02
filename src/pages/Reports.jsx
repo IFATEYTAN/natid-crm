@@ -24,7 +24,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2, CURRENT_YEAR - 3];
 
 export default function Reports() {
-  const [selectedYear, setSelectedYear] = useState(String(CURRENT_YEAR));
+  const [selectedYear, setSelectedYear] = useState(String(CURRENT_YEAR - 1));
 
   const { data: allCases = [], isLoading, refetch } = useQuery({
     queryKey: ['reports-cases'],
