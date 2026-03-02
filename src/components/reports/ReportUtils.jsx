@@ -30,6 +30,11 @@ export function exportToExcel(data, filename) {
   URL.revokeObjectURL(url);
 }
 
+// Returns the most relevant date string for a case (actual service date preferred)
+export function getEffectiveDate(c) {
+  return c.completed_at || c.arrived_at || c.assigned_at || c.created_date || null;
+}
+
 export function getYear(dateStr) {
   if (!dateStr) return null;
   return new Date(dateStr).getFullYear();
