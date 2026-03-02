@@ -9,7 +9,7 @@ export default function InsuranceMonthMatrix({ cases }) {
   const matrix = {};
   cases.forEach(c => {
     const co = c.insurance_company || 'לא ידוע';
-    const mo = getMonth(c.created_date);
+    const mo = getMonth(getEffectiveDate(c));
     if (mo == null) return;
     if (!matrix[co]) matrix[co] = Array(12).fill(0);
     matrix[co][mo]++;

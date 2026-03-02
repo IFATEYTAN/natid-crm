@@ -9,7 +9,7 @@ export default function DepartmentMonthMatrix({ cases }) {
   const matrix = {};
   cases.forEach(c => {
     const dept = c.department || 'לא ידוע';
-    const mo = getMonth(c.created_date);
+    const mo = getMonth(getEffectiveDate(c));
     if (mo == null) return;
     if (!matrix[dept]) matrix[dept] = Array(12).fill(0);
     matrix[dept][mo]++;

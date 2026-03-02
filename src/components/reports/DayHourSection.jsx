@@ -5,13 +5,13 @@ import { DAYS_HE, COLORS, fmtNum, getDay, getHour, getEffectiveDate } from './Re
 
 export default function DayHourSection({ cases }) {
   const dayData = Array.from({ length: 7 }, (_, i) => {
-    const dayCases = cases.filter(c => getDay(c.created_date) === i);
+    const dayCases = cases.filter(c => getDay(getEffectiveDate(c)) === i);
     const avgCost = dayCases.length > 0 ? dayCases.reduce((s,c) => s+(c.cost||0),0)/dayCases.length : 0;
     return { day: DAYS_HE[i], total: dayCases.length, avgCost: parseFloat(avgCost.toFixed(0)) };
   });
 
   const hourData = Array.from({ length: 24 }, (_, i) => {
-    const hCases = cases.filter(c => getHour(c.created_date) === i);
+    const hCases = cases.filter(c => getHour(getEffectiveDate(c)) === i);
     return { hour: `${String(i).padStart(2,'0')}:00`, total: hCases.length };
   });
 

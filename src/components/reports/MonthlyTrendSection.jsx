@@ -6,7 +6,7 @@ import ExportMenu from './ExportMenu';
 
 export default function MonthlyTrendSection({ cases }) {
   const byMonth = Array.from({ length: 12 }, (_, i) => {
-    const mCases = cases.filter(c => getMonth(c.created_date) === i);
+    const mCases = cases.filter(c => getMonth(getEffectiveDate(c)) === i);
     const completed = mCases.filter(c => c.status === 'completed').length;
     const revenue = mCases.reduce((s, c) => s + (c.price || 0), 0);
     const avgCost = mCases.length > 0 ? mCases.reduce((s, c) => s + (c.cost || 0), 0) / mCases.length : 0;
