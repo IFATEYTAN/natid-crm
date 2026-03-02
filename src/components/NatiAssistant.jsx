@@ -617,81 +617,113 @@ ${history}
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-red-50 border-b border-red-100">
               <span className="font-bold text-red-800 text-sm">נתי הגרר</span>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Tip Content */}
-            <div className="p-4 min-h-[100px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${pageKey}-${currentTipIndex}`}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <h4 className="font-bold text-gray-900 text-sm mb-2">
-                    {tips[currentTipIndex]?.title}
-                  </h4>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {tips[currentTipIndex]?.text}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentTipIndex((prev) => Math.max(0, prev - 1))}
-                  disabled={currentTipIndex === 0}
-                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-                <div className="flex gap-1">
-                  {tips.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentTipIndex(idx)}
-                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                        idx === currentTipIndex ? 'bg-red-500' : 'bg-gray-300'
-                      }`}
-                    />
-                  ))}
+                {/* Mode toggle */}
+                <div className="flex bg-white rounded-full border border-red-200 overflow-hidden text-xs">
+                  <button
+                    onClick={() => setMode('tips')}
+                    className={`px-2 py-1 flex items-center gap-1 transition-colors ${mode === 'tips' ? 'bg-red-600 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                  >
+                    <Lightbulb className="w-3 h-3" /> טיפים
+                  </button>
+                  <button
+                    onClick={() => setMode('chat')}
+                    className={`px-2 py-1 flex items-center gap-1 transition-colors ${mode === 'chat' ? 'bg-red-600 text-white' : 'text-red-600 hover:bg-red-50'}`}
+                  >
+                    <MessageCircle className="w-3 h-3" /> צ'אט
+                  </button>
                 </div>
-                <button
-                  onClick={() => setCurrentTipIndex((prev) => Math.min(tips.length - 1, prev + 1))}
-                  disabled={currentTipIndex === tips.length - 1}
-                  className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
+                <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-100">
-              <Link to={createPageUrl(guidePageName)} onClick={() => setIsOpen(false)}>
-                <Button size="sm" variant="default" className="gap-1 bg-red-600 hover:bg-red-700">
-                  <BookOpen className="w-3.5 h-3.5" />
-                  {guideLabel}
-                </Button>
-              </Link>
-              <button
-                onClick={handleHide}
-                className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
-              >
-                <EyeOff className="w-3 h-3" />
-                הסתר
-              </button>
-            </div>
+            {mode === 'tips' ? (
+              <>
+                {/* Tip Content */}
+                <div className="p-4 min-h-[100px]">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={`${pageKey}-${currentTipIndex}`}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <h4 className="font-bold text-gray-900 text-sm mb-2">{tips[currentTipIndex]?.title}</h4>
+                      <p className="text-gray-600 text-sm leading-relaxed">{tips[currentTipIndex]?.text}</p>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setCurrentTipIndex(p => Math.max(0, p - 1))} disabled={currentTipIndex === 0} className="p-1 rounded hover:bg-gray-100 disabled:opacity-30">
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <div className="flex gap-1">
+                      {tips.map((_, idx) => (
+                        <button key={idx} onClick={() => setCurrentTipIndex(idx)} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentTipIndex ? 'bg-red-500' : 'bg-gray-300'}`} />
+                      ))}
+                    </div>
+                    <button onClick={() => setCurrentTipIndex(p => Math.min(tips.length - 1, p + 1))} disabled={currentTipIndex === tips.length - 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-30">
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-100">
+                  <Link to={createPageUrl(guidePageName)} onClick={() => setIsOpen(false)}>
+                    <Button size="sm" variant="default" className="gap-1 bg-red-600 hover:bg-red-700">
+                      <BookOpen className="w-3.5 h-3.5" />{guideLabel}
+                    </Button>
+                  </Link>
+                  <button onClick={handleHide} className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                    <EyeOff className="w-3 h-3" />הסתר
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Chat messages */}
+                <div className="h-56 overflow-y-auto p-3 space-y-2 bg-gray-50">
+                  {chatMessages.length === 0 && (
+                    <p className="text-xs text-gray-400 text-center mt-4">שלח לי שאלה ואשמח לעזור! 🚛</p>
+                  )}
+                  {chatMessages.map((m, i) => (
+                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-start' : 'justify-end'}`}>
+                      <div className={`max-w-[85%] px-3 py-2 rounded-xl text-xs leading-relaxed ${m.role === 'user' ? 'bg-white border border-gray-200 text-gray-800' : 'bg-red-600 text-white'}`}>
+                        {m.text}
+                      </div>
+                    </div>
+                  ))}
+                  {isChatLoading && (
+                    <div className="flex justify-end">
+                      <div className="bg-red-100 px-3 py-2 rounded-xl text-xs text-red-700 animate-pulse">מקליד...</div>
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+                {/* Input */}
+                <div className="flex items-center gap-2 p-3 border-t border-gray-100 bg-white">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
+                    placeholder="כתוב שאלה..."
+                    className="flex-1 text-xs border border-gray-200 rounded-full px-3 py-2 outline-none focus:border-red-300"
+                    dir="rtl"
+                  />
+                  <button onClick={sendChatMessage} disabled={!chatInput.trim() || isChatLoading} className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center disabled:opacity-40 transition-colors">
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
