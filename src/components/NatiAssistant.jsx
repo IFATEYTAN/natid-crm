@@ -550,9 +550,14 @@ export default function NatiAssistant() {
     const history = [...chatMessages, userMsg]
       .map(m => `${m.role === 'user' ? 'משתמש' : 'נתי'}: ${m.text}`)
       .join('\n');
+    const userContext = currentUser
+      ? `שם המשתמש: ${currentUser.full_name || currentUser.email}, תפקיד: ${currentUser.role || 'לא ידוע'}`
+      : '';
+
     const response = await base44.integrations.Core.InvokeLLM({
       prompt: `אתה "נתי הגרר" - עוזר חכם ואדיב של מערכת Natid CRM לניהול קריאות שירות גרירה ושירותי דרך.
-ענה בעברית, בצורה קצרה וברורה, על שאלות הקשורות לשימוש במערכת, תהליכי עבודה, פתרון בעיות, וניהול קריאות.
+${userContext ? `פרטי המשתמש הנוכחי: ${userContext}` : ''}
+פנה למשתמש בשמו אם ידוע לך. ענה בעברית, בצורה קצרה וברורה, על שאלות הקשורות לשימוש במערכת, תהליכי עבודה, פתרון בעיות, וניהול קריאות.
 היסטוריית השיחה:
 ${history}
 
