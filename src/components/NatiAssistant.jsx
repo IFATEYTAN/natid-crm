@@ -477,7 +477,12 @@ export default function NatiAssistant() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    base44.auth.me().then(u => setCurrentUser(u)).catch(() => {});
+  }, []);
   
   let location;
   try {
