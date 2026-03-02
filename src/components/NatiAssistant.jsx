@@ -473,6 +473,11 @@ export default function NatiAssistant() {
   const [isHidden, setIsHidden] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [hasSeenWelcome, setHasSeenWelcome] = useState(true);
+  const [mode, setMode] = useState('tips'); // 'tips' | 'chat'
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatEndRef = useRef(null);
   
   let location;
   try {
