@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { DAYS_HE, COLORS, fmtNum, getDay, getHour } from './ReportUtils';
+import { DAYS_HE, COLORS, fmtNum, getDay, getHour, getEffectiveDate } from './ReportUtils';
 
 export default function DayHourSection({ cases }) {
   const dayData = Array.from({ length: 7 }, (_, i) => {
