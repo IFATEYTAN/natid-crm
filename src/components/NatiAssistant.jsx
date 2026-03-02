@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { X, ChevronLeft, ChevronRight, BookOpen, EyeOff } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, EyeOff, Send, MessageCircle, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
 
 const STORAGE_KEY = 'natid_nati_assistant';
 
