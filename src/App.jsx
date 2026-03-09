@@ -74,14 +74,20 @@ const AuthenticatedApp = () => {
   }
 
   // Render the main app with role-based access control
+  // Pages without Layout (noLayoutPages) skip RoleGuard because
+  // PermissionsProvider lives inside Layout and is not available for them.
   const renderPage = (pageName, Page) => {
-    const roles = getPageRoles(pageName);
     const content = (
       <Suspense fallback={<PageLoader />}>
         <Page />
       </Suspense>
     );
 
+    if (noLayoutPages.includes(pageName)) {
+      return content;
+    }
+
+    const roles = getPageRoles(pageName);
     if (roles) {
       return <RoleGuard allowedRoles={roles}>{content}</RoleGuard>;
     }
