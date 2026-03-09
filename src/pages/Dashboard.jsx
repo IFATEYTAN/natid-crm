@@ -1,7 +1,7 @@
 import { lazyRetry } from '@/lib/lazyRetry';
 import React, { useState, Suspense, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils';
 const StatCard = lazyRetry(() => import('@/components/ui/StatCard'));
@@ -17,6 +17,7 @@ import {
   Users,
   Calendar,
   BarChart3,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -56,8 +57,16 @@ const ProactiveRecommendationsWidget = lazyRetry(
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { currentUser, hasPermission, canAccessPage } = usePermissions();
+
+  const handleRefreshData = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries();
+    setIsRefreshing(false);
+  };
 
   const today = new Date();
 
@@ -181,6 +190,15 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={handleRefreshData}
+            disabled={isRefreshing}
+            className="rounded-full px-4 transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 me-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            רענן נתונים
+          </Button>
           <PermissionGuard category="calls" permission="create">
             <Link to={createPageUrl('NewCase')}>
               <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-6 transition-all transform hover:scale-105">
