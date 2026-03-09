@@ -22,7 +22,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/components/utils';
 import { format } from 'date-fns';
 
 const PAGE_SIZE = 100;
