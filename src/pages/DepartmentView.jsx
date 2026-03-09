@@ -680,8 +680,8 @@ function AgentSearch({ department }) {
 // ─── Vendor Detail View ─────────────────────────────────────────────────────
 function VendorDetailView({ vendor, onBack }) {
   return (
-    <div className="space-y-4">
-      <Button variant="ghost" size="sm" className="gap-2" onClick={onBack}>
+    <div className="space-y-4 rtl-flip">
+      <Button variant="ghost" size="sm" className="gap-2 flex-row-reverse" onClick={onBack}>
         <ArrowRight className="w-4 h-4" />
         חזרה לרשימה
       </Button>
@@ -689,13 +689,13 @@ function VendorDetailView({ vendor, onBack }) {
       {/* Vendor Info */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="text-lg flex items-center gap-2 justify-end text-right">
+            <span>{vendor.vendor_name || vendor.name} — פרטי הסוכן</span>
             <UserSearch className="w-5 h-5 text-[#212121]" />
-            פרטי הסוכן — {vendor.vendor_name || vendor.name}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-right">
             {/* Basic Info */}
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-[#424242] border-b pb-1">פרטי הסוכן</h4>
