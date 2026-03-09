@@ -38,16 +38,19 @@ export default function AIInsightsWidget() {
 
     const openCalls = calls.filter((c) => !['completed', 'cancelled'].includes(c.call_status));
     const completedToday = calls.filter((c) => {
+      if (!c.created_date || c.call_status !== 'completed') return false;
       const d = new Date(c.created_date);
-      const today = new Date();
-      return c.call_status === 'completed' && d.toDateString() === today.toDateString();
+      if (isNaN(d.getTime())) return false;
+      return d.toDateString() === new Date().toDateString();
     });
     const urgentOpen = openCalls.filter(
       (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
     );
     const waitingLong = openCalls.filter((c) => {
-      const mins = (Date.now() - new Date(c.created_date).getTime()) / 60000;
-      return mins > 30;
+      if (!c.created_date) return false;
+      const d = new Date(c.created_date);
+      if (isNaN(d.getTime())) return false;
+      return (Date.now() - d.getTime()) / 60000 > 30;
     });
 
     const prompt = `אתה מערכת AI לניהול מוקד שירותי דרך. נתח את הנתונים הבאים וצור 3 תובנות חכמות ומשמעותיות.

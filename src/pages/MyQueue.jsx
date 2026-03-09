@@ -126,14 +126,19 @@ export default function MyQueuePage() {
     {
       header: 'נוצר',
       accessor: 'created_date',
-      cell: (call) => (
-        <div className="text-sm">
-          <div>{format(new Date(call.created_date), 'dd/MM HH:mm')}</div>
-          <div className="text-xs text-[#6B778C]">
-            {formatDistanceToNow(new Date(call.created_date), { addSuffix: true, locale: he })}
+      cell: (call) => {
+        if (!call.created_date) return <span className="text-sm">-</span>;
+        const d = new Date(call.created_date);
+        if (isNaN(d.getTime())) return <span className="text-sm">-</span>;
+        return (
+          <div className="text-sm">
+            <div>{format(d, 'dd/MM HH:mm')}</div>
+            <div className="text-xs text-[#6B778C]">
+              {formatDistanceToNow(d, { addSuffix: true, locale: he })}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       header: 'פעולות',
