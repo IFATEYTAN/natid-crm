@@ -419,18 +419,18 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       {/* Call History */}
       <Card>
         <CardHeader
-          className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={() => setShowHistory(!showHistory)}
-        >
-          <CardTitle className="text-base flex items-center justify-between">
-            <span>היסטוריית קריאות ({cases.length})</span>
-            {showHistory ? (
-              <ChevronUp className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            )}
-          </CardTitle>
-        </CardHeader>
+           className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
+           onClick={() => setShowHistory(!showHistory)}
+         >
+           <CardTitle className="text-base flex items-center justify-between text-right">
+             {showHistory ? (
+               <ChevronUp className="w-4 h-4 text-gray-500" />
+             ) : (
+               <ChevronDown className="w-4 h-4 text-gray-500" />
+             )}
+             <span>היסטוריית קריאות ({cases.length})</span>
+           </CardTitle>
+         </CardHeader>
         {showHistory && (
           <CardContent>
             <DataTable
