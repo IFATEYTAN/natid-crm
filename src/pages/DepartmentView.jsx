@@ -146,55 +146,31 @@ export default function DepartmentView() {
          </h2>
        </div>
 
-       {/* Sub-view content for towing department */}
-       {true && (
-         <div>
-            {/* Sub-navigation */}
-             <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
-               {SUB_VIEWS.map((sv) => {
-                const Icon = sv.icon;
-                return (
-                  <Button
-                    key={sv.key}
-                    variant={subView === sv.key ? 'default' : 'outline'}
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => handleSubViewChange(sv.key)}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {sv.label}
-                  </Button>
-                );
-              })}
-            </div>
+       {/* Sub-navigation */}
+       <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
+         {SUB_VIEWS.map((sv) => {
+           const Icon = sv.icon;
+           return (
+             <Button
+               key={sv.key}
+               variant={subView === sv.key ? 'default' : 'outline'}
+               size="sm"
+               className="gap-2"
+               onClick={() => handleSubViewChange(sv.key)}
+             >
+               <Icon className="w-4 h-4" />
+               {sv.label}
+             </Button>
+           );
+         })}
+       </div>
 
-            {/* Sub-navigation */}
-             <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
-              {SUB_VIEWS.filter(sv => sv.key !== 'private_service').map((sv) => {
-                const Icon = sv.icon;
-                return (
-                  <Button
-                    key={sv.key}
-                    variant={subView === sv.key ? 'default' : 'outline'}
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => handleSubViewChange(sv.key)}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {sv.label}
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* Sub-view content */}
-            {subView === 'search_subscriber' && (
-              <SubscriberSearch department="towing" />
-            )}
-            {subView === 'search_agent' && <AgentSearch department="towing" />}
-            {subView === 'cases_list' && <CasesList department="towing" />}
-            </div>
-            )}
+       {/* Sub-view content */}
+       {subView === 'search_subscriber' && (
+         <SubscriberSearch department="towing" />
+       )}
+       {subView === 'search_agent' && <AgentSearch department="towing" />}
+       {subView === 'cases_list' && <CasesList department="towing" />}
     </div>
   );
 }
