@@ -919,37 +919,15 @@ function CasesList({ department }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rtl-flip">
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col gap-4">
             {/* Row 1: Search + Status + Vendor */}
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="חיפוש לפי מספר קריאה, שם, רכב, טלפון..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="ps-9"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="סטטוס" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הסטטוסים</SelectItem>
-                  {Object.entries(statusLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col md:flex-row gap-3 flex-row-reverse">
               <Select value={vendorFilter} onValueChange={setVendorFilter}>
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger className="w-[160px] text-right">
                   <SelectValue placeholder="ספק" />
                 </SelectTrigger>
                 <SelectContent>
@@ -961,10 +939,32 @@ function CasesList({ department }) {
                   ))}
                 </SelectContent>
               </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[160px] text-right">
+                  <SelectValue placeholder="סטטוס" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הסטטוסים</SelectItem>
+                  {Object.entries(statusLabels).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="relative flex-1">
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="חיפוש לפי מספר קריאה, שם, רכב, טלפון..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="ps-9 text-right"
+                />
+              </div>
             </div>
 
             {/* Row 2: Area + VIP + Date Range */}
-            <div className="flex flex-col md:flex-row gap-3 items-end">
+            <div className="flex flex-col md:flex-row gap-3 items-end flex-row-reverse">
               <Select value={areaFilter} onValueChange={setAreaFilter}>
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="אזור" />
