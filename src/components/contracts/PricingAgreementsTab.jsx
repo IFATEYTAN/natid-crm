@@ -341,37 +341,37 @@ export default function PricingAgreementsTab() {
               </div>
             )}
             {form.rate_type === 'area_surcharge' && (
-              <div>
-                <Label>אזורים</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {areaOptions.map((a) => (
-                    <Badge
-                      key={a.value}
-                      className={`cursor-pointer ${form.applies_to_areas.includes(a.value) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}
-                      onClick={() => toggleArea(a.value)}
-                    >
-                      {a.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            {form.rate_type === 'vehicle_type' && (
-              <div>
-                <Label>סוגי רכב</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {vehicleTypeOptions.map((v) => (
-                    <Badge
-                      key={v.value}
-                      className={`cursor-pointer ${form.applies_to_vehicle_types.includes(v.value) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}
-                      onClick={() => toggleVehicle(v.value)}
-                    >
-                      {v.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
+               <div className="text-right">
+                 <Label>אזורים</Label>
+                 <div className="flex flex-wrap gap-2 mt-1 justify-end">
+                   {areaOptions.map((a) => (
+                     <Badge
+                       key={a.value}
+                       className={`cursor-pointer ${form.applies_to_areas.includes(a.value) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+                       onClick={() => toggleArea(a.value)}
+                     >
+                       {a.label}
+                     </Badge>
+                   ))}
+                 </div>
+               </div>
+             )}
+             {form.rate_type === 'vehicle_type' && (
+               <div className="text-right">
+                 <Label>סוגי רכב</Label>
+                 <div className="flex flex-wrap gap-2 mt-1 justify-end">
+                   {vehicleTypeOptions.map((v) => (
+                     <Badge
+                       key={v.value}
+                       className={`cursor-pointer ${form.applies_to_vehicle_types.includes(v.value) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+                       onClick={() => toggleVehicle(v.value)}
+                     >
+                       {v.label}
+                     </Badge>
+                   ))}
+                 </div>
+               </div>
+             )}
             <div className="flex items-center gap-2 mt-4">
               <Switch
                 checked={form.is_active}
