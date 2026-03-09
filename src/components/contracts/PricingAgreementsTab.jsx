@@ -390,14 +390,14 @@ export default function PricingAgreementsTab() {
               />
             </div>
           </div>
-          <DialogFooter className="flex justify-start gap-2 mt-4">
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
-              ביטול
-            </Button>
-            <Button onClick={handleSave} isLoading={saving}>
-              {editingRate ? 'עדכן' : 'צור'}
-            </Button>
-          </DialogFooter>
+          <DialogFooter className="flex-row-reverse gap-2 mt-4 flex justify-end">
+             <Button onClick={handleSave} isLoading={saving}>
+               {editingRate ? 'עדכן' : 'צור'}
+             </Button>
+             <Button variant="outline" onClick={() => setShowDialog(false)}>
+               ביטול
+             </Button>
+           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
