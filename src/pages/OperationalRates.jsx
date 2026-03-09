@@ -266,11 +266,11 @@ export default function OperationalRatesPage() {
 
       {/* Rate Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg rtl-flip text-right">
           <DialogHeader>
-            <DialogTitle>{editingRate ? 'עריכת תעריף' : 'תעריף חדש'}</DialogTitle>
+            <DialogTitle className="text-right">{editingRate ? 'עריכת תעריף' : 'תעריף חדש'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto text-right">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="rate-name">שם תעריף</Label>
