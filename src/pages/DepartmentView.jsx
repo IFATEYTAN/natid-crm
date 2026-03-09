@@ -448,18 +448,18 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       {/* Vehicle History */}
       <Card>
         <CardHeader
-          className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={() => setShowVehicleHistory(!showVehicleHistory)}
-        >
-          <CardTitle className="text-base flex items-center justify-between">
-            <span>היסטוריית רכב</span>
-            {showVehicleHistory ? (
-              <ChevronUp className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            )}
-          </CardTitle>
-        </CardHeader>
+           className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
+           onClick={() => setShowVehicleHistory(!showVehicleHistory)}
+         >
+           <CardTitle className="text-base flex items-center justify-between text-right">
+             {showVehicleHistory ? (
+               <ChevronUp className="w-4 h-4 text-gray-500" />
+             ) : (
+               <ChevronDown className="w-4 h-4 text-gray-500" />
+             )}
+             <span>היסטוריית רכב</span>
+           </CardTitle>
+         </CardHeader>
         {showVehicleHistory && (
           <CardContent>
             <DataTable
