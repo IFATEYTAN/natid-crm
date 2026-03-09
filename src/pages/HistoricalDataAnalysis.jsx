@@ -1,4 +1,5 @@
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { useState, useMemo, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
@@ -25,9 +26,9 @@ import {
   Download,
   FileSpreadsheet,
 } from 'lucide-react';
-const ServeTypePie = lazy(() => import('../components/analysis/ServeTypePie'));
-const CarTypeBar = lazy(() => import('../components/analysis/CarTypeBar'));
-const BotAccuracyBar = lazy(() => import('../components/analysis/BotAccuracyBar'));
+const ServeTypePie = lazyRetry(() => import('../components/analysis/ServeTypePie'));
+const CarTypeBar = lazyRetry(() => import('../components/analysis/CarTypeBar'));
+const BotAccuracyBar = lazyRetry(() => import('../components/analysis/BotAccuracyBar'));
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';

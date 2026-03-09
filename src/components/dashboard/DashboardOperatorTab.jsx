@@ -1,4 +1,5 @@
-import React, { Suspense, lazy } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import {
@@ -18,11 +19,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { getOperatorCallColumns, getVendorColumns } from './DashboardColumns';
 
-const StatCard = lazy(() => import('@/components/ui/StatCard'));
-const StatusBadge = lazy(() => import('@/components/ui/StatusBadge'));
-const AvatarStack = lazy(() => import('@/components/ui/AvatarStack'));
-const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
-const VendorDelaysWidget = lazy(() => import('@/components/dashboard/VendorDelaysWidget'));
+const StatCard = lazyRetry(() => import('@/components/ui/StatCard'));
+const StatusBadge = lazyRetry(() => import('@/components/ui/StatusBadge'));
+const AvatarStack = lazyRetry(() => import('@/components/ui/AvatarStack'));
+const DataTableLazy = lazyRetry(() => import('@/components/ui/DataTable'));
+const VendorDelaysWidget = lazyRetry(() => import('@/components/dashboard/VendorDelaysWidget'));
 
 export default function DashboardOperatorTab({
   myOpenCalls,

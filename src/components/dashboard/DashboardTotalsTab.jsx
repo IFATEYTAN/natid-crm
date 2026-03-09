@@ -1,4 +1,5 @@
-import React, { useState, Suspense, lazy } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Download } from 'lucide-react';
@@ -17,7 +18,7 @@ import { parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { openStatuses } from './dashboardConstants';
 import { getCallColumns } from './DashboardColumns';
 
-const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
+const DataTableLazy = lazyRetry(() => import('@/components/ui/DataTable'));
 
 export default function DashboardTotalsTab({ calls, callsLoading }) {
   const navigate = useNavigate();

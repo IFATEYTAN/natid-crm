@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClientInstance } from '@/lib/query-client';
@@ -14,7 +15,7 @@ import RoleGuard from '@/components/auth/RoleGuard';
 import { getPageRoles } from '@/config/permissions';
 import DemoBanner from '@/demo/DemoBanner';
 
-const LandingPage = lazy(() => import('@/pages/LandingPage'));
+const LandingPage = lazyRetry(() => import('@/pages/LandingPage'));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">

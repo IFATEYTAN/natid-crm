@@ -1,3 +1,4 @@
+import { lazyRetry } from '@/lib/lazyRetry';
 import React, { Suspense, useState } from 'react';
 import { Camera, FileText, Trash2, Pencil, Image as ImageIcon, FolderOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +28,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-const FileUploader = React.lazy(() => import('@/components/files/FileUploader'));
+const FileUploader = lazyRetry(() => import('@/components/files/FileUploader'));
 
 const categoryLabels = {
   before_treatment: 'לפני טיפול',

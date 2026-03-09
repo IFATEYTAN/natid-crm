@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Menu, X, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
@@ -18,23 +19,23 @@ import { base44 } from '@/api/base44Client';
 import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
 
 // Lazy-load AccessibilityWidget
-const AccessibilityWidget = lazy(() => import('@/components/AccessibilityWidget'));
-const NatiAssistant = lazy(() => import('@/components/NatiAssistant'));
+const AccessibilityWidget = lazyRetry(() => import('@/components/AccessibilityWidget'));
+const NatiAssistant = lazyRetry(() => import('@/components/NatiAssistant'));
 // Lazy-load PWA and status widgets to reduce main bundle size
-const InstallPrompt = lazy(() => import('@/components/pwa/InstallPrompt'));
-const OfflineIndicator = lazy(() => import('@/components/pwa/OfflineIndicator'));
-const UpdatePrompt = lazy(() => import('@/components/pwa/UpdatePrompt'));
-const NotificationPermissionBanner = lazy(() =>
+const InstallPrompt = lazyRetry(() => import('@/components/pwa/InstallPrompt'));
+const OfflineIndicator = lazyRetry(() => import('@/components/pwa/OfflineIndicator'));
+const UpdatePrompt = lazyRetry(() => import('@/components/pwa/UpdatePrompt'));
+const NotificationPermissionBanner = lazyRetry(() =>
   import('@/components/notifications/PushNotifications').then((m) => ({
     default: m.NotificationPermissionBanner,
   }))
 );
-const ConnectionStatusIndicator = lazy(() =>
+const ConnectionStatusIndicator = lazyRetry(() =>
   import('@/components/useRealtimeUpdates').then((m) => ({ default: m.ConnectionStatusIndicator }))
 );
 
 // Lazy Toaster to reduce main bundle
-const ToasterLazy = lazy(() => import('sonner').then((m) => ({ default: m.Toaster })));
+const ToasterLazy = lazyRetry(() => import('sonner').then((m) => ({ default: m.Toaster })));
 
 function LayoutContent({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

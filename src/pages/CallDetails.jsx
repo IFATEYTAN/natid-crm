@@ -1,3 +1,4 @@
+import { lazyRetry } from '@/lib/lazyRetry';
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
@@ -61,32 +62,32 @@ import { toast } from 'sonner';
 import { statusLabels, statusColors } from '@/components/config/labels';
 import CallActionsMenu from '@/components/call-details/CallActionsMenu';
 
-const CallDetailsInfoTab = React.lazy(() => import('@/components/call-details/CallDetailsInfoTab'));
-const CallChatTab = React.lazy(() => import('@/components/call-details/CallChatTab'));
-const CallHistoryTab = React.lazy(() => import('@/components/call-details/CallHistoryTab'));
-const CallFeedbackTab = React.lazy(() => import('@/components/call-details/CallFeedbackTab'));
-const CallFilesTab = React.lazy(() => import('@/components/call-details/CallFilesTab'));
-const VendorLiveMap = React.lazy(() => import('@/components/maps/VendorLiveMap'));
-const CallSummaryEditor = React.lazy(() => import('@/components/call/CallSummaryEditor'));
-const QuickCallSummary = React.lazy(() => import('@/components/ai/QuickCallSummary'));
-const VendorRecommendation = React.lazy(() => import('@/components/ai/VendorRecommendation'));
-const FutureServiceSection = React.lazy(
+const CallDetailsInfoTab = lazyRetry(() => import('@/components/call-details/CallDetailsInfoTab'));
+const CallChatTab = lazyRetry(() => import('@/components/call-details/CallChatTab'));
+const CallHistoryTab = lazyRetry(() => import('@/components/call-details/CallHistoryTab'));
+const CallFeedbackTab = lazyRetry(() => import('@/components/call-details/CallFeedbackTab'));
+const CallFilesTab = lazyRetry(() => import('@/components/call-details/CallFilesTab'));
+const VendorLiveMap = lazyRetry(() => import('@/components/maps/VendorLiveMap'));
+const CallSummaryEditor = lazyRetry(() => import('@/components/call/CallSummaryEditor'));
+const QuickCallSummary = lazyRetry(() => import('@/components/ai/QuickCallSummary'));
+const VendorRecommendation = lazyRetry(() => import('@/components/ai/VendorRecommendation'));
+const FutureServiceSection = lazyRetry(
   () => import('@/components/call-details/FutureServiceSection')
 );
-const QualityControlSection = React.lazy(
+const QualityControlSection = lazyRetry(
   () => import('@/components/call-details/QualityControlSection')
 );
-const CancelCallDialog = React.lazy(() => import('@/components/call-details/CancelCallDialog'));
-const DepositSection = React.lazy(() => import('@/components/call-details/DepositSection'));
-const CallProductsSection = React.lazy(
+const CancelCallDialog = lazyRetry(() => import('@/components/call-details/CancelCallDialog'));
+const DepositSection = lazyRetry(() => import('@/components/call-details/DepositSection'));
+const CallProductsSection = lazyRetry(
   () => import('@/components/call-details/CallProductsSection')
 );
-const CallPricingSection = React.lazy(() => import('@/components/call-details/CallPricingSection'));
-const EligibilityCheckSection = React.lazy(
+const CallPricingSection = lazyRetry(() => import('@/components/call-details/CallPricingSection'));
+const EligibilityCheckSection = lazyRetry(
   () => import('@/components/call-details/EligibilityCheckSection')
 );
-const RemindersList = React.lazy(() => import('@/components/reminders/RemindersList'));
-const CallEditDialog = React.lazy(() => import('@/components/call-details/CallEditDialog'));
+const RemindersList = lazyRetry(() => import('@/components/reminders/RemindersList'));
+const CallEditDialog = lazyRetry(() => import('@/components/call-details/CallEditDialog'));
 
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();

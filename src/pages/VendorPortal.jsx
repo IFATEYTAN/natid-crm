@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,13 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
-const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
-const VendorNewCallAlertLazy = lazy(() => import('@/components/vendor/VendorNewCallAlert'));
-const VendorStatsLazy = lazy(() => import('@/components/vendor/VendorStats'));
-const VendorAvailabilityToggleLazy = lazy(
+const DataTableLazy = lazyRetry(() => import('@/components/ui/DataTable'));
+const VendorNewCallAlertLazy = lazyRetry(() => import('@/components/vendor/VendorNewCallAlert'));
+const VendorStatsLazy = lazyRetry(() => import('@/components/vendor/VendorStats'));
+const VendorAvailabilityToggleLazy = lazyRetry(
   () => import('@/components/vendor/VendorAvailabilityToggle')
 );
-const VendorPortalAdminTabLazy = lazy(() => import('@/components/vendor/VendorPortalAdminTab'));
+const VendorPortalAdminTabLazy = lazyRetry(
+  () => import('@/components/vendor/VendorPortalAdminTab')
+);
 
 import { Phone, MapPin, Navigation, AlertCircle, Settings, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';

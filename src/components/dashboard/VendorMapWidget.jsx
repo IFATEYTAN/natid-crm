@@ -1,3 +1,4 @@
+import { lazyRetry } from '@/lib/lazyRetry';
 import React, { Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -7,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { MapPin } from 'lucide-react';
 
-const VendorTrackingLeafletMap = React.lazy(
+const VendorTrackingLeafletMap = lazyRetry(
   () => import('@/components/maps/VendorTrackingLeafletMap')
 );
 

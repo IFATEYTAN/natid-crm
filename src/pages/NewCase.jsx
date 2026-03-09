@@ -1,4 +1,5 @@
-import React, { useState, lazy, Suspense } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { useState, Suspense } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
@@ -40,7 +41,7 @@ import { showToast } from '@/components/ui/FeedbackToast';
 import AICategorization from '@/components/ai/AICategorization';
 import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 
-const TechnicalQuestionnaire = lazy(() => import('@/components/calls/TechnicalQuestionnaire'));
+const TechnicalQuestionnaire = lazyRetry(() => import('@/components/calls/TechnicalQuestionnaire'));
 
 const newCaseSchema = createValidationSchema({
   caller_name: { label: 'שם המתקשר', validators: [validators.required] },
