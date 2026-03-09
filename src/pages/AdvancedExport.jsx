@@ -460,9 +460,9 @@ export default function AdvancedExport() {
   return (
     <SlideUp>
       <div className="max-w-5xl mx-auto space-y-6" dir="rtl">
-        <div className="text-end">
-          <h1 className="text-2xl font-bold text-[#111827]">ייצוא מתקדם</h1>
-          <p className="text-[#6b7280]">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
+        <div className="text-right">
+          <h1 className="text-3xl font-bold text-[#111827]">ייצוא מתקדם</h1>
+          <p className="text-[#6b7280] text-sm">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
