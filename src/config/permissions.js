@@ -43,6 +43,7 @@ export const PAGE_PERMISSIONS = {
   HistoricalDataAnalysis: ['admin', 'operator'],
   MyQueue: ['admin', 'operator'],
   NewCase: ['admin', 'operator'],
+  PrivateService: ['admin', 'operator'],
   NewVendor: ['admin', 'operator'],
   NotificationSettings: ['admin', 'operator'],
   ProductCatalog: ['admin', 'operator'],
