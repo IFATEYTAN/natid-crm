@@ -7,15 +7,21 @@ module.exports = {
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)',
-  			none: '0',
-  			base: '0.5rem',
-  			xl: '1.5rem',
-  			'2xl': '2rem',
-  			full: '9999px'
+  			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-  			// Design System Colors - צבעים מהמערכת המאוחדת
+  			'neutral-soft': {
+  				50: '#FAFAFA',
+  				100: '#F5F5F5',
+  				200: '#E5E5E5',
+  				300: '#D4D4D4',
+  				400: '#A3A3A3',
+  				500: '#737373',
+  				600: '#525252',
+  				700: '#404040',
+  				800: '#262626',
+  				900: '#171717',
+  			},
   			'primary-soft': {
   				50: '#FFF5F5',
   				100: '#FFE8E8',
@@ -27,18 +33,6 @@ module.exports = {
   				700: '#D14343',
   				800: '#B93333',
   				900: '#9E2828',
-  			},
-  			'secondary-soft': {
-  				50: '#F0F9FF',
-  				100: '#E0F2FE',
-  				200: '#B9E6FE',
-  				300: '#7DD3FC',
-  				400: '#38BDF8',
-  				500: '#0EA5E9',
-  				600: '#0284C7',
-  				700: '#0369A1',
-  				800: '#075985',
-  				900: '#0C4A6E',
   			},
   			'success-soft': {
   				50: '#F0FDF4',
@@ -88,20 +82,6 @@ module.exports = {
   				800: '#5B21B6',
   				900: '#4C1D95',
   			},
-  			'neutral-soft': {
-  				50: '#FAFAFA',
-  				100: '#F5F5F5',
-  				200: '#E5E5E5',
-  				300: '#D4D4D4',
-  				400: '#A3A3A3',
-  				500: '#737373',
-  				600: '#525252',
-  				700: '#404040',
-  				800: '#262626',
-  				900: '#171717',
-  			},
-  			// Original Shadcn Colors
-
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -141,19 +121,6 @@ module.exports = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			},
-  			// Chart Colors - Soft Palette - צבעים עדינים לגרפים
-  			'chart-soft': {
-  				1: '#FF6B6B',
-  				2: '#4ECDC4',
-  				3: '#45B7D1',
-  				4: '#FFA07A',
-  				5: '#98D8C8',
-  				6: '#F7B731',
-  				7: '#5F27CD',
-  				8: '#00D2D3',
-  				9: '#FF6348',
-  				10: '#1DD1A1'
   			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
