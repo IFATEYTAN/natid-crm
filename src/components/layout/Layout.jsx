@@ -76,8 +76,16 @@ function LayoutContent({ children, currentPageName }) {
     }
   };
 
-  // Initialize with the first group expanded ("תפעול יומי")
-  const [expandedGroups, setExpandedGroups] = useState({ 'תפעול יומי': true });
+  // Initialize with all groups expanded so menu items are visible
+  const [expandedGroups, setExpandedGroups] = useState({
+    'תפעול יומי': true,
+    'ניהול ספקים': true,
+    'צי רכב': true,
+    'כלכלה ותשלומים': true,
+    'ניהול ונתונים': true,
+    כלים: true,
+    מערכת: true,
+  });
 
   useEffect(() => {
     document.title = 'NatID 360 Control'; // Set system name
