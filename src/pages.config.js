@@ -62,6 +62,7 @@ import CustomerDetails from './pages/CustomerDetails';
 import CustomerFeedback from './pages/CustomerFeedback';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
+import DepartmentView from './pages/DepartmentView';
 import EditCustomer from './pages/EditCustomer';
 import EditVendor from './pages/EditVendor';
 import FeedbackManagement from './pages/FeedbackManagement';
@@ -115,6 +116,7 @@ export const PAGES = {
     "CustomerFeedback": CustomerFeedback,
     "Customers": Customers,
     "Dashboard": Dashboard,
+    "DepartmentView": DepartmentView,
     "EditCustomer": EditCustomer,
     "EditVendor": EditVendor,
     "FeedbackManagement": FeedbackManagement,

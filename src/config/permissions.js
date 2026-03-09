@@ -38,6 +38,7 @@ export const PAGE_PERMISSIONS = {
   CustomerFeedback: ['admin', 'operator'],
   Customers: ['admin', 'operator'],
   Dashboard: ['admin', 'operator'],
+  DepartmentView: ['admin', 'operator'],
   EditVendor: ['admin', 'operator'],
   FeedbackManagement: ['admin', 'operator'],
   HistoricalDataAnalysis: ['admin', 'operator'],
