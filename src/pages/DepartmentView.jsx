@@ -1029,14 +1029,14 @@ function CasesList({ department }) {
       </Card>
 
       {/* Stats bar */}
-      <div className="flex gap-4 text-sm text-[#616161]">
-        <span>
-          סה&quot;כ: <strong>{filtered.length}</strong> פניות
-        </span>
-        <span>
-          (מתוך {departmentCases.length} במחלקה)
-        </span>
-      </div>
+       <div className="flex gap-4 text-sm text-[#616161] justify-end flex-row-reverse text-right">
+         <span>
+           סה&quot;כ: <strong>{filtered.length}</strong> פניות
+         </span>
+         <span>
+           (מתוך {departmentCases.length} במחלקה)
+         </span>
+       </div>
 
       {/* Table */}
       <DataTable
