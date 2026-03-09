@@ -168,15 +168,33 @@ export default function DepartmentView() {
               })}
             </div>
 
+            {/* Sub-navigation */}
+             <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
+              {SUB_VIEWS.filter(sv => sv.key !== 'private_service').map((sv) => {
+                const Icon = sv.icon;
+                return (
+                  <Button
+                    key={sv.key}
+                    variant={subView === sv.key ? 'default' : 'outline'}
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => handleSubViewChange(sv.key)}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {sv.label}
+                  </Button>
+                );
+              })}
+            </div>
+
             {/* Sub-view content */}
             {subView === 'search_subscriber' && (
-              <SubscriberSearch department={dept.key} />
+              <SubscriberSearch department="towing" />
             )}
-            {subView === 'search_agent' && <AgentSearch department={dept.key} />}
-            {subView === 'cases_list' && <CasesList department={dept.key} />}
-          </TabsContent>
-        ))}
-      </Tabs>
+            {subView === 'search_agent' && <AgentSearch department="towing" />}
+            {subView === 'cases_list' && <CasesList department="towing" />}
+            </div>
+            )}
     </div>
   );
 }
