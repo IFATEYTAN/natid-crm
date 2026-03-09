@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminDataCleanup from './pages/AdminDataCleanup';
 import AdminDisplaySettings from './pages/AdminDisplaySettings';
 import AdvancedExport from './pages/AdvancedExport';
 import Agents from './pages/Agents';
@@ -98,6 +99,7 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminDataCleanup": AdminDataCleanup,
     "AdminDisplaySettings": AdminDisplaySettings,
     "AdvancedExport": AdvancedExport,
     "Agents": Agents,
