@@ -79,7 +79,6 @@ import MyVendorProfile from './pages/MyVendorProfile';
 import NewCase from './pages/NewCase';
 import NewVendor from './pages/NewVendor';
 import NotificationSettings from './pages/NotificationSettings';
-import OperationalRates from './pages/OperationalRates';
 import PrivateService from './pages/PrivateService';
 import ProductCatalog from './pages/ProductCatalog';
 import QueueMonitor from './pages/QueueMonitor';
@@ -134,7 +133,6 @@ export const PAGES = {
     "NewCase": NewCase,
     "NewVendor": NewVendor,
     "NotificationSettings": NotificationSettings,
-    "OperationalRates": OperationalRates,
     "PrivateService": PrivateService,
     "ProductCatalog": ProductCatalog,
     "QueueMonitor": QueueMonitor,
