@@ -636,13 +636,22 @@ function AgentSearch({ department }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rtl-flip">
       {/* Search Form */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 flex-row-reverse">
+            <div className="relative flex-1">
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="הקלד לחיפוש..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="ps-9 text-right"
+              />
+            </div>
             <Select value={searchField} onValueChange={setSearchField}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px] text-right">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -652,15 +661,6 @@ function AgentSearch({ department }) {
                 <SelectItem value="area">אזור</SelectItem>
               </SelectContent>
             </Select>
-            <div className="relative flex-1">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="הקלד לחיפוש..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="ps-9"
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
