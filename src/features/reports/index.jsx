@@ -227,7 +227,9 @@ export default function Reports() {
             entityName="AllCalls"
             data={filteredCalls.map((call) => ({
               call_number: call.call_number || call.id.slice(-6),
-              created_date: format(new Date(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he }),
+              created_date: call.created_date
+                ? format(new Date(call.created_date), 'dd/MM/yyyy HH:mm', { locale: he })
+                : '-',
               customer_name: call.customer_name,
               customer_phone: call.customer_phone,
               issue_type: call.issue_type,

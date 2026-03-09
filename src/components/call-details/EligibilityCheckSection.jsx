@@ -174,7 +174,9 @@ export default function EligibilityCheckSection({ call, callId, currentUser }) {
                     {check.approved_by && <span>אישר: {check.approved_by}</span>}
                     {check.insurance_company && <span>חב' ביטוח: {check.insurance_company}</span>}
                     <span>
-                      {format(new Date(check.created_date), 'dd/MM/yy HH:mm', { locale: he })}
+                      {check.created_date
+                        ? format(new Date(check.created_date), 'dd/MM/yy HH:mm', { locale: he })
+                        : '-'}
                     </span>
                   </div>
                 </div>

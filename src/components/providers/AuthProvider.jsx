@@ -8,17 +8,14 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    base44.auth.me()
+    base44.auth
+      .me()
       .then((u) => setUser(u))
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, isLoading }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

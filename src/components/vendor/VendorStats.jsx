@@ -8,7 +8,9 @@ export default function VendorStats({ vendor, calls = [], onStatClick }) {
 
   const thisMonth = new Date();
   const thisMonthCalls = completedCalls.filter((c) => {
+    if (!c.created_date) return false;
     const created = new Date(c.created_date);
+    if (isNaN(created.getTime())) return false;
     return (
       created.getMonth() === thisMonth.getMonth() &&
       created.getFullYear() === thisMonth.getFullYear()
@@ -18,7 +20,9 @@ export default function VendorStats({ vendor, calls = [], onStatClick }) {
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   const lastMonthCalls = completedCalls.filter((c) => {
+    if (!c.created_date) return false;
     const created = new Date(c.created_date);
+    if (isNaN(created.getTime())) return false;
     return (
       created.getMonth() === lastMonth.getMonth() &&
       created.getFullYear() === lastMonth.getFullYear()

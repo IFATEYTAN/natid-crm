@@ -55,7 +55,7 @@ export const vehicleTypeLabels = {
 export const issueTypeLabels = {
   mechanical: 'תקלה מכנית',
   stopped_driving: 'הפסיק לנסוע',
-  flat_tire: 'פנצ\'ר',
+  flat_tire: "פנצ'ר",
   stuck_wheel: 'גלגל תקוע',
   accident: 'תאונה',
   no_fuel: 'אזל הדלק',

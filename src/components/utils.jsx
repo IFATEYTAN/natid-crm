@@ -1,3 +1,4 @@
+import { format as dateFnsFormat, parseISO as dateFnsParseISO } from 'date-fns';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -26,4 +27,32 @@ export const formatDate = (dateString) => {
 export const formatDateTime = (dateString) => {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleString('he-IL');
+};
+
+/**
+ * Safe wrapper around date-fns format() that returns fallback for invalid dates.
+ */
+export const safeFormat = (dateValue, formatStr, options = {}) => {
+  try {
+    if (!dateValue) return '-';
+    const date = typeof dateValue === 'string' ? dateFnsParseISO(dateValue) : dateValue;
+    if (isNaN(date.getTime())) return '-';
+    return dateFnsFormat(date, formatStr, options);
+  } catch {
+    return '-';
+  }
+};
+
+/**
+ * Safe wrapper around parseISO that returns null for invalid strings.
+ */
+export const safeParseISO = (dateString) => {
+  try {
+    if (!dateString) return null;
+    const date = dateFnsParseISO(dateString);
+    if (isNaN(date.getTime())) return null;
+    return date;
+  } catch {
+    return null;
+  }
 };
