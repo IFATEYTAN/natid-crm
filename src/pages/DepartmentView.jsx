@@ -481,7 +481,7 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
               onClick={() =>
                 navigate(
                   createPageUrl(
-                    `NewCase?customer_id=${customer.id}&department=${department}&type=paid_call`
+                    `SpecialCaseForm?customer_id=${customer.id}&department=${department}&type=paid_call`
                   )
                 )
               }
@@ -494,7 +494,7 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
               onClick={() =>
                 navigate(
                   createPageUrl(
-                    `NewCase?customer_id=${customer.id}&department=${department}&type=accident`
+                    `SpecialCaseForm?customer_id=${customer.id}&department=${department}&type=accident`
                   )
                 )
               }
@@ -507,7 +507,7 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
               onClick={() =>
                 navigate(
                   createPageUrl(
-                    `NewCase?customer_id=${customer.id}&department=${department}&type=mechanical`
+                    `SpecialCaseForm?customer_id=${customer.id}&department=${department}&type=mechanical`
                   )
                 )
               }

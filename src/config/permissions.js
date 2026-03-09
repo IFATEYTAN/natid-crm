@@ -52,6 +52,7 @@ export const PAGE_PERMISSIONS = {
   Reminders: ['admin', 'operator'],
   Reports: ['admin', 'operator'],
   ServiceProviders: ['admin', 'operator'],
+  SpecialCaseForm: ['admin', 'operator'],
   VendorContracts: ['admin', 'operator'],
   VendorDetails: ['admin', 'operator'],
   VendorTracking: ['admin', 'operator'],

@@ -87,6 +87,7 @@ import Reminders from './pages/Reminders';
 import Reports from './pages/Reports';
 import RoleManagement from './pages/RoleManagement';
 import ServiceProviders from './pages/ServiceProviders';
+import SpecialCaseForm from './pages/SpecialCaseForm';
 import Settings from './pages/Settings';
 import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
@@ -141,6 +142,7 @@ export const PAGES = {
     "Reports": Reports,
     "RoleManagement": RoleManagement,
     "ServiceProviders": ServiceProviders,
+    "SpecialCaseForm": SpecialCaseForm,
     "Settings": Settings,
     "UserGuide": UserGuide,
     "UserManagement": UserManagement,
