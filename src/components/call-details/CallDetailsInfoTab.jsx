@@ -1,3 +1,4 @@
+import { lazyRetry } from '@/lib/lazyRetry';
 import React, { Suspense } from 'react';
 import {
   User,
@@ -25,7 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/components/utils';
 import { issueTypeLabels } from '@/config/labels';
 
-const SignaturePad = React.lazy(() => import('@/components/signature/SignaturePad'));
+const SignaturePad = lazyRetry(() => import('@/components/signature/SignaturePad'));
 
 const vehicleTypeLabels = {
   private: 'פרטי',

@@ -1,3 +1,4 @@
+import { lazyRetry } from '@/lib/lazyRetry';
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -35,7 +36,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 // Lazy map component
-const VendorTrackingLeafletMap = React.lazy(
+const VendorTrackingLeafletMap = lazyRetry(
   () => import('@/components/maps/VendorTrackingLeafletMap')
 );
 

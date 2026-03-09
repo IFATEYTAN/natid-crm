@@ -1,4 +1,5 @@
-import React, { lazy } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Phone, Truck, MapPin, Eye } from 'lucide-react';
@@ -8,7 +9,7 @@ import { he } from 'date-fns/locale';
 import { issueTypeLabels } from './dashboardConstants';
 import { getCoverageLabel } from '@/config/coverageConstants';
 
-const StatusBadge = lazy(() => import('@/components/ui/StatusBadge'));
+const StatusBadge = lazyRetry(() => import('@/components/ui/StatusBadge'));
 
 export const getCallColumns = () => [
   {

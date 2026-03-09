@@ -1,4 +1,5 @@
-import React, { useMemo, Suspense, lazy } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { useMemo, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +21,7 @@ import { MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { issueTypeLabels } from '@/config/labels';
 
-const DataTableLazy = lazy(() => import('@/components/ui/DataTable'));
+const DataTableLazy = lazyRetry(() => import('@/components/ui/DataTable'));
 
 export default function VendorPortalAdminTab({ onSelectVendor }) {
   const [selectedVendorId, setSelectedVendorId] = React.useState('');

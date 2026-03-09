@@ -1,9 +1,10 @@
-import React, { useState, Suspense, lazy, useMemo } from 'react';
+import { lazyRetry } from '@/lib/lazyRetry';
+import React, { useState, Suspense, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils';
-const StatCard = lazy(() => import('@/components/ui/StatCard'));
+const StatCard = lazyRetry(() => import('@/components/ui/StatCard'));
 import {
   Plus,
   Truck,
@@ -27,27 +28,29 @@ import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 // Lazy load sub-components
-const CallsTrendChart = lazy(() =>
+const CallsTrendChart = lazyRetry(() =>
   import('@/components/dashboard/DashboardCharts').then((module) => ({
     default: module.CallsTrendChart,
   }))
 );
-const StatusDistributionChart = lazy(() =>
+const StatusDistributionChart = lazyRetry(() =>
   import('@/components/dashboard/DashboardCharts').then((module) => ({
     default: module.StatusDistributionChart,
   }))
 );
-const WorkQueueOverview = lazy(() => import('@/components/dashboard/WorkQueueOverview'));
-const AIInsightsWidget = lazy(() => import('@/components/ai/AIInsightsWidget'));
-const DashboardOperatorTab = lazy(() => import('@/components/dashboard/DashboardOperatorTab'));
-const DashboardTotalsTab = lazy(() => import('@/components/dashboard/DashboardTotalsTab'));
-const SmartAlertsTab = lazy(() => import('@/components/dashboard/SmartAlertsTab'));
-const VendorMapWidget = lazy(() => import('@/components/dashboard/VendorMapWidget'));
-const TrackedCallsPanel = lazy(() => import('@/components/dashboard/TrackedCallsPanel'));
-const VendorDelaysWidget = lazy(() => import('@/components/dashboard/VendorDelaysWidget'));
-const EscalationPredictionWidget = lazy(() => import('@/components/ai/EscalationPredictionWidget'));
-const RecurringPatternsWidget = lazy(() => import('@/components/ai/RecurringPatternsWidget'));
-const ProactiveRecommendationsWidget = lazy(
+const WorkQueueOverview = lazyRetry(() => import('@/components/dashboard/WorkQueueOverview'));
+const AIInsightsWidget = lazyRetry(() => import('@/components/ai/AIInsightsWidget'));
+const DashboardOperatorTab = lazyRetry(() => import('@/components/dashboard/DashboardOperatorTab'));
+const DashboardTotalsTab = lazyRetry(() => import('@/components/dashboard/DashboardTotalsTab'));
+const SmartAlertsTab = lazyRetry(() => import('@/components/dashboard/SmartAlertsTab'));
+const VendorMapWidget = lazyRetry(() => import('@/components/dashboard/VendorMapWidget'));
+const TrackedCallsPanel = lazyRetry(() => import('@/components/dashboard/TrackedCallsPanel'));
+const VendorDelaysWidget = lazyRetry(() => import('@/components/dashboard/VendorDelaysWidget'));
+const EscalationPredictionWidget = lazyRetry(
+  () => import('@/components/ai/EscalationPredictionWidget')
+);
+const RecurringPatternsWidget = lazyRetry(() => import('@/components/ai/RecurringPatternsWidget'));
+const ProactiveRecommendationsWidget = lazyRetry(
   () => import('@/components/ai/ProactiveRecommendationsWidget')
 );
 
@@ -133,7 +136,15 @@ export default function Dashboard() {
       : 0;
 
   // Chart data using Case entity fields
-  const statusLabelsMap = { new: 'חדש', assigned: 'שובץ', en_route: 'בדרך', on_site: 'באתר', in_progress: 'בטיפול', completed: 'הושלם', cancelled: 'בוטל' };
+  const statusLabelsMap = {
+    new: 'חדש',
+    assigned: 'שובץ',
+    en_route: 'בדרך',
+    on_site: 'באתר',
+    in_progress: 'בטיפול',
+    completed: 'הושלם',
+    cancelled: 'בוטל',
+  };
   const statusData = Object.entries(statusLabelsMap)
     .map(([status, name]) => ({
       name,
@@ -316,9 +327,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   {avgEta > 0 && (
-                    <p className="text-xs text-gray-400 mt-2">
-                      מבוסס על 7 ימים אחרונים
-                    </p>
+                    <p className="text-xs text-gray-400 mt-2">מבוסס על 7 ימים אחרונים</p>
                   )}
                 </CardContent>
               </Card>

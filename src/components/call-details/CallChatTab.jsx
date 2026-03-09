@@ -1,9 +1,10 @@
+import { lazyRetry } from '@/lib/lazyRetry';
 import React, { Suspense } from 'react';
 import { MessageSquare, Truck, CheckCircle, Headset, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const EnhancedCallChat = React.lazy(() => import('@/components/chat/EnhancedCallChat'));
+const EnhancedCallChat = lazyRetry(() => import('@/components/chat/EnhancedCallChat'));
 
 export default function CallChatTab({ callId, call, currentUser, onSendStatusMessage }) {
   return (
