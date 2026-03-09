@@ -98,6 +98,13 @@ function LayoutContent({ children, currentPageName }) {
     }
   }, [isLoadingAuth, currentUser, currentPageName, navigate]);
 
+  // Redirect authenticated users away from LandingPage to Dashboard
+  useEffect(() => {
+    if (!isLoadingAuth && currentUser && currentPageName === 'LandingPage') {
+      navigate(createPageUrl('Dashboard'), { replace: true });
+    }
+  }, [isLoadingAuth, currentUser, currentPageName, navigate]);
+
   // Reset redirect flag when page changes
   useEffect(() => {
     hasRedirected.current = false;
