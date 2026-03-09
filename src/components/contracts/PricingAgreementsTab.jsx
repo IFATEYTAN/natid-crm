@@ -161,20 +161,20 @@ export default function PricingAgreementsTab() {
   }));
 
   return (
-    <div className="space-y-6 text-end" dir="rtl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Calculator className="w-5 h-5 text-[#3b82f6]" />
+    <div className="space-y-6 rtl-flip text-right">
+      <div className="flex items-center justify-end flex-row-reverse gap-4">
+        <Button onClick={openCreate} className="gap-2 shrink-0">
+          <Plus className="w-4 h-4" /> תעריף חדש
+        </Button>
+        <div className="text-right">
+          <h2 className="text-xl font-bold text-gray-900 flex items-center justify-end gap-2">
             תעריפון תפעול
+            <Calculator className="w-5 h-5 text-[#3b82f6]" />
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             ניהול תעריפים לפי שעה, אזור, סוג רכב וכביש אגרה
           </p>
         </div>
-        <Button onClick={openCreate} className="gap-2">
-          <Plus className="w-4 h-4" /> תעריף חדש
-        </Button>
       </div>
 
       {grouped.map((group) => (
