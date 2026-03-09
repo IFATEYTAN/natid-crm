@@ -355,8 +355,8 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
   ];
 
   return (
-    <div className="space-y-4">
-      <Button variant="ghost" size="sm" className="gap-2" onClick={onBack}>
+    <div className="space-y-4 rtl-flip">
+      <Button variant="ghost" size="sm" className="gap-2 flex-row-reverse" onClick={onBack}>
         <ArrowRight className="w-4 h-4" />
         חזרה לרשימה
       </Button>
@@ -364,16 +364,16 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       {/* Subscriber Info */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#212121]" />
-            פרטי מנוי — {customer.name}
+          <CardTitle className="text-lg flex items-center gap-2 justify-end text-right">
             {customer.is_vip && (
-              <Badge className="bg-amber-100 text-amber-800 ms-2">VIP</Badge>
+              <Badge className="bg-amber-100 text-amber-800">VIP</Badge>
             )}
+            <span>— {customer.name} פרטי מנוי</span>
+            <Users className="w-5 h-5 text-[#212121]" />
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-right">
             {/* Subscription Validity */}
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-[#424242] border-b pb-1">תוקף מנוי</h4>
