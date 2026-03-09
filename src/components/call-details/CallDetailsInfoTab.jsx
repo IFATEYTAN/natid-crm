@@ -24,7 +24,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/components/utils';
-import { issueTypeLabels } from '@/config/labels';
+import { issueTypeLabels } from '@/components/config/labels';
 
 const SignaturePad = lazyRetry(() => import('@/components/signature/SignaturePad'));
 

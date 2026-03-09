@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { PAGE_PERMISSIONS } from '@/config/permissions';
+import { PAGE_PERMISSIONS } from '@/components/config/permissions';
 
 const PermissionsContext = createContext(null);
 

@@ -1,4 +1,10 @@
 import { format as dateFnsFormat, parseISO as dateFnsParseISO } from 'date-fns';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
 
 export const createPageUrl = (pageName) => {
   if (!pageName) return '/';

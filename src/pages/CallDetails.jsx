@@ -2,14 +2,29 @@ import { lazyRetry } from '@/lib/lazyRetry';
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
-import { useVendors } from '@/features/vendors/hooks/useVendors';
+import { useVendors } from '@/components/features/vendors/hooks/useVendors';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { queryKeys } from '@/lib/queryKeys';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
-import { useAuditLog } from '@/hooks/useAuditLog';
+import { useAuditLog } from '@/components/hooks/useAuditLog';
+
+// Local queryKeys fallback
+const queryKeys = {
+  calls: {
+    single: (id) => ['call', id],
+  },
+  callPhotos: {
+    byCall: (callId) => ['callPhotos', callId],
+  },
+  callHistory: {
+    byCall: (callId) => ['callHistory', callId],
+  },
+  callMessages: {
+    byCall: (callId) => ['callMessages', callId],
+  },
+};
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -42,9 +57,9 @@ import {
   Ban,
   CalendarClock,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/components/utils';
 import { toast } from 'sonner';
-import { statusLabels, statusColors } from '@/config/labels';
+import { statusLabels, statusColors } from '@/components/config/labels';
 import CallActionsMenu from '@/components/call-details/CallActionsMenu';
 
 const CallDetailsInfoTab = lazyRetry(() => import('@/components/call-details/CallDetailsInfoTab'));

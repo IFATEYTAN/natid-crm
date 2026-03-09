@@ -18,7 +18,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { MoreVertical, RotateCcw, Truck, MapPin, Ban, Bell, CheckCircle } from 'lucide-react';
-import { statusLabels } from '@/config/labels';
+import { statusLabels } from '@/components/config/labels';
 
 export default function CallActionsMenu({
   call,
