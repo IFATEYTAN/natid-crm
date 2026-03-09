@@ -165,20 +165,20 @@ export default function OperationalRatesPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 rtl-flip">
+      <div className="flex items-center justify-end flex-row-reverse gap-4 text-right">
+        <Button onClick={openCreate} className="gap-2">
+          <Plus className="w-4 h-4" /> תעריף חדש
+        </Button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Calculator className="w-6 h-6 text-[#3b82f6]" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 justify-end">
             תעריפון תפעול
+            <Calculator className="w-6 h-6 text-[#3b82f6]" />
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             ניהול תעריפים לפי שעה, אזור, סוג רכב וכביש אגרה
           </p>
         </div>
-        <Button onClick={openCreate} className="gap-2">
-          <Plus className="w-4 h-4" /> תעריף חדש
-        </Button>
       </div>
 
       {isError && (
