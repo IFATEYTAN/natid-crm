@@ -407,12 +407,12 @@ export default function OperationalRatesPage() {
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
-              ביטול
-            </Button>
+          <DialogFooter className="flex-row-reverse gap-3">
             <Button onClick={handleSave} isLoading={saving}>
               {editingRate ? 'עדכן' : 'צור'}
+            </Button>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>
+              ביטול
             </Button>
           </DialogFooter>
         </DialogContent>
