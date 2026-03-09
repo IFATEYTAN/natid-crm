@@ -3,7 +3,16 @@ import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { X, ChevronLeft, ChevronRight, BookOpen, EyeOff, Send, MessageCircle, Lightbulb } from 'lucide-react';
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  BookOpen,
+  EyeOff,
+  Send,
+  MessageCircle,
+  Lightbulb,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 
@@ -481,16 +490,13 @@ export default function NatiAssistant() {
   const chatEndRef = useRef(null);
 
   useEffect(() => {
-    base44.auth.me().then(u => setCurrentUser(u)).catch(() => {});
+    base44.auth
+      .me()
+      .then((u) => setCurrentUser(u))
+      .catch(() => {});
   }, []);
-  
-  let location;
-  try {
-    location = useLocation();
-  } catch (error) {
-    // Fallback if not in Router context
-    location = { pathname: '/' };
-  }
+
+  const location = useLocation();
 
   // Determine current page context
   const getPageKey = useCallback(() => {
@@ -545,10 +551,10 @@ export default function NatiAssistant() {
     if (!text || isChatLoading) return;
     setChatInput('');
     const userMsg = { role: 'user', text };
-    setChatMessages(prev => [...prev, userMsg]);
+    setChatMessages((prev) => [...prev, userMsg]);
     setIsChatLoading(true);
     const history = [...chatMessages, userMsg]
-      .map(m => `${m.role === 'user' ? 'משתמש' : 'נתי'}: ${m.text}`)
+      .map((m) => `${m.role === 'user' ? 'משתמש' : 'נתי'}: ${m.text}`)
       .join('\n');
     const userContext = currentUser
       ? `שם המשתמש: ${currentUser.full_name || currentUser.email}, תפקיד: ${currentUser.role || 'לא ידוע'}`
@@ -563,7 +569,16 @@ ${history}
 
 שאלת המשתמש: ${text}`,
     });
-    setChatMessages(prev => [...prev, { role: 'nati', text: typeof response === 'string' ? response : response?.result || 'סליחה, לא הצלחתי לענות כרגע.' }]);
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        role: 'nati',
+        text:
+          typeof response === 'string'
+            ? response
+            : response?.result || 'סליחה, לא הצלחתי לענות כרגע.',
+      },
+    ]);
     setIsChatLoading(false);
   };
 
@@ -643,7 +658,10 @@ ${history}
                     <MessageCircle className="w-3 h-3" /> צ'אט
                   </button>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -661,8 +679,12 @@ ${history}
                       exit={{ opacity: 0, x: -10 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <h4 className="font-bold text-gray-900 text-sm mb-2">{tips[currentTipIndex]?.title}</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">{tips[currentTipIndex]?.text}</p>
+                      <h4 className="font-bold text-gray-900 text-sm mb-2">
+                        {tips[currentTipIndex]?.title}
+                      </h4>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        {tips[currentTipIndex]?.text}
+                      </p>
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -670,15 +692,27 @@ ${history}
                 {/* Navigation */}
                 <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100">
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setCurrentTipIndex(p => Math.max(0, p - 1))} disabled={currentTipIndex === 0} className="p-1 rounded hover:bg-gray-100 disabled:opacity-30">
+                    <button
+                      onClick={() => setCurrentTipIndex((p) => Math.max(0, p - 1))}
+                      disabled={currentTipIndex === 0}
+                      className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
+                    >
                       <ChevronRight className="w-4 h-4" />
                     </button>
                     <div className="flex gap-1">
                       {tips.map((_, idx) => (
-                        <button key={idx} onClick={() => setCurrentTipIndex(idx)} className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentTipIndex ? 'bg-red-500' : 'bg-gray-300'}`} />
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentTipIndex(idx)}
+                          className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === currentTipIndex ? 'bg-red-500' : 'bg-gray-300'}`}
+                        />
                       ))}
                     </div>
-                    <button onClick={() => setCurrentTipIndex(p => Math.min(tips.length - 1, p + 1))} disabled={currentTipIndex === tips.length - 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-30">
+                    <button
+                      onClick={() => setCurrentTipIndex((p) => Math.min(tips.length - 1, p + 1))}
+                      disabled={currentTipIndex === tips.length - 1}
+                      className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
+                    >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                   </div>
@@ -687,12 +721,21 @@ ${history}
                 {/* Actions */}
                 <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-100">
                   <Link to={createPageUrl(guidePageName)} onClick={() => setIsOpen(false)}>
-                    <Button size="sm" variant="default" className="gap-1 bg-red-600 hover:bg-red-700">
-                      <BookOpen className="w-3.5 h-3.5" />{guideLabel}
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="gap-1 bg-red-600 hover:bg-red-700"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      {guideLabel}
                     </Button>
                   </Link>
-                  <button onClick={handleHide} className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1">
-                    <EyeOff className="w-3 h-3" />הסתר
+                  <button
+                    onClick={handleHide}
+                    className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                  >
+                    <EyeOff className="w-3 h-3" />
+                    הסתר
                   </button>
                 </div>
               </>
@@ -701,18 +744,27 @@ ${history}
                 {/* Chat messages */}
                 <div className="h-56 overflow-y-auto p-3 space-y-2 bg-gray-50">
                   {chatMessages.length === 0 && (
-                    <p className="text-xs text-gray-400 text-center mt-4">שלח לי שאלה ואשמח לעזור! 🚛</p>
+                    <p className="text-xs text-gray-400 text-center mt-4">
+                      שלח לי שאלה ואשמח לעזור! 🚛
+                    </p>
                   )}
                   {chatMessages.map((m, i) => (
-                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-start' : 'justify-end'}`}>
-                      <div className={`max-w-[85%] px-3 py-2 rounded-xl text-xs leading-relaxed ${m.role === 'user' ? 'bg-white border border-gray-200 text-gray-800' : 'bg-red-600 text-white'}`}>
+                    <div
+                      key={i}
+                      className={`flex ${m.role === 'user' ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] px-3 py-2 rounded-xl text-xs leading-relaxed ${m.role === 'user' ? 'bg-white border border-gray-200 text-gray-800' : 'bg-red-600 text-white'}`}
+                      >
                         {m.text}
                       </div>
                     </div>
                   ))}
                   {isChatLoading && (
                     <div className="flex justify-end">
-                      <div className="bg-red-100 px-3 py-2 rounded-xl text-xs text-red-700 animate-pulse">מקליד...</div>
+                      <div className="bg-red-100 px-3 py-2 rounded-xl text-xs text-red-700 animate-pulse">
+                        מקליד...
+                      </div>
                     </div>
                   )}
                   <div ref={chatEndRef} />
@@ -722,13 +774,17 @@ ${history}
                   <input
                     type="text"
                     value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
                     placeholder="כתוב שאלה..."
                     className="flex-1 text-xs border border-gray-200 rounded-full px-3 py-2 outline-none focus:border-red-300"
                     dir="rtl"
                   />
-                  <button onClick={sendChatMessage} disabled={!chatInput.trim() || isChatLoading} className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center disabled:opacity-40 transition-colors">
+                  <button
+                    onClick={sendChatMessage}
+                    disabled={!chatInput.trim() || isChatLoading}
+                    className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center disabled:opacity-40 transition-colors"
+                  >
                     <Send className="w-3.5 h-3.5" />
                   </button>
                 </div>
