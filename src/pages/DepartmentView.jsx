@@ -1056,10 +1056,10 @@ function CasesList({ department }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 function InfoRow({ label, value, icon }) {
   return (
-    <div className="flex items-start gap-2 text-sm">
-      {icon && <span className="text-gray-400 mt-0.5">{icon}</span>}
-      <span className="text-[#757575] min-w-[100px]">{label}:</span>
+    <div className="flex items-start gap-2 text-sm justify-end flex-row-reverse text-right">
       <span className="text-[#212121]">{value || '—'}</span>
+      <span className="text-[#757575]">{label}:</span>
+      {icon && <span className="text-gray-400 mt-0.5">{icon}</span>}
     </div>
   );
 }
