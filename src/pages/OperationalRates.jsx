@@ -359,9 +359,9 @@ export default function OperationalRatesPage() {
               </div>
             )}
             {form.rate_type === 'area_surcharge' && (
-              <div>
+              <div className="text-right">
                 <Label>אזורים</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
+                <div className="flex flex-wrap gap-2 mt-1 justify-end">
                   {areaOptions.map((a) => (
                     <Badge
                       key={a.value}
@@ -375,9 +375,9 @@ export default function OperationalRatesPage() {
               </div>
             )}
             {form.rate_type === 'vehicle_type' && (
-              <div>
+              <div className="text-right">
                 <Label>סוגי רכב</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
+                <div className="flex flex-wrap gap-2 mt-1 justify-end">
                   {vehicleTypeOptions.map((v) => (
                     <Badge
                       key={v.value}
