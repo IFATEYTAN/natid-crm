@@ -100,7 +100,8 @@ export default function DepartmentView() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const activeDept = searchParams.get('dept') || 'towing';
+  // Force 'towing' department only
+  const activeDept = 'towing';
   const [subView, setSubView] = useState('search_subscriber');
 
   const setDepartment = useCallback(
