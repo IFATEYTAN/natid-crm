@@ -156,10 +156,12 @@ export default function SmartAlertsTab({ currentUser }) {
                         <div className="flex justify-between items-start">
                           <h4 className="font-semibold text-gray-900">{alert.title}</h4>
                           <span className="text-xs text-gray-500 whitespace-nowrap">
-                            {formatDistanceToNow(new Date(alert.created_date), {
-                              addSuffix: true,
-                              locale: he,
-                            })}
+                            {alert.created_date && !isNaN(new Date(alert.created_date).getTime())
+                              ? formatDistanceToNow(new Date(alert.created_date), {
+                                  addSuffix: true,
+                                  locale: he,
+                                })
+                              : ''}
                           </span>
                         </div>
                         <p className="text-gray-600 mt-1">{alert.message}</p>

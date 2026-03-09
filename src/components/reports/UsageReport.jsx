@@ -71,8 +71,10 @@ export default function UsageReport({ calls }) {
   const byHour = useMemo(() => {
     const hours = Array(24).fill(0);
     calls.forEach((c) => {
-      const h = new Date(c.created_date).getHours();
-      hours[h]++;
+      if (!c.created_date) return;
+      const d = new Date(c.created_date);
+      if (isNaN(d.getTime())) return;
+      hours[d.getHours()]++;
     });
     return hours.map((count, h) => ({ hour: `${h}:00`, קריאות: count }));
   }, [calls]);

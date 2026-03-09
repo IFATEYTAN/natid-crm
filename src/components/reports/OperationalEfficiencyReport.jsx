@@ -20,7 +20,10 @@ export default function OperationalEfficiencyReport({ calls }) {
     // Group by date
     const callsByDate = {};
     calls.forEach((c) => {
-      const date = new Date(c.created_date).toDateString();
+      if (!c.created_date) return;
+      const d = new Date(c.created_date);
+      if (isNaN(d.getTime())) return;
+      const date = d.toDateString();
       callsByDate[date] = (callsByDate[date] || 0) + 1;
     });
     const daysCount = Object.keys(callsByDate).length || 1;

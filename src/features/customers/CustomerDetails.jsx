@@ -174,8 +174,9 @@ export default function CustomerDetails() {
             </span>
           </h1>
           <p className="text-gray-500">
-            {customer.customer_type} • הצטרף ב-
-            {format(parseISO(customer.created_date), 'dd/MM/yyyy')}
+            {customer.customer_type}
+            {customer.created_date &&
+              ` • הצטרף ב-${format(parseISO(customer.created_date), 'dd/MM/yyyy')}`}
           </p>
         </div>
         <div className="mr-auto flex gap-2">
@@ -408,7 +409,12 @@ export default function CustomerDetails() {
                               </div>
                               <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
                                 <Calendar className="w-3 h-3" />
-                                {format(parseISO(interaction.interaction_date), 'dd/MM/yyyy HH:mm')}
+                                {interaction.interaction_date
+                                  ? format(
+                                      parseISO(interaction.interaction_date),
+                                      'dd/MM/yyyy HH:mm'
+                                    )
+                                  : '-'}
                                 <span>•</span>
                                 <User className="w-3 h-3" />
                                 {interaction.performed_by}
@@ -440,7 +446,10 @@ export default function CustomerDetails() {
                   {
                     header: 'תאריך',
                     accessor: 'created_date',
-                    cell: (row) => format(parseISO(row.created_date), 'dd/MM/yyyy HH:mm'),
+                    cell: (row) =>
+                      row.created_date
+                        ? format(parseISO(row.created_date), 'dd/MM/yyyy HH:mm')
+                        : '-',
                   },
                   {
                     header: 'רכב',

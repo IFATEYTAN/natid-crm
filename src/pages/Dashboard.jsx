@@ -98,8 +98,10 @@ export default function Dashboard() {
   const completedToday = useMemo(
     () =>
       cases.filter((c) => {
+        if (!c.created_date || c.status !== 'completed') return false;
         const d = new Date(c.created_date);
-        return c.status === 'completed' && d >= startOfDay(today) && d <= endOfDay(today);
+        if (isNaN(d.getTime())) return false;
+        return d >= startOfDay(today) && d <= endOfDay(today);
       }),
     [cases]
   );
