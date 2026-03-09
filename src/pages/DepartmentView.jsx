@@ -276,13 +276,23 @@ function SubscriberSearch({ department }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rtl-flip">
       {/* Search Form */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 flex-row-reverse">
+            <div className="relative flex-1">
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="הקלד לחיפוש..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="ps-9 text-right"
+                dir={searchField === 'phone' || searchField === 'id_number' || searchField === 'vehicle_number' ? 'ltr' : 'rtl'}
+              />
+            </div>
             <Select value={searchField} onValueChange={setSearchField}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] text-right">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -294,16 +304,6 @@ function SubscriberSearch({ department }) {
                 <SelectItem value="vip">VIP</SelectItem>
               </SelectContent>
             </Select>
-            <div className="relative flex-1">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="הקלד לחיפוש..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="ps-9"
-                dir={searchField === 'phone' || searchField === 'id_number' || searchField === 'vehicle_number' ? 'ltr' : 'rtl'}
-              />
-            </div>
           </div>
         </CardContent>
       </Card>
