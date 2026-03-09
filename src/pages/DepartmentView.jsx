@@ -124,21 +124,21 @@ export default function DepartmentView() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rtl-flip">
       {/* Page Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-end gap-4 text-right">
+        <div className="flex-1">
+          <h1 className="text-[32px] font-bold text-[#212121] text-right">תצוגת מחלקה</h1>
+          <p className="text-[#616161] text-sm text-right">ניהול מחלקתי — צפייה, חיפוש ומעקב לפי מחלקה</p>
+        </div>
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
           <ArrowRight className="w-5 h-5" />
         </Button>
-        <div>
-          <h1 className="text-[32px] font-bold text-[#212121]">תצוגת מחלקה</h1>
-          <p className="text-[#616161] text-sm">ניהול מחלקתי — צפייה, חיפוש ומעקב לפי מחלקה</p>
-        </div>
       </div>
 
       {/* Department Tabs */}
       <Tabs value={activeDept} onValueChange={setDepartment}>
-        <TabsList className="w-full justify-start gap-1 flex-wrap h-auto p-1">
+        <TabsList className="w-full justify-end gap-1 flex-wrap h-auto p-1 flex-row-reverse">
           {DEPARTMENTS.map((dept) => {
             const Icon = dept.icon;
             return (
