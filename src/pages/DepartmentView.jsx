@@ -154,8 +154,8 @@ export default function DepartmentView() {
         {DEPARTMENTS.map((dept) => (
           <TabsContent key={dept.key} value={dept.key}>
             {/* Sub-navigation */}
-            <div className="flex gap-2 flex-wrap mb-6">
-              {SUB_VIEWS.map((sv) => {
+             <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
+               {SUB_VIEWS.map((sv) => {
                 const Icon = sv.icon;
                 return (
                   <Button
