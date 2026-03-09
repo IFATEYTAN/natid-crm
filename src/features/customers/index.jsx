@@ -56,6 +56,23 @@ export default function Customers() {
     status: 'active',
     notes: '',
     monthly_budget: '',
+    subscription_sequence: '',
+    subscription_start_date: '',
+    subscription_end_date: '',
+    subscription_issue_date: '',
+    subscription_status: '',
+    payment_method: '',
+    payment_date: '',
+    alerts: '',
+    vehicle_type: '',
+    vehicle_model: '',
+    vehicle_year: '',
+    vehicle_model_code: '',
+    vehicle_number: '',
+    vehicle_personal_import: false,
+    vehicle_license_expiry: '',
+    agent_contract: '',
+    coverage_details: '',
   });
 
   const queryClient = useQueryClient();
@@ -105,6 +122,23 @@ export default function Customers() {
       status: 'active',
       notes: '',
       monthly_budget: '',
+      subscription_sequence: '',
+      subscription_start_date: '',
+      subscription_end_date: '',
+      subscription_issue_date: '',
+      subscription_status: '',
+      payment_method: '',
+      payment_date: '',
+      alerts: '',
+      vehicle_type: '',
+      vehicle_model: '',
+      vehicle_year: '',
+      vehicle_model_code: '',
+      vehicle_number: '',
+      vehicle_personal_import: false,
+      vehicle_license_expiry: '',
+      agent_contract: '',
+      coverage_details: '',
     });
   };
 
@@ -124,6 +158,23 @@ export default function Customers() {
       status: customer.status || 'active',
       notes: customer.notes || '',
       monthly_budget: customer.monthly_budget || '',
+      subscription_sequence: customer.subscription_sequence || '',
+      subscription_start_date: customer.subscription_start_date || '',
+      subscription_end_date: customer.subscription_end_date || '',
+      subscription_issue_date: customer.subscription_issue_date || '',
+      subscription_status: customer.subscription_status || '',
+      payment_method: customer.payment_method || '',
+      payment_date: customer.payment_date || '',
+      alerts: customer.alerts || '',
+      vehicle_type: customer.vehicle_type || '',
+      vehicle_model: customer.vehicle_model || '',
+      vehicle_year: customer.vehicle_year || '',
+      vehicle_model_code: customer.vehicle_model_code || '',
+      vehicle_number: customer.vehicle_number || '',
+      vehicle_personal_import: customer.vehicle_personal_import || false,
+      vehicle_license_expiry: customer.vehicle_license_expiry || '',
+      agent_contract: customer.agent_contract || '',
+      coverage_details: customer.coverage_details || '',
     });
     setIsDialogOpen(true);
   };
@@ -133,6 +184,10 @@ export default function Customers() {
     const data = {
       ...formData,
       monthly_budget: formData.monthly_budget ? Number(formData.monthly_budget) : null,
+      subscription_sequence: formData.subscription_sequence
+        ? Number(formData.subscription_sequence)
+        : null,
+      vehicle_year: formData.vehicle_year ? Number(formData.vehicle_year) : null,
     };
 
     if (editingCustomer) {
@@ -488,6 +543,292 @@ export default function Customers() {
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={3}
+                  />
+                </div>
+              </div>
+
+              {/* Subscription Section */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold text-neutral-soft-700 mb-3">תוקף מנוי</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <Label htmlFor="customers-subscription-sequence" className="form-label">
+                      רצף מנויים
+                    </Label>
+                    <Input
+                      id="customers-subscription-sequence"
+                      className="form-input"
+                      type="number"
+                      value={formData.subscription_sequence}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subscription_sequence: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-subscription-status" className="form-label">
+                      מצב מנוי
+                    </Label>
+                    <Select
+                      value={formData.subscription_status}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, subscription_status: value })
+                      }
+                    >
+                      <SelectTrigger id="customers-subscription-status" className="form-input">
+                        <SelectValue placeholder="בחר מצב" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">פעיל</SelectItem>
+                        <SelectItem value="suspended">מושהה</SelectItem>
+                        <SelectItem value="cancelled">מבוטל</SelectItem>
+                        <SelectItem value="expired">פג תוקף</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-subscription-start" className="form-label">
+                      תוקף מנוי מתאריך
+                    </Label>
+                    <Input
+                      id="customers-subscription-start"
+                      className="form-input"
+                      type="date"
+                      value={formData.subscription_start_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subscription_start_date: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-subscription-end" className="form-label">
+                      תוקף מנוי עד תאריך
+                    </Label>
+                    <Input
+                      id="customers-subscription-end"
+                      className="form-input"
+                      type="date"
+                      value={formData.subscription_end_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subscription_end_date: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-subscription-issue" className="form-label">
+                      תאריך הפקה
+                    </Label>
+                    <Input
+                      id="customers-subscription-issue"
+                      className="form-input"
+                      type="date"
+                      value={formData.subscription_issue_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subscription_issue_date: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Vehicle Section */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold text-neutral-soft-700 mb-3">פרטי רכב</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <Label htmlFor="customers-vehicle-number" className="form-label">
+                      מספר רכב
+                    </Label>
+                    <Input
+                      id="customers-vehicle-number"
+                      className="form-input"
+                      value={formData.vehicle_number}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vehicle_number: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-vehicle-type" className="form-label">
+                      סוג רכב
+                    </Label>
+                    <Select
+                      value={formData.vehicle_type}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, vehicle_type: value })
+                      }
+                    >
+                      <SelectTrigger id="customers-vehicle-type" className="form-input">
+                        <SelectValue placeholder="בחר סוג" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">פרטי</SelectItem>
+                        <SelectItem value="commercial_light">מסחרי קל</SelectItem>
+                        <SelectItem value="commercial_heavy">מסחרי כבד</SelectItem>
+                        <SelectItem value="motorcycle">אופנוע</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-vehicle-model" className="form-label">
+                      סוג דגם
+                    </Label>
+                    <Input
+                      id="customers-vehicle-model"
+                      className="form-input"
+                      value={formData.vehicle_model}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vehicle_model: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-vehicle-model-code" className="form-label">
+                      קוד דגם / שם רכב
+                    </Label>
+                    <Input
+                      id="customers-vehicle-model-code"
+                      className="form-input"
+                      value={formData.vehicle_model_code}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vehicle_model_code: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-vehicle-year" className="form-label">
+                      שנת ייצור
+                    </Label>
+                    <Input
+                      id="customers-vehicle-year"
+                      className="form-input"
+                      type="number"
+                      value={formData.vehicle_year}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vehicle_year: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-vehicle-license-expiry" className="form-label">
+                      תוקף רישיון רכב
+                    </Label>
+                    <Input
+                      id="customers-vehicle-license-expiry"
+                      className="form-input"
+                      type="date"
+                      value={formData.vehicle_license_expiry}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vehicle_license_expiry: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 col-span-2">
+                    <input
+                      type="checkbox"
+                      id="customers-vehicle-personal-import"
+                      checked={formData.vehicle_personal_import}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vehicle_personal_import: e.target.checked })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="customers-vehicle-personal-import" className="cursor-pointer">
+                      רכב יבוא אישי
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Coverage & Insurance Section */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold text-neutral-soft-700 mb-3">כיסוי וביטוח</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="form-group">
+                    <Label htmlFor="customers-coverage-details" className="form-label">
+                      פירוט כיסוי
+                    </Label>
+                    <Textarea
+                      id="customers-coverage-details"
+                      className="form-input"
+                      value={formData.coverage_details}
+                      onChange={(e) =>
+                        setFormData({ ...formData, coverage_details: e.target.value })
+                      }
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-agent-contract" className="form-label">
+                      חוזה סוכן
+                    </Label>
+                    <Textarea
+                      id="customers-agent-contract"
+                      className="form-input"
+                      value={formData.agent_contract}
+                      onChange={(e) =>
+                        setFormData({ ...formData, agent_contract: e.target.value })
+                      }
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Section */}
+              <div className="border-t pt-4">
+                <h3 className="text-sm font-semibold text-neutral-soft-700 mb-3">תשלומים</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <Label htmlFor="customers-payment-method" className="form-label">
+                      אופן תשלום
+                    </Label>
+                    <Select
+                      value={formData.payment_method}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, payment_method: value })
+                      }
+                    >
+                      <SelectTrigger id="customers-payment-method" className="form-input">
+                        <SelectValue placeholder="בחר אופן תשלום" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="credit_card">כרטיס אשראי</SelectItem>
+                        <SelectItem value="bank_transfer">העברה בנקאית</SelectItem>
+                        <SelectItem value="cash">מזומן</SelectItem>
+                        <SelectItem value="check">שיק</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="customers-payment-date" className="form-label">
+                      תאריך תשלום
+                    </Label>
+                    <Input
+                      id="customers-payment-date"
+                      className="form-input"
+                      type="date"
+                      value={formData.payment_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, payment_date: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Alerts Section */}
+              <div className="border-t pt-4">
+                <div className="form-group">
+                  <Label htmlFor="customers-alerts" className="form-label">
+                    התראות
+                  </Label>
+                  <Textarea
+                    id="customers-alerts"
+                    className="form-input"
+                    value={formData.alerts}
+                    onChange={(e) => setFormData({ ...formData, alerts: e.target.value })}
+                    rows={2}
                   />
                 </div>
               </div>

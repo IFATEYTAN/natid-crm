@@ -26,6 +26,9 @@ const customerSource = z.enum(['phone', 'bot']);
 /**
  * Schema for creating a new call.
  */
+const fuelType = z.enum(['gasoline', 'diesel', 'electric', 'hybrid', 'gas']);
+const depositStatus = z.enum(['pending', 'collected', 'returned', 'cancelled']);
+
 export const callCreateSchema = z
   .object({
     call_status: callStatus.optional().default('waiting_treatment'),
@@ -37,6 +40,9 @@ export const callCreateSchema = z
     vehicle_plate: z.string().optional().default(''),
     vehicle_type: z.string().optional().default(''),
     vehicle_model: z.string().optional().default(''),
+    vehicle_year: z.union([z.number(), z.null()]).optional(),
+    fuel_type: fuelType.optional(),
+    vehicle_model_code: z.string().optional().default(''),
     service_type: serviceType.optional(),
     issue_type: z.string().optional().default(''),
     issue_description: z.string().optional().default(''),
@@ -59,6 +65,40 @@ export const callCreateSchema = z
     closing_call_done: z.boolean().optional().default(false),
     cost_to_vendor: z.union([z.number(), z.null()]).optional(),
     sla_deadline: z.string().optional(),
+    // Coverage
+    coverage_details: z.string().optional().default(''),
+    // Exception questionnaire
+    is_in_parking: z.boolean().optional().default(false),
+    is_at_garage: z.boolean().optional().default(false),
+    was_towed_before: z.boolean().optional().default(false),
+    is_toll_road: z.boolean().optional().default(false),
+    is_dirt_road: z.boolean().optional().default(false),
+    // Customer questionnaire
+    questionnaire_engine_starts: z.boolean().optional().default(false),
+    questionnaire_gearbox_ok: z.boolean().optional().default(false),
+    questionnaire_starter_sound: z.boolean().optional().default(false),
+    questionnaire_automatic_neutral: z.boolean().optional().default(false),
+    questionnaire_steering_free: z.boolean().optional().default(false),
+    questionnaire_handbrake_electric: z.boolean().optional().default(false),
+    questionnaire_truck_access: z.boolean().optional().default(false),
+    // Deposit fields
+    deposit_type: z.string().optional().default(''),
+    deposit_amount: z.union([z.number(), z.null()]).optional(),
+    deposit_date: z.string().optional().default(''),
+    deposit_reason: z.string().optional().default(''),
+    deposit_agent: z.string().optional().default(''),
+    deposit_status: depositStatus.optional(),
+    // Payment fields
+    payment_type: z.string().optional().default(''),
+    payment_date: z.string().optional().default(''),
+    payment_amount: z.union([z.number(), z.null()]).optional(),
+    payment_total: z.union([z.number(), z.null()]).optional(),
+    payment_installments: z.union([z.number(), z.null()]).optional(),
+    payment_delivered_to: z.string().optional().default(''),
+    payment_agent: z.string().optional().default(''),
+    payment_paid_for: z.string().optional().default(''),
+    // Early alert
+    early_alert_minutes: z.union([z.number(), z.null()]).optional(),
   })
   .strict();
 

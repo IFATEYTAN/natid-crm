@@ -58,7 +58,20 @@ export default function ServiceProviders() {
     contact_person: '',
     phone: '',
     phone_2: '',
+    fax: '',
     email: '',
+    address: '',
+    city: '',
+    company_id: '',
+    insurance_agency: '',
+    inspector_name: '',
+    inspector_phone: '',
+    inspector_fax: '',
+    handler_name: '',
+    handler_phone: '',
+    handler_fax: '',
+    status_text: '',
+    department_contracts: '',
     service_type: [],
     coverage_areas: [],
     availability_status: 'available',
@@ -109,7 +122,20 @@ export default function ServiceProviders() {
       contact_person: '',
       phone: '',
       phone_2: '',
+      fax: '',
       email: '',
+      address: '',
+      city: '',
+      company_id: '',
+      insurance_agency: '',
+      inspector_name: '',
+      inspector_phone: '',
+      inspector_fax: '',
+      handler_name: '',
+      handler_phone: '',
+      handler_fax: '',
+      status_text: '',
+      department_contracts: '',
       service_type: [],
       coverage_areas: [],
       availability_status: 'available',
@@ -130,7 +156,20 @@ export default function ServiceProviders() {
       contact_person: provider.contact_person || '',
       phone: provider.phone || '',
       phone_2: provider.phone_2 || '',
+      fax: provider.fax || '',
       email: provider.email || '',
+      address: provider.address || '',
+      city: provider.city || '',
+      company_id: provider.company_id || '',
+      insurance_agency: provider.insurance_agency || '',
+      inspector_name: provider.inspector_name || '',
+      inspector_phone: provider.inspector_phone || '',
+      inspector_fax: provider.inspector_fax || '',
+      handler_name: provider.handler_name || '',
+      handler_phone: provider.handler_phone || '',
+      handler_fax: provider.handler_fax || '',
+      status_text: provider.status_text || '',
+      department_contracts: provider.department_contracts || '',
       service_type: provider.service_type || [],
       coverage_areas: provider.coverage_areas || [],
       availability_status: provider.availability_status || 'available',
@@ -586,6 +625,173 @@ export default function ServiceProviders() {
                     לו גישה לפורטל
                   </p>
                 </div>
+                <div className="form-group">
+                  <Label htmlFor="vendors-fax" className="form-label">
+                    פקס
+                  </Label>
+                  <Input
+                    id="vendors-fax"
+                    className="form-input"
+                    value={formData.fax}
+                    onChange={(e) => setFormData({ ...formData, fax: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <Label htmlFor="vendors-company-id" className="form-label">
+                    ח.פ./ת.ז.
+                  </Label>
+                  <Input
+                    id="vendors-company-id"
+                    className="form-input"
+                    value={formData.company_id}
+                    onChange={(e) => setFormData({ ...formData, company_id: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <Label htmlFor="vendors-address" className="form-label">
+                    כתובת
+                  </Label>
+                  <Input
+                    id="vendors-address"
+                    className="form-input"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <Label htmlFor="vendors-city" className="form-label">
+                    עיר
+                  </Label>
+                  <Input
+                    id="vendors-city"
+                    className="form-input"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <Label htmlFor="vendors-insurance-agency" className="form-label">
+                    סוכנות ביטוח
+                  </Label>
+                  <Input
+                    id="vendors-insurance-agency"
+                    className="form-input"
+                    value={formData.insurance_agency}
+                    onChange={(e) => setFormData({ ...formData, insurance_agency: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <Label htmlFor="vendors-status-text" className="form-label">
+                    סטטוס (טקסט)
+                  </Label>
+                  <Input
+                    id="vendors-status-text"
+                    className="form-input"
+                    value={formData.status_text}
+                    onChange={(e) => setFormData({ ...formData, status_text: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Inspector Section */}
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-neutral-soft-700 mb-3">פרטי מפקחה</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <Label htmlFor="vendors-inspector-name" className="form-label">
+                      שם מפקחה
+                    </Label>
+                    <Input
+                      id="vendors-inspector-name"
+                      className="form-input"
+                      value={formData.inspector_name}
+                      onChange={(e) => setFormData({ ...formData, inspector_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="vendors-inspector-phone" className="form-label">
+                      טלפון מפקחה
+                    </Label>
+                    <Input
+                      id="vendors-inspector-phone"
+                      className="form-input"
+                      value={formData.inspector_phone}
+                      onChange={(e) => setFormData({ ...formData, inspector_phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="vendors-inspector-fax" className="form-label">
+                      פקס מפקחה
+                    </Label>
+                    <Input
+                      id="vendors-inspector-fax"
+                      className="form-input"
+                      value={formData.inspector_fax}
+                      onChange={(e) => setFormData({ ...formData, inspector_fax: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Handler Section */}
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-neutral-soft-700 mb-3">פרטי מטפל</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-group">
+                    <Label htmlFor="vendors-handler-name" className="form-label">
+                      שם מטפל
+                    </Label>
+                    <Input
+                      id="vendors-handler-name"
+                      className="form-input"
+                      value={formData.handler_name}
+                      onChange={(e) => setFormData({ ...formData, handler_name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="vendors-handler-phone" className="form-label">
+                      טלפון מטפל
+                    </Label>
+                    <Input
+                      id="vendors-handler-phone"
+                      className="form-input"
+                      value={formData.handler_phone}
+                      onChange={(e) => setFormData({ ...formData, handler_phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Label htmlFor="vendors-handler-fax" className="form-label">
+                      פקס מטפל
+                    </Label>
+                    <Input
+                      id="vendors-handler-fax"
+                      className="form-input"
+                      value={formData.handler_fax}
+                      onChange={(e) => setFormData({ ...formData, handler_fax: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Department Contracts */}
+              <div className="border-t pt-4 mt-4">
+                <div className="form-group">
+                  <Label htmlFor="vendors-department-contracts" className="form-label">
+                    חוזים מול המחלקות
+                  </Label>
+                  <Textarea
+                    id="vendors-department-contracts"
+                    className="form-input"
+                    value={formData.department_contracts}
+                    onChange={(e) =>
+                      setFormData({ ...formData, department_contracts: e.target.value })
+                    }
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
                 <div className="form-group">
                   <Label htmlFor="vendors-availability-status" className="form-label">
                     סטטוס זמינות

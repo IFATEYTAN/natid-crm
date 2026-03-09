@@ -61,8 +61,11 @@ export default function NewCase() {
     vehicle_number: '',
     vehicle_type: 'car',
     vehicle_model: '',
+    vehicle_year: '',
+    fuel_type: '',
+    vehicle_model_code: '',
     service_type: 'towing',
-    dispatch_type: '', // 'mobile_unit' or 'tow_truck' - auto-recommended based on service_type
+    dispatch_type: '',
     location_address: '',
     location_city: '',
     destination_address: '',
@@ -71,7 +74,40 @@ export default function NewCase() {
     problem_description: '',
     internal_notes: '',
     questionnaire_answers: {},
-    customer_source: 'phone', // 'phone' or 'bot'
+    customer_source: 'phone',
+    coverage_details: '',
+    // Exception questionnaire
+    is_in_parking: false,
+    is_at_garage: false,
+    was_towed_before: false,
+    is_toll_road: false,
+    is_dirt_road: false,
+    // Customer questionnaire
+    questionnaire_engine_starts: false,
+    questionnaire_gearbox_ok: false,
+    questionnaire_starter_sound: false,
+    questionnaire_automatic_neutral: false,
+    questionnaire_steering_free: false,
+    questionnaire_handbrake_electric: false,
+    questionnaire_truck_access: false,
+    // Deposit
+    deposit_type: '',
+    deposit_amount: '',
+    deposit_date: '',
+    deposit_reason: '',
+    deposit_agent: '',
+    deposit_status: '',
+    // Payment
+    payment_type: '',
+    payment_date: '',
+    payment_amount: '',
+    payment_total: '',
+    payment_installments: '',
+    payment_delivered_to: '',
+    payment_agent: '',
+    payment_paid_for: '',
+    // Early alert
+    early_alert_minutes: '',
   });
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -263,6 +299,42 @@ export default function NewCase() {
                   onChange={(e) => setFormData({ ...formData, vehicle_model: e.target.value })}
                 />
               </div>
+              <div>
+                <Label>שנת ייצור</Label>
+                <Input
+                  type="number"
+                  value={formData.vehicle_year}
+                  onChange={(e) => setFormData({ ...formData, vehicle_year: e.target.value })}
+                  placeholder="2024"
+                />
+              </div>
+              <div>
+                <Label>קוד דגם</Label>
+                <Input
+                  value={formData.vehicle_model_code}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vehicle_model_code: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>סוג דלק</Label>
+                <Select
+                  value={formData.fuel_type}
+                  onValueChange={(value) => setFormData({ ...formData, fuel_type: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר סוג דלק" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gasoline">בנזין</SelectItem>
+                    <SelectItem value="diesel">דיזל</SelectItem>
+                    <SelectItem value="electric">חשמלי</SelectItem>
+                    <SelectItem value="hybrid">היברידי</SelectItem>
+                    <SelectItem value="gas">גז</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -451,6 +523,272 @@ export default function NewCase() {
                   onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
                   rows={2}
                   placeholder="הערות לשימוש פנימי..."
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Exception Questionnaire */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[#ED6C02]" />
+              שאלון חריגים
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { key: 'is_in_parking', label: 'האם הרכב בחניון תת קרקעי / מקורה?' },
+                { key: 'is_at_garage', label: 'האם הרכב במוסך / קרבת מוסך?' },
+                { key: 'was_towed_before', label: 'האם בפעם הקודמה אנחנו גררנו למוסך?' },
+                { key: 'is_toll_road', label: 'האם הרכב על כביש אגרה?' },
+                { key: 'is_dirt_road', label: 'האם הרכב על כביש עפר (לא סלול)?' },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`case-${item.key}`}
+                    checked={formData[item.key]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [item.key]: e.target.checked })
+                    }
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor={`case-${item.key}`} className="cursor-pointer text-sm">
+                    {item.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Customer Questionnaire */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Info className="w-4 h-4 text-[#0D47A1]" />
+              שאלון ללקוח
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { key: 'questionnaire_engine_starts', label: 'האם הרכב מניע?' },
+                {
+                  key: 'questionnaire_gearbox_ok',
+                  label: 'האם שידית הילוכים, הנדבריקס והגה משוחררים?',
+                },
+                { key: 'questionnaire_starter_sound', label: 'האם יש צליל התנעה (סטרטר)?' },
+                {
+                  key: 'questionnaire_automatic_neutral',
+                  label: 'האם הרכב אוטומט וניתן לשלב ידית הילוכים לניוטרל?',
+                },
+                {
+                  key: 'questionnaire_steering_free',
+                  label: 'האם ההגה משוחרר? לברר אם תקוע או רק קשה',
+                },
+                {
+                  key: 'questionnaire_handbrake_electric',
+                  label: 'האם הנדבריקס חשמלי? אם כן האם משוחרר?',
+                },
+                {
+                  key: 'questionnaire_truck_access',
+                  label: 'במידה וצריך לגרור האם יש גישה למשאית גרר?',
+                },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`case-${item.key}`}
+                    checked={formData[item.key]}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [item.key]: e.target.checked })
+                    }
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor={`case-${item.key}`} className="cursor-pointer text-sm">
+                    {item.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Deposit Section */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">ערבונות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>סוג ערבון</Label>
+                <Input
+                  value={formData.deposit_type}
+                  onChange={(e) => setFormData({ ...formData, deposit_type: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>סכום ערבון</Label>
+                <Input
+                  type="number"
+                  value={formData.deposit_amount}
+                  onChange={(e) => setFormData({ ...formData, deposit_amount: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>תאריך קליטת ערבון</Label>
+                <Input
+                  type="date"
+                  value={formData.deposit_date}
+                  onChange={(e) => setFormData({ ...formData, deposit_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>סטטוס ערבון</Label>
+                <Select
+                  value={formData.deposit_status}
+                  onValueChange={(value) => setFormData({ ...formData, deposit_status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר סטטוס" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">ממתין</SelectItem>
+                    <SelectItem value="collected">נגבה</SelectItem>
+                    <SelectItem value="returned">הוחזר</SelectItem>
+                    <SelectItem value="cancelled">בוטל</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>סיבת ערבון</Label>
+                <Input
+                  value={formData.deposit_reason}
+                  onChange={(e) => setFormData({ ...formData, deposit_reason: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>נציג ערבון</Label>
+                <Input
+                  value={formData.deposit_agent}
+                  onChange={(e) => setFormData({ ...formData, deposit_agent: e.target.value })}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Payment Section */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">פירוט תשלומים</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>סוג תשלום</Label>
+                <Input
+                  value={formData.payment_type}
+                  onChange={(e) => setFormData({ ...formData, payment_type: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>תאריך תשלום</Label>
+                <Input
+                  type="date"
+                  value={formData.payment_date}
+                  onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>סכום תשלום</Label>
+                <Input
+                  type="number"
+                  value={formData.payment_amount}
+                  onChange={(e) => setFormData({ ...formData, payment_amount: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>סה"כ</Label>
+                <Input
+                  type="number"
+                  value={formData.payment_total}
+                  onChange={(e) => setFormData({ ...formData, payment_total: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>תשלומים</Label>
+                <Input
+                  type="number"
+                  value={formData.payment_installments}
+                  onChange={(e) =>
+                    setFormData({ ...formData, payment_installments: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>נמסר ל</Label>
+                <Input
+                  value={formData.payment_delivered_to}
+                  onChange={(e) =>
+                    setFormData({ ...formData, payment_delivered_to: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>נציג</Label>
+                <Input
+                  value={formData.payment_agent}
+                  onChange={(e) => setFormData({ ...formData, payment_agent: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>שולם עבור</Label>
+                <Input
+                  value={formData.payment_paid_for}
+                  onChange={(e) => setFormData({ ...formData, payment_paid_for: e.target.value })}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coverage Details */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">פירוט כיסוי</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={formData.coverage_details}
+              onChange={(e) => setFormData({ ...formData, coverage_details: e.target.value })}
+              rows={3}
+              placeholder="פירוט תבילה / כיסוי..."
+            />
+          </CardContent>
+        </Card>
+
+        {/* Early Alert */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">הגדרות נוספות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>להודיע על הגעת עזרה לפני X דקות</Label>
+                <Input
+                  type="number"
+                  value={formData.early_alert_minutes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, early_alert_minutes: e.target.value })
+                  }
+                  placeholder="מספר דקות"
                 />
               </div>
             </div>
