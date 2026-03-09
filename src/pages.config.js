@@ -62,6 +62,7 @@ import CustomerDetails from './pages/CustomerDetails';
 import CustomerFeedback from './pages/CustomerFeedback';
 import Customers from './pages/Customers';
 import Dashboard from './pages/Dashboard';
+import DepartmentView from './pages/DepartmentView';
 import EditCustomer from './pages/EditCustomer';
 import EditVendor from './pages/EditVendor';
 import FeedbackManagement from './pages/FeedbackManagement';
@@ -79,12 +80,14 @@ import NewCase from './pages/NewCase';
 import NewVendor from './pages/NewVendor';
 import NotificationSettings from './pages/NotificationSettings';
 import OperationalRates from './pages/OperationalRates';
+import PrivateService from './pages/PrivateService';
 import ProductCatalog from './pages/ProductCatalog';
 import QueueMonitor from './pages/QueueMonitor';
 import Reminders from './pages/Reminders';
 import Reports from './pages/Reports';
 import RoleManagement from './pages/RoleManagement';
 import ServiceProviders from './pages/ServiceProviders';
+import SpecialCaseForm from './pages/SpecialCaseForm';
 import Settings from './pages/Settings';
 import UserGuide from './pages/UserGuide';
 import UserManagement from './pages/UserManagement';
@@ -114,6 +117,7 @@ export const PAGES = {
     "CustomerFeedback": CustomerFeedback,
     "Customers": Customers,
     "Dashboard": Dashboard,
+    "DepartmentView": DepartmentView,
     "EditCustomer": EditCustomer,
     "EditVendor": EditVendor,
     "FeedbackManagement": FeedbackManagement,
@@ -131,12 +135,14 @@ export const PAGES = {
     "NewVendor": NewVendor,
     "NotificationSettings": NotificationSettings,
     "OperationalRates": OperationalRates,
+    "PrivateService": PrivateService,
     "ProductCatalog": ProductCatalog,
     "QueueMonitor": QueueMonitor,
     "Reminders": Reminders,
     "Reports": Reports,
     "RoleManagement": RoleManagement,
     "ServiceProviders": ServiceProviders,
+    "SpecialCaseForm": SpecialCaseForm,
     "Settings": Settings,
     "UserGuide": UserGuide,
     "UserManagement": UserManagement,

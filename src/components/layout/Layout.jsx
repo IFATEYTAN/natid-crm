@@ -191,6 +191,8 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'מסך הבית', href: 'LandingPage' },
         { name: 'לוח בקרה', href: 'Dashboard' },
         { name: 'רשימת קריאות', href: 'Calls' },
+        { name: 'תצוגת מחלקה', href: 'DepartmentView' },
+        { name: 'שירות פרטי', href: 'PrivateService' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
       ],
     },
