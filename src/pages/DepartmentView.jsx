@@ -137,23 +137,18 @@ export default function DepartmentView() {
         </Button>
       </div>
 
-      {/* Department Tabs */}
-      <Tabs value={activeDept} onValueChange={setDepartment}>
-        <TabsList className="w-full justify-end gap-1 flex-wrap h-auto p-1 flex-row-reverse">
-          {DEPARTMENTS.map((dept) => {
-            const Icon = dept.icon;
-            return (
-              <TabsTrigger key={dept.key} value={dept.key} className="gap-2">
-                <Icon className="w-4 h-4" />
-                {dept.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+      {/* Department Tabs - Hidden, only showing towing */}
+       {/* Department header - towing only */}
+       <div className="text-right mb-6">
+         <h2 className="text-xl font-semibold text-[#212121] flex items-center gap-2 justify-end">
+           <Truck className="w-5 h-5" />
+           מחלקת גרירה
+         </h2>
+       </div>
 
-        {/* Each department shows the same layout */}
-        {DEPARTMENTS.map((dept) => (
-          <TabsContent key={dept.key} value={dept.key}>
+       {/* Sub-view content for towing department */}
+       {true && (
+         <div>
             {/* Sub-navigation */}
              <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
                {SUB_VIEWS.map((sv) => {
