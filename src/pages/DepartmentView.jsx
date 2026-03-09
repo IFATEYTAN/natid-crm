@@ -474,7 +474,7 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       {/* Action Buttons */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-3 flex-wrap justify-end flex-row-reverse">
             <Button
               variant="outline"
               size="sm"
