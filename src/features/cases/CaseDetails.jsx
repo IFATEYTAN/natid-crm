@@ -443,6 +443,36 @@ export default function CaseDetails() {
                   <p className="text-xs text-[#9E9E9E]">דגם</p>
                   <p className="font-medium">{caseData.vehicle_model || '-'}</p>
                 </div>
+                {caseData.vehicle_year && (
+                  <div>
+                    <p className="text-xs text-[#9E9E9E]">שנת ייצור</p>
+                    <p className="font-medium">{caseData.vehicle_year}</p>
+                  </div>
+                )}
+                {caseData.vehicle_model_code && (
+                  <div>
+                    <p className="text-xs text-[#9E9E9E]">קוד דגם</p>
+                    <p className="font-medium">{caseData.vehicle_model_code}</p>
+                  </div>
+                )}
+                {caseData.fuel_type && (
+                  <div>
+                    <p className="text-xs text-[#9E9E9E]">סוג דלק</p>
+                    <p className="font-medium">
+                      {caseData.fuel_type === 'gasoline'
+                        ? 'בנזין'
+                        : caseData.fuel_type === 'diesel'
+                          ? 'דיזל'
+                          : caseData.fuel_type === 'electric'
+                            ? 'חשמלי'
+                            : caseData.fuel_type === 'hybrid'
+                              ? 'היברידי'
+                              : caseData.fuel_type === 'gas'
+                                ? 'גז'
+                                : caseData.fuel_type}
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -488,6 +518,179 @@ export default function CaseDetails() {
               </CardHeader>
               <CardContent>
                 <p className="text-[#616161] whitespace-pre-wrap">{caseData.problem_description}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Exception & Customer Questionnaire */}
+          {(caseData.is_in_parking ||
+            caseData.is_at_garage ||
+            caseData.was_towed_before ||
+            caseData.is_toll_road ||
+            caseData.is_dirt_road ||
+            caseData.questionnaire_engine_starts ||
+            caseData.questionnaire_gearbox_ok ||
+            caseData.questionnaire_starter_sound ||
+            caseData.questionnaire_automatic_neutral ||
+            caseData.questionnaire_steering_free ||
+            caseData.questionnaire_handbrake_electric ||
+            caseData.questionnaire_truck_access) && (
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-[#ED6C02]" />
+                  שאלון חריגים וללקוח
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  {[
+                    { key: 'is_in_parking', label: 'רכב בחניון תת קרקעי / מקורה' },
+                    { key: 'is_at_garage', label: 'רכב במוסך / קרבת מוסך' },
+                    { key: 'was_towed_before', label: 'גרירה קודמת למוסך' },
+                    { key: 'is_toll_road', label: 'רכב על כביש אגרה' },
+                    { key: 'is_dirt_road', label: 'רכב על כביש עפר' },
+                    { key: 'questionnaire_engine_starts', label: 'הרכב מניע' },
+                    { key: 'questionnaire_gearbox_ok', label: 'הילוכים/הנדבריקס/הגה משוחררים' },
+                    { key: 'questionnaire_starter_sound', label: 'יש צליל התנעה' },
+                    { key: 'questionnaire_automatic_neutral', label: 'אוטומט - ניוטרל אפשרי' },
+                    { key: 'questionnaire_steering_free', label: 'הגה משוחרר' },
+                    { key: 'questionnaire_handbrake_electric', label: 'הנדבריקס חשמלי משוחרר' },
+                    { key: 'questionnaire_truck_access', label: 'גישה למשאית גרר' },
+                  ]
+                    .filter((item) => caseData[item.key])
+                    .map((item) => (
+                      <div
+                        key={item.key}
+                        className="flex items-center gap-2 p-2 bg-[#FAFAFA] rounded"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-[#2E7D32] shrink-0" />
+                        <span>{item.label}</span>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Deposit Info */}
+          {(caseData.deposit_type || caseData.deposit_amount || caseData.deposit_status) && (
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base">ערבונות</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {caseData.deposit_type && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">סוג ערבון</p>
+                      <p className="font-medium">{caseData.deposit_type}</p>
+                    </div>
+                  )}
+                  {caseData.deposit_amount && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">סכום</p>
+                      <p className="font-medium">{caseData.deposit_amount} ₪</p>
+                    </div>
+                  )}
+                  {caseData.deposit_status && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">סטטוס</p>
+                      <StatusBadge status={caseData.deposit_status} size="sm" />
+                    </div>
+                  )}
+                  {caseData.deposit_date && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">תאריך</p>
+                      <p className="font-medium">{caseData.deposit_date}</p>
+                    </div>
+                  )}
+                  {caseData.deposit_reason && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">סיבה</p>
+                      <p className="font-medium">{caseData.deposit_reason}</p>
+                    </div>
+                  )}
+                  {caseData.deposit_agent && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">נציג</p>
+                      <p className="font-medium">{caseData.deposit_agent}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Payment Info */}
+          {(caseData.payment_type || caseData.payment_amount || caseData.payment_total) && (
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base">פירוט תשלומים</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {caseData.payment_type && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">סוג תשלום</p>
+                      <p className="font-medium">{caseData.payment_type}</p>
+                    </div>
+                  )}
+                  {caseData.payment_amount && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">סכום</p>
+                      <p className="font-medium">{caseData.payment_amount} ₪</p>
+                    </div>
+                  )}
+                  {caseData.payment_total && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">סה"כ</p>
+                      <p className="font-medium">{caseData.payment_total} ₪</p>
+                    </div>
+                  )}
+                  {caseData.payment_installments && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">תשלומים</p>
+                      <p className="font-medium">{caseData.payment_installments}</p>
+                    </div>
+                  )}
+                  {caseData.payment_date && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">תאריך</p>
+                      <p className="font-medium">{caseData.payment_date}</p>
+                    </div>
+                  )}
+                  {caseData.payment_delivered_to && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">נמסר ל</p>
+                      <p className="font-medium">{caseData.payment_delivered_to}</p>
+                    </div>
+                  )}
+                  {caseData.payment_agent && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">נציג</p>
+                      <p className="font-medium">{caseData.payment_agent}</p>
+                    </div>
+                  )}
+                  {caseData.payment_paid_for && (
+                    <div>
+                      <p className="text-xs text-[#9E9E9E]">שולם עבור</p>
+                      <p className="font-medium">{caseData.payment_paid_for}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Coverage Details */}
+          {caseData.coverage_details && (
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base">פירוט כיסוי</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[#616161] whitespace-pre-wrap">{caseData.coverage_details}</p>
               </CardContent>
             </Card>
           )}

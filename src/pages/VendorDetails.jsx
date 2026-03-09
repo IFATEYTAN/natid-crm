@@ -21,6 +21,8 @@ import {
   User,
   Loader2,
   FileText,
+  Building2,
+  Briefcase,
 } from 'lucide-react';
 import {
   SlideUp,
@@ -149,9 +151,156 @@ export default function VendorDetailsPage() {
                       <div className="font-medium">{vendor.contact_person || '-'}</div>
                     </div>
                   </div>
+
+                  {vendor.fax && (
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center shrink-0">
+                        <Phone className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">פקס</div>
+                        <div className="font-medium" dir="ltr">
+                          {vendor.fax}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {(vendor.address || vendor.city) && (
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
+                        <MapPin className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">כתובת</div>
+                        <div className="font-medium">
+                          {[vendor.address, vendor.city].filter(Boolean).join(', ')}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </AnimatedCard>
+
+            {/* Company Details */}
+            {(vendor.company_id || vendor.insurance_agency || vendor.status_text) && (
+              <AnimatedCard className="bg-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Building2 className="w-5 h-5 text-gray-500" />
+                    פרטי חברה
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {vendor.company_id && (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <div className="text-xs text-gray-500">ח.פ./ת.ז.</div>
+                        <div className="font-medium">{vendor.company_id}</div>
+                      </div>
+                    )}
+                    {vendor.insurance_agency && (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <div className="text-xs text-gray-500">סוכנות ביטוח</div>
+                        <div className="font-medium">{vendor.insurance_agency}</div>
+                      </div>
+                    )}
+                    {vendor.status_text && (
+                      <div className="p-3 bg-gray-50 rounded-lg sm:col-span-2">
+                        <div className="text-xs text-gray-500">סטטוס</div>
+                        <div className="font-medium">{vendor.status_text}</div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </AnimatedCard>
+            )}
+
+            {/* Inspector & Handler */}
+            {(vendor.inspector_name || vendor.handler_name) && (
+              <AnimatedCard className="bg-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Briefcase className="w-5 h-5 text-gray-500" />
+                    מפקחה ומטפל
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {vendor.inspector_name && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 mb-2">מפקחה</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <div className="text-xs text-gray-500">שם</div>
+                          <div className="font-medium">{vendor.inspector_name}</div>
+                        </div>
+                        {vendor.inspector_phone && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="text-xs text-gray-500">טלפון</div>
+                            <div className="font-medium" dir="ltr">
+                              {vendor.inspector_phone}
+                            </div>
+                          </div>
+                        )}
+                        {vendor.inspector_fax && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="text-xs text-gray-500">פקס</div>
+                            <div className="font-medium" dir="ltr">
+                              {vendor.inspector_fax}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {vendor.handler_name && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500 mb-2">מטפל</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <div className="text-xs text-gray-500">שם</div>
+                          <div className="font-medium">{vendor.handler_name}</div>
+                        </div>
+                        {vendor.handler_phone && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="text-xs text-gray-500">טלפון</div>
+                            <div className="font-medium" dir="ltr">
+                              {vendor.handler_phone}
+                            </div>
+                          </div>
+                        )}
+                        {vendor.handler_fax && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="text-xs text-gray-500">פקס</div>
+                            <div className="font-medium" dir="ltr">
+                              {vendor.handler_fax}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </AnimatedCard>
+            )}
+
+            {/* Department Contracts */}
+            {vendor.department_contracts && (
+              <AnimatedCard className="bg-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <FileText className="w-5 h-5 text-gray-500" />
+                    חוזים מול המחלקות
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                    {vendor.department_contracts}
+                  </p>
+                </CardContent>
+              </AnimatedCard>
+            )}
 
             <AnimatedCard className="bg-white">
               <CardHeader>

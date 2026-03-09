@@ -3,7 +3,7 @@ import { useCustomer } from '@/features/customers/hooks/useCustomers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import { MapPin, Phone, Mail, AlertCircle, ArrowRight, Car, Calendar, Shield, CreditCard, AlertTriangle } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
@@ -143,6 +143,189 @@ export default function CustomerDetails() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Subscription Details */}
+      {(customer.subscription_status || customer.subscription_start_date || customer.subscription_end_date) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Calendar className="w-5 h-5" />
+              תוקף מנוי
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="text-sm text-[#6b7280]">מצב מנוי</div>
+              <Badge className="w-fit">{
+                customer.subscription_status === 'active' ? 'פעיל' :
+                customer.subscription_status === 'suspended' ? 'מושהה' :
+                customer.subscription_status === 'cancelled' ? 'מבוטל' :
+                customer.subscription_status === 'expired' ? 'פג תוקף' :
+                customer.subscription_status || '-'
+              }</Badge>
+            </div>
+            {customer.subscription_sequence && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">רצף מנויים</div>
+                <div className="font-medium">{customer.subscription_sequence}</div>
+              </div>
+            )}
+            {customer.subscription_start_date && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">תוקף מנוי מתאריך</div>
+                <div className="font-medium">{customer.subscription_start_date}</div>
+              </div>
+            )}
+            {customer.subscription_end_date && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">תוקף מנוי עד תאריך</div>
+                <div className="font-medium">{customer.subscription_end_date}</div>
+              </div>
+            )}
+            {customer.subscription_issue_date && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">תאריך הפקה</div>
+                <div className="font-medium">{customer.subscription_issue_date}</div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Vehicle Details */}
+      {(customer.vehicle_number || customer.vehicle_type || customer.vehicle_model) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Car className="w-5 h-5" />
+              פרטי רכב
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {customer.vehicle_number && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">מספר רכב</div>
+                <div className="font-medium">{customer.vehicle_number}</div>
+              </div>
+            )}
+            {customer.vehicle_type && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">סוג רכב</div>
+                <div className="font-medium">{
+                  customer.vehicle_type === 'private' ? 'פרטי' :
+                  customer.vehicle_type === 'commercial_light' ? 'מסחרי קל' :
+                  customer.vehicle_type === 'commercial_heavy' ? 'מסחרי כבד' :
+                  customer.vehicle_type === 'motorcycle' ? 'אופנוע' :
+                  customer.vehicle_type
+                }</div>
+              </div>
+            )}
+            {customer.vehicle_model && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">סוג דגם</div>
+                <div className="font-medium">{customer.vehicle_model}</div>
+              </div>
+            )}
+            {customer.vehicle_model_code && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">קוד דגם / שם רכב</div>
+                <div className="font-medium">{customer.vehicle_model_code}</div>
+              </div>
+            )}
+            {customer.vehicle_year && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">שנת ייצור</div>
+                <div className="font-medium">{customer.vehicle_year}</div>
+              </div>
+            )}
+            {customer.vehicle_license_expiry && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">תוקף רישיון רכב</div>
+                <div className="font-medium">{customer.vehicle_license_expiry}</div>
+              </div>
+            )}
+            {customer.vehicle_personal_import && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">יבוא אישי</div>
+                <Badge className="w-fit">כן</Badge>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Coverage & Insurance */}
+      {(customer.coverage_details || customer.agent_contract) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Shield className="w-5 h-5" />
+              כיסוי וביטוח
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {customer.coverage_details && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">פירוט כיסוי</div>
+                <div className="font-medium whitespace-pre-wrap">{customer.coverage_details}</div>
+              </div>
+            )}
+            {customer.agent_contract && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">חוזה סוכן</div>
+                <div className="font-medium whitespace-pre-wrap">{customer.agent_contract}</div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Payment Details */}
+      {(customer.payment_method || customer.payment_date) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <CreditCard className="w-5 h-5" />
+              תשלומים
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {customer.payment_method && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">אופן תשלום</div>
+                <div className="font-medium">{
+                  customer.payment_method === 'credit_card' ? 'כרטיס אשראי' :
+                  customer.payment_method === 'bank_transfer' ? 'העברה בנקאית' :
+                  customer.payment_method === 'cash' ? 'מזומן' :
+                  customer.payment_method === 'check' ? 'שיק' :
+                  customer.payment_method
+                }</div>
+              </div>
+            )}
+            {customer.payment_date && (
+              <div className="space-y-1">
+                <div className="text-sm text-[#6b7280]">תאריך תשלום</div>
+                <div className="font-medium">{customer.payment_date}</div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Alerts */}
+      {customer.alerts && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <AlertTriangle className="w-5 h-5 text-orange-500" />
+              התראות
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="font-medium whitespace-pre-wrap">{customer.alerts}</div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

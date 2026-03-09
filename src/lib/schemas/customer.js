@@ -11,6 +11,12 @@ const contractType = z.enum(['monthly', 'yearly', 'per_call', 'none']);
 
 const customerStatus = z.enum(['active', 'inactive', 'suspended']);
 
+const subscriptionStatus = z.enum(['active', 'suspended', 'cancelled', 'expired']);
+
+const paymentMethod = z.enum(['credit_card', 'bank_transfer', 'cash', 'check']);
+
+const vehicleType = z.enum(['private', 'commercial_light', 'commercial_heavy', 'motorcycle']);
+
 /**
  * Schema for creating a new customer.
  */
@@ -28,6 +34,28 @@ export const customerCreateSchema = z
     sla_arrival_minutes: z.number().optional(),
     monthly_budget: z.union([z.number(), z.null()]).optional(),
     status: customerStatus.optional().default('active'),
+    // Subscription fields
+    subscription_sequence: z.union([z.number(), z.null()]).optional(),
+    subscription_start_date: z.string().optional().default(''),
+    subscription_end_date: z.string().optional().default(''),
+    subscription_issue_date: z.string().optional().default(''),
+    subscription_status: subscriptionStatus.optional(),
+    // Payment fields
+    payment_method: paymentMethod.optional(),
+    payment_date: z.string().optional().default(''),
+    // Alerts
+    alerts: z.string().optional().default(''),
+    // Vehicle fields
+    vehicle_type: vehicleType.optional(),
+    vehicle_model: z.string().optional().default(''),
+    vehicle_year: z.union([z.number(), z.null()]).optional(),
+    vehicle_model_code: z.string().optional().default(''),
+    vehicle_number: z.string().optional().default(''),
+    vehicle_personal_import: z.boolean().optional().default(false),
+    vehicle_license_expiry: z.string().optional().default(''),
+    // Coverage & contract fields
+    agent_contract: z.string().optional().default(''),
+    coverage_details: z.string().optional().default(''),
   })
   .strict();
 

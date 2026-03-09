@@ -58,7 +58,20 @@ export default function NewVendorPage() {
     contact_person: '',
     phone: '',
     phone_2: '',
+    fax: '',
     email: '',
+    address: '',
+    city: '',
+    company_id: '',
+    insurance_agency: '',
+    inspector_name: '',
+    inspector_phone: '',
+    inspector_fax: '',
+    handler_name: '',
+    handler_phone: '',
+    handler_fax: '',
+    status_text: '',
+    department_contracts: '',
     service_type: [],
     vehicle_types_supported: [],
     coverage_areas: [],
@@ -231,6 +244,172 @@ export default function NewVendorPage() {
                 </div>
                 <p className="text-xs text-[#6B778C] mt-1">האימייל ישמש להתחברות לפורטל הספקים</p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Company & Address Details */}
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MapPin className="w-5 h-5 text-[#6B778C]" />
+                פרטי חברה וכתובת
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="vendor-company-id">ח.פ./ת.ז.</Label>
+                  <Input
+                    id="vendor-company-id"
+                    value={formData.company_id}
+                    onChange={(e) => setFormData({ ...formData, company_id: e.target.value })}
+                    placeholder="מספר ח.פ. או ת.ז."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendor-fax">פקס</Label>
+                  <Input
+                    id="vendor-fax"
+                    value={formData.fax}
+                    onChange={(e) => setFormData({ ...formData, fax: e.target.value })}
+                    dir="ltr"
+                    placeholder="03-1234567"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="vendor-address">כתובת</Label>
+                  <Input
+                    id="vendor-address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="כתובת הספק"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendor-city">עיר</Label>
+                  <Input
+                    id="vendor-city"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="עיר"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="vendor-insurance-agency">סוכנות ביטוח</Label>
+                  <Input
+                    id="vendor-insurance-agency"
+                    value={formData.insurance_agency}
+                    onChange={(e) => setFormData({ ...formData, insurance_agency: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendor-status-text">סטטוס (טקסט חופשי)</Label>
+                  <Input
+                    id="vendor-status-text"
+                    value={formData.status_text}
+                    onChange={(e) => setFormData({ ...formData, status_text: e.target.value })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Inspector Details */}
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <User className="w-5 h-5 text-[#6B778C]" />
+                פרטי מפקחה
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="vendor-inspector-name">שם מפקחה</Label>
+                  <Input
+                    id="vendor-inspector-name"
+                    value={formData.inspector_name}
+                    onChange={(e) => setFormData({ ...formData, inspector_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendor-inspector-phone">טלפון מפקחה</Label>
+                  <Input
+                    id="vendor-inspector-phone"
+                    value={formData.inspector_phone}
+                    onChange={(e) => setFormData({ ...formData, inspector_phone: e.target.value })}
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendor-inspector-fax">פקס מפקחה</Label>
+                  <Input
+                    id="vendor-inspector-fax"
+                    value={formData.inspector_fax}
+                    onChange={(e) => setFormData({ ...formData, inspector_fax: e.target.value })}
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Handler Details */}
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <User className="w-5 h-5 text-[#6B778C]" />
+                פרטי מטפל
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="vendor-handler-name">שם מטפל</Label>
+                  <Input
+                    id="vendor-handler-name"
+                    value={formData.handler_name}
+                    onChange={(e) => setFormData({ ...formData, handler_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendor-handler-phone">טלפון מטפל</Label>
+                  <Input
+                    id="vendor-handler-phone"
+                    value={formData.handler_phone}
+                    onChange={(e) => setFormData({ ...formData, handler_phone: e.target.value })}
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendor-handler-fax">פקס מטפל</Label>
+                  <Input
+                    id="vendor-handler-fax"
+                    value={formData.handler_fax}
+                    onChange={(e) => setFormData({ ...formData, handler_fax: e.target.value })}
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Department Contracts */}
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg">חוזים מול המחלקות</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={formData.department_contracts}
+                onChange={(e) => setFormData({ ...formData, department_contracts: e.target.value })}
+                placeholder="פרטי חוזים מול מחלקות שונות..."
+                rows={4}
+              />
             </CardContent>
           </Card>
 
