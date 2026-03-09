@@ -10,7 +10,11 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 export default function FeedbackManagement() {
-  const { data: feedbacks, isLoading } = useQuery({
+  const {
+    data: feedbacks,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.feedbacks.all(),
     queryFn: () => base44.entities.CallFeedback.list('-created_at', 50),
     refetchInterval: 30000,
@@ -20,6 +24,15 @@ export default function FeedbackManagement() {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 text-red-600">
+        <p className="text-lg font-medium">שגיאה בטעינת המשובים</p>
+        <p className="text-sm text-gray-500 mt-1">נסו לרענן את הדף</p>
       </div>
     );
   }

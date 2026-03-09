@@ -74,7 +74,11 @@ export default function OperationalRatesPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const { data: rates = [], isLoading } = useQuery({
+  const {
+    data: rates = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.operationalRates.all(),
     queryFn: () => base44.entities.OperationalRate.list(),
   });
@@ -176,6 +180,16 @@ export default function OperationalRatesPage() {
           <Plus className="w-4 h-4" /> תעריף חדש
         </Button>
       </div>
+
+      {isError && (
+        <Card className="bg-white">
+          <CardContent className="py-8 text-center text-red-600">
+            <Calculator className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p className="font-medium">שגיאה בטעינת התעריפים</p>
+            <p className="text-sm text-gray-500 mt-1">נסו לרענן את הדף</p>
+          </CardContent>
+        </Card>
+      )}
 
       {grouped.map((group) => (
         <Card key={group.type} className="bg-white">

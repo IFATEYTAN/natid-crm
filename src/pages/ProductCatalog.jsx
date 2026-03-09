@@ -56,7 +56,11 @@ export default function ProductCatalogPage() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
 
-  const { data: products = [], isLoading } = useQuery({
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.products.catalog(),
     queryFn: () => base44.entities.Product.list(),
   });
@@ -191,7 +195,15 @@ export default function ProductCatalogPage() {
         ))}
       </div>
 
-      {filtered.length === 0 && !isLoading && (
+      {isError && (
+        <div className="text-center py-12 text-red-600">
+          <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p className="font-medium">שגיאה בטעינת המוצרים</p>
+          <p className="text-sm text-gray-500 mt-1">נסו לרענן את הדף</p>
+        </div>
+      )}
+
+      {filtered.length === 0 && !isLoading && !isError && (
         <div className="text-center py-12 text-gray-400">
           <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>לא נמצאו מוצרים</p>
