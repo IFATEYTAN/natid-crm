@@ -213,7 +213,6 @@ function LayoutContent({ children, currentPageName }) {
     {
       title: 'כלכלה ותשלומים',
       items: [
-        { name: 'תעריפון תפעול', href: 'OperationalRates' },
         { name: 'חשבוניות', href: 'Invoices' },
         { name: 'קטלוג מוצרים', href: 'ProductCatalog' },
         { name: 'תזכורות', href: 'Reminders' },
