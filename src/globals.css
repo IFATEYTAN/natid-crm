@@ -178,6 +178,90 @@
   }
 }
 
+/* ====================================
+   SOFT COLOR UTILITIES (used by index.css @apply directives)
+   ==================================== */
+
+@layer utilities {
+  /* neutral-soft */
+  .bg-neutral-soft-50  { background-color: #f9fafb; }
+  .bg-neutral-soft-100 { background-color: #f3f4f6; }
+  .bg-neutral-soft-200 { background-color: #e5e7eb; }
+  .bg-neutral-soft-300 { background-color: #d1d5db; }
+  .bg-neutral-soft-400 { background-color: #9ca3af; }
+  .bg-neutral-soft-500 { background-color: #6b7280; }
+  .bg-neutral-soft-600 { background-color: #4b5563; }
+  .bg-neutral-soft-700 { background-color: #374151; }
+  .bg-neutral-soft-800 { background-color: #1f2937; }
+  .bg-neutral-soft-900 { background-color: #111827; }
+  .text-neutral-soft-50  { color: #f9fafb; }
+  .text-neutral-soft-100 { color: #f3f4f6; }
+  .text-neutral-soft-200 { color: #e5e7eb; }
+  .text-neutral-soft-300 { color: #d1d5db; }
+  .text-neutral-soft-400 { color: #9ca3af; }
+  .text-neutral-soft-500 { color: #6b7280; }
+  .text-neutral-soft-600 { color: #4b5563; }
+  .text-neutral-soft-700 { color: #374151; }
+  .text-neutral-soft-800 { color: #1f2937; }
+  .text-neutral-soft-900 { color: #111827; }
+  .border-neutral-soft-50  { border-color: #f9fafb; }
+  .border-neutral-soft-100 { border-color: #f3f4f6; }
+  .border-neutral-soft-200 { border-color: #e5e7eb; }
+  .border-neutral-soft-300 { border-color: #d1d5db; }
+  .border-neutral-soft-400 { border-color: #9ca3af; }
+  .border-neutral-soft-500 { border-color: #6b7280; }
+  .hover\:bg-neutral-soft-50:hover  { background-color: #f9fafb; }
+  .hover\:bg-neutral-soft-100:hover { background-color: #f3f4f6; }
+  .hover\:bg-neutral-soft-200:hover { background-color: #e5e7eb; }
+
+  /* primary-soft */
+  .bg-primary-soft-50  { background-color: #eff6ff; }
+  .bg-primary-soft-100 { background-color: #dbeafe; }
+  .bg-primary-soft-200 { background-color: #bfdbfe; }
+  .bg-primary-soft-300 { background-color: #93c5fd; }
+  .bg-primary-soft-500 { background-color: #3b82f6; }
+  .bg-primary-soft-600 { background-color: #2563eb; }
+  .bg-primary-soft-700 { background-color: #1d4ed8; }
+  .text-primary-soft-600 { color: #2563eb; }
+  .text-primary-soft-700 { color: #1d4ed8; }
+  .text-primary-soft-800 { color: #1e40af; }
+  .border-primary-soft-300 { border-color: #93c5fd; }
+  .hover\:border-primary-soft-300:hover { border-color: #93c5fd; }
+  .focus\:ring-primary-soft-500:focus { --tw-ring-color: #3b82f6; }
+  .focus\:border-primary-soft-500:focus { border-color: #3b82f6; }
+
+  /* success-soft */
+  .bg-success-soft-50  { background-color: #f0fdf4; }
+  .bg-success-soft-100 { background-color: #dcfce7; }
+  .bg-success-soft-600 { background-color: #16a34a; }
+  .bg-success-soft-700 { background-color: #15803d; }
+  .text-success-soft-800 { color: #166534; }
+  .border-success-soft-300 { border-color: #86efac; }
+
+  /* warning-soft */
+  .bg-warning-soft-50  { background-color: #fffbeb; }
+  .bg-warning-soft-100 { background-color: #fef3c7; }
+  .bg-warning-soft-600 { background-color: #d97706; }
+  .bg-warning-soft-700 { background-color: #b45309; }
+  .text-warning-soft-800 { color: #92400e; }
+  .border-warning-soft-300 { border-color: #fcd34d; }
+
+  /* error-soft */
+  .bg-error-soft-50  { background-color: #fef2f2; }
+  .bg-error-soft-100 { background-color: #fee2e2; }
+  .bg-error-soft-600 { background-color: #dc2626; }
+  .bg-error-soft-700 { background-color: #b91c1c; }
+  .text-error-soft-600 { color: #dc2626; }
+  .text-error-soft-800 { color: #991b1b; }
+  .border-error-soft-300 { border-color: #fca5a5; }
+  .border-error-soft-500 { border-color: #ef4444; }
+  .focus\:ring-error-soft-500:focus { --tw-ring-color: #ef4444; }
+
+  /* info-soft */
+  .bg-info-soft-100 { background-color: #cffafe; }
+  .text-info-soft-800 { color: #155e75; }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
