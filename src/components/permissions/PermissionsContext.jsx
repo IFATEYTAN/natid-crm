@@ -123,6 +123,9 @@ const PAGE_GRANULAR_PERMISSIONS = {
   CoverageAreas: { category: 'monitoring', permission: 'live_map' },
   VendorTracking: { category: 'monitoring', permission: 'tracking' },
   QueueMonitor: { category: 'monitoring', permission: 'queue' },
+  DepartmentView: { category: 'calls', permission: 'view' },
+  PrivateService: { category: 'calls', permission: 'view' },
+  SpecialCaseForm: { category: 'calls', permission: 'create' },
 
   // דוחות
   Reports: { category: 'reports', permission: 'view' },
