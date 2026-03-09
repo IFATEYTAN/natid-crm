@@ -131,12 +131,12 @@ export default function CallsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#172B4D]">ניהול קריאות</h1>
-          <p className="text-[#6B778C] text-sm">צפייה וניהול כל הקריאות במערכת</p>
+      <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-end gap-4">
+        <div className="text-right">
+          <h1 className="text-3xl font-bold text-[#111827]">ניהול קריאות</h1>
+          <p className="text-[#6b7280] text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
