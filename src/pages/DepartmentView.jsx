@@ -248,9 +248,7 @@ function SubscriberSearch({ department }) {
     if (!selectedCustomer) return [];
     return allCases.filter(
       (c) =>
-        (c.customer_id === selectedCustomer.id ||
-          c.customer_name === selectedCustomer.name) &&
-        c.department === department
+        c.customer_name === selectedCustomer.name
     );
   }, [allCases, selectedCustomer, department]);
 
