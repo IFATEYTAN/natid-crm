@@ -77,10 +77,10 @@ export default function Dashboard() {
     return 'ערב טוב';
   };
 
-  // Read from Case entity (real data)
+  // Read from Call entity (real data)
   const { data: cases = [], isLoading: casesLoading } = useQuery({
     queryKey: ['dashboard-cases'],
-    queryFn: () => base44.entities.Case.list('-created_date', 10000),
+    queryFn: () => base44.entities.Call.list('-created_date', 10000),
   });
 
   // Read from Vendor entity (real data)
