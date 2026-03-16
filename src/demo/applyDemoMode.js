@@ -89,9 +89,10 @@ function createMockEntity(entityName) {
       return Promise.resolve(result);
     },
 
-    filter: (filters, sort, limit) => {
+    filter: (filters, sort, limit, skip) => {
       let result = store[storeKey].filter((item) => matchesFilter(item, filters));
       result = applySorting(result, sort);
+      if (skip) result = result.slice(skip);
       if (limit) result = result.slice(0, limit);
       return Promise.resolve(result);
     },
@@ -268,6 +269,11 @@ export function applyDemoMode(client) {
   client.users = {
     inviteUser: () => Promise.resolve({ success: true }),
   };
+
+  // Set demo CRM URL for Invoices page (uses localStorage, not entity)
+  if (!localStorage.getItem('invoices_crm_url')) {
+    localStorage.setItem('invoices_crm_url', 'https://example.com/demo-crm-invoices');
+  }
 
   return client;
 }
