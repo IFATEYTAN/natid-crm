@@ -91,7 +91,7 @@ export default function CallsPage() {
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ['cases-list'],
+    queryKey: ['calls-list'],
     queryFn: () => base44.entities.Call.list('-created_date', 50000),
   });
 
