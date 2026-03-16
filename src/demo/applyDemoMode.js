@@ -4,6 +4,9 @@
  * When demo mode is active, all entity CRUD operations return demo data
  * instead of making real API calls. This allows the app to run fully
  * without a backend connection.
+ *
+ * The proxy is ALWAYS installed so that demo mode can be toggled at any time.
+ * Each call checks isDemoMode() dynamically — if inactive, the real client is used.
  */
 import { isDemoMode } from './demoMode';
 import { demoData, demoUser } from './demoData';
@@ -73,8 +76,6 @@ function generateDemoId() {
  */
 function createMockEntity(entityName) {
   const store = getDemoStore();
-  // Map entity names to store keys
-  // Keys in demoStore match the demoData keys exactly (e.g. 'Call', 'Vendor', etc.)
   const storeKey = entityName;
 
   // Ensure the store key exists
@@ -131,9 +132,11 @@ function createMockEntity(entityName) {
 /**
  * Mock backend function invocations.
  */
-function createMockFunctions() {
+function createMockFunctions(realFunctions) {
   return {
     invoke: (functionName, params) => {
+      if (!isDemoMode()) return realFunctions.invoke(functionName, params);
+
       // Return sensible defaults for common functions
       switch (functionName) {
         case 'seedDemoData':
@@ -225,53 +228,117 @@ function createMockFunctions() {
 /**
  * Create mock auth object.
  */
-function createMockAuth() {
+function createMockAuth(realAuth) {
   return {
-    me: () => Promise.resolve({ ...demoUser }),
-    logout: () => {
-      localStorage.removeItem('natid_demo_mode');
-      window.location.href = window.location.origin;
+    me: () => {
+      if (!isDemoMode()) return realAuth.me();
+      return Promise.resolve({ ...demoUser });
     },
-    redirectToLogin: () => {
-      window.location.href = window.location.origin;
+    logout: (...args) => {
+      if (isDemoMode()) {
+        localStorage.removeItem('natid_demo_mode');
+        window.location.href = window.location.origin;
+        return;
+      }
+      return realAuth.logout(...args);
+    },
+    redirectToLogin: (...args) => {
+      if (isDemoMode()) {
+        window.location.href = window.location.origin;
+        return;
+      }
+      return realAuth.redirectToLogin(...args);
     },
   };
 }
 
 /**
  * Apply demo mode to a Base44 client instance.
- * Replaces entities, auth, and functions with mock implementations.
+ *
+ * Always installs proxies that check isDemoMode() dynamically on each call.
+ * When demo mode is active → returns mock data.
+ * When demo mode is inactive → delegates to the real client.
  */
 export function applyDemoMode(client) {
-  if (!isDemoMode()) return client;
+  // Save references to original client methods
+  const realEntities = client.entities;
+  const realAuth = client.auth;
+  const realFunctions = client.functions;
 
-  // Create entities proxy
+  // Create entities proxy that checks isDemoMode() on every access
   const entitiesProxy = new Proxy(
     {},
     {
       get: (_target, prop) => {
+        if (!isDemoMode()) {
+          return realEntities[prop];
+        }
         return createMockEntity(prop);
       },
     }
   );
 
-  // Override client properties
+  // Override client properties with dynamic proxies
   client.entities = entitiesProxy;
-  client.auth = createMockAuth();
-  client.functions = createMockFunctions();
+  client.auth = createMockAuth(realAuth);
+  client.functions = createMockFunctions(realFunctions);
 
-  // Also mock asServiceRole (used by backend-like operations)
-  client.asServiceRole = {
-    entities: entitiesProxy,
-  };
+  // Proxy asServiceRole to also route through demo when active
+  // Note: reading client.asServiceRole may throw if no service token is set,
+  // so we use a lazy getter that only accesses the real property when needed.
+  const origAsServiceRoleDesc = Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(client) || client,
+    'asServiceRole'
+  );
+  Object.defineProperty(client, 'asServiceRole', {
+    get: () => {
+      if (isDemoMode()) {
+        return { entities: entitiesProxy };
+      }
+      // Delegate to original getter/value
+      if (origAsServiceRoleDesc?.get) {
+        return origAsServiceRoleDesc.get.call(client);
+      }
+      return origAsServiceRoleDesc?.value;
+    },
+    configurable: true,
+  });
 
-  // Mock users API (used for inviting users)
-  client.users = {
-    inviteUser: () => Promise.resolve({ success: true }),
-  };
+  // Proxy users API (capture lazily to avoid accessing before it's available)
+  const origUsersDesc =
+    Object.getOwnPropertyDescriptor(client, 'users') ||
+    Object.getOwnPropertyDescriptor(Object.getPrototypeOf(client) || {}, 'users');
+  const realUsersRef = { current: client.users };
+  Object.defineProperty(client, 'users', {
+    get: () => {
+      if (isDemoMode()) {
+        return { inviteUser: () => Promise.resolve({ success: true }) };
+      }
+      if (origUsersDesc?.get) {
+        return origUsersDesc.get.call(client);
+      }
+      return realUsersRef.current;
+    },
+    set: (val) => {
+      realUsersRef.current = val;
+    },
+    configurable: true,
+  });
 
-  // Set demo CRM URL for Invoices page (uses localStorage, not entity)
-  if (!localStorage.getItem('invoices_crm_url')) {
+  // Mock appLogs API (used by NavigationTracker)
+  const realAppLogs = client.appLogs;
+  Object.defineProperty(client, 'appLogs', {
+    get: () => {
+      if (isDemoMode()) {
+        return { logUserInApp: () => Promise.resolve() };
+      }
+      return realAppLogs;
+    },
+    configurable: true,
+  });
+
+  // Set demo CRM URL for Invoices page when demo mode is active
+  if (isDemoMode() && !localStorage.getItem('invoices_crm_url')) {
     localStorage.setItem('invoices_crm_url', 'https://example.com/demo-crm-invoices');
   }
 

@@ -3,14 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Receipt, ExternalLink, Settings, FileText } from 'lucide-react';
+import { Receipt, ExternalLink, Settings, FileText, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrentUserRole } from '@/components/auth/RoleGuard';
+import { isDemoMode } from '@/demo/demoMode';
 
 export default function InvoicesPage() {
   const { isAdmin } = useCurrentUserRole();
   const [crmUrl, setCrmUrl] = useState('');
   const [urlInput, setUrlInput] = useState('');
+
+  const isDemo = isDemoMode();
 
   useEffect(() => {
     const savedUrl = localStorage.getItem('invoices_crm_url');
@@ -75,7 +78,83 @@ export default function InvoicesPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {crmUrl && isValidUrl(crmUrl) ? (
+              {isDemo ? (
+                <div className="w-full min-h-[600px] rounded-lg border border-[#e5e7eb] bg-white p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-sm text-[#3b82f6] bg-[#eff6ff] p-3 rounded-lg">
+                    <Receipt className="w-4 h-4" />
+                    מצב הדגמה — נתוני חשבוניות לדוגמה
+                  </div>
+                  {[
+                    {
+                      id: 'INV-2026-001',
+                      customer: 'הראל ביטוח',
+                      amount: '₪3,500',
+                      date: '15/03/2026',
+                      status: 'שולם',
+                    },
+                    {
+                      id: 'INV-2026-002',
+                      customer: 'מגדל ביטוח',
+                      amount: '₪2,800',
+                      date: '14/03/2026',
+                      status: 'שולם',
+                    },
+                    {
+                      id: 'INV-2026-003',
+                      customer: 'כלל ביטוח',
+                      amount: '₪4,200',
+                      date: '13/03/2026',
+                      status: 'ממתין',
+                    },
+                    {
+                      id: 'INV-2026-004',
+                      customer: 'הפניקס ביטוח',
+                      amount: '₪1,950',
+                      date: '12/03/2026',
+                      status: 'שולם',
+                    },
+                    {
+                      id: 'INV-2026-005',
+                      customer: 'אלדן השכרת רכב',
+                      amount: '₪6,100',
+                      date: '11/03/2026',
+                      status: 'ממתין',
+                    },
+                    {
+                      id: 'INV-2026-006',
+                      customer: 'SIXT ישראל',
+                      amount: '₪3,300',
+                      date: '10/03/2026',
+                      status: 'שולם',
+                    },
+                  ].map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-[#6b7280]" />
+                        <div>
+                          <div className="font-medium text-[#111827]">{inv.id}</div>
+                          <div className="text-sm text-[#6b7280]">{inv.customer}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-[#6b7280]">{inv.date}</div>
+                        <div className="font-medium text-[#111827]" dir="ltr">
+                          {inv.amount}
+                        </div>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${inv.status === 'שולם' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}
+                        >
+                          {inv.status === 'שולם' && <CheckCircle className="w-3 h-3 inline mr-1" />}
+                          {inv.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : crmUrl && isValidUrl(crmUrl) ? (
                 <iframe
                   src={crmUrl}
                   title="CRM חשבוניות"
