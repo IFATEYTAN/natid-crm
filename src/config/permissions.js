@@ -25,6 +25,9 @@ export const PAGE_PERMISSIONS = {
   UserManagement: ['admin'],
   VendorPricing: ['admin'],
 
+  // Admin only - KPI management
+  KPIManagement: ['admin'],
+
   // Admin + Operator - daily operations
   AdvancedExport: ['admin', 'operator'],
   Agents: ['admin', 'operator'],
@@ -41,6 +44,8 @@ export const PAGE_PERMISSIONS = {
   DepartmentView: ['admin', 'operator'],
   EditVendor: ['admin', 'operator'],
   FeedbackManagement: ['admin', 'operator'],
+  KnowledgeBase: ['admin', 'operator'],
+  CallScripts: ['admin', 'operator'],
   HistoricalDataAnalysis: ['admin', 'operator'],
   MyQueue: ['admin', 'operator'],
   NewCase: ['admin', 'operator'],
@@ -62,6 +67,9 @@ export const PAGE_PERMISSIONS = {
   VendorCallManagement: ['vendor'],
   VendorGuide: ['vendor'],
   VendorPortal: ['vendor'],
+
+  // Public - customer portal (no auth required, token-based)
+  CustomerPortal: ['admin', 'operator', 'vendor', 'agent'],
 
   // All roles
   FormView: ['admin', 'operator', 'vendor', 'agent'],

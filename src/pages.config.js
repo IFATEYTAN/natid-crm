@@ -72,6 +72,10 @@ import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
 import ImportHistoricalData from './pages/ImportHistoricalData';
 import IntegrationSettings from './pages/IntegrationSettings';
 import Invoices from './pages/Invoices';
+import KnowledgeBase from './pages/KnowledgeBase';
+import CallScripts from './pages/CallScripts';
+import CustomerPortal from './pages/CustomerPortal';
+import KPIManagement from './pages/KPIManagement';
 import LandingPage from './pages/LandingPage';
 import MyNotificationSettings from './pages/MyNotificationSettings';
 import MyQueue from './pages/MyQueue';
@@ -126,6 +130,10 @@ export const PAGES = {
     "ImportHistoricalData": ImportHistoricalData,
     "IntegrationSettings": IntegrationSettings,
     "Invoices": Invoices,
+    "KnowledgeBase": KnowledgeBase,
+    "CallScripts": CallScripts,
+    "CustomerPortal": CustomerPortal,
+    "KPIManagement": KPIManagement,
     "LandingPage": LandingPage,
     "MyNotificationSettings": MyNotificationSettings,
     "MyQueue": MyQueue,

@@ -194,6 +194,8 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'תצוגת מחלקה', href: 'DepartmentView' },
         { name: 'שירות פרטי', href: 'PrivateService' },
         { name: 'ניטור תורים', href: 'QueueMonitor' },
+        { name: 'מאגר תקלות', href: 'KnowledgeBase' },
+        { name: 'תסריטי שיחה', href: 'CallScripts' },
       ],
     },
     {
@@ -226,6 +228,8 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'ייצוא מתקדם', href: 'AdvancedExport' },
         { name: 'לקוחות', href: 'Customers' },
         { name: 'משובי לקוחות', href: 'FeedbackManagement' },
+        { name: 'ניהול יעדים', href: 'KPIManagement' },
+        { name: 'פורטל לקוח', href: 'CustomerPortal' },
         { name: 'הפרופיל שלי', href: 'UserProfile' },
       ],
     },
