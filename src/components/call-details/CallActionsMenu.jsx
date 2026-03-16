@@ -17,7 +17,10 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { MoreVertical, RotateCcw, Truck, MapPin, Ban, Bell, CheckCircle } from 'lucide-react';
+import { MoreVertical, RotateCcw, Truck, MapPin, Ban, Bell, CheckCircle, MessageCircle, Users } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { showToast } from '@/components/ui/FeedbackToast';
+import { Input } from '@/components/ui/input';
 import { statusLabels } from '@/components/config/labels';
 
 export default function CallActionsMenu({
@@ -33,6 +36,35 @@ export default function CallActionsMenu({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showReopenDialog, setShowReopenDialog] = useState(false);
   const [reopenReason, setReopenReason] = useState('');
+  const [showWhatsAppDialog, setShowWhatsAppDialog] = useState(false);
+  const [whatsAppType, setWhatsAppType] = useState('vendor_call_details');
+  const [whatsAppGroupId, setWhatsAppGroupId] = useState('');
+  const [whatsAppCustomMsg, setWhatsAppCustomMsg] = useState('');
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+
+  const handleSendWhatsApp = async () => {
+    setSendingWhatsApp(true);
+    try {
+      const payload = {
+        type: whatsAppType,
+        call_id: callId,
+        vendor_phone: call?.vendor_phone || call?.assigned_vendor_phone,
+        group_id: whatsAppGroupId,
+        message: whatsAppCustomMsg,
+      };
+      const res = await base44.functions.invoke('sendWhatsApp', payload);
+      if (res?.data?.success) {
+        showToast.success('הודעת WhatsApp נשלחה בהצלחה');
+        setShowWhatsAppDialog(false);
+      } else {
+        showToast.error(res?.data?.message || 'שגיאה בשליחת WhatsApp');
+      }
+    } catch (err) {
+      showToast.error('שגיאה בשליחת WhatsApp');
+    } finally {
+      setSendingWhatsApp(false);
+    }
+  };
 
   const isClosedOrCancelled =
     call?.call_status === 'completed' || call?.call_status === 'cancelled';
@@ -86,6 +118,22 @@ export default function CallActionsMenu({
             </DropdownMenuItem>
           )}
 
+          {/* WhatsApp */}
+          {canEdit && !isClosedOrCancelled && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => { setWhatsAppType('vendor_call_details'); setShowWhatsAppDialog(true); }}>
+                <MessageCircle className="w-4 h-4 ms-2 text-green-600" />
+                שלח פרטים לספק (WhatsApp)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setWhatsAppType('group_message'); setShowWhatsAppDialog(true); }}>
+                <Users className="w-4 h-4 ms-2 text-green-600" />
+                שלח לקבוצת WhatsApp
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+
           {/* Add reminder */}
           <DropdownMenuItem onClick={onNavigateToReminders}>
             <Bell className="w-4 h-4 ms-2" />
@@ -126,6 +174,62 @@ export default function CallActionsMenu({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* WhatsApp Dialog */}
+      <Dialog open={showWhatsAppDialog} onOpenChange={setShowWhatsAppDialog}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-600" />
+              {whatsAppType === 'group_message' ? 'שליחת הודעה לקבוצת WhatsApp' : 'שליחת פרטי קריאה לספק'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {whatsAppType === 'vendor_call_details' && (
+              <div className="p-3 bg-green-50 rounded-lg text-sm text-green-800">
+                <p className="font-semibold">משלוח לספק: {call?.assigned_vendor_name || 'לא שובץ'}</p>
+                <p className="text-xs mt-1">טלפון: {call?.vendor_phone || call?.assigned_vendor_phone || 'לא צוין'}</p>
+                <p className="text-xs mt-1">ההודעה תכלול את כל פרטי הקריאה: מספר, לקוח, מיקום, סוג שירות, פרטי רכב.</p>
+              </div>
+            )}
+            {whatsAppType === 'group_message' && (
+              <div className="space-y-3">
+                <div>
+                  <Label>מזהה קבוצה (Group ID)</Label>
+                  <Input
+                    value={whatsAppGroupId}
+                    onChange={(e) => setWhatsAppGroupId(e.target.value)}
+                    placeholder="XXXXXXXXXX@g.us או מספר קבוצה"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">ניתן להזין מספר קבוצות מופרדים בפסיק</p>
+                </div>
+                <div>
+                  <Label>הודעה</Label>
+                  <Textarea
+                    value={whatsAppCustomMsg}
+                    onChange={(e) => setWhatsAppCustomMsg(e.target.value)}
+                    rows={4}
+                    placeholder="כתוב את ההודעה לשליחה לקבוצה..."
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowWhatsAppDialog(false)}>ביטול</Button>
+            <Button
+              onClick={handleSendWhatsApp}
+              disabled={sendingWhatsApp || (whatsAppType === 'group_message' && !whatsAppGroupId.trim())}
+              className="bg-green-600 hover:bg-green-700 gap-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              {sendingWhatsApp ? 'שולח...' : 'שלח WhatsApp'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reopen Dialog */}
       <Dialog open={showReopenDialog} onOpenChange={setShowReopenDialog}>

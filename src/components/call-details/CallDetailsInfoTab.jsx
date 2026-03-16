@@ -341,8 +341,8 @@ export default function CallDetailsInfoTab({
               </>
             )}
 
-            {/* Storage */}
-            {(call?.storage_location_address || call?.storage_location_city) && (
+            {/* Storage (משימה 392) - Dynamic storage days counter */}
+            {(call?.call_status === 'in_storage' || call?.storage_location_address || call?.storage_location_city) && (
               <>
                 <div className="border-t pt-2 mt-2">
                   <Label className="text-xs text-[#6B778C] font-semibold flex items-center gap-1">
@@ -350,12 +350,45 @@ export default function CallDetailsInfoTab({
                   </Label>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <InfoField label="כתובת" value={call?.storage_location_address} />
-                  </div>
-                  <InfoField label="עיר" value={call?.storage_location_city} />
-                  <InfoField label="אזור" value={areaLabels[call?.storage_location_area]} />
-                  {call?.storage_days && <InfoField label="ימי אחסנה" value={call?.storage_days} />}
+                  {call?.storage_location_address && (
+                    <div className="col-span-2">
+                      <InfoField label="כתובת" value={call?.storage_location_address} />
+                    </div>
+                  )}
+                  {call?.storage_location_city && <InfoField label="עיר" value={call?.storage_location_city} />}
+                  {call?.storage_location_area && <InfoField label="אזור" value={areaLabels[call?.storage_location_area]} />}
+                  {/* Dynamic storage days calculation */}
+                  {call?.storage_start_date && (() => {
+                    const start = new Date(call.storage_start_date);
+                    const now = new Date();
+                    const diffMs = now - start;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    const isLong = diffDays >= 7;
+                    return (
+                      <div className="col-span-2">
+                        <div className={`flex items-center gap-2 p-2 rounded-lg border ${
+                          isLong ? 'bg-red-50 border-red-300' : 'bg-amber-50 border-amber-300'
+                        }`}>
+                          <Timer className={`w-4 h-4 ${isLong ? 'text-red-600' : 'text-amber-600'}`} />
+                          <div>
+                            <span className={`font-bold text-sm ${isLong ? 'text-red-700' : 'text-amber-700'}`}>
+                              {diffDays} ימי אחסנה
+                            </span>
+                            <span className="text-xs text-gray-500 mr-2">
+                              (מתאריך: {new Date(call.storage_start_date).toLocaleDateString('he-IL')})
+                            </span>
+                            {isLong && (
+                              <span className="block text-xs text-red-600 font-medium">אחסנה מיושנת — יש לטפל!</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  {/* Fallback: static storage_days field */}
+                  {!call?.storage_start_date && call?.storage_days && (
+                    <InfoField label="ימי אחסנה" value={call?.storage_days} />
+                  )}
                 </div>
               </>
             )}

@@ -1,5 +1,5 @@
 import { lazyRetry } from '@/lib/lazyRetry';
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
@@ -30,6 +30,11 @@ import {
   Truck,
   Zap,
   Info,
+  Search,
+  CheckCircle,
+  XCircle,
+  Package,
+  CreditCard,
 } from 'lucide-react';
 import {
   validators,
@@ -108,9 +113,51 @@ export default function NewCase() {
     payment_paid_for: '',
     // Early alert
     early_alert_minutes: '',
+    // Paid service flag
+    is_paid_service: false,
   });
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [motLookupState, setMotLookupState] = useState({ loading: false, result: null, error: null });
+  const [cargoQuestion, setCargoQuestion] = useState({ show: false, has_cargo: false, cargo_description: '' });
+
+  // MOT Vehicle Lookup
+  const handleMotLookup = useCallback(async () => {
+    const plate = formData.vehicle_number?.replace(/[-\s]/g, '').trim();
+    if (!plate || plate.length < 5) {
+      showToast.error('יש להזין מספר רכב תקין לפני הזיהוי');
+      return;
+    }
+    setMotLookupState({ loading: true, result: null, error: null });
+    try {
+      const res = await base44.functions.invoke('lookupVehicleMOT', { plate });
+      if (res?.data?.success && res.data.data) {
+        const v = res.data.data;
+        setFormData((prev) => ({
+          ...prev,
+          vehicle_type: v.vehicle_type || prev.vehicle_type,
+          vehicle_model: v.vehicle_model || prev.vehicle_model,
+          vehicle_year: v.vehicle_year ? String(v.vehicle_year) : prev.vehicle_year,
+          fuel_type: v.fuel_type || prev.fuel_type,
+          vehicle_model_code: v.vehicle_manufacturer || prev.vehicle_model_code,
+        }));
+        setMotLookupState({ loading: false, result: v, error: null });
+        // Show cargo question for commercial vehicles
+        if (v.is_commercial) {
+          setCargoQuestion((prev) => ({ ...prev, show: true }));
+        } else {
+          setCargoQuestion({ show: false, has_cargo: false, cargo_description: '' });
+        }
+        showToast.success(`רכב זוהה: ${v.vehicle_model} ${v.vehicle_year || ''} — טסט: ${v.test_status}`);
+      } else {
+        setMotLookupState({ loading: false, result: null, error: res?.data?.error || 'רכב לא נמצא' });
+        showToast.error(res?.data?.error || 'רכב לא נמצא במאגר משרד התחבורה');
+      }
+    } catch (err) {
+      setMotLookupState({ loading: false, result: null, error: 'שגיאה בחיבור למשרד התחבורה' });
+      showToast.error('שגיאה בחיבור למשרד התחבורה');
+    }
+  }, [formData.vehicle_number]);
 
   const { data: customers = [], isLoading: customersLoading } = useQuery({
     queryKey: queryKeys.customers.all(),
@@ -264,15 +311,53 @@ export default function NewCase() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* MOT Lookup Result Banner */}
+            {motLookupState.result && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-50 border border-green-200 text-sm">
+                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="font-semibold text-green-800">רכב זוהה ממשרד התחבורה: </span>
+                  <span className="text-green-700">
+                    {motLookupState.result.vehicle_model} {motLookupState.result.vehicle_year} &nbsp;|&nbsp;
+                    דלק: {motLookupState.result.fuel_type_raw} &nbsp;|&nbsp;
+                    טסט: <span className={motLookupState.result.has_valid_test ? 'text-green-700 font-semibold' : 'text-red-600 font-semibold'}>{motLookupState.result.test_status}</span>
+                    {motLookupState.result.is_commercial && <span className="mr-2 px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-semibold">רכב מסחרי</span>}
+                  </span>
+                </div>
+              </div>
+            )}
+            {motLookupState.error && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                <XCircle className="w-4 h-4 flex-shrink-0" />
+                {motLookupState.error}
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>מספר רכב</Label>
-                <Input
-                  value={formData.vehicle_number}
-                  onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value })}
-                  dir="ltr"
-                  className="text-end"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.vehicle_number}
+                    onChange={(e) => setFormData({ ...formData, vehicle_number: e.target.value })}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleMotLookup())}
+                    dir="ltr"
+                    className="text-end"
+                    placeholder="1234567"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleMotLookup}
+                    disabled={motLookupState.loading}
+                    title="זהה רכב ממשרד התחבורה"
+                    className="flex-shrink-0"
+                  >
+                    {motLookupState.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">לחץ על הזכוכית המגדלת לזיהוי אוטומטי</p>
+              </div>
               </div>
               <div>
                 <Label>סוג רכב</Label>
@@ -336,6 +421,39 @@ export default function NewCase() {
                 </Select>
               </div>
             </div>
+
+            {/* Cargo Question for Commercial Vehicles (משימה 290) */}
+            {cargoQuestion.show && (
+              <div className="p-4 rounded-lg bg-orange-50 border border-orange-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <Package className="w-4 h-4 text-orange-600" />
+                  <span className="font-semibold text-orange-800 text-sm">רכב מסחרי זוהה — שאלת סחורה</span>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    type="checkbox"
+                    id="has_cargo"
+                    checked={cargoQuestion.has_cargo}
+                    onChange={(e) => setCargoQuestion((prev) => ({ ...prev, has_cargo: e.target.checked }))}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="has_cargo" className="cursor-pointer text-sm font-medium text-orange-800">
+                    האם יש סחורה / מטען ברכב?
+                  </Label>
+                </div>
+                {cargoQuestion.has_cargo && (
+                  <div>
+                    <Label className="text-sm">תיאור הסחורה / המטען</Label>
+                    <Input
+                      value={cargoQuestion.cargo_description}
+                      onChange={(e) => setCargoQuestion((prev) => ({ ...prev, cargo_description: e.target.value }))}
+                      placeholder="סוג הסחורה, משקל משוער, הערות מיוחדות..."
+                      className="mt-1"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -477,6 +595,31 @@ export default function NewCase() {
                   </SelectContent>
                 </Select>
               </div>
+              {/* Paid Service Toggle + Red Note */}
+              <div className="md:col-span-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="is_paid_service"
+                    checked={formData.is_paid_service}
+                    onChange={(e) => setFormData({ ...formData, is_paid_service: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="is_paid_service" className="cursor-pointer font-medium">
+                    שירות בתשלום (לא כלול בביטוח)
+                  </Label>
+                </div>
+                {formData.is_paid_service && (
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border-2 border-red-400">
+                    <CreditCard className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-red-700 font-bold text-sm">שימו לב — שירות בתשלום!</p>
+                      <p className="text-red-600 text-xs mt-1">הלקוח אינו מכוסה בביטוח או חברות. יש לגבות תשלום לפני או בעת מתן השירות. ודא קבלת פרטי תשלום לפני שיגור הספק.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label>עדיפות</Label>
                 <Select

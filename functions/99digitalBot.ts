@@ -28,6 +28,54 @@ Deno.serve(async (req) => {
     // Parse incoming data from 99 Digital Bot
     const data = await req.json();
     
+    // ===== Commercial Vehicle Detection (משימה 290) =====
+    // If vehicle type is not provided, attempt MOT lookup
+    let vehicleTypeResolved = data.vehicle?.type || '';
+    let isCommercialVehicle = false;
+    let hasCargo = data.vehicle?.has_cargo || false;
+    let cargoDescription = data.vehicle?.cargo_description || '';
+
+    if (data.vehicle?.plate && !vehicleTypeResolved) {
+      try {
+        const motUrl = new URL('https://data.gov.il/api/3/action/datastore_search');
+        motUrl.searchParams.set('resource_id', '053cea08-09bc-40ec-8f7a-156f0677aff3');
+        motUrl.searchParams.set('q', data.vehicle.plate.replace(/[-\s]/g, ''));
+        motUrl.searchParams.set('limit', '1');
+        const motRes = await fetch(motUrl.toString(), { signal: AbortSignal.timeout(5000) });
+        if (motRes.ok) {
+          const motData = await motRes.json();
+          const record = motData?.result?.records?.[0];
+          if (record) {
+            const rawType = record['sug_degem'] || '';
+            isCommercialVehicle = ['מסחרי', 'משאית', 'אוטובוס', 'רכב עבודה'].includes(rawType.trim());
+            if (isCommercialVehicle) vehicleTypeResolved = 'van';
+            else vehicleTypeResolved = 'car';
+          }
+        }
+      } catch (motErr) {
+        console.log('MOT lookup skipped in bot:', motErr.message);
+      }
+    } else if (['van', 'truck', 'bus'].includes(vehicleTypeResolved)) {
+      isCommercialVehicle = true;
+    }
+
+    // If commercial vehicle and cargo not answered — require it
+    if (isCommercialVehicle && data.vehicle?.has_cargo === undefined) {
+      return Response.json({
+        success: false,
+        error_code: 'CARGO_QUESTION_REQUIRED',
+        message: 'רכב מסחרי זוהה — יש לענות על שאלת הסחורה',
+        question: {
+          field: 'vehicle.has_cargo',
+          text: 'האם יש סחורה / מטען ברכב?',
+          type: 'boolean',
+          follow_up: {
+            if_true: { field: 'vehicle.cargo_description', text: 'תאר את הסחורה / המטען (סוג, משקל, הערות מיוחדות)' }
+          }
+        }
+      }, { status: 422 });
+    }
+
     // Validate required fields
     const requiredFields = [
       'customer.name',
@@ -110,8 +158,11 @@ Deno.serve(async (req) => {
       vehicle_plate: data.vehicle.plate,
       vehicle_model: data.vehicle.model,
       vehicle_year: data.vehicle.year,
-      vehicle_type: data.vehicle.type,
+      vehicle_type: vehicleTypeResolved || data.vehicle.type,
       fuel_type: data.vehicle.fuel_type,
+      is_commercial_vehicle: isCommercialVehicle,
+      has_cargo: hasCargo,
+      cargo_description: cargoDescription,
       
       // Incident
       issue_type: data.incident.type,

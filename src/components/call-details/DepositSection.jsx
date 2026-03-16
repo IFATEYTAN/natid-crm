@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Wallet, Plus, CreditCard, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Wallet, Plus, CreditCard, RotateCcw, AlertTriangle, ShieldCheck, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -54,6 +54,31 @@ export default function DepositSection({ call, callId, currentUser }) {
   });
   const [actionForm, setActionForm] = useState({ amount: '', reason: '' });
   const [saving, setSaving] = useState(false);
+
+  // ===== 90-Day Deposit Exemption Logic (משימה 339) =====
+  // Check if this customer had a private call completed within the last 90 days
+  const { data: recentCalls = [] } = useQuery({
+    queryKey: ['recentCallsForDeposit', call?.customer_phone],
+    queryFn: async () => {
+      if (!call?.customer_phone) return [];
+      const allCalls = await base44.asServiceRole.entities.Call.filter({
+        customer_phone: call.customer_phone,
+      });
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+      return allCalls.filter(
+        (c) =>
+          c.id !== callId &&
+          c.call_status === 'completed' &&
+          c.dispatch_type !== 'commercial' &&
+          new Date(c.created_date || c.created_at) >= ninetyDaysAgo
+      );
+    },
+    enabled: !!call?.customer_phone,
+  });
+
+  const isDepositExempt = recentCalls.length > 0;
+  const exemptCall = recentCalls[0];
 
   const { data: deposits = [] } = useQuery({
     queryKey: queryKeys.deposits.byCall(callId),
@@ -144,6 +169,21 @@ export default function DepositSection({ call, callId, currentUser }) {
         </div>
       </CardHeader>
       <CardContent>
+        {/* 90-Day Exemption Banner */}
+        {isDepositExempt && (
+          <div className="flex items-start gap-2 p-3 mb-3 rounded-lg bg-green-50 border border-green-300">
+            <ShieldCheck className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-green-800 font-semibold text-sm">פטור מערבון קש"ס — קריאה חוזרת ב-90 יום</p>
+              <p className="text-green-700 text-xs mt-0.5">
+                ללקוח הייתה קריאה פרטית שהושלמה ב-90 הימים האחרונים
+                {exemptCall?.call_number && ` (קריאה ${exemptCall.call_number})`}.
+                לפי הנהלים, אין לדרוש ערבון קש"ס בקריאה זו.
+              </p>
+            </div>
+          </div>
+        )}
+
         {deposits.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-4">אין עירבונות לקריאה זו</p>
         ) : (

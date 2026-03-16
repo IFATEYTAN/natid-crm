@@ -88,6 +88,7 @@ const EligibilityCheckSection = lazyRetry(
 );
 const RemindersList = lazyRetry(() => import('@/components/reminders/RemindersList'));
 const CallEditDialog = lazyRetry(() => import('@/components/call-details/CallEditDialog'));
+const CallClosingSection = lazyRetry(() => import('@/components/call-details/CallClosingSection'));
 
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();
@@ -420,6 +421,12 @@ export default function CallDetailsPage() {
             <TabsTrigger value="operatorNotes">הערות מוקדן</TabsTrigger>
             <TabsTrigger value="files">קבצים ({photos.length})</TabsTrigger>
             <TabsTrigger value="history">היסטוריה</TabsTrigger>
+            {(call?.call_status === 'in_progress' || call?.call_status === 'vendor_arrived' || call?.call_status === 'future_service' || call?.call_status === 'completed') && (
+              <TabsTrigger value="closing" className="relative">
+                סגירה &amp; סקרס
+                {call?.boy_marked && <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />}
+              </TabsTrigger>
+            )}
             {call?.call_status === 'completed' && (
               <>
                 <TabsTrigger value="summary">סיכום</TabsTrigger>
@@ -569,6 +576,17 @@ export default function CallDetailsPage() {
               <CallHistoryTab combinedTimeline={combinedTimeline} />
             </Suspense>
           </TabsContent>
+
+          {/* Closing & Score Tab (משימות 333, 336, 252) */}
+          {(call?.call_status === 'in_progress' || call?.call_status === 'vendor_arrived' || call?.call_status === 'future_service' || call?.call_status === 'completed') && (
+            <TabsContent value="closing">
+              <div className="max-w-2xl">
+                <Suspense fallback={<div className="h-40 w-full bg-gray-50 rounded animate-pulse" />}>
+                  <CallClosingSection call={call} callId={callId} currentUser={currentUser} />
+                </Suspense>
+              </div>
+            </TabsContent>
+          )}
 
           {call?.call_status === 'completed' && (
             <TabsContent value="summary">
