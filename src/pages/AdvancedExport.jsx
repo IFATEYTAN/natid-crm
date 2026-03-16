@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -46,6 +48,36 @@ import {
 import { showToast, feedbackMessages } from '@/components/ui/FeedbackToast';
 import { PageLoader, InlineLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp, AnimatedCard } from '@/components/animations/AnimatedComponents';
+import { cn } from '@/lib/utils';
+
+function DatePickerInput({ value, onChange, label }) {
+  const date = value ? parseISO(value) : undefined;
+  const displayValue = date ? formatDate(date, 'dd/MM/yyyy') : '';
+  return (
+    <div>
+      <Label>{label}</Label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn('w-full justify-between font-normal', !date && 'text-muted-foreground')}
+          >
+            {displayValue || 'בחר תאריך'}
+            <Calendar className="h-4 w-4 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <CalendarPicker
+            mode="single"
+            selected={date}
+            onSelect={(d) => d && onChange(formatDate(d, 'yyyy-MM-dd'))}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
 
 // Field definitions for Calls
 const callFields = {
@@ -527,30 +559,16 @@ export default function AdvancedExport() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div>
-                    <Label>מתאריך</Label>
-                    <Input
-                      type="date"
-                      lang="he-IL"
-                      value={callsDateRange.start}
-                      onChange={(e) =>
-                        setCallsDateRange({ ...callsDateRange, start: e.target.value })
-                      }
-                      className="text-end"
-                    />
-                  </div>
-                  <div>
-                    <Label>עד תאריך</Label>
-                    <Input
-                      type="date"
-                      lang="he-IL"
-                      value={callsDateRange.end}
-                      onChange={(e) =>
-                        setCallsDateRange({ ...callsDateRange, end: e.target.value })
-                      }
-                      className="text-end"
-                    />
-                  </div>
+                  <DatePickerInput
+                    label="מתאריך"
+                    value={callsDateRange.start}
+                    onChange={(val) => setCallsDateRange({ ...callsDateRange, start: val })}
+                  />
+                  <DatePickerInput
+                    label="עד תאריך"
+                    value={callsDateRange.end}
+                    onChange={(val) => setCallsDateRange({ ...callsDateRange, end: val })}
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -620,30 +638,16 @@ export default function AdvancedExport() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div>
-                    <Label>מתאריך</Label>
-                    <Input
-                      type="date"
-                      lang="he-IL"
-                      value={customersDateRange.start}
-                      onChange={(e) =>
-                        setCustomersDateRange({ ...customersDateRange, start: e.target.value })
-                      }
-                      className="text-end"
-                    />
-                  </div>
-                  <div>
-                    <Label>עד תאריך</Label>
-                    <Input
-                      type="date"
-                      lang="he-IL"
-                      value={customersDateRange.end}
-                      onChange={(e) =>
-                        setCustomersDateRange({ ...customersDateRange, end: e.target.value })
-                      }
-                      className="text-end"
-                    />
-                  </div>
+                  <DatePickerInput
+                    label="מתאריך"
+                    value={customersDateRange.start}
+                    onChange={(val) => setCustomersDateRange({ ...customersDateRange, start: val })}
+                  />
+                  <DatePickerInput
+                    label="עד תאריך"
+                    value={customersDateRange.end}
+                    onChange={(val) => setCustomersDateRange({ ...customersDateRange, end: val })}
+                  />
                 </CardContent>
               </Card>
             </div>

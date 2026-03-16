@@ -127,7 +127,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       setSettings({ ...settings, workingHoursStart: e.target.value })
                     }
-                    className="pr-9 [&::-webkit-calendar-picker-indicator]:order-first"
+                    className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
                   />
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function SettingsPage() {
                     type="time"
                     value={settings.workingHoursEnd}
                     onChange={(e) => setSettings({ ...settings, workingHoursEnd: e.target.value })}
-                    className="pr-9 [&::-webkit-calendar-picker-indicator]:order-first"
+                    className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
                   />
                 </div>
               </div>
