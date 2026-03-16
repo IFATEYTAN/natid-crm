@@ -86,33 +86,20 @@ export default function VendorCallManagementPage() {
     enabled: !!currentUser?.email,
   });
 
-  // Call data: server-scoped for vendor users (ensures ownership), direct for admin
+  // Call data: direct query for all users, handled through service role
   const callQuery = useQuery({
     queryKey: [...queryKeys.vendors.call(selectedCallId, vendorProfile?.id), effectiveRole],
     queryFn: async () => {
-      if (isVendorUser) {
-        // Fetch only vendor's own calls via server-side filtering
-        const result = await base44.functions.invoke('getVendorScopedData', {
-          entity_type: 'calls',
-          sort: '-created_date',
-          limit: 1000,
-        });
-        const vendorCalls = result.data?.data || [];
-        const call = vendorCalls.find((c) => c.id === selectedCallId);
-        if (call) {
-          setVendorNotes(call.vendor_notes || '');
-          return call;
-        }
-        return null;
-      }
-      // Admin/operator: direct query with client-side ownership check
+      // Directly fetch the call record
       const calls = await base44.entities.Call.filter({ id: selectedCallId });
       if (calls.length > 0) {
-        if (vendorProfile && calls[0].assigned_vendor_id !== vendorProfile.id) {
+        const call = calls[0];
+        // Ownership verification for vendor users
+        if (isVendorUser && vendorProfile && call.assigned_vendor_id !== vendorProfile.id) {
           return null;
         }
-        setVendorNotes(calls[0].vendor_notes || '');
-        return calls[0];
+        setVendorNotes(call.vendor_notes || '');
+        return call;
       }
       return null;
     },
