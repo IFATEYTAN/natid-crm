@@ -100,12 +100,12 @@ export default function CallsPage() {
       const q = searchQuery.toLowerCase();
       const matchesSearch =
         !searchQuery ||
-        c.case_number?.toLowerCase().includes(q) ||
+        c.call_number?.toLowerCase().includes(q) ||
         c.customer_name?.toLowerCase().includes(q) ||
-        c.caller_phone?.includes(searchQuery) ||
-        c.vehicle_number?.includes(searchQuery);
-      const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
-      const matchesService = serviceTypeFilter === 'all' || c.service_type === serviceTypeFilter;
+        c.customer_phone?.includes(searchQuery) ||
+        c.vehicle_plate?.includes(searchQuery);
+      const matchesStatus = statusFilter === 'all' || c.call_status === statusFilter;
+      const matchesService = serviceTypeFilter === 'all' || c.service_category === serviceTypeFilter;
       return matchesSearch && matchesStatus && matchesService;
     });
   }, [cases, searchQuery, statusFilter, serviceTypeFilter]);
