@@ -74,37 +74,8 @@ function generateDemoId() {
 function createMockEntity(entityName) {
   const store = getDemoStore();
   // Map entity names to store keys
-  const entityKeyMap = {
-    Call: 'calls',
-    Customer: 'customers',
-    Vendor: 'vendors',
-    WorkQueue: 'workQueue',
-    CallHistory: 'callHistory',
-    CallPhoto: 'callPhotos',
-    VendorRating: 'vendorRatings',
-    VendorPayment: 'vendorPayments',
-    VendorContract: 'vendorContracts',
-    VendorLocation: 'vendorLocations',
-    VendorPricing: 'vendorPricing',
-    CallAssignmentAttempt: 'assignmentAttempts',
-    Notification: 'notifications',
-    NotificationSetting: 'notificationSettings',
-    Message: 'messages',
-    Case: 'cases',
-    CaseActivity: 'caseActivities',
-    CustomerInteraction: 'customerInteractions',
-    User: 'users',
-    Role: 'roles',
-    UserPermission: 'userPermissions',
-    AuditLog: 'auditLog',
-    Product: 'products',
-    Fleet: 'fleet',
-    Contract: 'contracts',
-    Questionnaire: 'questionnaires',
-    Company: 'companies',
-  };
-
-  const storeKey = entityKeyMap[entityName] || entityName.toLowerCase() + 's';
+  // Keys in demoStore match the demoData keys exactly (e.g. 'Call', 'Vendor', etc.)
+  const storeKey = entityName;
 
   // Ensure the store key exists
   if (!store[storeKey]) {
