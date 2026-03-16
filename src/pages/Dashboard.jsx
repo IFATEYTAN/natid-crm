@@ -100,14 +100,14 @@ export default function Dashboard() {
 
   // Calculate stats from Case entity
   const openCalls = useMemo(
-    () => cases.filter((c) => c.status !== 'completed' && c.status !== 'cancelled'),
+    () => cases.filter((c) => c.call_status !== 'completed' && c.call_status !== 'cancelled'),
     [cases]
   );
-  const waitingCalls = useMemo(() => cases.filter((c) => c.status === 'new'), [cases]);
+  const waitingCalls = useMemo(() => cases.filter((c) => c.call_status === 'waiting_treatment'), [cases]);
   const completedToday = useMemo(
     () =>
       cases.filter((c) => {
-        if (!c.created_date || c.status !== 'completed') return false;
+        if (!c.created_date || c.call_status !== 'completed') return false;
         const d = new Date(c.created_date);
         if (isNaN(d.getTime())) return false;
         return d >= startOfDay(today) && d <= endOfDay(today);
