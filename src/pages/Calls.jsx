@@ -133,7 +133,7 @@ export default function CallsPage() {
   );
 
   if (isError) {
-    return <QueryErrorState error={error} onRetry={refetch} entityName="Case" />;
+  return <QueryErrorState error={error} onRetry={refetch} entityName="Call" />;
   }
 
   return (
