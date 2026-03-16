@@ -36,7 +36,7 @@ const limiter = createRateLimiter(kv);
 async function sendViaTwilio(to: string, body: string): Promise<{ ok: boolean; error?: string }> {
   const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const from = Deno.env.get('TWILIO_WHATSAPP_FROM') || 'whatsapp:+14155238886';
+  const from = Deno.env.get('TWILIO_WHATSAPP_NUMBER') || Deno.env.get('TWILIO_WHATSAPP_FROM') || 'whatsapp:+14155238886';
 
   if (!accountSid || !authToken) {
     return { ok: false, error: 'Twilio credentials not configured' };
