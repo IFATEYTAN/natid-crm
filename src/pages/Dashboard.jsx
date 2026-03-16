@@ -149,18 +149,19 @@ export default function Dashboard() {
 
   // Chart data using Case entity fields
   const statusLabelsMap = {
-    new: 'חדש',
-    assigned: 'שובץ',
-    en_route: 'בדרך',
-    on_site: 'באתר',
+    waiting_treatment: 'ממתין לטיפול',
+    awaiting_assignment: 'ממתין לשיוך',
+    assigning: 'בשיוך',
+    vendor_enroute: 'ספק בדרך',
     in_progress: 'בטיפול',
+    vendor_arrived: 'ספק הגיע',
     completed: 'הושלם',
     cancelled: 'בוטל',
   };
   const statusData = Object.entries(statusLabelsMap)
     .map(([status, name]) => ({
       name,
-      value: cases.filter((c) => c.status === status).length,
+      value: cases.filter((c) => c.call_status === status).length,
     }))
     .filter((d) => d.value > 0);
 
