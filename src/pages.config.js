@@ -57,6 +57,7 @@ import AutomationSettings from './pages/AutomationSettings';
 import Calendar from './pages/Calendar';
 import CallDetails from './pages/CallDetails';
 import Calls from './pages/Calls';
+import CTISettings from './pages/CTISettings';
 import CoverageAreas from './pages/CoverageAreas';
 import CustomerDetails from './pages/CustomerDetails';
 import CustomerFeedback from './pages/CustomerFeedback';
@@ -99,6 +100,7 @@ import VendorCallManagement from './pages/VendorCallManagement';
 import VendorContracts from './pages/VendorContracts';
 import VendorDetails from './pages/VendorDetails';
 import VendorGuide from './pages/VendorGuide';
+import VendorMobileApp from './pages/VendorMobileApp';
 import VendorPortal from './pages/VendorPortal';
 import VendorTracking from './pages/VendorTracking';
 import __Layout from './Layout.jsx';
@@ -115,6 +117,7 @@ export const PAGES = {
     "Calendar": Calendar,
     "CallDetails": CallDetails,
     "Calls": Calls,
+    "CTISettings": CTISettings,
     "CoverageAreas": CoverageAreas,
     "CustomerDetails": CustomerDetails,
     "CustomerFeedback": CustomerFeedback,
@@ -157,6 +160,7 @@ export const PAGES = {
     "VendorContracts": VendorContracts,
     "VendorDetails": VendorDetails,
     "VendorGuide": VendorGuide,
+    "VendorMobileApp": VendorMobileApp,
     "VendorPortal": VendorPortal,
     "VendorTracking": VendorTracking,
 }

@@ -206,6 +206,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },
         { name: 'פורטל ספקים', href: 'VendorPortal' },
+        { name: 'אפליקציית ספקים', href: 'VendorMobileApp' },
       ],
     },
     {
@@ -251,6 +252,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'הגדרות התראות', href: 'NotificationSettings' },
         { name: 'הגדרות תצוגה', href: 'AdminDisplaySettings' },
         { name: 'הגדרות מערכת', href: 'Settings' },
+        { name: 'הגדרות CTI', href: 'CTISettings' },
       ],
     },
   ];
