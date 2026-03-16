@@ -33,30 +33,41 @@ const SERVICE_TYPE_LABELS = {
 };
 
 const STATUS_LABELS = {
-  new: 'חדש',
-  assigned: 'שובץ',
-  en_route: 'בדרך',
-  on_site: 'באתר',
+  waiting_treatment: 'ממתין לטיפול',
+  awaiting_assignment: 'ממתין לשיוך',
+  assigning: 'בשיוך',
+  vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
+  vendor_arrived: 'ספק הגיע',
+  future_service: 'שירות עתידי',
+  in_followup: 'במעקב',
+  in_storage: 'באחסנה',
+  continued_treatment: 'המשך טיפול',
+  awaiting_payment: 'ממתין לתשלום',
   completed: 'הושלם',
   cancelled: 'בוטל',
 };
 
 const STATUS_COLORS = {
-  new: 'bg-yellow-100 text-yellow-800',
-  assigned: 'bg-blue-100 text-blue-800',
-  en_route: 'bg-indigo-100 text-indigo-800',
-  on_site: 'bg-purple-100 text-purple-800',
-  in_progress: 'bg-orange-100 text-orange-800',
+  waiting_treatment: 'bg-yellow-100 text-yellow-800',
+  awaiting_assignment: 'bg-orange-100 text-orange-800',
+  assigning: 'bg-blue-100 text-blue-800',
+  vendor_enroute: 'bg-indigo-100 text-indigo-800',
+  in_progress: 'bg-purple-100 text-purple-800',
+  vendor_arrived: 'bg-cyan-100 text-cyan-800',
+  future_service: 'bg-teal-100 text-teal-800',
+  in_followup: 'bg-sky-100 text-sky-800',
+  in_storage: 'bg-gray-100 text-gray-700',
+  continued_treatment: 'bg-violet-100 text-violet-800',
+  awaiting_payment: 'bg-amber-100 text-amber-800',
   completed: 'bg-green-100 text-green-800',
   cancelled: 'bg-gray-100 text-gray-600',
 };
 
 const PRIORITY_LABELS = {
-  low: 'נמוך',
   normal: 'רגיל',
-  high: 'גבוה',
   urgent: 'דחוף',
+  critical: 'קריטי',
 };
 
 const PRIORITY_COLORS = {
