@@ -15,6 +15,7 @@ export const PAGE_PERMISSIONS = {
   AdminDisplaySettings: ['admin'],
   AuditLog: ['admin'],
   AutomationSettings: ['admin'],
+  CTISettings: ['admin'],
   FleetManagement: ['admin'],
   ImportHistoricalData: ['admin'],
   IntegrationSettings: ['admin'],
@@ -66,6 +67,7 @@ export const PAGE_PERMISSIONS = {
   MyVendorProfile: ['vendor'],
   VendorCallManagement: ['vendor'],
   VendorGuide: ['vendor'],
+  VendorMobileApp: ['vendor'],
   VendorPortal: ['vendor'],
 
   // Public - customer portal (no auth required, token-based)

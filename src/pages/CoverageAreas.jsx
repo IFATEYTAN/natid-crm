@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MapPin, Users, Truck, CheckCircle, Clock } from 'lucide-react';
+import { MapPin, Users, Truck, CheckCircle, Clock, LayoutGrid, Map } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import {
   SlideUp,
@@ -23,9 +23,42 @@ import {
 import { cn } from '@/lib/utils';
 import { coverageAreas } from '@/config/coverageConstants';
 import { vendorServiceTypeLabels, availabilityLabels } from '@/config/labels';
+import { MapContainer, TileLayer, Marker, Popup, Circle, Tooltip } from 'react-leaflet';
+import {
+  TILE_URL,
+  TILE_ATTRIBUTION,
+  DEFAULT_CENTER,
+  createColorIcon,
+} from '@/components/maps/mapUtils';
+
+const AREA_CENTERS = {
+  center: [32.0853, 34.7818],
+  sharon: [32.3215, 34.8532],
+  north: [32.794, 35.0471],
+  south: [31.253, 34.7915],
+  jerusalem: [31.7683, 35.2137],
+  lowlands: [31.8928, 34.8113],
+};
+
+const AREA_COLORS = {
+  center: '#3b82f6',
+  sharon: '#8b5cf6',
+  north: '#10b981',
+  south: '#f59e0b',
+  jerusalem: '#ef4444',
+  lowlands: '#06b6d4',
+};
+
+const availabilityMarkerColors = {
+  available: 'green',
+  busy: 'orange',
+  offline: 'grey',
+  on_break: 'yellow',
+};
 
 export default function CoverageAreasPage() {
   const [selectedArea, setSelectedArea] = useState('all');
+  const [viewMode, setViewMode] = useState('cards');
 
   const {
     data: vendors = [],
@@ -115,9 +148,37 @@ export default function CoverageAreasPage() {
     <SlideUp>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-[#111827]">אזורי כיסוי</h1>
-          <p className="text-[#6b7280] text-sm">צפייה בפריסת הספקים לפי אזורים גיאוגרפיים</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[#111827]">אזורי כיסוי</h1>
+            <p className="text-[#6b7280] text-sm">צפייה בפריסת הספקים לפי אזורים גיאוגרפיים</p>
+          </div>
+          <div className="flex items-center gap-1 rounded-lg border border-[#e5e7eb] p-1">
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              size="sm"
+              className={cn(
+                'gap-2',
+                viewMode === 'cards' && 'bg-[#111827] text-white hover:bg-[#111827]'
+              )}
+              onClick={() => setViewMode('cards')}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              כרטיסים
+            </Button>
+            <Button
+              variant={viewMode === 'map' ? 'default' : 'ghost'}
+              size="sm"
+              className={cn(
+                'gap-2',
+                viewMode === 'map' && 'bg-[#111827] text-white hover:bg-[#111827]'
+              )}
+              onClick={() => setViewMode('map')}
+            >
+              <Map className="w-4 h-4" />
+              מפה
+            </Button>
+          </div>
         </div>
 
         {/* Overall Stats */}
@@ -167,132 +228,244 @@ export default function CoverageAreasPage() {
           </StaggeredItem>
         </StaggeredList>
 
-        {/* Area Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {coverageAreas.map((area) => {
-            const stats = areaStats[area.key] || { total: 0, available: 0, busy: 0 };
-            const isSelected = selectedArea === area.key;
+        {viewMode === 'cards' ? (
+          <>
+            {/* Area Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {coverageAreas.map((area) => {
+                const stats = areaStats[area.key] || { total: 0, available: 0, busy: 0 };
+                const isSelected = selectedArea === area.key;
 
-            return (
-              <Card
-                key={area.key}
-                className={cn(
-                  'cursor-pointer transition-all hover:shadow-md',
-                  isSelected ? 'border-[#3b82f6] bg-[#eff6ff]' : 'bg-white border-[#e5e7eb]'
-                )}
-                onClick={() => setSelectedArea(isSelected ? 'all' : area.key)}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <MapPin
-                        className={cn('w-5 h-5', isSelected ? 'text-[#3b82f6]' : 'text-[#6b7280]')}
-                      />
-                      {area.label}
-                    </CardTitle>
-                    <Badge
-                      className={
-                        stats.total > 0 ? 'bg-[#111827] text-white' : 'bg-[#f3f4f6] text-[#6b7280]'
-                      }
-                    >
-                      {stats.total} ספקים
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="flex items-center gap-1 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                      <span className="text-[#6b7280]">{stats.available} זמינים</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-orange-500" />
-                      <span className="text-[#6b7280]">{stats.busy} עסוקים</span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-[#6b7280]">
-                    {area.cities.slice(0, 4).join(', ')}
-                    {area.cities.length > 4 ? '...' : ''}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Vendors List for Selected Area */}
-        <Card className="bg-white border border-[#e5e7eb]">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">
-                {selectedArea === 'all'
-                  ? 'כל הספקים'
-                  : `ספקים באזור ${coverageAreas.find((a) => a.key === selectedArea)?.label}`}
-              </CardTitle>
-              <Select value={selectedArea} onValueChange={setSelectedArea}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="בחר אזור" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל האזורים</SelectItem>
-                  {coverageAreas.map((area) => (
-                    <SelectItem key={area.key} value={area.key}>
-                      {area.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {displayedVendors.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 mx-auto text-[#6b7280] mb-3" />
-                <p className="text-[#6b7280]">אין ספקים באזור זה</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {displayedVendors.slice(0, 10).map((vendor) => (
-                  <div
-                    key={vendor.id}
-                    className="flex items-center gap-3 p-3 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
+                return (
+                  <Card
+                    key={area.key}
+                    className={cn(
+                      'cursor-pointer transition-all hover:shadow-md',
+                      isSelected ? 'border-[#3b82f6] bg-[#eff6ff]' : 'bg-white border-[#e5e7eb]'
+                    )}
+                    onClick={() => setSelectedArea(isSelected ? 'all' : area.key)}
                   >
-                    <div className="w-10 h-10 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-                      <Truck className="w-5 h-5 text-[#6b7280]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-[#111827] truncate">
-                        {vendor.vendor_name}
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <MapPin
+                            className={cn(
+                              'w-5 h-5',
+                              isSelected ? 'text-[#3b82f6]' : 'text-[#6b7280]'
+                            )}
+                          />
+                          {area.label}
+                        </CardTitle>
+                        <Badge
+                          className={
+                            stats.total > 0
+                              ? 'bg-[#111827] text-white'
+                              : 'bg-[#f3f4f6] text-[#6b7280]'
+                          }
+                        >
+                          {stats.total} ספקים
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="flex items-center gap-1 text-sm">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          <span className="text-[#6b7280]">{stats.available} זמינים</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-sm">
+                          <div className="w-2 h-2 rounded-full bg-orange-500" />
+                          <span className="text-[#6b7280]">{stats.busy} עסוקים</span>
+                        </div>
                       </div>
                       <div className="text-xs text-[#6b7280]">
-                        {vendor.service_type
-                          ?.map((t) => vendorServiceTypeLabels[t] || t)
-                          .join(', ') || 'לא צוין'}
+                        {area.cities.slice(0, 4).join(', ')}
+                        {area.cities.length > 4 ? '...' : ''}
                       </div>
-                    </div>
-                    <Badge
-                      className={cn(
-                        'text-xs',
-                        vendor.availability_status === 'available'
-                          ? 'bg-green-100 text-green-800'
-                          : vendor.availability_status === 'busy'
-                            ? 'bg-orange-100 text-orange-800'
-                            : 'bg-gray-100 text-gray-800'
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Vendors List for Selected Area */}
+            <Card className="bg-white border border-[#e5e7eb]">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">
+                    {selectedArea === 'all'
+                      ? 'כל הספקים'
+                      : `ספקים באזור ${coverageAreas.find((a) => a.key === selectedArea)?.label}`}
+                  </CardTitle>
+                  <Select value={selectedArea} onValueChange={setSelectedArea}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="בחר אזור" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">כל האזורים</SelectItem>
+                      {coverageAreas.map((area) => (
+                        <SelectItem key={area.key} value={area.key}>
+                          {area.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {displayedVendors.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="w-12 h-12 mx-auto text-[#6b7280] mb-3" />
+                    <p className="text-[#6b7280]">אין ספקים באזור זה</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {displayedVendors.slice(0, 10).map((vendor) => (
+                      <div
+                        key={vendor.id}
+                        className="flex items-center gap-3 p-3 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+                          <Truck className="w-5 h-5 text-[#6b7280]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-[#111827] truncate">
+                            {vendor.vendor_name}
+                          </div>
+                          <div className="text-xs text-[#6b7280]">
+                            {vendor.service_type
+                              ?.map((t) => vendorServiceTypeLabels[t] || t)
+                              .join(', ') || 'לא צוין'}
+                          </div>
+                        </div>
+                        <Badge
+                          className={cn(
+                            'text-xs',
+                            vendor.availability_status === 'available'
+                              ? 'bg-green-100 text-green-800'
+                              : vendor.availability_status === 'busy'
+                                ? 'bg-orange-100 text-orange-800'
+                                : 'bg-gray-100 text-gray-800'
+                          )}
+                        >
+                          {availabilityLabels[vendor.availability_status] || 'לא ידוע'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {displayedVendors.length > 10 && (
+                  <p className="text-center text-sm text-[#6b7280] mt-4">
+                    מציג 10 מתוך {displayedVendors.length} ספקים
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          /* Map View */
+          <Card className="bg-white border border-[#e5e7eb]">
+            <CardContent className="p-4">
+              <MapContainer
+                key="coverage-areas-map"
+                center={DEFAULT_CENTER}
+                zoom={8}
+                style={{ height: '500px', width: '100%' }}
+                className="rounded-lg z-0"
+              >
+                <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
+
+                {/* Area region circles */}
+                {coverageAreas.map((area) => {
+                  const center = AREA_CENTERS[area.key];
+                  const stats = areaStats[area.key] || { total: 0 };
+                  if (!center) return null;
+                  return (
+                    <Circle
+                      key={area.key}
+                      center={center}
+                      radius={15000}
+                      pathOptions={{
+                        color: AREA_COLORS[area.key],
+                        fillColor: AREA_COLORS[area.key],
+                        fillOpacity: 0.15,
+                        weight: 2,
+                      }}
+                    >
+                      <Tooltip direction="center" permanent className="area-tooltip">
+                        <span className="font-semibold text-sm">
+                          {area.label} ({stats.total})
+                        </span>
+                      </Tooltip>
+                    </Circle>
+                  );
+                })}
+
+                {/* Vendor markers */}
+                {vendors
+                  .filter((v) => v.current_latitude && v.current_longitude)
+                  .map((vendor) => (
+                    <Marker
+                      key={vendor.id}
+                      position={[vendor.current_latitude, vendor.current_longitude]}
+                      icon={createColorIcon(
+                        availabilityMarkerColors[vendor.availability_status] || 'blue'
                       )}
                     >
-                      {availabilityLabels[vendor.availability_status] || 'לא ידוע'}
-                    </Badge>
+                      <Popup>
+                        <div className="min-w-[180px] p-1" dir="rtl">
+                          <div className="font-semibold text-[#111827] mb-1">
+                            {vendor.vendor_name}
+                          </div>
+                          <div className="space-y-1 text-sm text-[#6b7280]">
+                            <div>
+                              {vendor.service_type
+                                ?.map((t) => vendorServiceTypeLabels[t] || t)
+                                .join(', ') || 'לא צוין'}
+                            </div>
+                            <div>
+                              {availabilityLabels[vendor.availability_status] || 'לא ידוע'}
+                            </div>
+                            {vendor.phone && <div dir="ltr">{vendor.phone}</div>}
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+              </MapContainer>
+
+              {/* Legend */}
+              <div className="mt-4 flex flex-wrap gap-4">
+                <div className="text-sm font-medium text-[#111827]">אזורים:</div>
+                {coverageAreas.map((area) => (
+                  <div key={area.key} className="flex items-center gap-1.5 text-sm">
+                    <div
+                      className="w-3 h-3 rounded-full border-2"
+                      style={{
+                        backgroundColor: AREA_COLORS[area.key] + '26',
+                        borderColor: AREA_COLORS[area.key],
+                      }}
+                    />
+                    <span className="text-[#6b7280]">{area.label}</span>
                   </div>
                 ))}
+                <div className="mr-4 text-sm font-medium text-[#111827]">סטטוס ספק:</div>
+                <div className="flex items-center gap-1.5 text-sm">
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <span className="text-[#6b7280]">זמין</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm">
+                  <div className="w-3 h-3 rounded-full bg-orange-500" />
+                  <span className="text-[#6b7280]">עסוק</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm">
+                  <div className="w-3 h-3 rounded-full bg-gray-500" />
+                  <span className="text-[#6b7280]">לא זמין</span>
+                </div>
               </div>
-            )}
-            {displayedVendors.length > 10 && (
-              <p className="text-center text-sm text-[#6b7280] mt-4">
-                מציג 10 מתוך {displayedVendors.length} ספקים
-              </p>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </SlideUp>
   );
