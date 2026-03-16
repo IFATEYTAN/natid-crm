@@ -123,11 +123,11 @@ export default function CallsPage() {
   const stats = useMemo(
     () => ({
       total: cases.length,
-      new: cases.filter((c) => c.status === 'new').length,
+      new: cases.filter((c) => c.call_status === 'waiting_treatment').length,
       inProgress: cases.filter((c) =>
-        ['assigned', 'en_route', 'on_site', 'in_progress'].includes(c.status)
+        ['awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress', 'vendor_arrived'].includes(c.call_status)
       ).length,
-      completed: cases.filter((c) => c.status === 'completed').length,
+      completed: cases.filter((c) => c.call_status === 'completed').length,
     }),
     [cases]
   );
