@@ -198,6 +198,16 @@ export default function Dashboard() {
             </Link>
           </PermissionGuard>
         </div>
+        <div className="text-right">
+          <h1 className="text-3xl font-bold text-[#111827] tracking-tight">
+            {currentUser ? `${getGreeting()}, ${currentUser.full_name}` : 'NatID 360 Control'}
+          </h1>
+          <p className="text-[#6b7280] text-sm mb-1">ברוכים הבאים ל-NatID 360 Control</p>
+          <div className="flex items-center gap-2 text-gray-500 mt-1 justify-end">
+            <p className="text-sm">{format(today, 'EEEE, d בMMMM yyyy', { locale: he })}</p>
+            <Calendar className="w-4 h-4" />
+          </div>
+        </div>
       </div>
 
       {/* Tabs Navigation */}
