@@ -225,6 +225,16 @@ export default function CallDetailsPage() {
 
     if (newStatus === 'completed') {
       setShowFeedback(true);
+
+      // Auto-send satisfaction survey SMS to customer
+      if (call?.customer_phone) {
+        base44.functions
+          .invoke('sendFeedbackSMS', { call_id: callId })
+          .then(() => toast.success('סקר שביעות רצון נשלח ללקוח'))
+          .catch(() => {
+            // Feedback SMS failure is non-blocking
+          });
+      }
     }
   };
 

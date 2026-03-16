@@ -187,9 +187,27 @@ export default function NewCase() {
         sla_arrival_deadline: slaArrivalDeadline.toISOString(),
       });
     },
-    onSuccess: (result) => {
+    onSuccess: (result, data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
       showToast.success('קריאה נוצרה בהצלחה');
+
+      // Auto SMS confirmation to caller
+      if (data.caller_phone) {
+        const callerName = data.caller_name?.split(' ')[0] || 'לקוח יקר';
+        const caseNumber = result.case_number || result.id?.slice(-8);
+        const smsMessage = `שלום ${callerName}, קריאת שירות מספר ${caseNumber} נפתחה בהצלחה. נציג יטפל בבקשתך בהקדם. תודה שבחרת בנתי!`;
+        base44.functions
+          .invoke('sendSMS', {
+            phone: data.caller_phone,
+            message: smsMessage,
+            callId: result.id,
+          })
+          .then(() => showToast.success('SMS אישור נשלח ללקוח'))
+          .catch(() => {
+            // SMS failure is non-blocking
+          });
+      }
+
       navigate(createPageUrl(`CaseDetails?id=${result.id}`));
     },
     onError: (error) => {

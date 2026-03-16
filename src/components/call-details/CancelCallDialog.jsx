@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { AlertTriangle, Ban, DollarSign } from 'lucide-react';
+import { AlertTriangle, Ban, DollarSign, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 
 export default function CancelCallDialog({ open, onOpenChange, call, callId, currentUser }) {
@@ -25,6 +25,16 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
 
   const hasVendor = !!call?.assigned_vendor_id;
   const isEnroute = ['vendor_enroute', 'in_progress', 'vendor_arrived'].includes(call?.call_status);
+
+  // Fetch active deposits for this call to auto-cancel them
+  const { data: activeDeposits = [] } = useQuery({
+    queryKey: queryKeys.deposits?.byCall?.(callId) || ['deposits', callId],
+    queryFn: async () => {
+      const deposits = await base44.entities.Deposit.filter({ call_id: callId });
+      return deposits.filter((d) => d.status === 'active');
+    },
+    enabled: !!callId && open,
+  });
 
   const cancelTypeLabels = {
     no_charge: 'ביטול ללא חיוב',
@@ -63,8 +73,27 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
       changed_by: currentUser?.full_name || 'operator',
     });
 
+    // Auto-cancel active deposits when call is cancelled
+    if (activeDeposits.length > 0) {
+      const cancelReason = `ביטול אוטומטי — הקריאה בוטלה: ${reason}`;
+      await Promise.all(
+        activeDeposits.map((deposit) =>
+          base44.entities.Deposit.update(deposit.id, {
+            status: 'cancelled',
+            notes: (deposit.notes || '') + '\n' + cancelReason,
+          })
+        )
+      );
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.deposits?.byCall?.(callId) || ['deposits', callId],
+      });
+    }
+
     queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
-    toast.success('הקריאה בוטלה');
+    const depositMsg = activeDeposits.length > 0
+      ? ` (${activeDeposits.length} עירבונות בוטלו אוטומטית)`
+      : '';
+    toast.success(`הקריאה בוטלה${depositMsg}`);
     setProcessing(false);
     resetAndClose();
   };
@@ -163,6 +192,19 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
               />
             </div>
             <p className="text-xs text-gray-500">הסיבה תתועד בהתנהלות הקריאה</p>
+            {activeDeposits.length > 0 && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-300">
+                <Wallet className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-800 font-medium text-sm">
+                    {activeDeposits.length} עירבונות פעילים יבוטלו אוטומטית
+                  </p>
+                  <p className="text-amber-700 text-xs mt-0.5">
+                    סה"כ ₪{activeDeposits.reduce((sum, d) => sum + (d.amount || 0), 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setStep('choose')}>
                 חזרה
