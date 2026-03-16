@@ -5,7 +5,11 @@ const AppAccessDeniedError = () => {
   const { logout, authError } = useAuth();
 
   const handleLogout = () => {
-    logout(true);
+    if (logout) {
+      logout(true);
+    } else {
+      window.location.reload();
+    }
   };
 
   return (
