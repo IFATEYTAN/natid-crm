@@ -358,7 +358,6 @@ export default function NewCase() {
                 </div>
                 <p className="text-xs text-gray-400 mt-1">לחץ על הזכוכית המגדלת לזיהוי אוטומטי</p>
               </div>
-              </div>
               <div>
                 <Label>סוג רכב</Label>
                 <Select
