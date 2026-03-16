@@ -8,12 +8,14 @@ import ExportMenu from '@/components/ui/ExportMenu';
 import { Star, Loader2, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 
 export default function FeedbackManagement() {
   const {
     data: feedbacks,
     isLoading,
     isError,
+    error,
   } = useQuery({
     queryKey: queryKeys.feedbacks.all(),
     queryFn: () => base44.entities.CallFeedback.list('-created_at', 50),
@@ -29,12 +31,7 @@ export default function FeedbackManagement() {
   }
 
   if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96 text-red-600">
-        <p className="text-lg font-medium">שגיאה בטעינת המשובים</p>
-        <p className="text-sm text-gray-500 mt-1">נסו לרענן את הדף</p>
-      </div>
-    );
+    return <QueryErrorState error={error} entityName="CallFeedback" />;
   }
 
   return (

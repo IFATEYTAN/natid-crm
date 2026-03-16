@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 
 const CATEGORIES = {
   mechanical: { label: 'תקלה מכנית', icon: Wrench, color: 'bg-blue-100 text-blue-800' },
@@ -68,7 +69,12 @@ export default function KnowledgeBasePage() {
   });
   const [saving, setSaving] = useState(false);
 
-  const { data: articles = [], isLoading } = useQuery({
+  const {
+    data: articles = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['knowledgeBase'],
     queryFn: () => base44.entities.KnowledgeArticle.list('-created_date'),
   });
@@ -174,9 +180,7 @@ export default function KnowledgeBasePage() {
             <BookOpen className="w-6 h-6" />
             מאגר תקלות נפוצות
           </h1>
-          <p className="text-[#616161] text-sm mt-1">
-            {articles.length} מאמרים | חפש פתרון לתקלה
-          </p>
+          <p className="text-[#616161] text-sm mt-1">{articles.length} מאמרים | חפש פתרון לתקלה</p>
         </div>
         {canManage && (
           <Button
@@ -223,6 +227,8 @@ export default function KnowledgeBasePage() {
         <div className="flex justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
+      ) : isError ? (
+        <QueryErrorState error={error} entityName="KnowledgeArticle" />
       ) : filtered.length === 0 ? (
         <Card className="bg-white">
           <CardContent className="py-12 text-center text-gray-400">
@@ -331,9 +337,7 @@ export default function KnowledgeBasePage() {
       <Dialog open={showCreateDialog} onOpenChange={() => resetForm()}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
-              {editingArticle ? 'עריכת מאמר' : 'מאמר חדש למאגר הידע'}
-            </DialogTitle>
+            <DialogTitle>{editingArticle ? 'עריכת מאמר' : 'מאמר חדש למאגר הידע'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>

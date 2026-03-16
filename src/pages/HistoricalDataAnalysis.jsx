@@ -3,6 +3,7 @@ import React, { useState, useMemo, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -333,12 +334,7 @@ export default function HistoricalDataAnalysisPage() {
   }
 
   if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
-        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
-      </div>
-    );
+    return <QueryErrorState error={error} entityName="HistoricalCallData" />;
   }
 
   if (historicalData.length === 0) {

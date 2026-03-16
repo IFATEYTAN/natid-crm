@@ -1,12 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 import { Calendar, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { exportToExcel, exportToHTML, exportToPDF } from '@/components/reports/ExportUtils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { FileSpreadsheet, FileText, File, Download } from 'lucide-react';
 
 import ReportKPICards from '@/components/reports/ReportKPICards';
@@ -26,7 +38,13 @@ const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2, CURRENT_
 export default function Reports() {
   const [selectedYear, setSelectedYear] = useState(String(CURRENT_YEAR - 1));
 
-  const { data: allCases = [], isLoading, refetch } = useQuery({
+  const {
+    data: allCases = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['reports-cases'],
     queryFn: () => base44.entities.Case.list('-created_date', 50000),
     staleTime: 5 * 60 * 1000,
@@ -45,7 +63,7 @@ export default function Reports() {
   const cases = useMemo(() => {
     if (selectedYear === 'all') return allCases;
     const yr = parseInt(selectedYear);
-    return allCases.filter(c => getEffectiveYear(c) === yr);
+    return allCases.filter((c) => getEffectiveYear(c) === yr);
   }, [allCases, selectedYear]);
 
   const sections = [
@@ -61,26 +79,40 @@ export default function Reports() {
     { id: 'area', label: 'אזור גרירה' },
   ];
 
-  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const scrollTo = (id) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   // Build full-report export data (all sections combined)
   const buildFullExport = () => {
-    const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-    return cases.map(c => ({
+    const MONTHS_HE = [
+      'ינואר',
+      'פברואר',
+      'מרץ',
+      'אפריל',
+      'מאי',
+      'יוני',
+      'יולי',
+      'אוגוסט',
+      'ספטמבר',
+      'אוקטובר',
+      'נובמבר',
+      'דצמבר',
+    ];
+    return cases.map((c) => ({
       'מספר קריאה': c.case_number || '',
       'שם לקוח': c.customer_name || '',
       'סוג שירות': c.service_type || '',
-      'מחלקה': c.department || '',
+      מחלקה: c.department || '',
       'חברת ביטוח': c.insurance_company || '',
       'אזור גרירה': c.towing_area || '',
-      'ספק': c.assigned_provider_name || '',
-      'סטטוס': c.status || '',
-      'מחיר': c.price || 0,
-      'עלות': c.cost || 0,
+      ספק: c.assigned_provider_name || '',
+      סטטוס: c.status || '',
+      מחיר: c.price || 0,
+      עלות: c.cost || 0,
       'ק"מ': c.distance_km || 0,
-      'חודש': c.created_date ? MONTHS_HE[new Date(c.created_date).getMonth()] : '',
-      'שנה': c.created_date ? new Date(c.created_date).getFullYear() : '',
-      'תאריך': c.created_date ? new Date(c.created_date).toLocaleDateString('he-IL') : '',
+      חודש: c.created_date ? MONTHS_HE[new Date(c.created_date).getMonth()] : '',
+      שנה: c.created_date ? new Date(c.created_date).getFullYear() : '',
+      תאריך: c.created_date ? new Date(c.created_date).toLocaleDateString('he-IL') : '',
     }));
   };
 
@@ -105,15 +137,39 @@ export default function Reports() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem onClick={() => exportToExcel(buildFullExport(), `annual-report-${selectedYear}`, `דוח שנתי ${selectedYear}`)}>
+              <DropdownMenuItem
+                onClick={() =>
+                  exportToExcel(
+                    buildFullExport(),
+                    `annual-report-${selectedYear}`,
+                    `דוח שנתי ${selectedYear}`
+                  )
+                }
+              >
                 <FileSpreadsheet className="w-4 h-4 me-2 text-green-600" />
                 Excel (.xlsx)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportToHTML(buildFullExport(), `annual-report-${selectedYear}`, `דוח שנתי ${selectedYear}`)}>
+              <DropdownMenuItem
+                onClick={() =>
+                  exportToHTML(
+                    buildFullExport(),
+                    `annual-report-${selectedYear}`,
+                    `דוח שנתי ${selectedYear}`
+                  )
+                }
+              >
                 <FileText className="w-4 h-4 me-2 text-blue-600" />
                 HTML מעוצב
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportToPDF(buildFullExport(), `annual-report-${selectedYear}`, `דוח שנתי ${selectedYear}`)}>
+              <DropdownMenuItem
+                onClick={() =>
+                  exportToPDF(
+                    buildFullExport(),
+                    `annual-report-${selectedYear}`,
+                    `דוח שנתי ${selectedYear}`
+                  )
+                }
+              >
                 <File className="w-4 h-4 me-2 text-red-600" />
                 PDF / הדפסה
               </DropdownMenuItem>
@@ -126,8 +182,10 @@ export default function Reports() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">כל הזמנים</SelectItem>
-              {YEAR_OPTIONS.map(y => (
-                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              {YEAR_OPTIONS.map((y) => (
+                <SelectItem key={y} value={String(y)}>
+                  {y}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -136,7 +194,7 @@ export default function Reports() {
 
       {/* Quick nav */}
       <div className="flex flex-wrap gap-2">
-        {sections.map(s => (
+        {sections.map((s) => (
           <button
             key={s.id}
             onClick={() => scrollTo(s.id)}
@@ -149,8 +207,12 @@ export default function Reports() {
 
       {isLoading ? (
         <div className="space-y-6">
-          {Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-48 w-full rounded-lg" />)}
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-48 w-full rounded-lg" />
+          ))}
         </div>
+      ) : isError ? (
+        <QueryErrorState error={error} onRetry={refetch} entityName="Case" />
       ) : (
         <div className="space-y-8">
           {/* Section 1 */}
@@ -158,7 +220,9 @@ export default function Reports() {
             <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
               <span className="w-1 h-6 bg-blue-500 rounded-full inline-block" />
               סיכום שנתי {selectedYear !== 'all' ? selectedYear : ''}
-              <span className="text-sm font-normal text-gray-400">({cases.length.toLocaleString()} קריאות)</span>
+              <span className="text-sm font-normal text-gray-400">
+                ({cases.length.toLocaleString()} קריאות)
+              </span>
             </h2>
             <ReportKPICards cases={cases} />
           </section>
@@ -225,7 +289,9 @@ export default function Reports() {
 function SectionTitle({ num, title }) {
   return (
     <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-      <span className="w-6 h-6 bg-blue-500 text-white rounded-full inline-flex items-center justify-center text-xs font-bold">{num}</span>
+      <span className="w-6 h-6 bg-blue-500 text-white rounded-full inline-flex items-center justify-center text-xs font-bold">
+        {num}
+      </span>
       {title}
     </h2>
   );

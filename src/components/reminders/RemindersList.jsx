@@ -23,6 +23,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Bell, Plus, Check, Clock, AlertTriangle, X } from 'lucide-react';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -62,7 +63,11 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
   });
 
   const queryKey = showAll ? queryKeys.reminders.all() : queryKeys.reminders.byCall(callId);
-  const { data: reminders = [] } = useQuery({
+  const {
+    data: reminders = [],
+    isError,
+    error,
+  } = useQuery({
     queryKey,
     queryFn: () => {
       if (showAll) return base44.entities.Reminder.filter({ status: 'pending' }, 'remind_at', 50);
@@ -142,7 +147,9 @@ export default function RemindersList({ callId, call, currentUser, showAll = fal
         </div>
       </CardHeader>
       <CardContent>
-        {processedReminders.length === 0 ? (
+        {isError ? (
+          <QueryErrorState error={error} entityName="Reminder" />
+        ) : processedReminders.length === 0 ? (
           <p className="text-sm text-gray-400 text-center py-4">אין תזכורות</p>
         ) : (
           <div className="space-y-2">

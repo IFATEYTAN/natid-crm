@@ -36,6 +36,7 @@ import {
 import { toast } from 'sonner';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { serviceTypeLabels } from '@/config/labels';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 
 const SCRIPT_TYPES = {
   opening: { label: 'פתיחת שיחה', color: 'bg-blue-100 text-blue-800' },
@@ -66,7 +67,12 @@ export default function CallScriptsPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  const { data: scripts = [], isLoading } = useQuery({
+  const {
+    data: scripts = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['callScripts'],
     queryFn: () => base44.entities.CallScript.list('-created_date'),
   });
@@ -157,7 +163,8 @@ export default function CallScriptsPage() {
       s.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.content?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === 'all' || s.script_type === typeFilter;
-    const matchesService = serviceFilter === 'all' || s.service_type === serviceFilter || s.service_type === 'all';
+    const matchesService =
+      serviceFilter === 'all' || s.service_type === serviceFilter || s.service_type === 'all';
     return matchesSearch && matchesType && matchesService;
   });
 
@@ -232,6 +239,8 @@ export default function CallScriptsPage() {
         <div className="flex justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
+      ) : isError ? (
+        <QueryErrorState error={error} entityName="CallScript" />
       ) : filtered.length === 0 ? (
         <Card className="bg-white">
           <CardContent className="py-12 text-center text-gray-400">
@@ -325,7 +334,9 @@ export default function CallScriptsPage() {
                       {script.notes && (
                         <div>
                           <h4 className="text-sm font-semibold text-gray-600 mb-1">הערות למוקדן</h4>
-                          <p className="text-sm text-gray-500 whitespace-pre-wrap">{script.notes}</p>
+                          <p className="text-sm text-gray-500 whitespace-pre-wrap">
+                            {script.notes}
+                          </p>
                         </div>
                       )}
                       <Button
