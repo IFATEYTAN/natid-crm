@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -75,6 +76,7 @@ export default function CallsPage() {
     data: cases = [],
     isLoading,
     isError,
+    error,
     refetch,
     isFetching,
   } = useQuery({
@@ -120,14 +122,7 @@ export default function CallsPage() {
   );
 
   if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
-        <Button variant="outline" onClick={() => refetch()}>
-          נסה שוב
-        </Button>
-      </div>
-    );
+    return <QueryErrorState error={error} onRetry={refetch} entityName="Case" />;
   }
 
   return (
