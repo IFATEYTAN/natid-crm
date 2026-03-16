@@ -119,19 +119,29 @@ export default function SettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>שעת התחלת יום עבודה</Label>
-                <Input
-                  type="time"
-                  value={settings.workingHoursStart}
-                  onChange={(e) => setSettings({ ...settings, workingHoursStart: e.target.value })}
-                />
+                <div className="relative">
+                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    type="time"
+                    value={settings.workingHoursStart}
+                    onChange={(e) =>
+                      setSettings({ ...settings, workingHoursStart: e.target.value })
+                    }
+                    className="pr-9 [&::-webkit-calendar-picker-indicator]:order-first"
+                  />
+                </div>
               </div>
               <div>
                 <Label>שעת סיום יום עבודה</Label>
-                <Input
-                  type="time"
-                  value={settings.workingHoursEnd}
-                  onChange={(e) => setSettings({ ...settings, workingHoursEnd: e.target.value })}
-                />
+                <div className="relative">
+                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    type="time"
+                    value={settings.workingHoursEnd}
+                    onChange={(e) => setSettings({ ...settings, workingHoursEnd: e.target.value })}
+                    className="pr-9 [&::-webkit-calendar-picker-indicator]:order-first"
+                  />
+                </div>
               </div>
             </div>
           </CardContent>

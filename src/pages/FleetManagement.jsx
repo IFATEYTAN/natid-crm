@@ -45,6 +45,7 @@ import {
 import { toast } from 'sonner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
+import { getCoverageLabel } from '@/config/coverageConstants';
 
 const typeLabels = {
   tow_truck: 'גרר',
@@ -385,7 +386,7 @@ export default function FleetManagementPage() {
                             {statusLabels[vehicle.status] || vehicle.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{vehicle.service_area || '-'}</TableCell>
+                        <TableCell>{getCoverageLabel(vehicle.service_area) || '-'}</TableCell>
                         <TableCell>
                           {vehicle.driver_phone ? (
                             <a
