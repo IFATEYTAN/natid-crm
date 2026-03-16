@@ -813,7 +813,7 @@ function CasesList({ department }) {
     });
   }, [departmentCases, searchQuery, statusFilter, vendorFilter, areaFilter, vipOnly, dateFrom, dateTo]);
 
-  // Unique vendors from department cases for filter dropdown
+  // Unique vendors from cases for filter dropdown
   const caseVendors = useMemo(() => {
     const vendorIds = [...new Set(departmentCases.map((c) => c.assigned_vendor_id).filter(Boolean))];
     return vendors.filter((v) => vendorIds.includes(v.id));
