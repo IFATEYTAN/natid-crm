@@ -284,47 +284,47 @@ export default function CallsPage() {
                           to={createPageUrl(`CallDetails?id=${c.id}`)}
                           className="hover:underline"
                         >
-                          {c.case_number || c.id.slice(0, 8)}
+                          {c.call_number || c.id.slice(0, 8)}
                         </Link>
                       </td>
                       <td className="px-4 py-3 font-medium text-[#172B4D] whitespace-nowrap">
                         {c.customer_name || '-'}
                       </td>
                       <td className="px-4 py-3 text-[#6B778C]" dir="ltr">
-                        {c.caller_phone || '-'}
+                        {c.customer_phone || '-'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {c.service_type ? (
+                        {c.service_category ? (
                           <Badge variant="outline" className="text-xs">
-                            {SERVICE_TYPE_LABELS[c.service_type] || c.service_type}
+                            {SERVICE_TYPE_LABELS[c.service_category] || c.service_category}
                           </Badge>
                         ) : (
                           '-'
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {c.status ? (
+                        {c.call_status ? (
                           <Badge
                             className={cn(
                               'text-xs',
-                              STATUS_COLORS[c.status] || 'bg-gray-100 text-gray-600'
+                              STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600'
                             )}
                           >
-                            {STATUS_LABELS[c.status] || c.status}
+                            {STATUS_LABELS[c.call_status] || c.call_status}
                           </Badge>
                         ) : (
                           '-'
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {c.priority ? (
+                        {c.call_priority ? (
                           <Badge
                             className={cn(
                               'text-xs',
-                              PRIORITY_COLORS[c.priority] || 'bg-gray-100 text-gray-600'
+                              PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600'
                             )}
                           >
-                            {PRIORITY_LABELS[c.priority] || c.priority}
+                            {PRIORITY_LABELS[c.call_priority] || c.call_priority}
                           </Badge>
                         ) : (
                           '-'
@@ -332,13 +332,13 @@ export default function CallsPage() {
                       </td>
                       <td className="px-4 py-3 text-[#6B778C]">
                         <div className="flex items-center gap-1">
-                          {c.location_city && <MapPin className="w-3 h-3 shrink-0" />}
-                          <span className="truncate max-w-[120px]">{c.location_city || '-'}</span>
+                          {c.pickup_location_city && <MapPin className="w-3 h-3 shrink-0" />}
+                          <span className="truncate max-w-[120px]">{c.pickup_location_city || '-'}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-[#6B778C] max-w-[150px]">
                         <span className="truncate block">
-                          {c.assigned_provider_name || (
+                          {c.assigned_vendor_name || (
                             <span className="text-gray-400">לא שובץ</span>
                           )}
                         </span>
