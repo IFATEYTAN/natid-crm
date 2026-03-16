@@ -179,36 +179,36 @@ export default function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-500" dir="rtl">
       {/* Header Section */}
       <div className="pb-6 border-b border-gray-200">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={handleRefreshData}
-              disabled={isRefreshing}
-              className="rounded-full px-4 transition-all"
-            >
-              <RefreshCw className={`w-4 h-4 me-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              רענן נתונים
-            </Button>
-            <PermissionGuard category="calls" permission="create">
-              <Link to={createPageUrl('NewCase')}>
-                <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-6 transition-all transform hover:scale-105">
-                  <Plus className="w-5 h-5 me-2" />
-                  קריאה חדשה
-                </Button>
-              </Link>
-            </PermissionGuard>
+        {/* Row 1: Greeting (right-aligned) */}
+        <div className="text-right mb-4">
+          <h1 className="text-3xl font-bold text-[#111827] tracking-tight">
+            {currentUser ? `${getGreeting()}, ${currentUser.full_name}` : 'NatID 360 Control'}
+          </h1>
+          <p className="text-[#6b7280] text-sm mb-1">ברוכים הבאים ל-NatID 360 Control</p>
+          <div className="flex items-center gap-2 text-gray-500 mt-1 justify-end">
+            <p className="text-sm">{format(today, 'EEEE, d בMMMM yyyy', { locale: he })}</p>
+            <Calendar className="w-4 h-4" />
           </div>
-          <div className="text-right">
-            <h1 className="text-3xl font-bold text-[#111827] tracking-tight">
-              {currentUser ? `${getGreeting()}, ${currentUser.full_name}` : 'NatID 360 Control'}
-            </h1>
-            <p className="text-[#6b7280] text-sm mb-1">ברוכים הבאים ל-NatID 360 Control</p>
-            <div className="flex items-center gap-2 text-gray-500 mt-1 justify-end">
-              <p className="text-sm">{format(today, 'EEEE, d בMMMM yyyy', { locale: he })}</p>
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
+        </div>
+        {/* Row 2: Action Buttons */}
+        <div className="flex gap-3 justify-end">
+          <Button
+            variant="outline"
+            onClick={handleRefreshData}
+            disabled={isRefreshing}
+            className="rounded-full px-4 transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 me-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            רענן נתונים
+          </Button>
+          <PermissionGuard category="calls" permission="create">
+            <Link to={createPageUrl('NewCase')}>
+              <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-6 transition-all transform hover:scale-105">
+                <Plus className="w-5 h-5 me-2" />
+                קריאה חדשה
+              </Button>
+            </Link>
+          </PermissionGuard>
         </div>
       </div>
 
