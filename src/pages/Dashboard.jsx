@@ -127,6 +127,7 @@ export default function Dashboard() {
   const recentRatedCalls = cases.filter(
     (c) => c.customer_rating && c.created_date && new Date(c.created_date) >= sevenDaysAgo
   );
+
   const avgRating =
     recentRatedCalls.length > 0
       ? (
