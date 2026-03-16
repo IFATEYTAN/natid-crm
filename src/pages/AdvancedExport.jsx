@@ -462,7 +462,9 @@ export default function AdvancedExport() {
       <div className="max-w-5xl mx-auto space-y-6" dir="rtl">
         <div className="text-right">
           <h1 className="text-3xl font-bold text-[#111827]">ייצוא מתקדם</h1>
-          <p className="text-[#6b7280] text-sm">ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות</p>
+          <p className="text-[#6b7280] text-sm">
+            ייצוא נתוני קריאות ולקוחות עם אפשרויות סינון מתקדמות
+          </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
@@ -529,6 +531,7 @@ export default function AdvancedExport() {
                     <Label>מתאריך</Label>
                     <Input
                       type="date"
+                      lang="he-IL"
                       value={callsDateRange.start}
                       onChange={(e) =>
                         setCallsDateRange({ ...callsDateRange, start: e.target.value })
@@ -540,6 +543,7 @@ export default function AdvancedExport() {
                     <Label>עד תאריך</Label>
                     <Input
                       type="date"
+                      lang="he-IL"
                       value={callsDateRange.end}
                       onChange={(e) =>
                         setCallsDateRange({ ...callsDateRange, end: e.target.value })
@@ -620,6 +624,7 @@ export default function AdvancedExport() {
                     <Label>מתאריך</Label>
                     <Input
                       type="date"
+                      lang="he-IL"
                       value={customersDateRange.start}
                       onChange={(e) =>
                         setCustomersDateRange({ ...customersDateRange, start: e.target.value })
@@ -631,6 +636,7 @@ export default function AdvancedExport() {
                     <Label>עד תאריך</Label>
                     <Input
                       type="date"
+                      lang="he-IL"
                       value={customersDateRange.end}
                       onChange={(e) =>
                         setCustomersDateRange({ ...customersDateRange, end: e.target.value })
