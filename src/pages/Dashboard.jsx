@@ -136,12 +136,12 @@ export default function Dashboard() {
       : '0.0';
   const avgEta = 0;
   const recentCompleted = cases.filter(
-    (c) => c.status === 'completed' && c.created_date && new Date(c.created_date) >= sevenDaysAgo
+    (c) => c.call_status === 'completed' && c.created_date && new Date(c.created_date) >= sevenDaysAgo
   );
   const fieldResolutionRate =
     recentCompleted.length > 0
       ? Math.round(
-          (recentCompleted.filter((c) => c.service_type !== 'towing').length /
+          (recentCompleted.filter((c) => c.service_category !== 'towing').length /
             recentCompleted.length) *
             100
         )
