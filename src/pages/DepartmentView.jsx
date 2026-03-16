@@ -775,8 +775,8 @@ function CasesList({ department }) {
   });
 
   const departmentCases = useMemo(() => {
-    return allCases.filter((c) => c.department === department);
-  }, [allCases, department]);
+    return allCases;
+  }, [allCases]);
 
   const filtered = useMemo(() => {
     return departmentCases.filter((c) => {
@@ -784,18 +784,18 @@ function CasesList({ department }) {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matchesSearch =
-          c.case_number?.toLowerCase().includes(q) ||
+          c.call_number?.toLowerCase().includes(q) ||
           c.customer_name?.toLowerCase().includes(q) ||
-          c.vehicle_number?.includes(searchQuery) ||
-          c.caller_phone?.includes(searchQuery);
+          c.vehicle_plate?.includes(searchQuery) ||
+          c.customer_phone?.includes(searchQuery);
         if (!matchesSearch) return false;
       }
       // Status
-      if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+      if (statusFilter !== 'all' && c.call_status !== statusFilter) return false;
       // Vendor
       if (vendorFilter !== 'all' && c.assigned_vendor_id !== vendorFilter) return false;
       // Area
-      if (areaFilter !== 'all' && c.service_area !== areaFilter) return false;
+      if (areaFilter !== 'all' && c.pickup_location_area !== areaFilter) return false;
       // VIP
       if (vipOnly && !c.is_vip) return false;
       // Date range
