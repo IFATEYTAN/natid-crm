@@ -870,33 +870,33 @@ function CasesList({ department }) {
           '—'
         ),
     },
-    { header: "מס' רכב", accessor: 'vehicle_number', cell: (row) => row.vehicle_number || '—' },
+    { header: "מס' רכב", accessor: 'vehicle_plate', cell: (row) => row.vehicle_plate || '—' },
     {
-      header: 'קוד דגם',
-      accessor: 'vehicle_model_code',
-      cell: (row) => row.vehicle_model_code || '—',
+      header: 'דגם רכב',
+      accessor: 'vehicle_model',
+      cell: (row) => row.vehicle_model || '—',
     },
     {
       header: 'ספק שירות',
-      accessor: 'assigned_provider_name',
-      cell: (row) => row.assigned_provider_name || row.vendor_name || '—',
+      accessor: 'assigned_vendor_name',
+      cell: (row) => row.assigned_vendor_name || '—',
     },
     {
       header: 'יעד העמסה',
-      accessor: 'location_address',
-      cell: (row) => row.location_address || row.service_address || '—',
+      accessor: 'pickup_location_address',
+      cell: (row) => row.pickup_location_address || '—',
     },
     {
       header: 'יעד פריקה',
-      accessor: 'destination_address',
-      cell: (row) => row.destination_address || '—',
+      accessor: 'dropoff_location_address',
+      cell: (row) => row.dropoff_location_address || '—',
     },
     {
       header: 'תיאור תקלה',
-      accessor: 'problem_description',
+      accessor: 'issue_description',
       cell: (row) => (
         <span className="max-w-[200px] truncate block">
-          {row.problem_description || '—'}
+          {row.issue_description || '—'}
         </span>
       ),
     },
