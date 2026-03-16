@@ -119,8 +119,8 @@ export default function Dashboard() {
   const myOpenCalls = [];
   const myCompletedToday = [];
   const myUrgentCalls = [];
-  const unassignedCalls = openCalls.filter((c) => !c.assigned_provider_id);
-  const urgentCalls = openCalls.filter((c) => c.priority === 'urgent');
+  const unassignedCalls = openCalls.filter((c) => !c.assigned_vendor_id);
+  const urgentCalls = openCalls.filter((c) => c.call_priority === 'urgent');
 
   // KPI stats (last 7 days)
   const sevenDaysAgo = subDays(new Date(), 7);
