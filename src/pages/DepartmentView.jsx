@@ -765,8 +765,8 @@ function CasesList({ department }) {
   const [dateTo, setDateTo] = useState('');
 
   const { data: allCases = [], isLoading } = useQuery({
-    queryKey: queryKeys.cases.all(),
-    queryFn: () => base44.entities.Case.list('-created_date', 50000),
+    queryKey: ['calls-all'],
+    queryFn: () => base44.entities.Call.list('-created_date', 50000),
   });
 
   const { data: vendors = [] } = useQuery({
