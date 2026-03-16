@@ -17,6 +17,7 @@ import {
   FileText,
   Image,
   MessageSquare,
+  Route,
 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -31,6 +32,7 @@ import VendorCallStatusProgress from '@/components/vendor/VendorCallStatusProgre
 import VendorCallCustomerInfo from '@/components/vendor/VendorCallCustomerInfo';
 import VendorCallVehicleInfo from '@/components/vendor/VendorCallVehicleInfo';
 import VendorCallActionBar from '@/components/vendor/VendorCallActionBar';
+import VendorCustomerJourney from '@/components/vendor/VendorCustomerJourney';
 
 const photoCategories = [
   { key: 'before_treatment', label: 'לפני טיפול' },
@@ -324,9 +326,13 @@ export default function VendorCallManagementPage() {
       <VendorCallCustomerInfo call={call} />
       <VendorCallVehicleInfo call={call} />
 
-      {/* Tabs for Photos, Notes, Messages */}
-      <Tabs defaultValue="photos" className="w-full">
-        <TabsList className={`w-full grid ${isCompleted ? 'grid-cols-4' : 'grid-cols-3'}`}>
+      {/* Tabs for Journey, Photos, Notes, Messages */}
+      <Tabs defaultValue="journey" className="w-full">
+        <TabsList className={`w-full grid ${isCompleted ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsTrigger value="journey" className="gap-1">
+            <Route className="w-4 h-4" />
+            מסע לקוח
+          </TabsTrigger>
           <TabsTrigger value="photos" className="gap-1">
             <Image className="w-4 h-4" />
             תמונות ({photos.length})
@@ -345,6 +351,10 @@ export default function VendorCallManagementPage() {
             </TabsTrigger>
           )}
         </TabsList>
+
+        <TabsContent value="journey" className="mt-4">
+          <VendorCustomerJourney callId={selectedCallId} call={call} />
+        </TabsContent>
 
         <TabsContent value="photos" className="mt-4">
           <Card className="bg-white">
