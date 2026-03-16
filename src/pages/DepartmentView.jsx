@@ -847,16 +847,16 @@ function CasesList({ department }) {
     },
     {
       header: 'סטטוס קריאה',
-      accessor: 'status',
+      accessor: 'call_status',
       cell: (row) => (
         <Badge
           className={
-            STATUS_COLORS_INLINE[row.status] ||
-            statusColors[row.status] ||
+            STATUS_COLORS_INLINE[row.call_status] ||
+            statusColors[row.call_status] ||
             'bg-gray-100 text-gray-600'
           }
         >
-          {statusLabels[row.status] || row.status || '—'}
+          {statusLabels[row.call_status] || row.call_status || '—'}
         </Badge>
       ),
     },
