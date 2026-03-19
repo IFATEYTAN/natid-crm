@@ -19,7 +19,7 @@ import { Plus, Search, RefreshCw, MapPin, ChevronRight, ChevronLeft } from 'luci
 import { cn } from '@/components/utils';
 import { format } from 'date-fns';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50; // Smaller pages = faster rendering
 
 const SERVICE_TYPE_LABELS = {
   towing: 'גרירה',
@@ -91,8 +91,16 @@ export default function CallsPage() {
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ['calls-list'],
-    queryFn: () => base44.entities.Call.list('-created_date', 50000),
+    queryKey: ['calls-list', statusFilter, serviceTypeFilter],
+    queryFn: () => {
+      // Load only recent 2000 calls for performance (was 50000)
+      // Server-side filtering when status/service filters are active
+      if (statusFilter && statusFilter !== 'all') {
+        return base44.entities.Call.filter({ call_status: statusFilter }, '-created_date', 2000);
+      }
+      return base44.entities.Call.list('-created_date', 2000);
+    },
+    staleTime: 30000, // Cache for 30 seconds to reduce re-fetches
   });
 
   const filtered = useMemo(() => {

@@ -5,6 +5,7 @@ import { createPageUrl } from '@/components/utils';
 import { Menu, X, LogOut, ChevronDown, ChevronRight, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+const AgentBreakMode = lazyRetry(() => import('@/components/layout/AgentBreakMode'));
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/components/utils';
@@ -494,6 +495,10 @@ function LayoutContent({ children, currentPageName }) {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Break Mode */}
+            <Suspense fallback={null}>
+              {currentUser && <AgentBreakMode currentUser={currentUser} />}
+            </Suspense>
             {/* Notifications */}
             <Popover>
               <PopoverTrigger asChild>

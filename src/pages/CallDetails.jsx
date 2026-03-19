@@ -102,6 +102,8 @@ export default function CallDetailsPage() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showPreCloseDialog, setShowPreCloseDialog] = useState(false);
+  const [pendingCloseStatus, setPendingCloseStatus] = useState(null);
 
   // Permission & Audit
   const { currentUser, hasPermission } = usePermissions();
@@ -172,8 +174,16 @@ export default function CallDetailsPage() {
     queryClient.invalidateQueries({ queryKey: queryKeys.callMessages.byCall(targetCallId) });
   };
 
+  // Intercept 'completed' status to show pre-close survey message
   const handleStatusChange = async (newStatus, reason) => {
     if (!canEdit) return;
+
+    // Show pre-close confirmation before marking as completed
+    if (newStatus === 'completed' && !reason?.skipPreClose) {
+      setPendingCloseStatus(newStatus);
+      setShowPreCloseDialog(true);
+      return;
+    }
 
     const updates = { call_status: newStatus };
     if (newStatus === 'completed') {
@@ -645,6 +655,54 @@ export default function CallDetailsPage() {
             currentUser={currentUser}
           />
         </Suspense>
+
+        {/* Pre-Close Survey Confirmation Dialog */}
+        <Dialog open={showPreCloseDialog} onOpenChange={setShowPreCloseDialog}>
+          <DialogContent className="max-w-md" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-right">
+                <span className="text-2xl">📋</span>
+                סגירת קריאה — שליחת סקר
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800 font-medium leading-relaxed">
+                  לאחר סגירת הקריאה, הלקוח יקבל <strong>סקר שביעות רצון</strong> ב-SMS.
+                </p>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                חשוב לנו לקבל משוב מהלקוח — כל מילוי סקר עוזר לנו לשפר את השירות.
+                אנא וודא שהשירות הסתיים בפועל לפני הסגירה.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-xs text-amber-700">
+                  💡 <strong>טיפ:</strong> ניתן לציין ללקוח בעל פה: "תקבל/י עכשיו SMS עם סקר קצר — חשוב לנו שתמלא/י אותו!"
+                </p>
+              </div>
+            </div>
+            <DialogFooter className="flex gap-2 justify-start">
+              <Button
+                onClick={() => {
+                  setShowPreCloseDialog(false);
+                  handleStatusChange(pendingCloseStatus, { skipPreClose: true });
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                סגור קריאה ושלח סקר
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPreCloseDialog(false);
+                  setPendingCloseStatus(null);
+                }}
+              >
+                ביטול
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </QueryStateWrapper>
   );

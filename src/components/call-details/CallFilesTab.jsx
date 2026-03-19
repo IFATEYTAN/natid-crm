@@ -1,6 +1,6 @@
 import { lazyRetry } from '@/lib/lazyRetry';
 import React, { Suspense, useState } from 'react';
-import { Camera, FileText, Trash2, Pencil, Image as ImageIcon, FolderOpen } from 'lucide-react';
+import { Camera, FileText, Trash2, Pencil, Image as ImageIcon, FolderOpen, Send, Mail, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +39,7 @@ const categoryLabels = {
   other: 'אחר',
 };
 
-function PhotoCard({ photo, onEdit, onDelete }) {
+function PhotoCard({ photo, onEdit, onDelete, onSend }) {
   const isImage = photo.file_url?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
   return (
     <div className="relative group border rounded-lg overflow-hidden bg-white">
@@ -71,6 +71,15 @@ function PhotoCard({ photo, onEdit, onDelete }) {
         </Button>
         <Button
           size="icon"
+          variant="secondary"
+          className="h-7 w-7 bg-green-50 hover:bg-green-100"
+          onClick={() => onSend && onSend(photo)}
+          aria-label="שלח"
+        >
+          <Send className="w-3 h-3 text-green-600" />
+        </Button>
+        <Button
+          size="icon"
           variant="destructive"
           className="h-7 w-7"
           onClick={() => onDelete(photo)}
@@ -96,11 +105,38 @@ function PhotoCard({ photo, onEdit, onDelete }) {
   );
 }
 
-export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
+export default function CallFilesTab({ callId, photos, onFilesUploaded, call }) {
   const queryClient = useQueryClient();
   const [editPhoto, setEditPhoto] = useState(null);
   const [editForm, setEditForm] = useState({ file_name: '', category: '', note: '' });
   const [saving, setSaving] = useState(false);
+  const [sendingDoc, setSendingDoc] = useState(null);
+  const [sendDocDialog, setSendDocDialog] = useState(null); // photo to send
+  const [sendMethod, setSendMethod] = useState('whatsapp'); // 'whatsapp' | 'email'
+  const [sendRecipient, setSendRecipient] = useState('');
+
+  const handleSendDocument = async () => {
+    if (!sendDocDialog || !sendRecipient) return;
+    setSendingDoc(sendDocDialog.id);
+    try {
+      await base44.functions.invoke('sendWhatsApp', {
+        type: sendMethod === 'whatsapp' ? 'document' : 'email_document',
+        phone: sendMethod === 'whatsapp' ? sendRecipient : undefined,
+        email: sendMethod === 'email' ? sendRecipient : undefined,
+        document_url: sendDocDialog.file_url,
+        document_name: sendDocDialog.file_name || 'מסמך',
+        call_number: call?.call_number,
+        customer_name: call?.customer_name,
+      });
+      toast.success(`המסמך נשלח בהצלחה ב-${sendMethod === 'whatsapp' ? 'WhatsApp' : 'מייל'}`);
+      setSendDocDialog(null);
+      setSendRecipient('');
+    } catch (e) {
+      toast.error('שגיאה בשליחת המסמך');
+    } finally {
+      setSendingDoc(null);
+    }
+  };
 
   const images = photos.filter((p) => p.file_url?.match(/\.(jpg|jpeg|png|gif|webp)$/i));
   const documents = photos.filter((p) => !p.file_url?.match(/\.(jpg|jpeg|png|gif|webp)$/i));
@@ -129,6 +165,12 @@ export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
     await base44.entities.CallPhoto.update(photo.id, { is_deleted: true });
     queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(callId) });
     toast.success('הקובץ נמחק');
+  };
+
+  const handleSend = (photo) => {
+    setSendDocDialog(photo);
+    setSendMethod('whatsapp');
+    setSendRecipient(call?.customer_phone || '');
   };
 
   const activePhotos = photos.filter((p) => !p.is_deleted);
@@ -177,12 +219,13 @@ export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
             <TabsContent value="all">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
                 {activePhotos.map((photo) => (
-                  <PhotoCard
-                    key={photo.id}
-                    photo={photo}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
+                    <PhotoCard
+                      key={photo.id}
+                      photo={photo}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onSend={handleSend}
+                    />
                 ))}
               </div>
             </TabsContent>
@@ -196,6 +239,7 @@ export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
                       photo={photo}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onSend={handleSend}
                     />
                   ))}
                 </div>
@@ -213,6 +257,7 @@ export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
                       photo={photo}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onSend={handleSend}
                     />
                   ))}
                 </div>
@@ -222,6 +267,61 @@ export default function CallFilesTab({ callId, photos, onFilesUploaded }) {
             </TabsContent>
           </Tabs>
         )}
+
+        {/* Send Document Dialog */}
+        <Dialog open={!!sendDocDialog} onOpenChange={() => setSendDocDialog(null)}>
+          <DialogContent dir="rtl" className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Send className="w-4 h-4" />
+                שליחת מסמך
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-gray-600 truncate">{sendDocDialog?.file_name || 'מסמך'}</p>
+              {/* Method selector */}
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={sendMethod === 'whatsapp' ? 'default' : 'outline'}
+                  className={sendMethod === 'whatsapp' ? 'bg-green-600 hover:bg-green-700' : ''}
+                  onClick={() => { setSendMethod('whatsapp'); setSendRecipient(call?.customer_phone || ''); }}
+                >
+                  <MessageSquare className="w-3 h-3 ml-1" />
+                  WhatsApp
+                </Button>
+                <Button
+                  size="sm"
+                  variant={sendMethod === 'email' ? 'default' : 'outline'}
+                  className={sendMethod === 'email' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  onClick={() => { setSendMethod('email'); setSendRecipient(call?.customer_email || ''); }}
+                >
+                  <Mail className="w-3 h-3 ml-1" />
+                  מייל
+                </Button>
+              </div>
+              <div>
+                <Label>{sendMethod === 'whatsapp' ? 'מספר טלפון' : 'כתובת מייל'}</Label>
+                <Input
+                  value={sendRecipient}
+                  onChange={(e) => setSendRecipient(e.target.value)}
+                  placeholder={sendMethod === 'whatsapp' ? '05XXXXXXXX' : 'email@example.com'}
+                  dir="ltr"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSendDocDialog(null)}>ביטול</Button>
+              <Button
+                onClick={handleSendDocument}
+                disabled={!sendRecipient || !!sendingDoc}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {sendingDoc ? 'שולח...' : 'שלח'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Dialog */}
         <Dialog open={!!editPhoto} onOpenChange={() => setEditPhoto(null)}>
