@@ -45,6 +45,75 @@ import {
 import { showToast } from '@/components/ui/FeedbackToast';
 import AICategorization from '@/components/ai/AICategorization';
 import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
+import { coverageAreas } from '@/config/coverageConstants';
+
+// ===== CityAutocomplete Component =====
+// רכיב חיפוש חי לבחירת עיר מתוך רשימת הערים (לפי דרישת דורית נתי גרופ)
+const ALL_CITIES = coverageAreas.flatMap((area) =>
+  area.cities.map((city) => ({ city, area: area.label }))
+);
+
+function CityAutocomplete({ value, onChange, placeholder = 'הקלד שם עיר...', id }) {
+  const [cityQuery, setCityQuery] = useState('');
+  const [cityOpen, setCityOpen] = useState(false);
+  const [cityHighlighted, setCityHighlighted] = useState(0);
+
+  const filteredCities = cityQuery.length > 0
+    ? ALL_CITIES.filter((c) => c.city.includes(cityQuery)).slice(0, 10)
+    : [];
+
+  const handleCitySelect = (cityObj) => {
+    onChange(cityObj.city);
+    setCityQuery('');
+    setCityOpen(false);
+  };
+
+  const handleCityKeyDown = (e) => {
+    if (!cityOpen || filteredCities.length === 0) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setCityHighlighted((h) => Math.min(h + 1, filteredCities.length - 1)); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setCityHighlighted((h) => Math.max(h - 1, 0)); }
+    if (e.key === 'Enter') { e.preventDefault(); handleCitySelect(filteredCities[cityHighlighted]); }
+    if (e.key === 'Escape') { setCityOpen(false); setCityQuery(''); }
+  };
+
+  return (
+    <div className="relative" dir="rtl">
+      {value ? (
+        <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-white">
+          <span className="flex-1 text-sm">{value}</span>
+          <button type="button" onClick={() => { onChange(''); setCityQuery(''); }} className="text-gray-400 hover:text-red-500 text-xs font-bold">✕</button>
+        </div>
+      ) : (
+        <Input
+          id={id}
+          value={cityQuery}
+          onChange={(e) => { setCityQuery(e.target.value); setCityOpen(true); setCityHighlighted(0); }}
+          onFocus={() => { if (cityQuery) setCityOpen(true); }}
+          onBlur={() => setTimeout(() => setCityOpen(false), 150)}
+          onKeyDown={handleCityKeyDown}
+          placeholder={placeholder}
+          autoComplete="off"
+        />
+      )}
+      {cityOpen && filteredCities.length > 0 && (
+        <div className="absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-48 overflow-y-auto">
+          {filteredCities.map((c, i) => (
+            <div
+              key={c.city}
+              onMouseDown={() => handleCitySelect(c)}
+              className={`px-3 py-2 cursor-pointer text-sm flex justify-between items-center ${
+                i === cityHighlighted ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'
+              }`}
+            >
+              <span>{c.city}</span>
+              <span className="text-xs text-gray-400">{c.area}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const TechnicalQuestionnaire = lazyRetry(() => import('@/components/calls/TechnicalQuestionnaire'));
 
@@ -499,16 +568,27 @@ export default function NewCase() {
               </div>
               <div>
                 <Label>עיר מיקום</Label>
-                <Input
+                <CityAutocomplete
+                  id="location_city"
                   value={formData.location_city}
-                  onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                  onChange={(city) => {
+                    const area = coverageAreas.find((a) => a.cities.includes(city));
+                    setFormData({
+                      ...formData,
+                      location_city: city,
+                      coverage_area: area ? area.key : formData.coverage_area,
+                    });
+                  }}
+                  placeholder="הקלד שם עיר..."
                 />
               </div>
               <div>
                 <Label>עיר יעד (לגרירה)</Label>
-                <Input
+                <CityAutocomplete
+                  id="destination_city"
                   value={formData.destination_city}
-                  onChange={(e) => setFormData({ ...formData, destination_city: e.target.value })}
+                  onChange={(city) => setFormData({ ...formData, destination_city: city })}
+                  placeholder="הקלד שם עיר..."
                 />
               </div>
               <div className="md:col-span-2">

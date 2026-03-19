@@ -73,8 +73,11 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
       changed_by: currentUser?.full_name || 'operator',
     });
 
-    // Auto-cancel active deposits when call is cancelled
-    if (activeDeposits.length > 0) {
+    // לפי דורית נתי גרופ: ביטול במקום (ספק הגיע) = העירבון נשאר על כנו (לא מבוטל)
+    // רק ביטול ללא חיוב או עם חיוב ספק בלבד מבטל את העירבון
+    const shouldCancelDeposits = cancelType !== 'on_site';
+
+    if (activeDeposits.length > 0 && shouldCancelDeposits) {
       const cancelReason = `ביטול אוטומטי — הקריאה בוטלה: ${reason}`;
       await Promise.all(
         activeDeposits.map((deposit) =>
@@ -90,9 +93,12 @@ export default function CancelCallDialog({ open, onOpenChange, call, callId, cur
     }
 
     queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
-    const depositMsg = activeDeposits.length > 0
-      ? ` (${activeDeposits.length} עירבונות בוטלו אוטומטית)`
-      : '';
+    let depositMsg = '';
+    if (cancelType === 'on_site' && activeDeposits.length > 0) {
+      depositMsg = ` (עירבון נשאר פעיל — ביטול במקום)`;
+    } else if (activeDeposits.length > 0) {
+      depositMsg = ` (${activeDeposits.length} עירבונות בוטלו אוטומטית)`;
+    }
     toast.success(`הקריאה בוטלה${depositMsg}`);
     setProcessing(false);
     resetAndClose();

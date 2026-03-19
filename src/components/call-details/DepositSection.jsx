@@ -56,11 +56,18 @@ export default function DepositSection({ call, callId, currentUser }) {
   const [saving, setSaving] = useState(false);
 
   // ===== 90-Day Deposit Exemption Logic (משימה 339) =====
-  // Check if this customer had a private call completed within the last 90 days
+  // לפי דורית נתי גרופ: פטור חל רק אם הקריאה הנוכחית היא מסוג תאונה, תדר (תקלת דלק) או אזל דלק
+  const EXEMPT_SERVICE_TYPES = ['accident', 'fuel', 'fuel_empty', 'breakdown_fuel', 'tader', 'תדר', 'תאונה', 'אזל_דלק'];
+  const currentServiceType = (call?.service_type || '').toLowerCase();
+  const isExemptServiceType = EXEMPT_SERVICE_TYPES.some((t) =>
+    currentServiceType.includes(t.toLowerCase())
+  );
+
   const { data: recentCalls = [] } = useQuery({
-    queryKey: ['recentCallsForDeposit', call?.customer_phone],
+    queryKey: ['recentCallsForDeposit', call?.customer_phone, call?.service_type],
     queryFn: async () => {
-      if (!call?.customer_phone) return [];
+      // פטור חל רק לסוגי קריאה ספציפיים
+      if (!call?.customer_phone || !isExemptServiceType) return [];
       const allCalls = await base44.asServiceRole.entities.Call.filter({
         customer_phone: call.customer_phone,
       });
