@@ -6,7 +6,8 @@
  * and sends a notification to all supervisors/managers.
  *
  * Input:
- *   agent_email  - email of the agent on break
+ *   agent_id     - ID of the agent on break (preferred)
+ *   agent_email  - email of the agent on break (fallback)
  *   reason       - 'break_timeout' | 'manual'
  */
 
@@ -20,22 +21,34 @@ const UNHANDLED_STATUSES = [
 
 export default async function handler(req: Request): Promise<Response> {
   try {
-    const { agent_email, reason = 'break_timeout' } = await req.json();
+    const { agent_id, agent_email, reason = 'break_timeout' } = await req.json();
 
-    if (!agent_email) {
-      return new Response(JSON.stringify({ error: 'agent_email is required' }), { status: 400 });
+    if (!agent_id && !agent_email) {
+      return new Response(JSON.stringify({ error: 'agent_id or agent_email is required' }), { status: 400 });
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. Find all unhandled calls assigned to this agent
-    const { data: calls, error: callsError } = await supabase
-      .from('Call')
-      .select('id, call_number, customer_name, assigned_agent')
-      .eq('assigned_agent', agent_email)
-      .in('call_status', UNHANDLED_STATUSES);
+    // 1. Find all unhandled calls assigned to this agent (by id or email)
+    // Build filter to list open calls for this agent
+    const agentFilter = agent_id
+      ? { assigned_agent_id: agent_id }
+      : { assigned_agent: agent_email };
+
+    let allAgentCalls: any[] = [];
+    for (const status of UNHANDLED_STATUSES) {
+      const { data, error } = await supabase
+        .from('Call')
+        .select('id, call_number, customer_name, assigned_agent')
+        .eq('call_status', status)
+        .match(agentFilter);
+      if (error) throw error;
+      if (data) allAgentCalls = allAgentCalls.concat(data);
+    }
+    const calls = allAgentCalls;
+    const callsError = null;
 
     if (callsError) throw callsError;
 
@@ -53,7 +66,7 @@ export default async function handler(req: Request): Promise<Response> {
       .update({
         call_status: 'awaiting_assignment',
         assigned_agent: null,
-        internal_notes: `[מערכת] קריאה הועברת לתור בשל הפסקת נציג (${agent_email}) — ${new Date().toLocaleString('he-IL')}`,
+        internal_notes: `[מערכת] קריאה הועברת לתור בשל הפסקת נציג (${agent_id || agent_email}) — ${new Date().toLocaleString('he-IL')}`,
       })
       .in('id', callIds);
 

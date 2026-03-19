@@ -93,7 +93,7 @@ export default function CallsPage() {
   } = useQuery({
     queryKey: ['calls-list', statusFilter, serviceTypeFilter],
     queryFn: () => {
-      // Load only recent 2000 calls for performance (was 50000)
+      // Load only recent 2000 calls for performance (previously unlimited)
       // Server-side filtering when status/service filters are active
       if (statusFilter && statusFilter !== 'all') {
         return base44.entities.Call.filter({ call_status: statusFilter }, '-created_date', 2000);
