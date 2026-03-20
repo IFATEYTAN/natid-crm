@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   useNotificationSettings,
+  useCreateNotificationSetting,
   useUpdateNotificationSetting,
   useDeleteNotificationSetting,
 } from '@/features/settings/hooks/useSettings';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
