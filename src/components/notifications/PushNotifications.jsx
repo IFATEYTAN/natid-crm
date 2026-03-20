@@ -188,8 +188,16 @@ export function NotificationPermissionBanner() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    const wasDismissed = localStorage.getItem('notification-banner-dismissed');
-    if (wasDismissed) setDismissed(true);
+    // On mobile, reset dismissal every 24 hours so the banner reappears
+    const dismissedAt = localStorage.getItem('notification-banner-dismissed');
+    if (dismissedAt) {
+      const hoursSince = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60);
+      if (hoursSince > 24) {
+        localStorage.removeItem('notification-banner-dismissed');
+      } else {
+        setDismissed(true);
+      }
+    }
   }, []);
 
   const handleDismiss = () => {
