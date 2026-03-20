@@ -207,8 +207,13 @@ export function NotificationPermissionBanner() {
     }
   };
 
-  // Don't show if not supported, already granted, or dismissed
-  if (!isSupported || permission === 'granted' || permission === 'denied' || dismissed) {
+  // Don't show if not supported, already granted, or denied
+  // Note: dismissed can be overridden - always show if permission is still 'default'
+  if (!isSupported || permission === 'granted' || permission === 'denied') {
+    return null;
+  }
+  // If dismissed but permission still default, show again (user may have dismissed by mistake on mobile)
+  if (dismissed) {
     return null;
   }
 
