@@ -124,7 +124,7 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <DemoBanner />
-          <Router>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <NavigationTracker />
             <AuthenticatedApp />
           </Router>
