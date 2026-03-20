@@ -246,6 +246,7 @@ export function NotificationSettings() {
             <Button
               variant={isSubscribed ? 'outline' : 'default'}
               onClick={isSubscribed ? handleDisableNotifications : handleEnableNotifications}
+              isLoading={isLoading}
             >
               {isSubscribed ? 'כבה' : 'הפעל'}
             </Button>
