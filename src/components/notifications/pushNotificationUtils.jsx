@@ -1,4 +1,36 @@
 // Pure utility functions for push notifications (no React)
+import { base44 } from '@/api/base44Client';
+
+// Convert VAPID public key from base64url to Uint8Array
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+
+export async function subscribeUserToPush(vapidPublicKey) {
+  if (!isPushSupported()) return { success: false, error: 'Not supported' };
+  if (Notification.permission !== 'granted') return { success: false, error: 'No permission' };
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      });
+    }
+
+    // Save subscription to server
+    await base44.functions.invoke('savePushSubscription', { subscription });
+    return { success: true, subscription };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
 
 export const isPushSupported = () => {
   return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
