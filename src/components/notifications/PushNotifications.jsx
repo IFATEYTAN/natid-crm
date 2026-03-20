@@ -98,7 +98,7 @@ export function usePushNotifications() {
 }
 
 export function NotificationPermissionBanner() {
-  const { permission, isSupported, requestPermission } = usePushNotifications();
+  const { permission, isSupported, subscribe } = usePushNotifications();
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
