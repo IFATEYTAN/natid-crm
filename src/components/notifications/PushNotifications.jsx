@@ -60,12 +60,10 @@ export function usePushNotifications() {
         if (!result.success) return false;
       }
 
-      // Use real VAPID push subscription
-      if (VAPID_PUBLIC_KEY) {
-        const result = await subscribeUserToPush(VAPID_PUBLIC_KEY);
-        if (!result.success) {
-          console.warn('Push subscription failed:', result.error);
-        }
+      // Use real VAPID push subscription (fetches key from server automatically)
+      const result = await subscribeUserToPush(null);
+      if (!result.success) {
+        console.warn('Push subscription failed:', result.error);
       }
 
       setIsSubscribed(true);
