@@ -23,9 +23,19 @@ export { isPushSupported, getNotificationPermission, requestNotificationPermissi
 export function usePushNotifications() {
   const [permission, setPermission] = useState(getNotificationPermission());
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setPermission(getNotificationPermission());
+
+    // Check if already subscribed
+    if (isPushSupported() && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          setIsSubscribed(!!sub);
+        });
+      });
+    }
 
     if ('permissions' in navigator) {
       navigator.permissions.query({ name: 'notifications' }).then((permissionStatus) => {
@@ -43,15 +53,34 @@ export function usePushNotifications() {
   }, []);
 
   const subscribe = useCallback(async () => {
-    if (permission !== 'granted') {
-      const result = await requestPermission();
-      if (!result.success) return false;
+    setIsLoading(true);
+    try {
+      if (permission !== 'granted') {
+        const result = await requestPermission();
+        if (!result.success) return false;
+      }
+
+      // Use real VAPID push subscription
+      if (VAPID_PUBLIC_KEY) {
+        const result = await subscribeUserToPush(VAPID_PUBLIC_KEY);
+        if (!result.success) {
+          console.warn('Push subscription failed:', result.error);
+        }
+      }
+
+      setIsSubscribed(true);
+      return true;
+    } finally {
+      setIsLoading(false);
     }
-    setIsSubscribed(true);
-    return true;
   }, [permission, requestPermission]);
 
-  const unsubscribe = useCallback(() => {
+  const unsubscribe = useCallback(async () => {
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+    }
     setIsSubscribed(false);
     return true;
   }, []);
@@ -59,6 +88,7 @@ export function usePushNotifications() {
   return {
     permission,
     isSubscribed,
+    isLoading,
     isSupported: isPushSupported(),
     requestPermission,
     subscribe,
