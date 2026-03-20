@@ -44,7 +44,7 @@ function LayoutContent({ children, currentPageName }) {
     currentUser,
     canAccessPage,
     isLoading: isLoadingAuth,
-    effectiveRoleName,
+    effectiveRole: effectiveRoleName,
   } = usePermissions();
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
