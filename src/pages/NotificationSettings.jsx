@@ -62,10 +62,30 @@ const eventIcons = {
   vendor_delayed: Bell,
 };
 
+const defaultForm = {
+  name: '',
+  event: '',
+  channels: { inApp: true, email: false, sms: false },
+  enabled: true,
+};
+
 export default function NotificationSettingsPage() {
   const { data: settings = [], isLoading } = useNotificationSettings();
+  const createMutation = useCreateNotificationSetting();
   const updateMutation = useUpdateNotificationSetting();
   const deleteMutation = useDeleteNotificationSetting();
+  const [showDialog, setShowDialog] = useState(false);
+  const [form, setForm] = useState(defaultForm);
+
+  const handleCreate = () => {
+    if (!form.name || !form.event) return;
+    createMutation.mutate(form, {
+      onSuccess: () => {
+        setShowDialog(false);
+        setForm(defaultForm);
+      },
+    });
+  };
 
   const handleToggle = (id, currentEnabled) => {
     updateMutation.mutate(
