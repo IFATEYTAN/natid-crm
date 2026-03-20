@@ -112,8 +112,9 @@ function LayoutContent({ children, currentPageName }) {
   }, [currentPageName]);
 
   // Auto-redirect when user lands on a page they cannot access
+  // Wait for effectiveRole to be resolved (not null) before redirecting
   useEffect(() => {
-    if (isLoadingAuth || !currentUser || hasRedirected.current) return;
+    if (isLoadingAuth || !currentUser || hasRedirected.current || !effectiveRoleName) return;
     if (currentPageName === 'LandingPage') return;
 
     if (!canAccessPage(currentPageName)) {
@@ -136,7 +137,7 @@ function LayoutContent({ children, currentPageName }) {
         navigate(createPageUrl('UserProfile'), { replace: true });
       }
     }
-  }, [isLoadingAuth, currentUser, currentPageName, canAccessPage, navigate]);
+  }, [isLoadingAuth, currentUser, currentPageName, canAccessPage, navigate, effectiveRoleName]);
 
   // Auto-redirect when visiting /login (builder preview link) to the official Base44 login flow
   useEffect(() => {
