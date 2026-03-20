@@ -202,7 +202,7 @@ export function NotificationPermissionBanner() {
 
   const handleDismiss = () => {
     setDismissed(true);
-    localStorage.setItem('notification-banner-dismissed', 'true');
+    localStorage.setItem('notification-banner-dismissed', Date.now().toString());
   };
 
   const handleEnable = async () => {
