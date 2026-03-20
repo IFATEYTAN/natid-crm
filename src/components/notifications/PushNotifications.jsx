@@ -119,11 +119,11 @@ export function NotificationPermissionBanner() {
   };
 
   const handleEnable = async () => {
-    const result = await requestPermission();
-    if (result.success) {
+    const success = await subscribe();
+    if (success) {
       toast.success('התראות הופעלו בהצלחה!');
       handleDismiss();
-    } else if (result.permission === 'denied') {
+    } else if (Notification.permission === 'denied') {
       toast.error('ההתראות נחסמו. ניתן לשנות בהגדרות הדפדפן.');
     }
   };
