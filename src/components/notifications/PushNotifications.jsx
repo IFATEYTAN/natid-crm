@@ -13,9 +13,6 @@ import {
   NotificationTypes,
 } from './pushNotificationUtils';
 
-// VAPID public key - fetched from backend or env
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-
 // Re-export utilities for backward compatibility
 export { isPushSupported, getNotificationPermission, requestNotificationPermission, createAppNotification, NotificationTypes } from './pushNotificationUtils';
 
