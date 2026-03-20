@@ -205,13 +205,7 @@ export function NotificationPermissionBanner() {
     localStorage.setItem('notification-banner-dismissed', Date.now().toString());
   };
 
-  // Export reset function globally for easy access from console or settings
-  if (typeof window !== 'undefined') {
-    window.__resetNotificationBanner = () => {
-      localStorage.removeItem('notification-banner-dismissed');
-      setDismissed(false);
-    };
-  }
+
 
   const handleEnable = async () => {
     const result = await requestPermission();
