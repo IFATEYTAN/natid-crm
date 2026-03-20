@@ -3,13 +3,18 @@ import { Bell, BellOff, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
 import {
   isPushSupported,
   getNotificationPermission,
   requestNotificationPermission,
+  subscribeUserToPush,
   createAppNotification,
   NotificationTypes,
 } from './pushNotificationUtils';
+
+// VAPID public key - fetched from backend or env
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 // Re-export utilities for backward compatibility
 export { isPushSupported, getNotificationPermission, requestNotificationPermission, createAppNotification, NotificationTypes } from './pushNotificationUtils';
