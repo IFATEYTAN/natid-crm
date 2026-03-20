@@ -107,7 +107,65 @@ export default function NotificationSettingsPage() {
             <h1 className="text-2xl font-bold text-[#111827]">הגדרות התראות</h1>
             <p className="text-[#6b7280] text-sm">הגדרת התראות אוטומטיות לאירועים במערכת</p>
           </div>
+          <Button onClick={() => setShowDialog(true)}>
+            <Plus className="w-4 h-4 ms-1" />
+            הגדרה חדשה
+          </Button>
         </div>
+
+        {/* Create Dialog */}
+        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <DialogContent className="max-w-md" dir="rtl">
+            <DialogHeader>
+              <DialogTitle>צור הגדרת התראה חדשה</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-1">
+                <Label>שם ההגדרה</Label>
+                <Input
+                  placeholder="לדוגמה: התראה על קריאה חדשה"
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>אירוע</Label>
+                <Select value={form.event} onValueChange={(v) => setForm((p) => ({ ...p, event: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר אירוע" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(eventLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>ערוצי שליחה</Label>
+                {[
+                  { key: 'inApp', label: 'באפליקציה' },
+                  { key: 'email', label: 'אימייל' },
+                  { key: 'sms', label: 'SMS' },
+                ].map(({ key, label }) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <Switch
+                      checked={form.channels[key]}
+                      onCheckedChange={(v) => setForm((p) => ({ ...p, channels: { ...p.channels, [key]: v } }))}
+                    />
+                    <Label>{label}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setShowDialog(false)}>ביטול</Button>
+              <Button onClick={handleCreate} isLoading={createMutation.isPending} disabled={!form.name || !form.event}>
+                צור הגדרה
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
