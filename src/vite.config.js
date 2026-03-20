@@ -7,8 +7,8 @@ export default defineConfig({
     base44({
       pwa: {
         workbox: {
-          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-          globIgnores: ['**/assets/*.js'],
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          globPatterns: ['**/*.{html,css,ico,png,svg,woff,woff2,webp}'],
         },
       },
     }),
