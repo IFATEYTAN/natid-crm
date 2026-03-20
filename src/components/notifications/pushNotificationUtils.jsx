@@ -14,13 +14,21 @@ export async function subscribeUserToPush(vapidPublicKey) {
   if (Notification.permission !== 'granted') return { success: false, error: 'No permission' };
 
   try {
+    // If no key passed, fetch from server
+    let key = vapidPublicKey;
+    if (!key) {
+      const res = await base44.functions.invoke('getVapidPublicKey', {});
+      key = res?.data?.publicKey;
+    }
+    if (!key) return { success: false, error: 'No VAPID key' };
+
     const registration = await navigator.serviceWorker.ready;
     let subscription = await registration.pushManager.getSubscription();
 
     if (!subscription) {
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        applicationServerKey: urlBase64ToUint8Array(key),
       });
     }
 
