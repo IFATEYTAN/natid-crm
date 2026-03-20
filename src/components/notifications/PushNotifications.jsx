@@ -190,15 +190,11 @@ export function NotificationSettings() {
   };
 
   const handleEnableNotifications = async () => {
-    if (permission === 'default') {
-      const result = await requestPermission();
-      if (result.success) {
-        await subscribe();
-        toast.success('התראות הופעלו!');
-      }
-    } else if (permission === 'granted' && !isSubscribed) {
-      await subscribe();
+    const success = await subscribe();
+    if (success) {
       toast.success('התראות הופעלו!');
+    } else if (Notification.permission === 'denied') {
+      toast.error('ההתראות נחסמו. שנה בהגדרות הדפדפן.');
     }
   };
 
