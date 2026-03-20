@@ -175,7 +175,7 @@ export function NotificationPermissionBanner() {
 }
 
 export function NotificationSettings() {
-  const { permission, isSupported, isSubscribed, subscribe, unsubscribe, requestPermission } =
+  const { permission, isSupported, isSubscribed, isLoading, subscribe, unsubscribe } =
     usePushNotifications();
   const [settings, setSettings] = useState({
     newCalls: true,
