@@ -38,7 +38,14 @@ import {
   RefreshCw,
   BookOpen,
   Users,
+  FileText,
+  Coffee,
+  FileDown,
 } from 'lucide-react';
+import { NotificationPermissionBanner } from '@/components/notifications/PushNotifications';
+import VendorContractsView from '@/components/vendor/VendorContractsView';
+import VendorBreakHistory from '@/components/vendor/VendorBreakHistory';
+import VendorPDFDownload from '@/components/vendor/VendorPDFDownload';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -529,6 +536,9 @@ export default function VendorPortalPage() {
                 />
               </Suspense>
 
+              {/* Push Notification Banner */}
+              <NotificationPermissionBanner />
+
               <Suspense fallback={<Skeleton className="h-32" />}>
                 <VendorStatsLazy
                   vendor={vendorProfile}
@@ -545,6 +555,22 @@ export default function VendorPortalPage() {
                   }}
                 />
               </Suspense>
+
+              {/* PDF Download & Break History */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <FileDown className="w-4 h-4" />
+                      דוח ביצועים
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <VendorPDFDownload vendorId={vendorProfile?.id} />
+                  </CardContent>
+                </Card>
+                <VendorBreakHistory vendorId={vendorProfile?.id} />
+              </div>
 
               {activeCalls.length > 0 && (
                 <Card className="bg-orange-50 border-orange-200">
@@ -625,6 +651,19 @@ export default function VendorPortalPage() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Contracts View */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    החוזים שלי
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <VendorContractsView vendorId={vendorProfile?.id} isVendorUser={isVendorUser} />
+                </CardContent>
+              </Card>
 
               <Card className="bg-white" id="calls-table-section">
                 <CardHeader>
