@@ -8,8 +8,7 @@ export default defineConfig({
       pwa: {
         workbox: {
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-          runtimeCaching: [],
-          globPatterns: ['**/*.{html,css,ico,png,svg,woff,woff2,webp}'],
+          globPatterns: ['**/*.{js,html,css,ico,png,svg,woff,woff2,webp}'],
         },
       },
     }),
