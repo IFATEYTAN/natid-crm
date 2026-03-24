@@ -10,6 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 const DataTableLazy = lazyRetry(() => import('@/components/ui/DataTable'));
@@ -22,7 +29,16 @@ const VendorPortalAdminTabLazy = lazyRetry(
   () => import('@/components/vendor/VendorPortalAdminTab')
 );
 
-import { Phone, MapPin, Navigation, AlertCircle, Settings, RefreshCw } from 'lucide-react';
+import {
+  Phone,
+  MapPin,
+  Navigation,
+  AlertCircle,
+  Settings,
+  RefreshCw,
+  BookOpen,
+  Users,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -38,11 +54,13 @@ export default function VendorPortalPage() {
 
   const isAdmin = effectiveRole === 'admin';
   const isVendorUser = effectiveRole === 'vendor';
-  const [activeTab, setActiveTab] = useState('vendor');
+  const [activeTab, setActiveTab] = useState(() =>
+    effectiveRole === 'admin' ? 'admin' : 'vendor'
+  );
   const [callsTab, setCallsTab] = useState('all');
   useEffect(() => {
-    if (isAdmin) setActiveTab('admin');
-  }, [isAdmin]);
+    if (isAdmin && activeTab === 'vendor' && !vendorProfile) setActiveTab('admin');
+  }, [isAdmin, activeTab, vendorProfile]);
 
   // Vendor profile: server-scoped for vendor users, direct for admin
   const vendorQuery = useQuery({
@@ -67,6 +85,13 @@ export default function VendorPortalPage() {
       return null;
     },
     enabled: !!currentUser?.email,
+  });
+
+  // All vendors list for admin inline picker on vendor tab
+  const allVendorsQuery = useQuery({
+    queryKey: queryKeys.vendors.all(),
+    queryFn: () => base44.entities.Vendor.list('-vendor_name', 500),
+    enabled: isAdmin,
   });
 
   // Calls: server-scoped for vendor users, direct for admin
@@ -259,13 +284,13 @@ export default function VendorPortalPage() {
     callsQuery.refetch();
   };
 
-  if (vendorQuery.isLoading && !isAdmin) {
+  // Show loading state while vendor profile is being fetched
+  if (vendorQuery.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <Skeleton className="h-12 w-12 rounded-full mx-auto" />
-          <Skeleton className="h-6 w-48 mx-auto" />
-          <Skeleton className="h-4 w-64 mx-auto" />
+        <div className="text-center space-y-3">
+          <RefreshCw className="w-8 h-8 animate-spin text-blue-500 mx-auto" />
+          <p className="text-[#6B778C]">טוען פורטל ספקים...</p>
         </div>
       </div>
     );
@@ -281,16 +306,11 @@ export default function VendorPortalPage() {
             <p className="text-[#6B778C]">
               לא נמצא פרופיל ספק המשויך לחשבון שלך. אנא פנה למנהל המערכת.
             </p>
-            <div className="mt-4 space-y-2">
-              <p className="text-sm text-[#6B778C]">
-                ייתכן שהמנהל טרם יצר עבורך פרופיל ספק, או שהאימייל שלך אינו תואם לפרופיל קיים.
-              </p>
-              <Link to={createPageUrl('VendorGuide')}>
-                <Button variant="outline" size="sm" className="mt-2 gap-1">
-                  למדריך הספקים
-                </Button>
-              </Link>
-            </div>
+            <Link to={createPageUrl('VendorGuide')} className="inline-block mt-4">
+              <Button variant="outline" className="gap-2">
+                למדריך הספק
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -415,11 +435,38 @@ export default function VendorPortalPage() {
 
         <TabsContent value="vendor" className="mt-4 space-y-6">
           {!vendorProfile ? (
-            <Card className="max-w-md">
-              <CardContent className="pt-6 text-center">
-                <AlertCircle className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
-                <h2 className="text-xl font-bold mb-2">לא נבחר ספק</h2>
-                <p className="text-[#6B778C]">אנא עברי לטאב "אדמין" ובחרי ספק לצפייה בפורטל.</p>
+            <Card className="max-w-lg mx-auto">
+              <CardContent className="pt-6 space-y-4">
+                <div className="text-center">
+                  <Users className="w-12 h-12 mx-auto text-blue-500 mb-3" />
+                  <h2 className="text-xl font-bold mb-1">בחר ספק לצפייה</h2>
+                  <p className="text-[#6B778C] text-sm">בחר ספק מהרשימה כדי לצפות בפורטל שלו</p>
+                </div>
+                {isAdmin && (
+                  <div className="space-y-3">
+                    <Select
+                      onValueChange={(vendorId) => {
+                        const v = (allVendorsQuery.data || []).find((x) => x.id === vendorId);
+                        if (v) {
+                          setVendorProfile(v);
+                          setIsAvailable(!!v.is_available_now);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="בחר ספק..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(allVendorsQuery.data || []).map((v) => (
+                          <SelectItem key={v.id} value={v.id}>
+                            {v.vendor_name}
+                            {v.phone ? ` (${v.phone})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
@@ -447,6 +494,12 @@ export default function VendorPortalPage() {
                   <p className="text-[#6B778C] text-sm">פורטל ספקים - ניהול הקריאות שלך</p>
                 </div>
                 <div className="flex items-center gap-3">
+                  <Link to={createPageUrl('VendorGuide')}>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <BookOpen className="w-4 h-4" />
+                      מדריך
+                    </Button>
+                  </Link>
                   <Link to={createPageUrl('MyVendorProfile')}>
                     <Button variant="outline" size="sm" className="gap-1">
                       <Settings className="w-4 h-4" />

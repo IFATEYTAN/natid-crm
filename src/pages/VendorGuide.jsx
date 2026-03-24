@@ -24,6 +24,11 @@ import {
   Award,
   ThumbsUp,
   ArrowRight,
+  UserPlus,
+  Monitor,
+  Smartphone,
+  FileText,
+  Link2,
 } from 'lucide-react';
 
 /* ──────── Animated Hero Tow Truck ──────── */
@@ -206,6 +211,34 @@ function HeroTruck() {
 }
 
 /* ──────── Section Data ──────── */
+const registrationSteps = [
+  {
+    icon: UserPlus,
+    title: 'רישום ספק חדש',
+    desc: 'מנהל המערכת יוצר את פרופיל הספק בעמוד "נותני שירות" ומגדיר: שם הספק, אימייל, טלפון, סוגי שירות ואזורי כיסוי. הספק מקבל הזמנה להצטרף למערכת.',
+  },
+  {
+    icon: LogIn,
+    title: 'הפעלת חשבון',
+    desc: 'הספק מקבל מהמנהל אימייל וסיסמה זמנית. בהתחברות ראשונה, הספק נכנס עם פרטי ההתחברות שקיבל. האימייל חייב להיות זהה לאימייל שהוגדר בפרופיל הספק.',
+  },
+  {
+    icon: Link2,
+    title: 'קישור לפורטל',
+    desc: 'הקישור היומיומי לשימוש בפורטל: /VendorPortal. כאשר הספק מתחבר, המערכת מזהה אוטומטית שהוא ספק (לפי role=vendor) ומפנה אותו לפורטל.',
+  },
+  {
+    icon: Monitor,
+    title: 'עמודי הפורטל',
+    desc: 'הספק רואה: פורטל ספקים (דף בית), ניהול קריאה (עמוד קריאה בודדת), הפרופיל שלי (עדכון פרטים), מדריך (העמוד הזה), ואפליקציה ניידת.',
+  },
+  {
+    icon: Smartphone,
+    title: 'אפליקציה ניידת',
+    desc: 'הספק יכול להתקין את האפליקציה כ-PWA (הוספה למסך הבית) לחוויה טובה יותר במובייל. יש גם עמוד "אפליקציית ספקים" עם ממשק מותאם לטלפון.',
+  },
+];
+
 const gettingStartedSteps = [
   {
     icon: LogIn,
@@ -289,53 +322,19 @@ const proTips = [
   { icon: Shield, title: 'הישאר זמין', desc: 'ככל שתהיה זמין יותר שעות, כך תקבל יותר הזדמנויות.' },
 ];
 
-const registrationSteps = [
-  {
-    icon: LogIn,
-    title: 'יצירת פרופיל על ידי מנהל',
-    desc: 'מנהל המערכת יוצר עבורך פרופיל ספק בעמוד "ניהול ספקים", כולל פרטי קשר, סוגי שירות ואזורי כיסוי.',
-  },
-  {
-    icon: Shield,
-    title: 'קבלת פרטי התחברות',
-    desc: 'תקבל אימייל וסיסמה ראשונית להתחברות למערכת. האימייל חייב להיות זהה לאימייל שהוזן בפרופיל הספק.',
-  },
-  {
-    icon: Award,
-    title: 'השלמת פרופיל',
-    desc: 'לאחר ההתחברות הראשונה, היכנס לעמוד "הפרופיל שלי" והשלם את כל הפרטים: שעות פעילות, תעריפים, ציוד מיוחד ואזורי כיסוי מדויקים.',
-  },
-  {
-    icon: MapPin,
-    title: 'הפעלת מיקום והתראות',
-    desc: 'אפשר שיתוף GPS והתראות push כדי לקבל קריאות. ללא אישור מיקום, המערכת לא תוכל לשבץ אותך לקריאות קרובות.',
-  },
-  {
-    icon: ToggleRight,
-    title: 'הפעלת זמינות',
-    desc: 'הפעל את מתג הזמינות בפורטל הספקים. מרגע זה, תתחיל לקבל קריאות שירות בהתאם לאזורי הכיסוי שלך.',
-  },
-];
-
-const vendorPages = [
-  {
-    title: 'פורטל הספקים',
-    page: 'VendorPortal',
-    desc: 'דשבורד ראשי - סטטיסטיקות, קריאות פעילות, מתג זמינות',
-  },
-  {
-    title: 'הפרופיל שלי',
-    page: 'MyVendorProfile',
-    desc: 'עדכון פרטי קשר, תעריפים, אזורי כיסוי ושעות פעילות',
-  },
-  {
-    title: 'אפליקציה מובייל',
-    page: 'VendorMobileApp',
-    desc: 'מדריך התקנה והפעלה של הגרסה הניידת',
-  },
-];
-
 const faqData = [
+  {
+    q: 'איך נרשמים כספק חדש?',
+    a: 'הרישום מתבצע על ידי מנהל המערכת. המנהל יוצר את הפרופיל שלך בעמוד "נותני שירות", מגדיר את סוגי השירות ואזורי הכיסוי, ושולח לך אימייל וסיסמה להתחברות.',
+  },
+  {
+    q: 'איזה לינק אני צריך להשתמש בו?',
+    a: 'הכנס דרך הלינק הראשי של האפליקציה. המערכת מזהה אוטומטית שאתה ספק ומפנה אותך לפורטל הספקים. תוכל גם לגשת ישירות ל-/VendorPortal.',
+  },
+  {
+    q: 'מה המסך הראשון שאראה?',
+    a: 'בהתחברות תראה את פורטל הספקים - עם מתג זמינות, סטטיסטיקות, וטבלת הקריאות שלך. אם הפרופיל לא נמצא, תראה הודעה לפנות למנהל.',
+  },
   {
     q: 'איך מקבלים קריאות?',
     a: 'כשאתה מסומן כ"זמין" וקריאה חדשה מגיעה באזור הכיסוי שלך, המערכת משבצת אותך אוטומטית לפי מרחק, זמינות, דירוג וסוג שירות. תקבל התראה עם פרטי הקריאה ויש לך 5 דקות לאשר.',
@@ -503,11 +502,14 @@ export default function VendorGuide() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
       >
-        <Section title="רישום והצטרפות למערכת" icon={Shield} defaultOpen>
+        <Section title="רישום והצטרפות למערכת" icon={UserPlus} defaultOpen>
           <div className="space-y-4">
-            <p className="text-sm text-gray-500 mb-4">
-              תהליך ההצטרפות למערכת כספק חדש - 5 שלבים פשוטים:
-            </p>
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 mb-4">
+              <p className="text-sm text-amber-800 font-medium">
+                ספק חדש? תהליך הרישום מתחיל אצל מנהל המערכת. המנהל יוצר את הפרופיל שלך ושולח לך פרטי
+                התחברות.
+              </p>
+            </div>
             {registrationSteps.map((step, idx) => {
               const StepIcon = step.icon;
               return (
@@ -518,12 +520,12 @@ export default function VendorGuide() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.1 }}
                 >
-                  <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-sm">
+                  <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold text-sm">
                     {idx + 1}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <StepIcon className="w-4 h-4 text-green-500" />
+                      <StepIcon className="w-4 h-4 text-amber-500" />
                       <h4 className="font-bold text-sm text-gray-900">{step.title}</h4>
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
@@ -532,20 +534,37 @@ export default function VendorGuide() {
               );
             })}
 
-            {/* Available Pages */}
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <h4 className="font-bold text-sm text-gray-900 mb-3">עמודים זמינים לספקים:</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {vendorPages.map((page) => (
-                  <Link
-                    key={page.page}
-                    to={createPageUrl(page.page)}
-                    className="p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-red-200 hover:bg-red-50 transition-colors block"
-                  >
-                    <div className="font-bold text-sm text-gray-900 mb-1">{page.title}</div>
-                    <div className="text-xs text-gray-500">{page.desc}</div>
-                  </Link>
-                ))}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <h4 className="font-bold text-sm text-blue-800 mb-2">עמודים זמינים לספק</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Link
+                  to={createPageUrl('VendorPortal')}
+                  className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <Monitor className="w-3 h-3" />
+                  פורטל ספקים (עמוד ראשי)
+                </Link>
+                <Link
+                  to={createPageUrl('MyVendorProfile')}
+                  className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <FileText className="w-3 h-3" />
+                  הפרופיל שלי
+                </Link>
+                <Link
+                  to={createPageUrl('VendorMobileApp')}
+                  className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <Smartphone className="w-3 h-3" />
+                  אפליקציה ניידת
+                </Link>
+                <Link
+                  to={createPageUrl('VendorGuide')}
+                  className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <FileText className="w-3 h-3" />
+                  מדריך (העמוד הזה)
+                </Link>
               </div>
             </div>
           </div>
