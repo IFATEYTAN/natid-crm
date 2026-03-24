@@ -68,7 +68,7 @@ export const PAGE_PERMISSIONS = {
   VendorCallManagement: ['vendor'],
   VendorGuide: ['vendor'],
   VendorMobileApp: ['vendor'],
-  VendorPortal: ['vendor'],
+  VendorPortal: ['admin', 'operator', 'vendor'],
 
   // Public - customer portal (no auth required, token-based)
   CustomerPortal: ['admin', 'operator', 'vendor', 'agent'],
