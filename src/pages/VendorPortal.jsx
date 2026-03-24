@@ -10,6 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 const DataTableLazy = lazyRetry(() => import('@/components/ui/DataTable'));
@@ -22,7 +29,16 @@ const VendorPortalAdminTabLazy = lazyRetry(
   () => import('@/components/vendor/VendorPortalAdminTab')
 );
 
-import { Phone, MapPin, Navigation, AlertCircle, Settings, RefreshCw, BookOpen } from 'lucide-react';
+import {
+  Phone,
+  MapPin,
+  Navigation,
+  AlertCircle,
+  Settings,
+  RefreshCw,
+  BookOpen,
+  Users,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -38,11 +54,11 @@ export default function VendorPortalPage() {
 
   const isAdmin = effectiveRole === 'admin';
   const isVendorUser = effectiveRole === 'vendor';
-  const [activeTab, setActiveTab] = useState('vendor');
+  const [activeTab, setActiveTab] = useState(() => (effectiveRole === 'admin' ? 'admin' : 'vendor'));
   const [callsTab, setCallsTab] = useState('all');
   useEffect(() => {
-    if (isAdmin) setActiveTab('admin');
-  }, [isAdmin]);
+    if (isAdmin && activeTab === 'vendor' && !vendorProfile) setActiveTab('admin');
+  }, [isAdmin, activeTab, vendorProfile]);
 
   // Vendor profile: server-scoped for vendor users, direct for admin
   const vendorQuery = useQuery({
@@ -67,6 +83,13 @@ export default function VendorPortalPage() {
       return null;
     },
     enabled: !!currentUser?.email,
+  });
+
+  // All vendors list for admin inline picker on vendor tab
+  const allVendorsQuery = useQuery({
+    queryKey: queryKeys.vendors.all(),
+    queryFn: () => base44.entities.Vendor.list('-vendor_name', 500),
+    enabled: isAdmin,
   });
 
   // Calls: server-scoped for vendor users, direct for admin
@@ -410,11 +433,38 @@ export default function VendorPortalPage() {
 
         <TabsContent value="vendor" className="mt-4 space-y-6">
           {!vendorProfile ? (
-            <Card className="max-w-md">
-              <CardContent className="pt-6 text-center">
-                <AlertCircle className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
-                <h2 className="text-xl font-bold mb-2">לא נבחר ספק</h2>
-                <p className="text-[#6B778C]">אנא עברי לטאב "אדמין" ובחרי ספק לצפייה בפורטל.</p>
+            <Card className="max-w-lg mx-auto">
+              <CardContent className="pt-6 space-y-4">
+                <div className="text-center">
+                  <Users className="w-12 h-12 mx-auto text-blue-500 mb-3" />
+                  <h2 className="text-xl font-bold mb-1">בחר ספק לצפייה</h2>
+                  <p className="text-[#6B778C] text-sm">בחר ספק מהרשימה כדי לצפות בפורטל שלו</p>
+                </div>
+                {isAdmin && (
+                  <div className="space-y-3">
+                    <Select
+                      onValueChange={(vendorId) => {
+                        const v = (allVendorsQuery.data || []).find((x) => x.id === vendorId);
+                        if (v) {
+                          setVendorProfile(v);
+                          setIsAvailable(!!v.is_available_now);
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="בחר ספק..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(allVendorsQuery.data || []).map((v) => (
+                          <SelectItem key={v.id} value={v.id}>
+                            {v.vendor_name}
+                            {v.phone ? ` (${v.phone})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
