@@ -227,11 +227,17 @@ export default function VendorCallManagementPage() {
       const file = new File([blob], 'signature.png', { type: 'image/png' });
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
+      // Generate signature hash for integrity verification
+      const arrayBuffer = await blob.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const signatureHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
       addPhotoMutation.mutate({
         call_id: selectedCallId,
         uploaded_by: vendorProfile?.vendor_name || 'ספק',
         file_url,
-        file_name: 'חתימת לקוח',
+        file_name: `חתימת לקוח | ${new Date().toLocaleString('he-IL')} | SHA256:${signatureHash.substring(0, 12)}`,
         category: 'customer_signature',
         is_deleted: false,
       });
