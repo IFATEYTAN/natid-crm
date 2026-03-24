@@ -111,6 +111,7 @@ export default function VendorAvailabilityToggle({
         });
         // Store break record id for later update
         localStorage.setItem('vendor_break_record_id', breakRecord.id);
+        localStorage.setItem('vendor_break_start_time', String(Date.now()));
       } catch (e) {
         console.warn('Failed to save break history:', e);
       }
