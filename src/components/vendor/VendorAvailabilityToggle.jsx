@@ -100,6 +100,20 @@ export default function VendorAvailabilityToggle({
         vendor_id: vendor.id,
         status: 'on_break',
       });
+      // Save break start to history
+      const breakStart = new Date().toISOString();
+      try {
+        const breakRecord = await base44.entities.VendorBreak.create({
+          vendor_id: vendor.id,
+          vendor_name: vendor.vendor_name,
+          break_start: breakStart,
+          planned_duration_minutes: minutes,
+        });
+        // Store break record id for later update
+        localStorage.setItem('vendor_break_record_id', breakRecord.id);
+      } catch (e) {
+        console.warn('Failed to save break history:', e);
+      }
       setIsOnBreak(true);
       setBreakEndTime(Date.now() + minutes * 60 * 1000);
       showToast.success(`הפסקה ל-${minutes} דקות התחילה`);
@@ -118,6 +132,24 @@ export default function VendorAvailabilityToggle({
         vendor_id: vendor.id,
         status: 'available',
       });
+      // Update break history record with end time
+      const breakRecordId = localStorage.getItem('vendor_break_record_id');
+      if (breakRecordId) {
+        const breakEnd = new Date();
+        const breakStartStr = localStorage.getItem('vendor_break_start_time');
+        const duration = breakStartStr ? Math.round((breakEnd.getTime() - parseInt(breakStartStr)) / 60000) : null;
+        try {
+          await base44.entities.VendorBreak.update(breakRecordId, {
+            break_end: breakEnd.toISOString(),
+            duration_minutes: duration,
+            end_reason: 'manual',
+          });
+        } catch (e) {
+          console.warn('Failed to update break history:', e);
+        }
+        localStorage.removeItem('vendor_break_record_id');
+        localStorage.removeItem('vendor_break_start_time');
+      }
       setIsOnBreak(false);
       setBreakEndTime(null);
       setBreakRemaining(null);
