@@ -27,6 +27,8 @@ import {
   Truck,
   ArrowLeft,
 } from 'lucide-react';
+import { NotificationPermissionBanner } from '@/components/notifications/PushNotifications';
+import VendorMobileMap from '@/components/vendor/VendorMobileMap';
 
 const TAB_HOME = 'home';
 const TAB_CALLS = 'calls';
@@ -244,6 +246,9 @@ export default function VendorMobileApp() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20" dir="rtl">
+      {/* Push Notification Banner */}
+      <NotificationPermissionBanner />
+
       {/* Home Tab */}
       {activeTab === TAB_HOME && (
         <div className="px-4 pt-6 space-y-5">
@@ -533,14 +538,8 @@ export default function VendorMobileApp() {
 
       {/* Map Tab */}
       {activeTab === TAB_MAP && (
-        <div className="flex items-center justify-center min-h-[calc(100vh-5rem)] px-4">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MapPin className="w-10 h-10 text-blue-500" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">מפה</h2>
-            <p className="text-gray-500">בקרוב</p>
-          </div>
+        <div className="px-4 pt-6">
+          <VendorMobileMap vendorProfile={vendorProfile} activeCalls={activeCalls} />
         </div>
       )}
 
