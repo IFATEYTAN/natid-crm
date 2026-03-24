@@ -304,11 +304,16 @@ export default function VendorPortalPage() {
             <p className="text-[#6B778C]">
               לא נמצא פרופיל ספק המשויך לחשבון שלך. אנא פנה למנהל המערכת.
             </p>
-            <Link to={createPageUrl('VendorGuide')} className="inline-block mt-4">
-              <Button variant="outline" className="gap-2">
-                למדריך הספק
-              </Button>
-            </Link>
+            <div className="mt-4 space-y-2">
+              <p className="text-sm text-[#6B778C]">
+                ייתכן שהמנהל טרם יצר עבורך פרופיל ספק, או שהאימייל שלך אינו תואם לפרופיל קיים.
+              </p>
+              <Link to={createPageUrl('VendorGuide')}>
+                <Button variant="outline" size="sm" className="mt-2 gap-1">
+                  למדריך הספקים
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
