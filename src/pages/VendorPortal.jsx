@@ -22,7 +22,7 @@ const VendorPortalAdminTabLazy = lazyRetry(
   () => import('@/components/vendor/VendorPortalAdminTab')
 );
 
-import { Phone, MapPin, Navigation, AlertCircle, Settings, RefreshCw } from 'lucide-react';
+import { Phone, MapPin, Navigation, AlertCircle, Settings, RefreshCw, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -259,6 +259,18 @@ export default function VendorPortalPage() {
     callsQuery.refetch();
   };
 
+  // Show loading state while vendor profile is being fetched
+  if (vendorQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-3">
+          <RefreshCw className="w-8 h-8 animate-spin text-blue-500 mx-auto" />
+          <p className="text-[#6B778C]">טוען פורטל ספקים...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!vendorProfile && !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -269,6 +281,11 @@ export default function VendorPortalPage() {
             <p className="text-[#6B778C]">
               לא נמצא פרופיל ספק המשויך לחשבון שלך. אנא פנה למנהל המערכת.
             </p>
+            <Link to={createPageUrl('VendorGuide')} className="inline-block mt-4">
+              <Button variant="outline" className="gap-2">
+                למדריך הספק
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -425,6 +442,12 @@ export default function VendorPortalPage() {
                   <p className="text-[#6B778C] text-sm">פורטל ספקים - ניהול הקריאות שלך</p>
                 </div>
                 <div className="flex items-center gap-3">
+                  <Link to={createPageUrl('VendorGuide')}>
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <BookOpen className="w-4 h-4" />
+                      מדריך
+                    </Button>
+                  </Link>
                   <Link to={createPageUrl('MyVendorProfile')}>
                     <Button variant="outline" size="sm" className="gap-1">
                       <Settings className="w-4 h-4" />
