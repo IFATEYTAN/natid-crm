@@ -259,6 +259,18 @@ export default function VendorPortalPage() {
     callsQuery.refetch();
   };
 
+  if (vendorQuery.isLoading && !isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <Skeleton className="h-12 w-12 rounded-full mx-auto" />
+          <Skeleton className="h-6 w-48 mx-auto" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
   if (!vendorProfile && !isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -269,6 +281,16 @@ export default function VendorPortalPage() {
             <p className="text-[#6B778C]">
               לא נמצא פרופיל ספק המשויך לחשבון שלך. אנא פנה למנהל המערכת.
             </p>
+            <div className="mt-4 space-y-2">
+              <p className="text-sm text-[#6B778C]">
+                ייתכן שהמנהל טרם יצר עבורך פרופיל ספק, או שהאימייל שלך אינו תואם לפרופיל קיים.
+              </p>
+              <Link to={createPageUrl('VendorGuide')}>
+                <Button variant="outline" size="sm" className="mt-2 gap-1">
+                  למדריך הספקים
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

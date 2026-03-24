@@ -289,6 +289,52 @@ const proTips = [
   { icon: Shield, title: 'הישאר זמין', desc: 'ככל שתהיה זמין יותר שעות, כך תקבל יותר הזדמנויות.' },
 ];
 
+const registrationSteps = [
+  {
+    icon: LogIn,
+    title: 'יצירת פרופיל על ידי מנהל',
+    desc: 'מנהל המערכת יוצר עבורך פרופיל ספק בעמוד "ניהול ספקים", כולל פרטי קשר, סוגי שירות ואזורי כיסוי.',
+  },
+  {
+    icon: Shield,
+    title: 'קבלת פרטי התחברות',
+    desc: 'תקבל אימייל וסיסמה ראשונית להתחברות למערכת. האימייל חייב להיות זהה לאימייל שהוזן בפרופיל הספק.',
+  },
+  {
+    icon: Award,
+    title: 'השלמת פרופיל',
+    desc: 'לאחר ההתחברות הראשונה, היכנס לעמוד "הפרופיל שלי" והשלם את כל הפרטים: שעות פעילות, תעריפים, ציוד מיוחד ואזורי כיסוי מדויקים.',
+  },
+  {
+    icon: MapPin,
+    title: 'הפעלת מיקום והתראות',
+    desc: 'אפשר שיתוף GPS והתראות push כדי לקבל קריאות. ללא אישור מיקום, המערכת לא תוכל לשבץ אותך לקריאות קרובות.',
+  },
+  {
+    icon: ToggleRight,
+    title: 'הפעלת זמינות',
+    desc: 'הפעל את מתג הזמינות בפורטל הספקים. מרגע זה, תתחיל לקבל קריאות שירות בהתאם לאזורי הכיסוי שלך.',
+  },
+];
+
+const vendorPages = [
+  {
+    title: 'פורטל הספקים',
+    page: 'VendorPortal',
+    desc: 'דשבורד ראשי - סטטיסטיקות, קריאות פעילות, מתג זמינות',
+  },
+  {
+    title: 'הפרופיל שלי',
+    page: 'MyVendorProfile',
+    desc: 'עדכון פרטי קשר, תעריפים, אזורי כיסוי ושעות פעילות',
+  },
+  {
+    title: 'אפליקציה מובייל',
+    page: 'VendorMobileApp',
+    desc: 'מדריך התקנה והפעלה של הגרסה הניידת',
+  },
+];
+
 const faqData = [
   {
     q: 'איך מקבלים קריאות?',
@@ -329,6 +375,18 @@ const faqData = [
   {
     q: 'מה לעשות אם הלקוח מבטל?',
     a: 'עדכן את המוקד דרך הצ\'אט. המוקדן יעביר את הקריאה לסטטוס "בוטל" עם סיבה. אל תסגור בעצמך.',
+  },
+  {
+    q: 'איך נרשמים כספק חדש?',
+    a: 'ספקים חדשים מתווספים על ידי מנהל המערכת. פנה למנהל עם פרטי הקשר שלך, סוגי השירות ואזורי הכיסוי. המנהל ייצור עבורך פרופיל ותקבל פרטי התחברות.',
+  },
+  {
+    q: 'האימייל שלי לא מתאים - מה עושים?',
+    a: 'האימייל שאיתו אתה מתחבר חייב להיות זהה לאימייל שהוזן בפרופיל הספק. פנה למנהל המערכת לתיקון האימייל בפרופיל.',
+  },
+  {
+    q: 'איפה אני יכול לראות את כל העמודים הזמינים לי?',
+    a: 'כספק, יש לך גישה לפורטל הספקים (דשבורד ראשי), הפרופיל שלי (הגדרות), ניהול קריאה (לכל קריאה), ומדריך הספקים (העמוד הזה). מנהלים ומוקדנים רואים עמודים נוספים.',
   },
 ];
 
@@ -439,13 +497,68 @@ export default function VendorGuide() {
         </Button>
       </motion.div>
 
+      {/* Section 0: Registration & Onboarding */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <Section title="רישום והצטרפות למערכת" icon={Shield} defaultOpen>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500 mb-4">
+              תהליך ההצטרפות למערכת כספק חדש - 5 שלבים פשוטים:
+            </p>
+            {registrationSteps.map((step, idx) => {
+              const StepIcon = step.icon;
+              return (
+                <motion.div
+                  key={step.title}
+                  className="flex items-start gap-4"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-sm">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <StepIcon className="w-4 h-4 text-green-500" />
+                      <h4 className="font-bold text-sm text-gray-900">{step.title}</h4>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">{step.desc}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+
+            {/* Available Pages */}
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <h4 className="font-bold text-sm text-gray-900 mb-3">עמודים זמינים לספקים:</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {vendorPages.map((page) => (
+                  <Link
+                    key={page.page}
+                    to={createPageUrl(page.page)}
+                    className="p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-red-200 hover:bg-red-50 transition-colors block"
+                  >
+                    <div className="font-bold text-sm text-gray-900 mb-1">{page.title}</div>
+                    <div className="text-xs text-gray-500">{page.desc}</div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Section>
+      </motion.div>
+
       {/* Section 1: Getting Started */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Section title="התחלת עבודה" icon={LogIn} defaultOpen>
+        <Section title="התחלת עבודה" icon={LogIn}>
           <div className="space-y-4">
             {gettingStartedSteps.map((step, idx) => {
               const StepIcon = step.icon;
