@@ -16,11 +16,18 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['recharts'],
-          motion: ['framer-motion'],
-          maps: ['react-leaflet'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+            if (id.includes('framer-motion')) return 'motion';
+            if (id.includes('leaflet')) return 'maps';
+            if (id.includes('radix-ui')) return 'radix';
+            if (id.includes('react-dom')) return 'react-dom';
+            if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('xlsx') || id.includes('jspdf')) return 'export-libs';
+            if (id.includes('@tanstack')) return 'tanstack';
+            return 'vendor';
+          }
         },
       },
     },

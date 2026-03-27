@@ -232,12 +232,12 @@ export default function LandingPage() {
       style={{ fontFamily: "'Heebo', sans-serif" }}
     >
       <motion.header
-        className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-2 sm:px-0"
+        className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100"
         initial={{ y: -80 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
@@ -246,19 +246,30 @@ export default function LandingPage() {
             />
             <span className="text-xl font-bold text-gray-900">NatID 360 Control</span>
           </div>
-          {user && (
+          {user ? (
             <Link
               to="/Dashboard"
-              className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              className="px-4 sm:px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm sm:text-base whitespace-nowrap"
             >
               חזרה לדשבורד
             </Link>
+          ) : (
+            <a
+              href="#login"
+              className="px-4 sm:px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors text-sm sm:text-base whitespace-nowrap"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              כניסה למערכת
+            </a>
           )}
         </div>
       </motion.header>
 
       <section className="pt-24 pb-8 md:pt-28 md:pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <motion.div
               initial={{ opacity: 0, x: 30 }}
@@ -275,7 +286,8 @@ export default function LandingPage() {
 
               {!user && (
                 <motion.div
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 sm:p-6 shadow-sm max-w-sm mx-auto lg:mx-0"
+                  id="login-section"
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm max-w-sm mx-auto lg:mx-0"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
