@@ -7,12 +7,24 @@ export default defineConfig({
     base44({
       pwa: {
         workbox: {
-          maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+          maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
           globPatterns: ['**/*.{js,html,css,ico,png,svg,woff,woff2,webp}'],
         },
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+          motion: ['framer-motion'],
+          maps: ['react-leaflet'],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

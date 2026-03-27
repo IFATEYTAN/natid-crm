@@ -84,8 +84,8 @@ function HeroIllustration() {
         transition={{ duration: 1, delay: 1.2, ease: 'easeOut' }}
       >
         <motion.g
-          animate={{ y: [0, -3, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          animate={{ x: [0, 60, 120, 60, 0], y: [0, -3, 0, -3, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         >
           <rect x="140" y="240" width="80" height="40" rx="4" fill="#DC2626" />
           <rect x="220" y="250" width="40" height="30" rx="3" fill="#B91C1C" />
@@ -156,7 +156,7 @@ function HeroIllustration() {
         fill="none"
         initial={{ scale: 1, opacity: 0.8 }}
         animate={{ scale: 2.5, opacity: 0 }}
-        transition={{ duration: 2, repeat: Infinity, delay: 2 }}
+        transition={{ duration: 2, repeat: Infinity }}
       />
       <motion.g
         initial={{ scale: 0, opacity: 0 }}
@@ -188,7 +188,7 @@ function HeroIllustration() {
         <rect x="325" y="175" width="5" height="8" rx="2" fill="white" />
         <rect x="340" y="175" width="5" height="8" rx="2" fill="white" />
       </motion.g>
-      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }}>
+      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
         <motion.path
           d="M200 230 Q205 220 210 230"
           stroke="#DC2626"
@@ -232,12 +232,12 @@ export default function LandingPage() {
       style={{ fontFamily: "'Heebo', sans-serif" }}
     >
       <motion.header
-        className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100"
+        className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-2 sm:px-0"
         initial={{ y: -80 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/36b225264_NatiLogoRGB.png"
@@ -258,7 +258,7 @@ export default function LandingPage() {
       </motion.header>
 
       <section className="pt-24 pb-8 md:pt-28 md:pb-12">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <motion.div
               initial={{ opacity: 0, x: 30 }}
@@ -275,7 +275,7 @@ export default function LandingPage() {
 
               {!user && (
                 <motion.div
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-6 shadow-sm max-w-sm"
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-4 sm:p-6 shadow-sm max-w-sm mx-auto lg:mx-0"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
@@ -286,7 +286,7 @@ export default function LandingPage() {
               )}
 
               {user && (
-                <div className="grid grid-cols-4 gap-4 mt-4">
+                <div className="grid grid-cols-4 gap-3 sm:gap-4 mt-4 px-2 sm:px-0">
                   {stats.map((stat, i) => (
                     <motion.div
                       key={stat.label}
@@ -315,7 +315,7 @@ export default function LandingPage() {
       </section>
 
       <section className="py-10 md:py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div
             className="text-center mb-8"
             initial={{ opacity: 0, y: 20 }}
@@ -350,7 +350,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="py-8 border-t border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6955a04a2de0845ff4cb8a71/94c28994a_image.png"
             alt="Nati Road Services"
