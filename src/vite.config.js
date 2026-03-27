@@ -29,7 +29,12 @@ export default defineConfig({
             if (id.includes('date-fns') || id.includes('moment')) return 'vendor-dates';
             if (id.includes('three')) return 'vendor-three';
             if (id.includes('xlsx') || id.includes('jspdf')) return 'vendor-export';
+            return 'vendor-misc';
           }
+          // Split app code by directory
+          if (id.includes('/src/pages/')) return 'app-pages';
+          if (id.includes('/src/components/')) return 'app-components';
+          if (id.includes('/src/features/')) return 'app-features';
         },
       },
     },
