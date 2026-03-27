@@ -76,13 +76,18 @@ export const vendorUpdateSchema = vendorCreateSchema.partial();
  * Strips unknown fields, converts types, removes empty optional values.
  */
 export function sanitizeVendorCreate(formData) {
-  const cleaned = {
-    ...formData,
-    payment_rate_per_call:
-      formData.payment_rate_per_call !== '' && formData.payment_rate_per_call != null
-        ? Number(formData.payment_rate_per_call)
-        : null,
-  };
+  const cleaned = { ...formData };
+
+  // Convert payment_rate_per_call to number or remove it entirely
+  if (cleaned.payment_rate_per_call === '' || cleaned.payment_rate_per_call == null) {
+    delete cleaned.payment_rate_per_call;
+  } else {
+    cleaned.payment_rate_per_call = Number(cleaned.payment_rate_per_call);
+  }
+
+  // Remove fields not in the Zod schema to avoid .strict() rejection
+  delete cleaned.coverage_cities;
+  delete cleaned.vehicle_types_supported;
 
   const result = vendorCreateSchema.safeParse(cleaned);
 
@@ -91,7 +96,12 @@ export function sanitizeVendorCreate(formData) {
     throw new Error(`שגיאת ולידציה: ${errors.join(', ')}`);
   }
 
-  return result.data;
+  // Re-add optional fields that exist on the entity but not in the Zod schema
+  const output = result.data;
+  if (formData.coverage_cities) output.coverage_cities = formData.coverage_cities;
+  if (formData.vehicle_types_supported?.length) output.vehicle_types_supported = formData.vehicle_types_supported;
+
+  return output;
 }
 
 /**
@@ -99,13 +109,16 @@ export function sanitizeVendorCreate(formData) {
  * Same as create but all fields optional.
  */
 export function sanitizeVendorUpdate(formData) {
-  const cleaned = {
-    ...formData,
-    payment_rate_per_call:
-      formData.payment_rate_per_call !== '' && formData.payment_rate_per_call != null
-        ? Number(formData.payment_rate_per_call)
-        : null,
-  };
+  const cleaned = { ...formData };
+
+  if (cleaned.payment_rate_per_call === '' || cleaned.payment_rate_per_call == null) {
+    delete cleaned.payment_rate_per_call;
+  } else {
+    cleaned.payment_rate_per_call = Number(cleaned.payment_rate_per_call);
+  }
+
+  delete cleaned.coverage_cities;
+  delete cleaned.vehicle_types_supported;
 
   const result = vendorUpdateSchema.safeParse(cleaned);
 
@@ -114,5 +127,9 @@ export function sanitizeVendorUpdate(formData) {
     throw new Error(`שגיאת ולידציה: ${errors.join(', ')}`);
   }
 
-  return result.data;
+  const output = result.data;
+  if (formData.coverage_cities) output.coverage_cities = formData.coverage_cities;
+  if (formData.vehicle_types_supported?.length) output.vehicle_types_supported = formData.vehicle_types_supported;
+
+  return output;
 }

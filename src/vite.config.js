@@ -18,15 +18,17 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
-            if (id.includes('framer-motion')) return 'motion';
-            if (id.includes('leaflet')) return 'maps';
-            if (id.includes('radix-ui')) return 'radix';
-            if (id.includes('react-dom')) return 'react-dom';
-            if (id.includes('lucide-react')) return 'icons';
-            if (id.includes('xlsx') || id.includes('jspdf')) return 'export-libs';
-            if (id.includes('@tanstack')) return 'tanstack';
-            return 'vendor';
+            if (id.includes('react-dom')) return 'vendor-react-dom';
+            if (id.includes('react-router')) return 'vendor-router';
+            if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('leaflet')) return 'vendor-maps';
+            if (id.includes('radix') || id.includes('shadcn')) return 'vendor-ui';
+            if (id.includes('lucide')) return 'vendor-icons';
+            if (id.includes('zod') || id.includes('react-hook-form') || id.includes('hookform')) return 'vendor-forms';
+            if (id.includes('date-fns') || id.includes('moment')) return 'vendor-dates';
+            if (id.includes('three')) return 'vendor-three';
+            if (id.includes('xlsx') || id.includes('jspdf')) return 'vendor-export';
           }
         },
       },
