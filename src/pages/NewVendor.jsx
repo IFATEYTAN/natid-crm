@@ -118,13 +118,14 @@ export default function NewVendorPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.vendor_name || !formData.phone) {
-      showToast.error('נא למלא שם ספק וטלפון');
-      return;
-    }
+    // Pre-validation with clear Hebrew messages
+    const missing = [];
+    if (!formData.vendor_name.trim()) missing.push('שם ספק');
+    if (!formData.phone.trim()) missing.push('טלפון');
+    if (sendInvite && !formData.email.trim()) missing.push('אימייל (נדרש לשליחת הזמנה)');
 
-    if (sendInvite && !formData.email) {
-      showToast.error('נדרש אימייל לשליחת הזמנה');
+    if (missing.length > 0) {
+      showToast.error(`נא למלא את השדות הבאים: ${missing.join(', ')}`);
       return;
     }
 
@@ -132,7 +133,6 @@ export default function NewVendorPage() {
       const data = sanitizeVendorCreate(formData);
       createMutation.mutate(data, {
         onSuccess: async () => {
-          // Send invite email if requested
           if (sendInvite && data.email) {
             try {
               await base44.users.inviteUser(data.email, 'vendor');

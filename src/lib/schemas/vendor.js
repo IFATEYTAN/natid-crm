@@ -26,6 +26,20 @@ const serviceTypeEnum = z.enum([
  * Schema for creating a new vendor.
  * Only includes writable fields that the Base44 API accepts.
  */
+// Hebrew field labels for user-friendly error messages
+const fieldLabels = {
+  vendor_name: 'שם ספק',
+  phone: 'טלפון',
+  email: 'אימייל',
+  contact_person: 'איש קשר',
+  phone_2: 'טלפון משני',
+  fax: 'פקס',
+  address: 'כתובת',
+  city: 'עיר',
+  company_id: 'ח.פ./ת.ז.',
+  payment_rate_per_call: 'תשלום לקריאה',
+};
+
 export const vendorCreateSchema = z
   .object({
     vendor_name: z.string().min(1, 'שם ספק הוא שדה חובה'),
@@ -47,12 +61,14 @@ export const vendorCreateSchema = z
     status_text: z.string().optional().default(''),
     department_contracts: z.string().optional().default(''),
     service_type: z.array(z.string()).optional().default([]),
+    vehicle_types_supported: z.array(z.string()).optional().default([]),
     coverage_areas: z.array(z.string()).optional().default([]),
+    coverage_cities: z.string().optional().default(''),
     availability_status: vendorAvailabilityStatus.optional().default('available'),
     is_active: z.boolean().optional().default(true),
     is_available_now: z.boolean().optional(),
     vendor_type: vendorType.optional(),
-    payment_rate_per_call: z.union([z.number(), z.null()]).optional().default(null),
+    payment_rate_per_call: z.number().optional(),
     notes: z.string().optional().default(''),
     works_24_7: z.boolean().optional().default(false),
     working_hours_start: z.string().optional().default('08:00'),
@@ -63,7 +79,7 @@ export const vendorCreateSchema = z
     latitude: z.number().optional(),
     longitude: z.number().optional(),
   })
-  .strict();
+  .passthrough();
 
 /**
  * Schema for updating an existing vendor.
@@ -75,6 +91,20 @@ export const vendorUpdateSchema = vendorCreateSchema.partial();
  * Sanitize form data for vendor creation.
  * Strips unknown fields, converts types, removes empty optional values.
  */
+/**
+ * Format Zod errors into user-friendly Hebrew messages.
+ */
+function formatZodErrors(issues) {
+  return issues.map((issue) => {
+    const field = issue.path.join('.');
+    const label = fieldLabels[field] || field;
+    if (issue.code === 'too_small' && issue.minimum === 1) {
+      return `השדה "${label}" הוא חובה`;
+    }
+    return `${label}: ${issue.message}`;
+  });
+}
+
 export function sanitizeVendorCreate(formData) {
   const cleaned = { ...formData };
 
@@ -85,23 +115,14 @@ export function sanitizeVendorCreate(formData) {
     cleaned.payment_rate_per_call = Number(cleaned.payment_rate_per_call);
   }
 
-  // Remove fields not in the Zod schema to avoid .strict() rejection
-  delete cleaned.coverage_cities;
-  delete cleaned.vehicle_types_supported;
-
   const result = vendorCreateSchema.safeParse(cleaned);
 
   if (!result.success) {
-    const errors = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
-    throw new Error(`שגיאת ולידציה: ${errors.join(', ')}`);
+    const errors = formatZodErrors(result.error.issues);
+    throw new Error(errors.join('\n'));
   }
 
-  // Re-add optional fields that exist on the entity but not in the Zod schema
-  const output = result.data;
-  if (formData.coverage_cities) output.coverage_cities = formData.coverage_cities;
-  if (formData.vehicle_types_supported?.length) output.vehicle_types_supported = formData.vehicle_types_supported;
-
-  return output;
+  return result.data;
 }
 
 /**
@@ -117,19 +138,12 @@ export function sanitizeVendorUpdate(formData) {
     cleaned.payment_rate_per_call = Number(cleaned.payment_rate_per_call);
   }
 
-  delete cleaned.coverage_cities;
-  delete cleaned.vehicle_types_supported;
-
   const result = vendorUpdateSchema.safeParse(cleaned);
 
   if (!result.success) {
-    const errors = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
-    throw new Error(`שגיאת ולידציה: ${errors.join(', ')}`);
+    const errors = formatZodErrors(result.error.issues);
+    throw new Error(errors.join('\n'));
   }
 
-  const output = result.data;
-  if (formData.coverage_cities) output.coverage_cities = formData.coverage_cities;
-  if (formData.vehicle_types_supported?.length) output.vehicle_types_supported = formData.vehicle_types_supported;
-
-  return output;
+  return result.data;
 }
