@@ -2,26 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
-import { Shield, Headset, MapPin, Clock, Truck, BarChart3, Zap, CheckCircle } from 'lucide-react';
+import { Shield, Headset, MapPin, Clock, Truck, BarChart3 } from 'lucide-react';
+import LoginForm from '@/components/auth/LoginForm';
 
-const getLoginUrl = (next) => {
-  const appBaseUrl = window.location.origin; // always use current app origin
-  const nextUrl = next || `${appBaseUrl}/Dashboard`;
-  return `${appBaseUrl}/login?from_url=${encodeURIComponent(nextUrl)}`;
-};
-
-const unregisterServiceWorkers = async () => {
-  if ('serviceWorker' in navigator) {
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        await registration.unregister();
-      }
-    } catch {
-      // Ignore SW cleanup errors
-    }
-  }
-};
 
 const features = [
   { icon: Headset, title: 'מוקד חכם', desc: 'ניהול קריאות שירות בזמן אמת' },
@@ -230,7 +213,6 @@ function HeroIllustration() {
 }
 
 export default function LandingPage() {
-  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -241,21 +223,7 @@ export default function LandingPage() {
     document.head.appendChild(link);
   }, []);
 
-  const handleLogin = async () => {
-    setIsLoading(true);
-    await unregisterServiceWorkers();
 
-    // Clean local/session tokens just in case
-    try {
-      localStorage.removeItem('base44_access_token');
-      localStorage.removeItem('token');
-      sessionStorage.clear();
-    } catch {}
-
-    // Always navigate the TOP window to the platform login (works inside editor iframe)
-    const loginUrl = getLoginUrl();
-    (window.top || window).location.href = loginUrl;
-  };
 
   return (
     <div
@@ -278,22 +246,13 @@ export default function LandingPage() {
             />
             <span className="text-xl font-bold text-gray-900">NatID 360 Control</span>
           </div>
-          {user ? (
+          {user && (
             <Link
               to="/Dashboard"
               className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
             >
               חזרה לדשבורד
             </Link>
-          ) : (
-            <a
-              href={getLoginUrl()}
-              target="_top"
-              className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-              onClick={() => setIsLoading(true)}
-            >
-              כניסה למערכת
-            </a>
           )}
         </div>
       </motion.header>
@@ -309,25 +268,39 @@ export default function LandingPage() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
                 ניהול קריאות שירות <span className="text-red-600">חכם ומהיר</span>
               </h1>
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8 max-w-xl">
+              <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-6 max-w-xl">
                 מערכת CRM מתקדמת לניהול קריאות שירות, שיבוץ ספקים אוטומטי, מעקב GPS בזמן אמת, ודוחות
                 ביצועים מקיפים.
               </p>
 
-              <div className="grid grid-cols-4 gap-4 mt-8">
-                {stats.map((stat, i) => (
-                  <motion.div
-                    key={stat.label}
-                    className="text-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.6 + i * 0.1 }}
-                  >
-                    <p className="text-2xl font-bold text-red-600">{stat.value}</p>
-                    <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
-                  </motion.div>
-                ))}
-              </div>
+              {!user && (
+                <motion.div
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 p-6 shadow-sm max-w-sm"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                >
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">כניסה למערכת</h3>
+                  <LoginForm />
+                </motion.div>
+              )}
+
+              {user && (
+                <div className="grid grid-cols-4 gap-4 mt-4">
+                  {stats.map((stat, i) => (
+                    <motion.div
+                      key={stat.label}
+                      className="text-center"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.6 + i * 0.1 }}
+                    >
+                      <p className="text-2xl font-bold text-red-600">{stat.value}</p>
+                      <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
             <motion.div
               className="flex justify-center lg:justify-start"
