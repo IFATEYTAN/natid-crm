@@ -211,27 +211,6 @@ export default function VendorAvailabilityToggle({
           </div>
 
           <div className="flex items-center gap-2">
-            {isAvailable && !isOnBreak && (
-              <div className="text-start text-sm ms-2">
-                {locationError ? (
-                  <div className="flex items-center gap-1 text-red-600">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>בעיית מיקום</span>
-                  </div>
-                ) : lastLocationUpdate ? (
-                  <div className="flex items-center gap-1 text-green-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>מיקום פעיל</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-yellow-600">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>מאתר מיקום...</span>
-                  </div>
-                )}
-              </div>
-            )}
-
             {isOnBreak ? (
               <Button
                 onClick={handleEndBreak}
