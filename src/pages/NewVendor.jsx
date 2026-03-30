@@ -164,7 +164,7 @@ export default function NewVendorPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="new-vendor-form" onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
           <Card className="bg-white">
             <CardHeader>
@@ -579,13 +579,19 @@ export default function NewVendorPage() {
             </CardContent>
           </Card>
 
-          {/* Actions - sticky at bottom */}
-          <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 p-4 -mx-4 sm:-mx-6 lg:-mx-8 flex gap-4 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+          {/* Spacer for fixed bottom bar */}
+          <div className="h-24" />
+        </form>
+
+        {/* Actions - fixed at bottom */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 flex gap-4 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+          <div className="max-w-3xl mx-auto flex gap-4 w-full">
             <Button type="button" variant="outline" onClick={() => navigate(-1)} className="flex-1">
               ביטול
             </Button>
             <Button
               type="submit"
+              form="new-vendor-form"
               className="flex-1 bg-[#f97316] hover:bg-[#ea580c] gap-2"
               disabled={createMutation.isPending}
             >
@@ -602,7 +608,7 @@ export default function NewVendorPage() {
               )}
             </Button>
           </div>
-        </form>
+        </div>
       </div>
     </SlideUp>
   );
