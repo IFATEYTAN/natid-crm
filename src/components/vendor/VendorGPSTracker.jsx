@@ -25,6 +25,18 @@ export default function VendorGPSTracker({
   // Check if location sharing is enabled
   const isLocationSharingEnabled = vendorProfile?.is_location_sharing_enabled;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('[GPS] Component mounted/updated', {
+      vendorId,
+      isLocationSharingEnabled,
+      isTracking,
+      vendorProfileExists: !!vendorProfile,
+      vendorEmail: vendorProfile?.email,
+      vendorName: vendorProfile?.vendor_name,
+    });
+  }, [vendorId, isLocationSharingEnabled, isTracking, vendorProfile]);
+
   // Get battery level if available (Battery API is deprecated in most browsers)
   useEffect(() => {
     let batteryRef = null;
@@ -57,7 +69,22 @@ export default function VendorGPSTracker({
   // Send location to server
   const sendLocationToServer = useCallback(
     async (position) => {
-      if (!vendorId || !isLocationSharingEnabled) return;
+      console.log('[GPS] sendLocationToServer called', {
+        vendorId,
+        isLocationSharingEnabled,
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      });
+
+      if (!vendorId) {
+        console.warn('[GPS] No vendorId - skipping send');
+        return;
+      }
+      if (!isLocationSharingEnabled) {
+        console.warn('[GPS] Location sharing disabled - skipping send');
+        return;
+      }
 
       try {
         const locationData = {
@@ -65,14 +92,16 @@ export default function VendorGPSTracker({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
-          speed: position.coords.speed ? position.coords.speed * 3.6 : null, // Convert m/s to km/h
+          speed: position.coords.speed ? position.coords.speed * 3.6 : null,
           heading: position.coords.heading,
           battery_level: batteryLevel,
           call_id: activeCallId || null,
           call_number: activeCallNumber || null,
         };
 
-        await base44.functions.invoke('updateVendorLocation', locationData);
+        console.log('[GPS] Sending location data to server:', locationData);
+        const response = await base44.functions.invoke('updateVendorLocation', locationData);
+        console.log('[GPS] Server response:', response.data);
 
         setLastUpdate(new Date());
         setCurrentLocation({
@@ -85,9 +114,10 @@ export default function VendorGPSTracker({
           onLocationUpdate(locationData);
         }
       } catch (error) {
-        console.error('Error sending location:', error);
+        console.error('[GPS] Error sending location:', error);
+        console.error('[GPS] Error details:', error?.response?.data || error?.message);
         if (onError) {
-          onError(error.message);
+          onError(error?.response?.data?.error || error.message);
         }
       }
     },
@@ -127,7 +157,9 @@ export default function VendorGPSTracker({
 
   // Start tracking
   const startTracking = useCallback(() => {
+    console.log('[GPS] startTracking called');
     if (!navigator.geolocation) {
+      console.error('[GPS] Geolocation not supported');
       setLocationError('GPS לא נתמך בדפדפן זה');
       return;
     }
@@ -175,9 +207,12 @@ export default function VendorGPSTracker({
 
   // Auto-start tracking if location sharing is enabled
   useEffect(() => {
+    console.log('[GPS] Auto-start effect', { isLocationSharingEnabled, isTracking });
     if (isLocationSharingEnabled && !isTracking) {
+      console.log('[GPS] Auto-starting tracking...');
       startTracking();
     } else if (!isLocationSharingEnabled && isTracking) {
+      console.log('[GPS] Auto-stopping tracking...');
       stopTracking();
     }
 

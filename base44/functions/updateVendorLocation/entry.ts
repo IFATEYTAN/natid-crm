@@ -1,8 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
-
-const kv = await Deno.openKv();
-const limiter = createRateLimiter(kv);
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Update vendor location - called from vendor GPS tracker
@@ -14,17 +10,19 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user) {
+      console.log('[updateVendorLocation] No user found - unauthorized');
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('[updateVendorLocation] User:', user.email, 'Role:', user.role);
+
     // Only vendors (and admins for testing) can update vendor location
     if (!['admin', 'vendor'].includes(user.role)) {
+      console.log('[updateVendorLocation] Forbidden - role:', user.role);
       return Response.json({ error: 'Forbidden - vendor role required' }, { status: 403 });
     }
 
-    const rl = await limiter.check('updateVendorLocation', user.id, 60, 60_000);
-    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
-
+    const body = await req.json();
     const {
       vendor_id,
       latitude,
@@ -35,28 +33,44 @@ Deno.serve(async (req) => {
       battery_level,
       call_id,
       call_number
-    } = await req.json();
+    } = body;
+
+    console.log('[updateVendorLocation] Received:', JSON.stringify({
+      vendor_id, latitude, longitude, accuracy, speed, heading, battery_level, call_id
+    }));
 
     if (!vendor_id || latitude === undefined || longitude === undefined) {
+      console.log('[updateVendorLocation] Missing required fields');
       return Response.json({ 
         error: 'vendor_id, latitude and longitude are required' 
       }, { status: 400 });
     }
 
-    // Fetch vendor to verify and get name
-    const vendors = await base44.entities.Vendor.filter({ id: vendor_id });
-    if (vendors.length === 0) {
-      return Response.json({ error: 'Vendor not found' }, { status: 404 });
+    // Fetch vendor to verify - use service role to ensure we can read it
+    let vendor;
+    try {
+      const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
+      console.log('[updateVendorLocation] Vendor filter result count:', vendors.length);
+      if (vendors.length === 0) {
+        return Response.json({ error: 'Vendor not found' }, { status: 404 });
+      }
+      vendor = vendors[0];
+    } catch (fetchErr) {
+      console.error('[updateVendorLocation] Error fetching vendor:', fetchErr.message);
+      return Response.json({ error: 'Error fetching vendor: ' + fetchErr.message }, { status: 500 });
     }
-    const vendor = vendors[0];
+
+    console.log('[updateVendorLocation] Found vendor:', vendor.vendor_name, 'email:', vendor.email);
 
     // Ownership check: vendors can only update their own location
     if (user.role === 'vendor' && vendor.email !== user.email) {
+      console.log('[updateVendorLocation] Ownership mismatch:', vendor.email, '!=', user.email);
       return Response.json({ error: 'Forbidden - can only update your own location' }, { status: 403 });
     }
 
     // Check if location sharing is enabled
     if (!vendor.is_location_sharing_enabled) {
+      console.log('[updateVendorLocation] Location sharing disabled for vendor');
       return Response.json({ 
         success: false, 
         message: 'Location sharing is disabled for this vendor' 
@@ -64,71 +78,82 @@ Deno.serve(async (req) => {
     }
 
     // Update vendor's current location
-    await base44.entities.Vendor.update(vendor_id, {
-      current_latitude: latitude,
-      current_longitude: longitude,
-      last_location_update: new Date().toISOString()
-    });
+    try {
+      await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+        current_latitude: latitude,
+        current_longitude: longitude,
+        last_location_update: new Date().toISOString()
+      });
+      console.log('[updateVendorLocation] Vendor location updated successfully');
+    } catch (updateErr) {
+      console.error('[updateVendorLocation] Error updating vendor:', updateErr.message);
+      return Response.json({ error: 'Error updating vendor: ' + updateErr.message }, { status: 500 });
+    }
 
     // Create location history record
-    const locationRecord = await base44.asServiceRole.entities.VendorLocation.create({
-      vendor_id,
-      vendor_name: vendor.vendor_name,
-      latitude,
-      longitude,
-      accuracy: accuracy || null,
-      speed: speed || null,
-      heading: heading || null,
-      battery_level: battery_level || null,
-      call_id: call_id || null,
-      call_number: call_number || null,
-      is_available: vendor.is_available_now,
-      is_tracking_active: true
-    });
+    let locationRecord;
+    try {
+      locationRecord = await base44.asServiceRole.entities.VendorLocation.create({
+        vendor_id,
+        vendor_name: vendor.vendor_name,
+        latitude,
+        longitude,
+        accuracy: accuracy || null,
+        speed: speed || null,
+        heading: heading || null,
+        battery_level: battery_level || null,
+        call_id: call_id || null,
+        is_available: vendor.is_available_now || false,
+      });
+      console.log('[updateVendorLocation] Location record created:', locationRecord.id);
+    } catch (createErr) {
+      console.error('[updateVendorLocation] Error creating location record:', createErr.message);
+      // Don't fail the whole request if location history fails
+    }
 
     // If there's an active call, update its ETA based on new location
     if (call_id) {
-      const calls = await base44.entities.Call.filter({ id: call_id });
-      if (calls.length > 0) {
-        const call = calls[0];
-        
-        // Calculate distance to pickup if we have coordinates
-        if (call.pickup_location_lat && call.pickup_location_lon) {
-          const distance = calculateDistance(
-            latitude, 
-            longitude, 
-            call.pickup_location_lat, 
-            call.pickup_location_lon
-          );
+      try {
+        const calls = await base44.asServiceRole.entities.Call.filter({ id: call_id });
+        if (calls.length > 0) {
+          const call = calls[0];
           
-          // Estimate arrival time (assume average speed of 40 km/h in city)
-          const avgSpeedKmh = speed && speed > 5 ? speed : 40;
-          const etaMinutes = Math.round((distance / avgSpeedKmh) * 60);
-          const estimatedArrival = new Date(Date.now() + etaMinutes * 60 * 1000);
+          if (call.pickup_location_lat && call.pickup_location_lon) {
+            const distance = calculateDistance(
+              latitude, longitude, 
+              call.pickup_location_lat, call.pickup_location_lon
+            );
+            
+            const avgSpeedKmh = speed && speed > 5 ? speed : 40;
+            const etaMinutes = Math.round((distance / avgSpeedKmh) * 60);
+            const estimatedArrival = new Date(Date.now() + etaMinutes * 60 * 1000);
 
-          await base44.entities.Call.update(call_id, {
-            estimated_distance_km: Math.round(distance * 10) / 10,
-            estimated_arrival_time: estimatedArrival.toISOString()
-          });
+            await base44.asServiceRole.entities.Call.update(call_id, {
+              estimated_distance_km: Math.round(distance * 10) / 10,
+              estimated_arrival_time: estimatedArrival.toISOString()
+            });
+            console.log('[updateVendorLocation] Call ETA updated, distance:', distance.toFixed(1), 'km');
+          }
         }
+      } catch (callErr) {
+        console.error('[updateVendorLocation] Error updating call ETA:', callErr.message);
       }
     }
 
     return Response.json({
       success: true,
-      location_id: locationRecord.id,
+      location_id: locationRecord?.id || null,
       timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('Update location error:', error);
-    return Response.json({ error: 'Failed to update vendor location' }, { status: 500 });
+    console.error('[updateVendorLocation] Unhandled error:', error.message, error.stack);
+    return Response.json({ error: 'Failed to update vendor location: ' + error.message }, { status: 500 });
   }
 });
 
-// Haversine formula to calculate distance between two coordinates
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
   const a = 
