@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Navigation, Battery, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
+
+const MIN_SEND_INTERVAL_MS = 30000; // 30 seconds between server updates
 
 export default function VendorGPSTracker({
   vendorId,
@@ -14,278 +16,193 @@ export default function VendorGPSTracker({
   onLocationUpdate,
   onError,
 }) {
-  const [isTracking, setIsTracking] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [batteryLevel, setBatteryLevel] = useState(null);
-  // Local state for location sharing — avoids race conditions with stale server data
-  const [isLocationSharingEnabled, setIsLocationSharingEnabled] = useState(
-    () => !!vendorProfile?.is_location_sharing_enabled
-  );
-  const initializedRef = useRef(false);
-  const watchIdRef = useRef(null);
-  const updateIntervalRef = useRef(null);
-  const lastSendTimeRef = useRef(0);
-  const latestPositionRef = useRef(null);
-  const sendingRef = useRef(false);
+  const [isTracking, setIsTracking] = useState(false);
 
-  const MIN_SEND_INTERVAL_MS = 30000; // 30 seconds between server updates
+  // Local toggle state — controlled entirely by the user's switch action.
+  // Initialised from vendorProfile on first meaningful load, then never overwritten by prop changes.
+  const [sharingEnabled, setSharingEnabled] = useState(false);
+  const initDoneRef = useRef(false);
 
-  // Sync from prop ONLY on first load (when vendorProfile first arrives)
   useEffect(() => {
-    if (!initializedRef.current && vendorProfile?.id) {
-      initializedRef.current = true;
-      setIsLocationSharingEnabled(!!vendorProfile.is_location_sharing_enabled);
+    if (!initDoneRef.current && vendorProfile?.id) {
+      initDoneRef.current = true;
+      setSharingEnabled(!!vendorProfile.is_location_sharing_enabled);
     }
   }, [vendorProfile?.id, vendorProfile?.is_location_sharing_enabled]);
 
-  // Debug logging (reduced to avoid spam)
+  // Refs to hold mutable values used inside geolocation callbacks
+  const watchIdRef = useRef(null);
+  const intervalRef = useRef(null);
+  const lastSendRef = useRef(0);
+  const latestPosRef = useRef(null);
+  const sendingRef = useRef(false);
+  // Keep latest callback / prop values in refs so geolocation callbacks don't go stale
+  const vendorIdRef = useRef(vendorId);
+  const activeCallRef = useRef({ id: activeCallId, number: activeCallNumber });
+  const batteryRef = useRef(batteryLevel);
+  const callbacksRef = useRef({ onLocationUpdate, onError });
+
+  useEffect(() => { vendorIdRef.current = vendorId; }, [vendorId]);
+  useEffect(() => { activeCallRef.current = { id: activeCallId, number: activeCallNumber }; }, [activeCallId, activeCallNumber]);
+  useEffect(() => { batteryRef.current = batteryLevel; }, [batteryLevel]);
+  useEffect(() => { callbacksRef.current = { onLocationUpdate, onError }; }, [onLocationUpdate, onError]);
+
+  // ---------- battery ----------
   useEffect(() => {
-    console.log('[GPS] State:', { vendorId, isLocationSharingEnabled, isTracking });
-  }, [vendorId, isLocationSharingEnabled, isTracking]);
-
-  // Get battery level if available (Battery API is deprecated in most browsers)
-  useEffect(() => {
-    let batteryRef = null;
-    const handleLevelChange = () => {
-      if (batteryRef) {
-        setBatteryLevel(Math.round(batteryRef.level * 100));
+    let bat = null;
+    const onChange = () => { if (bat) setBatteryLevel(Math.round(bat.level * 100)); };
+    (async () => {
+      if ('getBattery' in navigator && typeof navigator.getBattery === 'function') {
+        bat = await navigator.getBattery();
+        setBatteryLevel(Math.round(bat.level * 100));
+        bat.addEventListener('levelchange', onChange);
       }
-    };
-
-    const initBattery = async () => {
-      try {
-        if ('getBattery' in navigator && typeof navigator.getBattery === 'function') {
-          batteryRef = await navigator.getBattery();
-          setBatteryLevel(Math.round(batteryRef.level * 100));
-          batteryRef.addEventListener('levelchange', handleLevelChange);
-        }
-      } catch {
-        // Battery API not supported or permission denied - silently ignore
-      }
-    };
-    initBattery();
-
-    return () => {
-      if (batteryRef) {
-        batteryRef.removeEventListener('levelchange', handleLevelChange);
-      }
-    };
+    })();
+    return () => { if (bat) bat.removeEventListener('levelchange', onChange); };
   }, []);
 
-  // Actually send location to server (no throttle check — caller must check)
-  const doSendLocation = useCallback(
-    async (position) => {
-      if (!vendorId || sendingRef.current) return;
-
-      sendingRef.current = true;
-      try {
-        const locationData = {
-          vendor_id: vendorId,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          speed: position.coords.speed ? position.coords.speed * 3.6 : null,
-          heading: position.coords.heading,
-          battery_level: batteryLevel,
-          call_id: activeCallId || null,
-          call_number: activeCallNumber || null,
-        };
-
-        console.log('[GPS] Sending location to server');
-        const response = await base44.functions.invoke('updateVendorLocation', locationData);
-        console.log('[GPS] Location sent successfully');
-
-        lastSendTimeRef.current = Date.now();
-        setLastUpdate(new Date());
-        setCurrentLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        });
-
-        if (onLocationUpdate) {
-          onLocationUpdate(locationData);
-        }
-      } catch (error) {
-        console.error('[GPS] Error sending location:', error?.response?.status, error?.message);
-        if (error?.response?.status === 429) {
-          lastSendTimeRef.current = Date.now() + 30000;
-        }
-        if (onError) {
-          onError(error?.response?.data?.error || error.message);
-        }
-      } finally {
-        sendingRef.current = false;
-      }
-    },
-    [vendorId, batteryLevel, activeCallId, activeCallNumber, onLocationUpdate, onError]
-  );
-
-  // Throttled handler for watchPosition — updates local state always, sends to server only every 30s
-  const handlePositionUpdate = useCallback(
-    (position) => {
-      // Always update local display
-      latestPositionRef.current = position;
-      setCurrentLocation({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
+  // ---------- send location (uses refs, no deps) ----------
+  const sendLocation = async (position) => {
+    if (!vendorIdRef.current || sendingRef.current) return;
+    sendingRef.current = true;
+    try {
+      const data = {
+        vendor_id: vendorIdRef.current,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
         accuracy: position.coords.accuracy,
-      });
+        speed: position.coords.speed ? position.coords.speed * 3.6 : null,
+        heading: position.coords.heading,
+        battery_level: batteryRef.current,
+        call_id: activeCallRef.current.id || null,
+        call_number: activeCallRef.current.number || null,
+      };
+      await base44.functions.invoke('updateVendorLocation', data);
+      lastSendRef.current = Date.now();
+      setLastUpdate(new Date());
+      setCurrentLocation({ lat: data.latitude, lng: data.longitude, accuracy: data.accuracy });
+      callbacksRef.current.onLocationUpdate?.(data);
+    } catch (error) {
+      if (error?.response?.status === 429) lastSendRef.current = Date.now() + 30000;
+      callbacksRef.current.onError?.(error?.response?.data?.error || error.message);
+    } finally {
+      sendingRef.current = false;
+    }
+  };
 
-      // Only send to server if enough time has passed
-      const now = Date.now();
-      if (now - lastSendTimeRef.current >= MIN_SEND_INTERVAL_MS) {
-        doSendLocation(position);
-      }
-    },
-    [doSendLocation]
-  );
+  const onPosition = (pos) => {
+    latestPosRef.current = pos;
+    setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+    if (Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
+      sendLocation(pos);
+    }
+  };
 
-  // Handle location error
-  const handleLocationError = useCallback(
-    (error) => {
-      let errorMessage = 'שגיאה בקבלת מיקום';
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          errorMessage = 'גישה למיקום נדחתה. אנא אשר גישה בהגדרות הדפדפן.';
-          break;
-        case error.POSITION_UNAVAILABLE:
-          errorMessage = 'מידע מיקום לא זמין';
-          break;
-        case error.TIMEOUT:
-          errorMessage = 'בקשת מיקום פגה';
-          break;
-      }
-      setLocationError(errorMessage);
-      if (onError) {
-        onError(errorMessage);
-      }
-    },
-    [onError]
-  );
+  const onPosError = (err) => {
+    const msgs = {
+      [1]: 'גישה למיקום נדחתה. אנא אשר גישה בהגדרות הדפדפן.',
+      [2]: 'מידע מיקום לא זמין',
+      [3]: 'בקשת מיקום פגה',
+    };
+    const msg = msgs[err.code] || 'שגיאה בקבלת מיקום';
+    setLocationError(msg);
+    callbacksRef.current.onError?.(msg);
+  };
 
-  // Start tracking
-  const startTracking = useCallback(() => {
-    console.log('[GPS] startTracking called');
+  // ---------- single effect: start / stop geolocation ----------
+  useEffect(() => {
+    if (!sharingEnabled) {
+      // Make sure we're stopped
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setIsTracking(false);
+      return;
+    }
+
+    // Start tracking
     if (!navigator.geolocation) {
       setLocationError('GPS לא נתמך בדפדפן זה');
       return;
     }
 
     setLocationError(null);
-    lastSendTimeRef.current = 0;
+    lastSendRef.current = 0; // allow immediate first send
 
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        console.log('[GPS] getCurrentPosition SUCCESS');
-        latestPositionRef.current = pos;
-        doSendLocation(pos);
-      },
-      (err) => {
-        console.error('[GPS] getCurrentPosition ERROR:', err.code, err.message);
-        handleLocationError(err);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      (pos) => { latestPosRef.current = pos; sendLocation(pos); },
+      onPosError,
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
 
     watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        handlePositionUpdate(pos);
-      },
-      (err) => {
-        console.error('[GPS] watchPosition ERROR:', err.code, err.message);
-        handleLocationError(err);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+      onPosition,
+      onPosError,
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
     );
 
-    updateIntervalRef.current = setInterval(() => {
-      if (latestPositionRef.current) {
-        const now = Date.now();
-        if (now - lastSendTimeRef.current >= MIN_SEND_INTERVAL_MS) {
-          doSendLocation(latestPositionRef.current);
-        }
+    intervalRef.current = setInterval(() => {
+      if (latestPosRef.current && Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
+        sendLocation(latestPosRef.current);
       }
     }, MIN_SEND_INTERVAL_MS);
 
     setIsTracking(true);
-  }, [doSendLocation, handlePositionUpdate, handleLocationError]);
 
-  // Stop tracking
-  const stopTracking = useCallback(() => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    if (updateIntervalRef.current) {
-      clearInterval(updateIntervalRef.current);
-      updateIntervalRef.current = null;
-    }
-    setIsTracking(false);
-  }, []);
-
-  // Auto-start/stop tracking based on local sharing state
-  useEffect(() => {
-    if (isLocationSharingEnabled && !isTracking) {
-      startTracking();
-    } else if (!isLocationSharingEnabled && isTracking) {
-      stopTracking();
-    }
+    // Cleanup on disable or unmount
     return () => {
-      stopTracking();
-    };
-  }, [isLocationSharingEnabled]);
-
-  // Toggle location sharing — update local state first, then persist to server
-  const handleToggleLocationSharing = async (enabled) => {
-    console.log('[GPS] Toggle location sharing:', enabled);
-    // Update local state immediately to avoid race condition with server refetch
-    setIsLocationSharingEnabled(enabled);
-    try {
-      await base44.entities.Vendor.update(vendorId, {
-        is_location_sharing_enabled: enabled,
-      });
-    } catch (error) {
-      console.error('Error toggling location sharing:', error);
-      // Revert local state on error
-      setIsLocationSharingEnabled(!enabled);
-      if (onError) {
-        onError('שגיאה בעדכון הגדרות מיקום');
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
       }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setIsTracking(false);
+    };
+  }, [sharingEnabled]); // ← ONLY re-run when the user toggles
+
+  // ---------- toggle handler ----------
+  const handleToggle = async (enabled) => {
+    setSharingEnabled(enabled); // immediate local update → effect starts/stops tracking
+    try {
+      await base44.entities.Vendor.update(vendorId, { is_location_sharing_enabled: enabled });
+    } catch (error) {
+      setSharingEnabled(!enabled); // revert on failure
+      onError?.('שגיאה בעדכון הגדרות מיקום');
     }
   };
 
+  // ---------- UI ----------
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 sticky top-0 z-10">
+    <div className="bg-white border border-gray-200 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <MapPin className="w-5 h-5 text-blue-600" />
           <span className="font-medium text-gray-900">מעקב מיקום</span>
         </div>
         <div className="flex items-center gap-2">
-          <Label htmlFor="location-sharing" className="text-sm text-gray-600">
-            שתף מיקום
-          </Label>
-          <Switch
-            id="location-sharing"
-            checked={isLocationSharingEnabled}
-            onCheckedChange={handleToggleLocationSharing}
-          />
+          <Label htmlFor="location-sharing" className="text-sm text-gray-600">שתף מיקום</Label>
+          <Switch id="location-sharing" checked={sharingEnabled} onCheckedChange={handleToggle} />
         </div>
       </div>
 
-      {isLocationSharingEnabled && (
+      {sharingEnabled && (
         <div className="space-y-2">
-          {/* Status indicators */}
           <div className="flex flex-wrap gap-2">
             <Badge
               variant="outline"
-              className={cn(
-                'gap-1',
-                isTracking ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500'
-              )}
+              className={cn('gap-1', isTracking ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500')}
             >
               {isTracking ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
               {isTracking ? 'מעקב פעיל' : 'לא פעיל'}
@@ -306,23 +223,18 @@ export default function VendorGPSTracker({
             )}
           </div>
 
-          {/* Last update time */}
           {lastUpdate && (
             <p className="text-xs text-gray-500">
               עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}
             </p>
           )}
 
-          {/* Active call indicator */}
           {activeCallId && (
             <div className="bg-blue-50 border border-blue-200 rounded-md p-2 text-sm">
-              <span className="text-blue-700">
-                📍 מיקום נשמר להיסטוריית קריאה {activeCallNumber}
-              </span>
+              <span className="text-blue-700">📍 מיקום נשמר להיסטוריית קריאה {activeCallNumber}</span>
             </div>
           )}
 
-          {/* Error message */}
           {locationError && (
             <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
               <AlertCircle className="w-4 h-4" />
@@ -332,7 +244,7 @@ export default function VendorGPSTracker({
         </div>
       )}
 
-      {!isLocationSharingEnabled && (
+      {!sharingEnabled && (
         <p className="text-sm text-gray-500">
           הפעל שיתוף מיקום כדי לאפשר למנהלים לעקוב אחר מיקומך בזמן אמת
         </p>
