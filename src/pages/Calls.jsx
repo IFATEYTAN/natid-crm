@@ -147,12 +147,12 @@ export default function CallsPage() {
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="text-right">
-          <h1 className="text-3xl font-bold text-[#111827]">ניהול קריאות</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#111827]">ניהול קריאות</h1>
           <p className="text-[#6b7280] text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
-        <div className="flex items-center gap-3 justify-end">
+        <div className="flex items-center gap-2 sm:gap-3 justify-end">
           <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
             <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן
@@ -186,8 +186,8 @@ export default function CallsPage() {
       {/* Filters */}
       <Card className="bg-white">
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
               <Input
                 placeholder="חיפוש לפי מספר קריאה, שם לקוח, טלפון..."
@@ -199,8 +199,9 @@ export default function CallsPage() {
                 className="ps-9"
               />
             </div>
+            <div className="flex gap-3">
             <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full sm:w-[160px]">
                 <SelectValue placeholder="סטטוס" />
               </SelectTrigger>
               <SelectContent>
@@ -216,7 +217,7 @@ export default function CallsPage() {
               value={serviceTypeFilter}
               onValueChange={handleFilterChange(setServiceTypeFilter)}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full sm:w-[160px]">
                 <SelectValue placeholder="סוג שירות" />
               </SelectTrigger>
               <SelectContent>
@@ -228,6 +229,7 @@ export default function CallsPage() {
                 ))}
               </SelectContent>
             </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -243,7 +245,7 @@ export default function CallsPage() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-right">
+            <table className="w-full text-sm text-right min-w-[800px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   {[

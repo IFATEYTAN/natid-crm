@@ -321,26 +321,30 @@ export default function VendorCallManagementPage() {
 
       {/* Tabs for Journey, Photos, Notes, Messages */}
       <Tabs defaultValue="journey" className="w-full">
-        <TabsList className={`w-full grid ${isCompleted ? 'grid-cols-5' : 'grid-cols-4'}`}>
-          <TabsTrigger value="journey" className="gap-1">
-            <Route className="w-4 h-4" />
-            מסע לקוח
+        <TabsList className={`w-full grid ${isCompleted ? 'grid-cols-5' : 'grid-cols-4'} h-auto`}>
+          <TabsTrigger value="journey" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
+            <Route className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">מסע לקוח</span>
+            <span className="sm:hidden">מסע</span>
           </TabsTrigger>
-          <TabsTrigger value="photos" className="gap-1">
-            <Image className="w-4 h-4" />
-            תמונות ({photos.length})
+          <TabsTrigger value="photos" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
+            <Image className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">תמונות ({photos.length})</span>
+            <span className="sm:hidden">{photos.length}📷</span>
           </TabsTrigger>
-          <TabsTrigger value="notes" className="gap-1">
-            <FileText className="w-4 h-4" />
-            הערות
+          <TabsTrigger value="notes" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
+            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">הערות</span>
+            <span className="sm:hidden">הערות</span>
           </TabsTrigger>
-          <TabsTrigger value="messages" className="gap-1">
-            <MessageSquare className="w-4 h-4" />
-            צ'אט
+          <TabsTrigger value="messages" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
+            <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">צ'אט</span>
+            <span className="sm:hidden">צ'אט</span>
           </TabsTrigger>
           {isCompleted && (
-            <TabsTrigger value="feedback" className="gap-1">
-              ⭐ משוב
+            <TabsTrigger value="feedback" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
+              ⭐ <span className="hidden sm:inline">משוב</span>
             </TabsTrigger>
           )}
         </TabsList>

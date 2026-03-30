@@ -520,8 +520,8 @@ export default function ServiceProvidersPage() {
         {/* Filters & Table */}
         <Card className="bg-white">
           <CardHeader className="pb-3">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
                 <Input
                   placeholder="חיפוש לפי שם, טלפון או אזור..."
@@ -531,8 +531,9 @@ export default function ServiceProvidersPage() {
                   aria-label="חיפוש ספקים"
                 />
               </div>
+              <div className="flex gap-3">
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="סוג שירות" />
                 </SelectTrigger>
                 <SelectContent>
@@ -545,7 +546,7 @@ export default function ServiceProvidersPage() {
                 </SelectContent>
               </Select>
               <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-full sm:w-32">
                   <SelectValue placeholder="זמינות" />
                 </SelectTrigger>
                 <SelectContent>
@@ -557,6 +558,7 @@ export default function ServiceProvidersPage() {
                   ))}
                 </SelectContent>
               </Select>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
