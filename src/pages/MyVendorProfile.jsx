@@ -194,11 +194,7 @@ export default function MyVendorProfilePage() {
         {/* GPS Tracker */}
         <VendorGPSTracker
           vendorId={vendor?.id}
-          vendorProfile={vendor}
-          onLocationUpdate={() => {}}
-          onError={(error) => {
-            showToast.error(error);
-          }}
+          initialSharingEnabled={!!vendor?.is_location_sharing_enabled}
         />
 
         {/* Stats Card */}

@@ -1,5 +1,5 @@
 import { lazyRetry } from '@/lib/lazyRetry';
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -497,9 +497,7 @@ export default function VendorPortalPage() {
               {/* GPS Tracker */}
               <VendorGPSTracker
                 vendorId={vendorProfile?.id}
-                vendorProfile={vendorProfile}
-                onLocationUpdate={() => {}}
-                onError={(error) => showToast.error(error)}
+                initialSharingEnabled={!!vendorProfile?.is_location_sharing_enabled}
               />
 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

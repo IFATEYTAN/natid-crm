@@ -8,31 +8,19 @@ import { cn } from '@/lib/utils';
 
 const MIN_SEND_INTERVAL_MS = 30000;
 
-export default function VendorGPSTracker({
-  vendorId,
-  vendorProfile,
-  activeCallId,
-  activeCallNumber,
-  onLocationUpdate,
-  onError,
-}) {
+/**
+ * GPS Tracker component for vendors.
+ * Props:
+ *   vendorId (string)                — stable vendor ID (primitive)
+ *   initialSharingEnabled (boolean)  — initial value from DB; only read on first mount
+ */
+export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [batteryLevel, setBatteryLevel] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
-
-  // Local toggle state — only set from prop once on mount, then fully local
-  const [sharingEnabled, setSharingEnabled] = useState(false);
-  const initDoneRef = useRef(false);
-
-  // One-time init from prop
-  useEffect(() => {
-    if (!initDoneRef.current && vendorId) {
-      initDoneRef.current = true;
-      setSharingEnabled(!!vendorProfile?.is_location_sharing_enabled);
-    }
-  }, [vendorId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [sharingEnabled, setSharingEnabled] = useState(!!initialSharingEnabled);
 
   // Refs for mutable values used inside geolocation callbacks
   const watchIdRef = useRef(null);
@@ -41,14 +29,10 @@ export default function VendorGPSTracker({
   const latestPosRef = useRef(null);
   const sendingRef = useRef(false);
   const vendorIdRef = useRef(vendorId);
-  const activeCallRef = useRef({ id: activeCallId, number: activeCallNumber });
   const batteryRef = useRef(batteryLevel);
-  const callbacksRef = useRef({ onLocationUpdate, onError });
 
   useEffect(() => { vendorIdRef.current = vendorId; }, [vendorId]);
-  useEffect(() => { activeCallRef.current = { id: activeCallId, number: activeCallNumber }; }, [activeCallId, activeCallNumber]);
   useEffect(() => { batteryRef.current = batteryLevel; }, [batteryLevel]);
-  useEffect(() => { callbacksRef.current = { onLocationUpdate, onError }; }, [onLocationUpdate, onError]);
 
   // Battery
   useEffect(() => {
@@ -64,7 +48,7 @@ export default function VendorGPSTracker({
     return () => { if (bat) bat.removeEventListener('levelchange', onChange); };
   }, []);
 
-  // Send location to server — plain function using refs only
+  // Send location — uses refs only, no state deps
   const sendLocation = async (position) => {
     if (!vendorIdRef.current || sendingRef.current) return;
     sendingRef.current = true;
@@ -77,17 +61,13 @@ export default function VendorGPSTracker({
         speed: position.coords.speed ? position.coords.speed * 3.6 : null,
         heading: position.coords.heading,
         battery_level: batteryRef.current,
-        call_id: activeCallRef.current.id || null,
-        call_number: activeCallRef.current.number || null,
       };
       await base44.functions.invoke('updateVendorLocation', data);
       lastSendRef.current = Date.now();
       setLastUpdate(new Date());
       setCurrentLocation({ lat: data.latitude, lng: data.longitude, accuracy: data.accuracy });
-      callbacksRef.current.onLocationUpdate?.(data);
     } catch (error) {
       if (error?.response?.status === 429) lastSendRef.current = Date.now() + 30000;
-      callbacksRef.current.onError?.(error?.response?.data?.error || error.message);
     } finally {
       sendingRef.current = false;
     }
@@ -103,12 +83,9 @@ export default function VendorGPSTracker({
 
   const onPosError = (err) => {
     const msgs = { 1: 'גישה למיקום נדחתה. אנא אשר גישה בהגדרות הדפדפן.', 2: 'מידע מיקום לא זמין', 3: 'בקשת מיקום פגה' };
-    const msg = msgs[err.code] || 'שגיאה בקבלת מיקום';
-    setLocationError(msg);
-    callbacksRef.current.onError?.(msg);
+    setLocationError(msgs[err.code] || 'שגיאה בקבלת מיקום');
   };
 
-  // Cleanup helper (doesn't touch state — avoids triggering re-renders)
   const cleanupGeo = () => {
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
@@ -120,7 +97,7 @@ export default function VendorGPSTracker({
     }
   };
 
-  // Single effect: start/stop based on sharingEnabled
+  // Single effect: start/stop based on sharingEnabled ONLY
   useEffect(() => {
     if (!sharingEnabled) {
       cleanupGeo();
@@ -155,15 +132,10 @@ export default function VendorGPSTracker({
 
     setIsTracking(true);
 
-    return () => {
-      cleanupGeo();
-      // NOTE: Do NOT call setIsTracking(false) here — that would cause a state
-      // change after unmount or trigger a re-render loop if cleanup runs during
-      // the same render cycle.
-    };
+    return () => { cleanupGeo(); };
   }, [sharingEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Toggle handler
+  // Toggle handler — local state + persist to server
   const handleToggle = async (enabled) => {
     setSharingEnabled(enabled);
     try {
@@ -181,8 +153,8 @@ export default function VendorGPSTracker({
           <span className="font-medium text-gray-900">מעקב מיקום</span>
         </div>
         <div className="flex items-center gap-2">
-          <Label htmlFor="gps-location-sharing" className="text-sm text-gray-600">שתף מיקום</Label>
-          <Switch id="gps-location-sharing" checked={sharingEnabled} onCheckedChange={handleToggle} />
+          <Label htmlFor="gps-sharing-toggle" className="text-sm text-gray-600">שתף מיקום</Label>
+          <Switch id="gps-sharing-toggle" checked={sharingEnabled} onCheckedChange={handleToggle} />
         </div>
       </div>
 
@@ -198,16 +170,11 @@ export default function VendorGPSTracker({
             )}
             {currentLocation && (
               <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50">
-                <Navigation className="w-3 h-3" />דיוק: {Math.round(currentLocation.accuracy)}מ'
+                <Navigation className="w-3 h-3" />דיוק: {Math.round(currentLocation.accuracy)}מ׳
               </Badge>
             )}
           </div>
           {lastUpdate && <p className="text-xs text-gray-500">עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}</p>}
-          {activeCallId && (
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-2 text-sm">
-              <span className="text-blue-700">📍 מיקום נשמר להיסטוריית קריאה {activeCallNumber}</span>
-            </div>
-          )}
           {locationError && (
             <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
               <AlertCircle className="w-4 h-4" />{locationError}
