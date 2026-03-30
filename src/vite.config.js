@@ -29,12 +29,34 @@ export default defineConfig({
             if (id.includes('date-fns') || id.includes('moment')) return 'vendor-dates';
             if (id.includes('three')) return 'vendor-three';
             if (id.includes('xlsx') || id.includes('jspdf')) return 'vendor-export';
+            if (id.includes('tanstack')) return 'vendor-tanstack';
+            if (id.includes('sonner') || id.includes('toast')) return 'vendor-toast';
             return 'vendor-misc';
           }
-          // Split app code by directory
-          if (id.includes('/src/pages/')) return 'app-pages';
-          if (id.includes('/src/components/')) return 'app-components';
-          if (id.includes('/src/features/')) return 'app-features';
+          // Split pages individually
+          if (id.includes('/src/pages/')) {
+            const match = id.match(/\/src\/pages\/([^/.]+)/);
+            if (match) return 'page-' + match[1].toLowerCase();
+          }
+          // Split components by subdirectory
+          if (id.includes('/src/components/')) {
+            if (id.includes('/components/ui/')) return 'comp-ui';
+            if (id.includes('/components/vendor/')) return 'comp-vendor';
+            if (id.includes('/components/dashboard/')) return 'comp-dashboard';
+            if (id.includes('/components/reports/')) return 'comp-reports';
+            if (id.includes('/components/call-details/')) return 'comp-calldetails';
+            if (id.includes('/components/maps/')) return 'comp-maps';
+            if (id.includes('/components/ai/')) return 'comp-ai';
+            if (id.includes('/components/layout/')) return 'comp-layout';
+            if (id.includes('/components/auth/')) return 'comp-auth';
+            if (id.includes('/components/permissions/')) return 'comp-permissions';
+            return 'comp-misc';
+          }
+          // Split features by subdirectory
+          if (id.includes('/src/features/')) {
+            const match = id.match(/\/src\/features\/([^/.]+)/);
+            if (match) return 'feat-' + match[1].toLowerCase();
+          }
         },
       },
     },

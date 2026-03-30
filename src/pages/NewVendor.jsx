@@ -579,8 +579,8 @@ export default function NewVendorPage() {
             </CardContent>
           </Card>
 
-          {/* Actions */}
-          <div className="flex gap-4">
+          {/* Actions - sticky at bottom */}
+          <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 p-4 -mx-4 sm:-mx-6 lg:-mx-8 flex gap-4 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
             <Button type="button" variant="outline" onClick={() => navigate(-1)} className="flex-1">
               ביטול
             </Button>
