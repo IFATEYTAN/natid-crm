@@ -233,8 +233,8 @@ export default function CustomersPage() {
       {/* Filters & Table */}
       <Card className="bg-white">
         <CardHeader className="pb-3">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
               <Input
                 placeholder="חיפוש לפי שם, טלפון או אימייל..."
@@ -243,8 +243,9 @@ export default function CustomersPage() {
                 className="ps-10"
               />
             </div>
+            <div className="flex gap-3">
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="סוג לקוח" />
               </SelectTrigger>
               <SelectContent>
@@ -257,7 +258,7 @@ export default function CustomersPage() {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full sm:w-32">
                 <SelectValue placeholder="סטטוס" />
               </SelectTrigger>
               <SelectContent>
@@ -269,6 +270,7 @@ export default function CustomersPage() {
                 ))}
               </SelectContent>
             </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

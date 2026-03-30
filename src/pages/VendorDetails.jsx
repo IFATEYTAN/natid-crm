@@ -65,13 +65,13 @@ export default function VendorDetailsPage() {
     <SlideUp>
       <div className="max-w-4xl mx-auto space-y-6 pb-10">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
               <ArrowRight className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-[#111827]">{vendor.vendor_name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-[#111827]">{vendor.vendor_name}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <Badge
                   variant={vendor.is_active ? 'default' : 'secondary'}
@@ -86,7 +86,7 @@ export default function VendorDetailsPage() {
             </div>
           </div>
           <Button
-            className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2"
+            className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2 w-full sm:w-auto"
             onClick={() => navigate(createPageUrl(`EditVendor?id=${vendor.id}`))}
           >
             <Pencil className="w-4 h-4" />

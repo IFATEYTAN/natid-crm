@@ -322,12 +322,12 @@ export default function NewCase() {
           <ArrowRight className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-[32px] font-bold text-[#212121]">קריאה חדשה</h1>
+          <h1 className="text-2xl sm:text-[32px] font-bold text-[#212121]">קריאה חדשה</h1>
           <p className="text-[#616161] text-sm">מלא את פרטי הקריאה</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form id="new-case-form" onSubmit={handleSubmit} className="space-y-6">
         {/* Customer & Caller */}
         <Card>
           <CardHeader className="pb-4">
@@ -1044,14 +1044,20 @@ export default function NewCase() {
           />
         </Suspense>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+        {/* Spacer for fixed bottom bar */}
+        <div className="h-24" />
+      </form>
+
+      {/* Fixed bottom action bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+        <div className="max-w-4xl mx-auto flex gap-3">
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} className="flex-1">
             ביטול
           </Button>
           <Button
             type="submit"
-            className="bg-[#f97316] hover:bg-[#ea580c] gap-2"
+            form="new-case-form"
+            className="flex-1 bg-[#f97316] hover:bg-[#ea580c] gap-2"
             disabled={createMutation.isPending}
           >
             {createMutation.isPending ? (
@@ -1062,7 +1068,7 @@ export default function NewCase() {
             צור קריאה
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

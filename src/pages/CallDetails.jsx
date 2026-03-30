@@ -389,7 +389,7 @@ export default function CallDetailsPage() {
 
                 <PermissionGuard category="calls" permission="edit">
                   <Select value={call?.call_status} onValueChange={handleStatusChange}>
-                    <SelectTrigger className="w-44">
+                    <SelectTrigger className="w-full sm:w-44">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -432,28 +432,30 @@ export default function CallDetailsPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="details" className="space-y-4" dir="rtl">
-          <TabsList>
-            <TabsTrigger value="details">פרטים</TabsTrigger>
-            <TabsTrigger value="finance">כלכלה</TabsTrigger>
-            <TabsTrigger value="reminders">תזכורות</TabsTrigger>
-            <TabsTrigger value="map">מפה</TabsTrigger>
-            <TabsTrigger value="chat">צ'אט</TabsTrigger>
-            <TabsTrigger value="operatorNotes">הערות מוקדן</TabsTrigger>
-            <TabsTrigger value="files">קבצים ({photos.length})</TabsTrigger>
-            <TabsTrigger value="history">היסטוריה</TabsTrigger>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+            <TabsTrigger value="details" className="text-xs sm:text-sm px-2 sm:px-3">פרטים</TabsTrigger>
+            <TabsTrigger value="finance" className="text-xs sm:text-sm px-2 sm:px-3">כלכלה</TabsTrigger>
+            <TabsTrigger value="reminders" className="text-xs sm:text-sm px-2 sm:px-3">תזכורות</TabsTrigger>
+            <TabsTrigger value="map" className="text-xs sm:text-sm px-2 sm:px-3">מפה</TabsTrigger>
+            <TabsTrigger value="chat" className="text-xs sm:text-sm px-2 sm:px-3">צ'אט</TabsTrigger>
+            <TabsTrigger value="operatorNotes" className="text-xs sm:text-sm px-2 sm:px-3">הערות</TabsTrigger>
+            <TabsTrigger value="files" className="text-xs sm:text-sm px-2 sm:px-3">קבצים ({photos.length})</TabsTrigger>
+            <TabsTrigger value="history" className="text-xs sm:text-sm px-2 sm:px-3">היסטוריה</TabsTrigger>
             {(call?.call_status === 'in_progress' || call?.call_status === 'vendor_arrived' || call?.call_status === 'future_service' || call?.call_status === 'completed') && (
-              <TabsTrigger value="closing" className="relative">
-                סגירה &amp; סקרס
+              <TabsTrigger value="closing" className="relative text-xs sm:text-sm px-2 sm:px-3">
+                סגירה
                 {call?.boy_marked && <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />}
               </TabsTrigger>
             )}
             {call?.call_status === 'completed' && (
               <>
-                <TabsTrigger value="summary">סיכום</TabsTrigger>
-                <TabsTrigger value="feedback">משוב</TabsTrigger>
+                <TabsTrigger value="summary" className="text-xs sm:text-sm px-2 sm:px-3">סיכום</TabsTrigger>
+                <TabsTrigger value="feedback" className="text-xs sm:text-sm px-2 sm:px-3">משוב</TabsTrigger>
               </>
             )}
           </TabsList>
+          </div>
 
           <TabsContent value="details">
             <div className="space-y-4">

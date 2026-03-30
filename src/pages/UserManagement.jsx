@@ -360,7 +360,7 @@ export default function UserManagementPage() {
         </Dialog>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -444,8 +444,8 @@ export default function UserManagementPage() {
         {/* Search & Filter */}
         <Card className="bg-white border border-[#e5e7eb]">
           <CardContent className="p-3">
-            <div className="flex gap-3">
-              <div className="relative flex-1">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
                 <Input
                   placeholder="חיפוש לפי שם או אימייל..."
@@ -455,7 +455,7 @@ export default function UserManagementPage() {
                 />
               </div>
               <Select value={filterRole} onValueChange={setFilterRole}>
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger className="w-full sm:w-[160px]">
                   <SelectValue placeholder="כל התפקידים" />
                 </SelectTrigger>
                 <SelectContent>

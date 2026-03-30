@@ -170,7 +170,7 @@ export default function EditVendorPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form id="edit-vendor-form" onSubmit={handleSubmit} className="space-y-6">
           <Card className="bg-white">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -386,12 +386,19 @@ export default function EditVendorPage() {
             </CardContent>
           </Card>
 
-          <div className="flex gap-4">
+          {/* Spacer for fixed bottom bar */}
+          <div className="h-24" />
+        </form>
+
+        {/* Fixed bottom action bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
+          <div className="max-w-3xl mx-auto flex gap-4">
             <Button type="button" variant="outline" onClick={() => navigate(-1)} className="flex-1">
               ביטול
             </Button>
             <Button
               type="submit"
+              form="edit-vendor-form"
               className="flex-1 bg-[#f97316] hover:bg-[#ea580c] gap-2"
               disabled={updateMutation.isPending}
             >
@@ -403,7 +410,7 @@ export default function EditVendorPage() {
               שמור שינויים
             </Button>
           </div>
-        </form>
+        </div>
       </div>
     </SlideUp>
   );

@@ -121,10 +121,10 @@ export default function Reports() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">דוח שנתי - גרירה ושירותי דרך</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">דוח שנתי - גרירה ושירותי דרך</h1>
           <p className="text-gray-500 text-sm mt-1">ניתוח מקיף של פעילות שנתית</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4 ms-1" />
             רענן
