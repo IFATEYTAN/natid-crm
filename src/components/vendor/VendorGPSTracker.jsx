@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
 
 const MIN_SEND_INTERVAL_MS = 30000;
+const GPS_VERSION = 'v7-clean';
 
 /**
  * GPS Tracker component for vendors.
@@ -21,6 +22,9 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
   const [batteryLevel, setBatteryLevel] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
   const [sharingEnabled, setSharingEnabled] = useState(!!initialSharingEnabled);
+
+  // Log version ONCE on mount to confirm new code is loaded
+  useEffect(() => { console.log('[GPS-TRACKER]', GPS_VERSION, 'mounted, vendorId:', vendorId); }, []);
 
   // Refs for mutable values used inside geolocation callbacks
   const watchIdRef = useRef(null);
