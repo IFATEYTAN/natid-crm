@@ -30,10 +30,25 @@ export default function VendorGPSTracker({
   // Check if location sharing is enabled
   const isLocationSharingEnabled = vendorProfile?.is_location_sharing_enabled;
 
-  // Debug logging (minimal)
+  // Debug logging
   useEffect(() => {
-    console.log('[GPS] State:', { vendorId, sharing: isLocationSharingEnabled, tracking: isTracking });
-  }, [vendorId, isLocationSharingEnabled, isTracking]);
+    console.log('[GPS] === Component mounted/updated ===');
+    console.log('[GPS] vendorId:', vendorId);
+    console.log('[GPS] vendorProfile:', vendorProfile ? { id: vendorProfile.id, name: vendorProfile.vendor_name, is_location_sharing_enabled: vendorProfile.is_location_sharing_enabled, is_available_now: vendorProfile.is_available_now } : null);
+    console.log('[GPS] isLocationSharingEnabled:', isLocationSharingEnabled);
+    console.log('[GPS] isTracking:', isTracking);
+    console.log('[GPS] navigator.geolocation available:', !!navigator.geolocation);
+    
+    // Check permission status
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then(result => {
+        console.log('[GPS] Permission status:', result.state);
+        result.onchange = () => console.log('[GPS] Permission changed to:', result.state);
+      }).catch(err => console.log('[GPS] Permission query error:', err.message));
+    } else {
+      console.log('[GPS] navigator.permissions.query not available');
+    }
+  }, [vendorId, isLocationSharingEnabled, isTracking, vendorProfile]);
 
   // Get battery level if available (Battery API is deprecated in most browsers)
   useEffect(() => {
@@ -83,8 +98,9 @@ export default function VendorGPSTracker({
           call_number: activeCallNumber || null,
         };
 
+        console.log('[GPS] Sending location to server:', locationData);
         const response = await base44.functions.invoke('updateVendorLocation', locationData);
-        console.log('[GPS] Location sent successfully');
+        console.log('[GPS] Location sent successfully, response:', response?.data);
 
         lastSendTimeRef.current = Date.now();
         setLastUpdate(new Date());
@@ -158,8 +174,10 @@ export default function VendorGPSTracker({
 
   // Start tracking
   const startTracking = useCallback(() => {
-    console.log('[GPS] startTracking called');
+    console.log('[GPS] ====== startTracking called ======');
+    console.log('[GPS] navigator.geolocation:', !!navigator.geolocation);
     if (!navigator.geolocation) {
+      console.error('[GPS] Geolocation NOT supported');
       setLocationError('GPS לא נתמך בדפדפן זה');
       return;
     }
@@ -167,21 +185,33 @@ export default function VendorGPSTracker({
     setLocationError(null);
     lastSendTimeRef.current = 0; // Allow immediate first send
 
+    console.log('[GPS] Calling getCurrentPosition...');
     // Get initial position and send immediately
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        console.log('[GPS] getCurrentPosition SUCCESS:', { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
         latestPositionRef.current = pos;
         doSendLocation(pos);
       },
-      handleLocationError,
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      (err) => {
+        console.error('[GPS] getCurrentPosition ERROR:', err.code, err.message);
+        handleLocationError(err);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
 
     // Watch position changes (throttled — updates display frequently, sends to server every 30s)
+    console.log('[GPS] Starting watchPosition...');
     watchIdRef.current = navigator.geolocation.watchPosition(
-      handlePositionUpdate,
-      handleLocationError,
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      (pos) => {
+        console.log('[GPS] watchPosition update:', { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        handlePositionUpdate(pos);
+      },
+      (err) => {
+        console.error('[GPS] watchPosition ERROR:', err.code, err.message);
+        handleLocationError(err);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
     );
 
     // Fallback: send latest position every 30 seconds in case watchPosition doesn't fire
@@ -212,10 +242,15 @@ export default function VendorGPSTracker({
 
   // Auto-start tracking if location sharing is enabled
   useEffect(() => {
+    console.log('[GPS] Auto-start effect:', { isLocationSharingEnabled, isTracking });
     if (isLocationSharingEnabled && !isTracking) {
+      console.log('[GPS] Auto-starting tracking...');
       startTracking();
     } else if (!isLocationSharingEnabled && isTracking) {
+      console.log('[GPS] Auto-stopping tracking (sharing disabled)');
       stopTracking();
+    } else if (!isLocationSharingEnabled && !isTracking) {
+      console.log('[GPS] Not starting - isLocationSharingEnabled is', isLocationSharingEnabled);
     }
 
     return () => {
@@ -225,10 +260,12 @@ export default function VendorGPSTracker({
 
   // Toggle location sharing on vendor profile
   const handleToggleLocationSharing = async (enabled) => {
+    console.log('[GPS] Toggle location sharing:', enabled);
     try {
       await base44.entities.Vendor.update(vendorId, {
         is_location_sharing_enabled: enabled,
       });
+      console.log('[GPS] Vendor updated, now starting/stopping...');
 
       if (enabled) {
         startTracking();
