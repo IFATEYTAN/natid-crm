@@ -6,7 +6,7 @@ import { MapPin, Navigation, Battery, Wifi, WifiOff, AlertCircle } from 'lucide-
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
 
-const MIN_SEND_INTERVAL_MS = 30000; // 30 seconds between server updates
+const MIN_SEND_INTERVAL_MS = 30000;
 
 export default function VendorGPSTracker({
   vendorId,
@@ -22,25 +22,24 @@ export default function VendorGPSTracker({
   const [batteryLevel, setBatteryLevel] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
 
-  // Local toggle state — controlled entirely by the user's switch action.
-  // Initialised from vendorProfile on first meaningful load, then never overwritten by prop changes.
+  // Local toggle state — only set from prop once on mount, then fully local
   const [sharingEnabled, setSharingEnabled] = useState(false);
   const initDoneRef = useRef(false);
 
+  // One-time init from prop
   useEffect(() => {
-    if (!initDoneRef.current && vendorProfile?.id) {
+    if (!initDoneRef.current && vendorId) {
       initDoneRef.current = true;
-      setSharingEnabled(!!vendorProfile.is_location_sharing_enabled);
+      setSharingEnabled(!!vendorProfile?.is_location_sharing_enabled);
     }
-  }, [vendorProfile?.id, vendorProfile?.is_location_sharing_enabled]);
+  }, [vendorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Refs to hold mutable values used inside geolocation callbacks
+  // Refs for mutable values used inside geolocation callbacks
   const watchIdRef = useRef(null);
   const intervalRef = useRef(null);
   const lastSendRef = useRef(0);
   const latestPosRef = useRef(null);
   const sendingRef = useRef(false);
-  // Keep latest callback / prop values in refs so geolocation callbacks don't go stale
   const vendorIdRef = useRef(vendorId);
   const activeCallRef = useRef({ id: activeCallId, number: activeCallNumber });
   const batteryRef = useRef(batteryLevel);
@@ -51,7 +50,7 @@ export default function VendorGPSTracker({
   useEffect(() => { batteryRef.current = batteryLevel; }, [batteryLevel]);
   useEffect(() => { callbacksRef.current = { onLocationUpdate, onError }; }, [onLocationUpdate, onError]);
 
-  // ---------- battery ----------
+  // Battery
   useEffect(() => {
     let bat = null;
     const onChange = () => { if (bat) setBatteryLevel(Math.round(bat.level * 100)); };
@@ -65,7 +64,7 @@ export default function VendorGPSTracker({
     return () => { if (bat) bat.removeEventListener('levelchange', onChange); };
   }, []);
 
-  // ---------- send location (uses refs, no deps) ----------
+  // Send location to server — plain function using refs only
   const sendLocation = async (position) => {
     if (!vendorIdRef.current || sendingRef.current) return;
     sendingRef.current = true;
@@ -103,40 +102,39 @@ export default function VendorGPSTracker({
   };
 
   const onPosError = (err) => {
-    const msgs = {
-      [1]: 'גישה למיקום נדחתה. אנא אשר גישה בהגדרות הדפדפן.',
-      [2]: 'מידע מיקום לא זמין',
-      [3]: 'בקשת מיקום פגה',
-    };
+    const msgs = { 1: 'גישה למיקום נדחתה. אנא אשר גישה בהגדרות הדפדפן.', 2: 'מידע מיקום לא זמין', 3: 'בקשת מיקום פגה' };
     const msg = msgs[err.code] || 'שגיאה בקבלת מיקום';
     setLocationError(msg);
     callbacksRef.current.onError?.(msg);
   };
 
-  // ---------- single effect: start / stop geolocation ----------
+  // Cleanup helper (doesn't touch state — avoids triggering re-renders)
+  const cleanupGeo = () => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  // Single effect: start/stop based on sharingEnabled
   useEffect(() => {
     if (!sharingEnabled) {
-      // Make sure we're stopped
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
-      }
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      cleanupGeo();
       setIsTracking(false);
       return;
     }
 
-    // Start tracking
     if (!navigator.geolocation) {
       setLocationError('GPS לא נתמך בדפדפן זה');
       return;
     }
 
     setLocationError(null);
-    lastSendRef.current = 0; // allow immediate first send
+    lastSendRef.current = 0;
 
     navigator.geolocation.getCurrentPosition(
       (pos) => { latestPosRef.current = pos; sendLocation(pos); },
@@ -145,8 +143,7 @@ export default function VendorGPSTracker({
     );
 
     watchIdRef.current = navigator.geolocation.watchPosition(
-      onPosition,
-      onPosError,
+      onPosition, onPosError,
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
     );
 
@@ -158,32 +155,24 @@ export default function VendorGPSTracker({
 
     setIsTracking(true);
 
-    // Cleanup on disable or unmount
     return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
-      }
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      setIsTracking(false);
+      cleanupGeo();
+      // NOTE: Do NOT call setIsTracking(false) here — that would cause a state
+      // change after unmount or trigger a re-render loop if cleanup runs during
+      // the same render cycle.
     };
-  }, [sharingEnabled]); // ← ONLY re-run when the user toggles
+  }, [sharingEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ---------- toggle handler ----------
+  // Toggle handler
   const handleToggle = async (enabled) => {
-    setSharingEnabled(enabled); // immediate local update → effect starts/stops tracking
+    setSharingEnabled(enabled);
     try {
       await base44.entities.Vendor.update(vendorId, { is_location_sharing_enabled: enabled });
-    } catch (error) {
-      setSharingEnabled(!enabled); // revert on failure
-      onError?.('שגיאה בעדכון הגדרות מיקום');
+    } catch {
+      setSharingEnabled(!enabled);
     }
   };
 
-  // ---------- UI ----------
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
@@ -192,62 +181,41 @@ export default function VendorGPSTracker({
           <span className="font-medium text-gray-900">מעקב מיקום</span>
         </div>
         <div className="flex items-center gap-2">
-          <Label htmlFor="location-sharing" className="text-sm text-gray-600">שתף מיקום</Label>
-          <Switch id="location-sharing" checked={sharingEnabled} onCheckedChange={handleToggle} />
+          <Label htmlFor="gps-location-sharing" className="text-sm text-gray-600">שתף מיקום</Label>
+          <Switch id="gps-location-sharing" checked={sharingEnabled} onCheckedChange={handleToggle} />
         </div>
       </div>
 
-      {sharingEnabled && (
+      {sharingEnabled ? (
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            <Badge
-              variant="outline"
-              className={cn('gap-1', isTracking ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500')}
-            >
+            <Badge variant="outline" className={cn('gap-1', isTracking ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500')}>
               {isTracking ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
               {isTracking ? 'מעקב פעיל' : 'לא פעיל'}
             </Badge>
-
             {batteryLevel !== null && (
-              <Badge variant="outline" className="gap-1">
-                <Battery className="w-3 h-3" />
-                {batteryLevel}%
-              </Badge>
+              <Badge variant="outline" className="gap-1"><Battery className="w-3 h-3" />{batteryLevel}%</Badge>
             )}
-
             {currentLocation && (
               <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50">
-                <Navigation className="w-3 h-3" />
-                דיוק: {Math.round(currentLocation.accuracy)}מ'
+                <Navigation className="w-3 h-3" />דיוק: {Math.round(currentLocation.accuracy)}מ'
               </Badge>
             )}
           </div>
-
-          {lastUpdate && (
-            <p className="text-xs text-gray-500">
-              עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}
-            </p>
-          )}
-
+          {lastUpdate && <p className="text-xs text-gray-500">עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}</p>}
           {activeCallId && (
             <div className="bg-blue-50 border border-blue-200 rounded-md p-2 text-sm">
               <span className="text-blue-700">📍 מיקום נשמר להיסטוריית קריאה {activeCallNumber}</span>
             </div>
           )}
-
           {locationError && (
             <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
-              <AlertCircle className="w-4 h-4" />
-              {locationError}
+              <AlertCircle className="w-4 h-4" />{locationError}
             </div>
           )}
         </div>
-      )}
-
-      {!sharingEnabled && (
-        <p className="text-sm text-gray-500">
-          הפעל שיתוף מיקום כדי לאפשר למנהלים לעקוב אחר מיקומך בזמן אמת
-        </p>
+      ) : (
+        <p className="text-sm text-gray-500">הפעל שיתוף מיקום כדי לאפשר למנהלים לעקוב אחר מיקומך בזמן אמת</p>
       )}
     </div>
   );
