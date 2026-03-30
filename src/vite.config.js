@@ -7,13 +7,15 @@ export default defineConfig({
     base44({
       pwa: {
         workbox: {
-          maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           globPatterns: ['**/*.{js,html,css,ico,png,svg,woff,woff2,webp}'],
         },
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
   ],
   build: {
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -57,6 +59,14 @@ export default defineConfig({
             const match = id.match(/\/src\/features\/([^/.]+)/);
             if (match) return 'feat-' + match[1].toLowerCase();
           }
+          // Split other app directories
+          if (id.includes('/src/lib/')) return 'app-lib';
+          if (id.includes('/src/hooks/')) return 'app-hooks';
+          if (id.includes('/src/config/')) return 'app-config';
+          if (id.includes('/src/demo/')) return 'app-demo';
+          if (id.includes('/src/utils/')) return 'app-utils';
+          if (id.includes('/src/providers/')) return 'app-providers';
+          if (id.includes('/src/api/')) return 'app-api';
         },
       },
     },
