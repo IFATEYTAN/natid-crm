@@ -46,6 +46,7 @@ import { NotificationPermissionBanner } from '@/components/notifications/PushNot
 import VendorContractsView from '@/components/vendor/VendorContractsView';
 import VendorBreakHistory from '@/components/vendor/VendorBreakHistory';
 import VendorPDFDownload from '@/components/vendor/VendorPDFDownload';
+import VendorGPSTracker from '@/components/vendor/VendorGPSTracker';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -492,6 +493,14 @@ export default function VendorPortalPage() {
                   vendorProfile={vendorProfile}
                 />
               </Suspense>
+
+              {/* GPS Tracker */}
+              <VendorGPSTracker
+                vendorId={vendorProfile?.id}
+                vendorProfile={vendorProfile}
+                onLocationUpdate={() => {}}
+                onError={(error) => showToast.error(error)}
+              />
 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>

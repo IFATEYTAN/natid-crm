@@ -21,18 +21,22 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('react-dom')) return 'vendor-react-dom';
+            if (id.includes('react/')) return 'vendor-react';
             if (id.includes('react-router')) return 'vendor-router';
             if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
             if (id.includes('framer-motion')) return 'vendor-motion';
             if (id.includes('leaflet')) return 'vendor-maps';
-            if (id.includes('radix') || id.includes('shadcn')) return 'vendor-ui';
+            if (id.includes('radix')) return 'vendor-ui';
             if (id.includes('lucide')) return 'vendor-icons';
             if (id.includes('zod') || id.includes('react-hook-form') || id.includes('hookform')) return 'vendor-forms';
             if (id.includes('date-fns') || id.includes('moment')) return 'vendor-dates';
             if (id.includes('three')) return 'vendor-three';
-            if (id.includes('xlsx') || id.includes('jspdf')) return 'vendor-export';
+            if (id.includes('xlsx') || id.includes('jspdf') || id.includes('html2canvas')) return 'vendor-export';
             if (id.includes('tanstack')) return 'vendor-tanstack';
             if (id.includes('sonner') || id.includes('toast')) return 'vendor-toast';
+            if (id.includes('class-variance') || id.includes('clsx') || id.includes('tailwind-merge')) return 'vendor-styling';
+            if (id.includes('cmdk') || id.includes('embla')) return 'vendor-widgets';
+            if (id.includes('animejs') || id.includes('lottie') || id.includes('canvas-confetti')) return 'vendor-anim';
             return 'vendor-misc';
           }
           // Split pages individually
@@ -67,6 +71,8 @@ export default defineConfig({
           if (id.includes('/src/utils/')) return 'app-utils';
           if (id.includes('/src/providers/')) return 'app-providers';
           if (id.includes('/src/api/')) return 'app-api';
+          // Catch any remaining src files
+          if (id.includes('/src/')) return 'app-core';
         },
       },
     },
