@@ -281,7 +281,7 @@ export default function VendorGPSTracker({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <div className="bg-white border border-gray-200 rounded-lg p-4 sticky top-0 z-10">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <MapPin className="w-5 h-5 text-blue-600" />

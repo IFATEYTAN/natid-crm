@@ -3,9 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Power,
-  MapPin,
-  Clock,
-  AlertTriangle,
   CheckCircle2,
   Loader2,
   Coffee,
@@ -14,8 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { showToast } from '@/components/ui/FeedbackToast';
-import { formatDistanceToNow } from 'date-fns';
-import { he } from 'date-fns/locale';
+
 
 const BREAK_DURATIONS = [
   { minutes: 15, label: '15 דקות' },
@@ -27,8 +23,6 @@ export default function VendorAvailabilityToggle({
   vendor,
   isAvailable,
   onToggle,
-  lastLocationUpdate,
-  locationError,
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOnBreak, setIsOnBreak] = useState(vendor?.availability_status === 'on_break');
@@ -270,20 +264,9 @@ export default function VendorAvailabilityToggle({
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 text-sm text-green-800">
-                  <div className="flex items-center gap-1">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>המיקום שלך נשלח למוקד</span>
-                  </div>
-                  {lastLocationUpdate && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>
-                        עדכון אחרון:{' '}
-                        {formatDistanceToNow(lastLocationUpdate, { addSuffix: true, locale: he })}
-                      </span>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2 text-sm text-green-800">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>המיקום שלך נשלח למוקד</span>
                 </div>
                 <Button
                   variant="ghost"
