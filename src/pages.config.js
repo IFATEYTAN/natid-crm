@@ -1,168 +1,71 @@
 /**
  * pages.config.js - Page routing configuration
  * 
- * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
- * Pages are auto-registered when you create files in the ./pages/ folder.
- * 
+ * All pages are lazy-loaded to keep the initial bundle small.
  * THE ONLY EDITABLE VALUE: mainPage
- * This controls which page is the landing page (shown when users visit the app).
- * 
- * Example file structure:
- * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
- *   
- *   export const PAGES = {
- *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
- *   }
- *   
- *   export const pagesConfig = {
- *       mainPage: "HomePage",
- *       Pages: PAGES,
- *   };
- * 
- * Example with Layout (wraps all pages):
- *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
- *
- *   export const PAGES = {
- *       "Home": Home,
- *       "Settings": Settings,
- *   }
- *
- *   export const pagesConfig = {
- *       mainPage: "Home",
- *       Pages: PAGES,
- *       Layout: __Layout,
- *   };
- *
- * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
- *
- * The mainPage value must match a key in the PAGES object exactly.
  */
-import AdminDataCleanup from './pages/AdminDataCleanup';
-import AdminDisplaySettings from './pages/AdminDisplaySettings';
-import AdvancedExport from './pages/AdvancedExport';
-import Agents from './pages/Agents';
-import AllVendorsMap from './pages/AllVendorsMap';
-import AuditLog from './pages/AuditLog';
-import AutomationSettings from './pages/AutomationSettings';
-import Calendar from './pages/Calendar';
-import CallDetails from './pages/CallDetails';
-import Calls from './pages/Calls';
-import CTISettings from './pages/CTISettings';
-import CoverageAreas from './pages/CoverageAreas';
-import CustomerDetails from './pages/CustomerDetails';
-import CustomerFeedback from './pages/CustomerFeedback';
-import Customers from './pages/Customers';
-import Dashboard from './pages/Dashboard';
-import DepartmentView from './pages/DepartmentView';
-import EditCustomer from './pages/EditCustomer';
-import EditVendor from './pages/EditVendor';
-import FeedbackManagement from './pages/FeedbackManagement';
-import FleetManagement from './pages/FleetManagement';
-import FormView from './pages/FormView';
-import HistoricalDataAnalysis from './pages/HistoricalDataAnalysis';
-import ImportHistoricalData from './pages/ImportHistoricalData';
-import IntegrationSettings from './pages/IntegrationSettings';
-import Invoices from './pages/Invoices';
-import KnowledgeBase from './pages/KnowledgeBase';
-import CallScripts from './pages/CallScripts';
-import CustomerPortal from './pages/CustomerPortal';
-import KPIManagement from './pages/KPIManagement';
-import LandingPage from './pages/LandingPage';
-import MyNotificationSettings from './pages/MyNotificationSettings';
-import MyQueue from './pages/MyQueue';
-import MyVendorProfile from './pages/MyVendorProfile';
-import NewCase from './pages/NewCase';
-import NewVendor from './pages/NewVendor';
-import NotificationSettings from './pages/NotificationSettings';
-import PrivateService from './pages/PrivateService';
-import ProductCatalog from './pages/ProductCatalog';
-import QueueMonitor from './pages/QueueMonitor';
-import Reminders from './pages/Reminders';
-import Reports from './pages/Reports';
-import RoleManagement from './pages/RoleManagement';
-import ServiceProviders from './pages/ServiceProviders';
-import Settings from './pages/Settings';
-import SpecialCaseForm from './pages/SpecialCaseForm';
-import UserGuide from './pages/UserGuide';
-import UserManagement from './pages/UserManagement';
-import UserProfile from './pages/UserProfile';
-import VendorCallManagement from './pages/VendorCallManagement';
-import VendorContracts from './pages/VendorContracts';
-import VendorDetails from './pages/VendorDetails';
-import VendorGuide from './pages/VendorGuide';
-import VendorMobileApp from './pages/VendorMobileApp';
-import VendorPortal from './pages/VendorPortal';
-import VendorTracking from './pages/VendorTracking';
+import { lazyRetry } from '@/lib/lazyRetry';
 import __Layout from './Layout.jsx';
 
+const lazy = (importFn) => lazyRetry(importFn);
 
 export const PAGES = {
-    "AdminDataCleanup": AdminDataCleanup,
-    "AdminDisplaySettings": AdminDisplaySettings,
-    "AdvancedExport": AdvancedExport,
-    "Agents": Agents,
-    "AllVendorsMap": AllVendorsMap,
-    "AuditLog": AuditLog,
-    "AutomationSettings": AutomationSettings,
-    "Calendar": Calendar,
-    "CallDetails": CallDetails,
-    "Calls": Calls,
-    "CTISettings": CTISettings,
-    "CoverageAreas": CoverageAreas,
-    "CustomerDetails": CustomerDetails,
-    "CustomerFeedback": CustomerFeedback,
-    "Customers": Customers,
-    "Dashboard": Dashboard,
-    "DepartmentView": DepartmentView,
-    "EditCustomer": EditCustomer,
-    "EditVendor": EditVendor,
-    "FeedbackManagement": FeedbackManagement,
-    "FleetManagement": FleetManagement,
-    "FormView": FormView,
-    "HistoricalDataAnalysis": HistoricalDataAnalysis,
-    "ImportHistoricalData": ImportHistoricalData,
-    "IntegrationSettings": IntegrationSettings,
-    "Invoices": Invoices,
-    "KnowledgeBase": KnowledgeBase,
-    "CallScripts": CallScripts,
-    "CustomerPortal": CustomerPortal,
-    "KPIManagement": KPIManagement,
-    "LandingPage": LandingPage,
-    "MyNotificationSettings": MyNotificationSettings,
-    "MyQueue": MyQueue,
-    "MyVendorProfile": MyVendorProfile,
-    "NewCase": NewCase,
-    "NewVendor": NewVendor,
-    "NotificationSettings": NotificationSettings,
-    "PrivateService": PrivateService,
-    "ProductCatalog": ProductCatalog,
-    "QueueMonitor": QueueMonitor,
-    "Reminders": Reminders,
-    "Reports": Reports,
-    "RoleManagement": RoleManagement,
-    "ServiceProviders": ServiceProviders,
-    "Settings": Settings,
-    "SpecialCaseForm": SpecialCaseForm,
-    "UserGuide": UserGuide,
-    "UserManagement": UserManagement,
-    "UserProfile": UserProfile,
-    "VendorCallManagement": VendorCallManagement,
-    "VendorContracts": VendorContracts,
-    "VendorDetails": VendorDetails,
-    "VendorGuide": VendorGuide,
-    "VendorMobileApp": VendorMobileApp,
-    "VendorPortal": VendorPortal,
-    "VendorTracking": VendorTracking,
+    "AdminDataCleanup": lazy(() => import('./pages/AdminDataCleanup')),
+    "AdminDisplaySettings": lazy(() => import('./pages/AdminDisplaySettings')),
+    "AdvancedExport": lazy(() => import('./pages/AdvancedExport')),
+    "Agents": lazy(() => import('./pages/Agents')),
+    "AllVendorsMap": lazy(() => import('./pages/AllVendorsMap')),
+    "AuditLog": lazy(() => import('./pages/AuditLog')),
+    "AutomationSettings": lazy(() => import('./pages/AutomationSettings')),
+    "Calendar": lazy(() => import('./pages/Calendar')),
+    "CallDetails": lazy(() => import('./pages/CallDetails')),
+    "Calls": lazy(() => import('./pages/Calls')),
+    "CTISettings": lazy(() => import('./pages/CTISettings')),
+    "CoverageAreas": lazy(() => import('./pages/CoverageAreas')),
+    "CustomerDetails": lazy(() => import('./pages/CustomerDetails')),
+    "CustomerFeedback": lazy(() => import('./pages/CustomerFeedback')),
+    "Customers": lazy(() => import('./pages/Customers')),
+    "Dashboard": lazy(() => import('./pages/Dashboard')),
+    "DepartmentView": lazy(() => import('./pages/DepartmentView')),
+    "EditCustomer": lazy(() => import('./pages/EditCustomer')),
+    "EditVendor": lazy(() => import('./pages/EditVendor')),
+    "FeedbackManagement": lazy(() => import('./pages/FeedbackManagement')),
+    "FleetManagement": lazy(() => import('./pages/FleetManagement')),
+    "FormView": lazy(() => import('./pages/FormView')),
+    "HistoricalDataAnalysis": lazy(() => import('./pages/HistoricalDataAnalysis')),
+    "ImportHistoricalData": lazy(() => import('./pages/ImportHistoricalData')),
+    "IntegrationSettings": lazy(() => import('./pages/IntegrationSettings')),
+    "Invoices": lazy(() => import('./pages/Invoices')),
+    "KnowledgeBase": lazy(() => import('./pages/KnowledgeBase')),
+    "CallScripts": lazy(() => import('./pages/CallScripts')),
+    "CustomerPortal": lazy(() => import('./pages/CustomerPortal')),
+    "KPIManagement": lazy(() => import('./pages/KPIManagement')),
+    "LandingPage": lazy(() => import('./pages/LandingPage')),
+    "MyNotificationSettings": lazy(() => import('./pages/MyNotificationSettings')),
+    "MyQueue": lazy(() => import('./pages/MyQueue')),
+    "MyVendorProfile": lazy(() => import('./pages/MyVendorProfile')),
+    "NewCase": lazy(() => import('./pages/NewCase')),
+    "NewVendor": lazy(() => import('./pages/NewVendor')),
+    "NotificationSettings": lazy(() => import('./pages/NotificationSettings')),
+    "PrivateService": lazy(() => import('./pages/PrivateService')),
+    "ProductCatalog": lazy(() => import('./pages/ProductCatalog')),
+    "QueueMonitor": lazy(() => import('./pages/QueueMonitor')),
+    "Reminders": lazy(() => import('./pages/Reminders')),
+    "Reports": lazy(() => import('./pages/Reports')),
+    "RoleManagement": lazy(() => import('./pages/RoleManagement')),
+    "ServiceProviders": lazy(() => import('./pages/ServiceProviders')),
+    "Settings": lazy(() => import('./pages/Settings')),
+    "SpecialCaseForm": lazy(() => import('./pages/SpecialCaseForm')),
+    "UserGuide": lazy(() => import('./pages/UserGuide')),
+    "UserManagement": lazy(() => import('./pages/UserManagement')),
+    "UserProfile": lazy(() => import('./pages/UserProfile')),
+    "VendorCallManagement": lazy(() => import('./pages/VendorCallManagement')),
+    "VendorContracts": lazy(() => import('./pages/VendorContracts')),
+    "VendorDetails": lazy(() => import('./pages/VendorDetails')),
+    "VendorGuide": lazy(() => import('./pages/VendorGuide')),
+    "VendorMobileApp": lazy(() => import('./pages/VendorMobileApp')),
+    "VendorPortal": lazy(() => import('./pages/VendorPortal')),
+    "VendorTracking": lazy(() => import('./pages/VendorTracking')),
 }
 
 export const pagesConfig = {

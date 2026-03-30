@@ -76,6 +76,8 @@ export default defineConfig({
           if (id.includes('/utils/')) return 'app-utils';
           if (id.includes('/providers/')) return 'app-providers';
           if (id.includes('/api/')) return 'app-api';
+          // Catch ALL remaining source files so nothing lands in the default index chunk
+          if (id.includes('/src/')) return 'app-core';
         },
       },
     },

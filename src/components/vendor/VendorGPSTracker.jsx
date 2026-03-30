@@ -21,21 +21,19 @@ export default function VendorGPSTracker({
   const [batteryLevel, setBatteryLevel] = useState(null);
   const watchIdRef = useRef(null);
   const updateIntervalRef = useRef(null);
+  const lastSendTimeRef = useRef(0);
+  const latestPositionRef = useRef(null);
+  const sendingRef = useRef(false);
+
+  const MIN_SEND_INTERVAL_MS = 30000; // 30 seconds between server updates
 
   // Check if location sharing is enabled
   const isLocationSharingEnabled = vendorProfile?.is_location_sharing_enabled;
 
-  // Debug logging
+  // Debug logging (minimal)
   useEffect(() => {
-    console.log('[GPS] Component mounted/updated', {
-      vendorId,
-      isLocationSharingEnabled,
-      isTracking,
-      vendorProfileExists: !!vendorProfile,
-      vendorEmail: vendorProfile?.email,
-      vendorName: vendorProfile?.vendor_name,
-    });
-  }, [vendorId, isLocationSharingEnabled, isTracking, vendorProfile]);
+    console.log('[GPS] State:', { vendorId, sharing: isLocationSharingEnabled, tracking: isTracking });
+  }, [vendorId, isLocationSharingEnabled, isTracking]);
 
   // Get battery level if available (Battery API is deprecated in most browsers)
   useEffect(() => {
@@ -66,26 +64,12 @@ export default function VendorGPSTracker({
     };
   }, []);
 
-  // Send location to server
-  const sendLocationToServer = useCallback(
+  // Actually send location to server (no throttle check — caller must check)
+  const doSendLocation = useCallback(
     async (position) => {
-      console.log('[GPS] sendLocationToServer called', {
-        vendorId,
-        isLocationSharingEnabled,
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-      });
+      if (!vendorId || !isLocationSharingEnabled || sendingRef.current) return;
 
-      if (!vendorId) {
-        console.warn('[GPS] No vendorId - skipping send');
-        return;
-      }
-      if (!isLocationSharingEnabled) {
-        console.warn('[GPS] Location sharing disabled - skipping send');
-        return;
-      }
-
+      sendingRef.current = true;
       try {
         const locationData = {
           vendor_id: vendorId,
@@ -99,10 +83,10 @@ export default function VendorGPSTracker({
           call_number: activeCallNumber || null,
         };
 
-        console.log('[GPS] Sending location data to server:', locationData);
         const response = await base44.functions.invoke('updateVendorLocation', locationData);
-        console.log('[GPS] Server response:', response.data);
+        console.log('[GPS] Location sent successfully');
 
+        lastSendTimeRef.current = Date.now();
         setLastUpdate(new Date());
         setCurrentLocation({
           lat: position.coords.latitude,
@@ -114,22 +98,39 @@ export default function VendorGPSTracker({
           onLocationUpdate(locationData);
         }
       } catch (error) {
-        console.error('[GPS] Error sending location:', error);
-        console.error('[GPS] Error details:', error?.response?.data || error?.message);
+        console.error('[GPS] Error sending location:', error?.response?.status, error?.message);
+        // On 429, back off by extending the last send time
+        if (error?.response?.status === 429) {
+          lastSendTimeRef.current = Date.now() + 30000; // extra 30s backoff
+        }
         if (onError) {
           onError(error?.response?.data?.error || error.message);
         }
+      } finally {
+        sendingRef.current = false;
       }
     },
-    [
-      vendorId,
-      isLocationSharingEnabled,
-      batteryLevel,
-      activeCallId,
-      activeCallNumber,
-      onLocationUpdate,
-      onError,
-    ]
+    [vendorId, isLocationSharingEnabled, batteryLevel, activeCallId, activeCallNumber, onLocationUpdate, onError]
+  );
+
+  // Throttled handler for watchPosition — updates local state always, sends to server only every 30s
+  const handlePositionUpdate = useCallback(
+    (position) => {
+      // Always update local display
+      latestPositionRef.current = position;
+      setCurrentLocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+      });
+
+      // Only send to server if enough time has passed
+      const now = Date.now();
+      if (now - lastSendTimeRef.current >= MIN_SEND_INTERVAL_MS) {
+        doSendLocation(position);
+      }
+    },
+    [doSendLocation]
   );
 
   // Handle location error
@@ -159,38 +160,42 @@ export default function VendorGPSTracker({
   const startTracking = useCallback(() => {
     console.log('[GPS] startTracking called');
     if (!navigator.geolocation) {
-      console.error('[GPS] Geolocation not supported');
       setLocationError('GPS לא נתמך בדפדפן זה');
       return;
     }
 
     setLocationError(null);
+    lastSendTimeRef.current = 0; // Allow immediate first send
 
-    // Get initial position
-    navigator.geolocation.getCurrentPosition(sendLocationToServer, handleLocationError, {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
-    });
+    // Get initial position and send immediately
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        latestPositionRef.current = pos;
+        doSendLocation(pos);
+      },
+      handleLocationError,
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
 
-    // Watch position changes
+    // Watch position changes (throttled — updates display frequently, sends to server every 30s)
     watchIdRef.current = navigator.geolocation.watchPosition(
-      sendLocationToServer,
+      handlePositionUpdate,
       handleLocationError,
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
     );
 
-    // Also send updates every 30 seconds even if position hasn't changed
+    // Fallback: send latest position every 30 seconds in case watchPosition doesn't fire
     updateIntervalRef.current = setInterval(() => {
-      navigator.geolocation.getCurrentPosition(sendLocationToServer, handleLocationError, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      });
-    }, 30000);
+      if (latestPositionRef.current) {
+        const now = Date.now();
+        if (now - lastSendTimeRef.current >= MIN_SEND_INTERVAL_MS) {
+          doSendLocation(latestPositionRef.current);
+        }
+      }
+    }, MIN_SEND_INTERVAL_MS);
 
     setIsTracking(true);
-  }, [sendLocationToServer, handleLocationError]);
+  }, [doSendLocation, handlePositionUpdate, handleLocationError]);
 
   // Stop tracking
   const stopTracking = useCallback(() => {
@@ -207,12 +212,9 @@ export default function VendorGPSTracker({
 
   // Auto-start tracking if location sharing is enabled
   useEffect(() => {
-    console.log('[GPS] Auto-start effect', { isLocationSharingEnabled, isTracking });
     if (isLocationSharingEnabled && !isTracking) {
-      console.log('[GPS] Auto-starting tracking...');
       startTracking();
     } else if (!isLocationSharingEnabled && isTracking) {
-      console.log('[GPS] Auto-stopping tracking...');
       stopTracking();
     }
 
