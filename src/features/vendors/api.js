@@ -6,8 +6,8 @@ import { base44 } from '@/lib/api';
  */
 
 // List all vendors
-export const getVendors = (sort = '-created_date') => {
-  return base44.entities.Vendor.list(sort);
+export const getVendors = (sort = '-created_date', limit = 1000) => {
+  return base44.entities.Vendor.list(sort, limit);
 };
 
 // Get a single vendor by ID
@@ -21,7 +21,7 @@ export const getVendorByEmail = (email) => {
 };
 
 // Filter vendors with custom criteria
-export const filterVendors = (filters, sort = '-created_date', limit) => {
+export const filterVendors = (filters, sort = '-created_date', limit = 1000) => {
   return base44.entities.Vendor.filter(filters, sort, limit);
 };
 
@@ -30,7 +30,7 @@ export const getAvailableVendors = () => {
   return base44.entities.Vendor.filter({
     is_active: true,
     availability_status: 'available',
-  });
+  }, '-created_date', 1000);
 };
 
 // Create a new vendor

@@ -15,7 +15,7 @@ const VendorTrackingLeafletMap = lazyRetry(
 export default function VendorMapWidget() {
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: queryKeys.dashboardVendorLocations.all(),
-    queryFn: () => base44.entities.Vendor.filter({ is_active: true }),
+    queryFn: () => base44.entities.Vendor.filter({ is_active: true }, '-updated_date', 1000),
     refetchInterval: 30000,
   });
 

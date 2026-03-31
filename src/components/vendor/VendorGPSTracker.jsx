@@ -34,6 +34,7 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
   const sendingRef = useRef(false);
   const vendorIdRef = useRef(vendorId);
   const batteryRef = useRef(batteryLevel);
+  const isInitialMount = useRef(true);
 
   useEffect(() => { vendorIdRef.current = vendorId; }, [vendorId]);
   useEffect(() => { batteryRef.current = batteryLevel; }, [batteryLevel]);
@@ -118,6 +119,18 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       // If permission granted, enable sharing
       if (!sharingEnabled) {
         handleToggle(true);
+      } else {
+        cleanupGeo();
+        watchIdRef.current = navigator.geolocation.watchPosition(
+          onPosition, onPosError,
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
+        );
+        intervalRef.current = setInterval(() => {
+          if (latestPosRef.current && Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
+            sendLocation(latestPosRef.current);
+          }
+        }, MIN_SEND_INTERVAL_MS);
+        setIsTracking(true);
       }
     } catch (err) {
       onPosError(err);
@@ -126,6 +139,9 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
 
   // Single effect: start/stop based on sharingEnabled ONLY
   useEffect(() => {
+    const isMount = isInitialMount.current;
+    isInitialMount.current = false;
+
     if (!sharingEnabled) {
       cleanupGeo();
       setIsTracking(false);
@@ -137,27 +153,41 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       return;
     }
 
-    setLocationError(null);
-    lastSendRef.current = 0;
+    const startTracking = () => {
+      setLocationError(null);
+      lastSendRef.current = 0;
+      setIsTracking(true);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { latestPosRef.current = pos; sendLocation(pos); },
-      onPosError,
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
-    );
+      navigator.geolocation.getCurrentPosition(
+        (pos) => { latestPosRef.current = pos; sendLocation(pos); },
+        onPosError,
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+      );
 
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      onPosition, onPosError,
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
-    );
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        onPosition, onPosError,
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
+      );
 
-    intervalRef.current = setInterval(() => {
-      if (latestPosRef.current && Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
-        sendLocation(latestPosRef.current);
-      }
-    }, MIN_SEND_INTERVAL_MS);
+      intervalRef.current = setInterval(() => {
+        if (latestPosRef.current && Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
+          sendLocation(latestPosRef.current);
+        }
+      }, MIN_SEND_INTERVAL_MS);
+    };
 
-    setIsTracking(true);
+    if (isMount && navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        if (result.state === 'granted') {
+          startTracking();
+        } else {
+          setLocationError('נדרשת לחיצה כדי להפעיל מיקום (לחץ למטה)');
+          setIsTracking(false);
+        }
+      }).catch(() => startTracking());
+    } else {
+      startTracking();
+    }
 
     return () => { cleanupGeo(); };
   }, [sharingEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
