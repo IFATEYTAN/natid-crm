@@ -16,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Truck, Phone, Star, MapPin, Search, Eye, RefreshCw } from 'lucide-react';
+import { Truck, Phone, Star, MapPin, Search, Eye, RefreshCw, Clock } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { he } from 'date-fns/locale';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { SlideUp } from '@/components/animations/AnimatedComponents';
 import { cn } from '@/lib/utils';
@@ -265,6 +267,23 @@ export default function AllVendorsMapPage() {
                               {vendor.service_type
                                 .map((t) => vendorServiceTypeLabels[t] || t)
                                 .join(', ')}
+                            </div>
+                          )}
+                          {vendor.address && (
+                            <div className="flex items-center gap-2 text-[#6b7280] text-xs">
+                              <MapPin className="w-3 h-3" />
+                              <span className="truncate" title={vendor.address}>{vendor.address}</span>
+                            </div>
+                          )}
+                          {vendor.last_location_update && (
+                            <div className="flex items-center gap-2 text-[#6b7280] text-xs">
+                              <Clock className="w-3 h-3" />
+                              <span>
+                                {formatDistanceToNow(new Date(vendor.last_location_update), {
+                                  addSuffix: true,
+                                  locale: he,
+                                })}
+                              </span>
                             </div>
                           )}
                         </div>

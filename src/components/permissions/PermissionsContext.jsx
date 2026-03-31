@@ -22,6 +22,8 @@ const APP_ROLE_MAP = {
   'נציג שטח': 'agent',
   ספק: 'vendor',
   'ספק שירות': 'vendor',
+  Vendor: 'vendor',
+  'Vendor ': 'vendor',
 };
 
 /**
@@ -50,7 +52,9 @@ function resolveEffectiveRole(platformRole, userPermission) {
     if (mapped) return mapped;
   }
 
-  // מיפוי ישיר של role מהפלטפורמה (אם Base44 מחזיר 'operator'/'agent')
+  // מיפוי ישיר של role מהפלטפורמה (אם Base44 מחזיר 'operator'/'agent'/'vendor')
+  const normalizedRole = (platformRole || '').toLowerCase().trim();
+  if (normalizedRole === 'vendor' || normalizedRole === 'ספק') return 'vendor';
   if (APP_ROLE_MAP[platformRole]) return APP_ROLE_MAP[platformRole];
 
   // ברירת מחדל: 'user' ותפקידים לא מוכרים → operator
@@ -220,6 +224,11 @@ export function PermissionsProvider({ children }) {
         // קביעת תפקיד אפקטיבי - גישור בין role של Base44 לתפקידי האפליקציה
         const resolved = resolveEffectiveRole(user?.role, perm);
         setEffectiveRole(resolved);
+        // Force sync user role locally if needed (optional)
+        if (user && resolved && resolved !== user.role) {
+           // Update local object to match resolved role so other checks rely on the correct role
+           user.role = resolved;
+        }
       } catch (e) {
         console.error('Failed to load user:', e);
       } finally {

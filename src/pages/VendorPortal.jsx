@@ -61,7 +61,9 @@ export default function VendorPortalPage() {
   const queryClient = useQueryClient();
 
   const isAdmin = effectiveRole === 'admin';
-  const isVendorUser = effectiveRole === 'vendor';
+  const effectiveRoleNormalized = (effectiveRole || '').toLowerCase().trim();
+  const currentUserRoleNormalized = (currentUser?.role || '').toLowerCase().trim();
+  const isVendorUser = effectiveRoleNormalized === 'vendor' || effectiveRoleNormalized === 'ספק' || currentUserRoleNormalized === 'vendor' || currentUserRoleNormalized === 'ספק';
   const [activeTab, setActiveTab] = useState(() => (effectiveRole === 'admin' ? 'admin' : 'vendor'));
   const [callsTab, setCallsTab] = useState('all');
   useEffect(() => {
@@ -313,14 +315,14 @@ export default function VendorPortalPage() {
               לא נמצא פרופיל ספק המשויך לחשבון שלך. אנא פנה למנהל המערכת.
             </p>
             <div className="mt-4 space-y-2">
-              <p className="text-sm text-[#6B778C]">
-                ייתכן שהמנהל טרם יצר עבורך פרופיל ספק, או שהאימייל שלך אינו תואם לפרופיל קיים.
-              </p>
-              <Link to={createPageUrl('VendorGuide')}>
-                <Button variant="outline" size="sm" className="mt-2 gap-1">
-                  למדריך הספקים
-                </Button>
-              </Link>
+            <p className="text-sm text-[#6B778C]">
+            ייתכן שהמנהל טרם יצר עבורך פרופיל ספק, או שהאימייל שלך אינו תואם לפרופיל קיים.
+            </p>
+            <Link to={createPageUrl('VendorGuide')}>
+            <Button variant="outline" size="sm" className="mt-2 gap-1">
+              מדריך למשתמש
+            </Button>
+            </Link>
             </div>
           </CardContent>
         </Card>

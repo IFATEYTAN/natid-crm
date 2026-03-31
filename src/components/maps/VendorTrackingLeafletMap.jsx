@@ -87,6 +87,12 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
                   <Phone className="w-3 h-3" />
                   <span dir="ltr">{vendor.phone}</span>
                 </div>
+                {vendor.address && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    <span className="truncate" title={vendor.address}>{vendor.address}</span>
+                  </div>
+                )}
                 {vendor.last_location_update && (
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
@@ -100,8 +106,8 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
                 )}
                 {!vendor.current_latitude && (
                   <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>אין מיקום עדכני</span>
+                    <MapPin className="w-3 h-3 text-red-500" />
+                    <span className="text-red-500">אין מיקום עדכני</span>
                   </div>
                 )}
               </div>

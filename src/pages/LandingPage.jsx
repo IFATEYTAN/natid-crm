@@ -248,10 +248,10 @@ export default function LandingPage() {
           </div>
           {user ? (
             <Link
-              to="/Dashboard"
+              to={(user.role || '').toLowerCase().trim() === 'vendor' || (user.role || '').trim() === 'ספק' ? '/VendorPortal' : '/Dashboard'}
               className="px-4 sm:px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors text-sm sm:text-base whitespace-nowrap"
             >
-              חזרה לדשבורד
+              {(user.role || '').toLowerCase().trim() === 'vendor' || (user.role || '').trim() === 'ספק' ? 'חזרה לפורטל ספקים' : 'חזרה לדשבורד'}
             </Link>
           ) : (
             <a

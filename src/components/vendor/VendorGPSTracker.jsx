@@ -179,18 +179,7 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
     if (wasToggled) {
       startTracking();
     } else {
-      if (navigator.permissions && navigator.permissions.query) {
-        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-          if (result.state === 'granted') {
-            startTracking();
-          } else {
-            setLocationError('נדרשת לחיצה כדי לאשר מיקום');
-            setIsTracking(false);
-          }
-        }).catch(() => startTracking());
-      } else {
-        startTracking();
-      }
+      startTracking();
     }
 
     return () => { cleanupGeo(); };

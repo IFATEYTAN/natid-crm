@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Truck, Phone, Star, Eye } from 'lucide-react';
+import { Truck, Phone, Star, Eye, Clock, MapPin } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { he } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -88,6 +90,23 @@ export default function AllVendorsLeafletMap({
                 {vendor.service_type?.length > 0 && (
                   <div className="text-xs text-[#6b7280]">
                     {vendor.service_type.map((t) => vendorServiceTypeLabels[t] || t).join(', ')}
+                  </div>
+                )}
+                {vendor.address && (
+                  <div className="flex items-center gap-2 text-[#6b7280] text-xs">
+                    <MapPin className="w-3 h-3" />
+                    <span className="truncate" title={vendor.address}>{vendor.address}</span>
+                  </div>
+                )}
+                {vendor.last_location_update && (
+                  <div className="flex items-center gap-2 text-[#6b7280] text-xs">
+                    <Clock className="w-3 h-3" />
+                    <span>
+                      {formatDistanceToNow(new Date(vendor.last_location_update), {
+                        addSuffix: true,
+                        locale: he,
+                      })}
+                    </span>
                   </div>
                 )}
               </div>
