@@ -38,7 +38,7 @@ const LayoutWrapper = ({ children, currentPageName }) => {
 };
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, isAuthenticated, authError } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, isAuthenticated, authError, user } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -95,7 +95,6 @@ const AuthenticatedApp = () => {
   };
 
   // Determine main page dynamically based on user role
-  const { user } = useAuth();
   const userRole = (user?.role || '').toLowerCase().trim();
   const isVendor = userRole === 'vendor' || userRole === 'ספק';
   console.log("App Main Page user role:", userRole, "isVendor:", isVendor);
