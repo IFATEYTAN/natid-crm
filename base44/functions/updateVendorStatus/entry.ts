@@ -1,8 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
-
-const kv = await Deno.openKv();
-const limiter = createRateLimiter(kv);
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Update vendor status (available/break) and notify operators
@@ -17,12 +13,9 @@ Deno.serve(async (req) => {
     }
 
     // Only vendor or admin
-    if (!['admin', 'vendor'].includes(user.role)) {
+    if (!['admin', 'vendor', 'ספק'].includes(user.role)) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const rl = await limiter.check('updateVendorStatus', user.id, 10, 60_000);
-    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const { vendor_id, status } = await req.json();
 

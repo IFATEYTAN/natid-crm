@@ -1,8 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
-
-const kv = await Deno.openKv();
-const limiter = createRateLimiter(kv);
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 /**
  * Public endpoint for customer self-service portal.
@@ -11,11 +7,6 @@ const limiter = createRateLimiter(kv);
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-
-    // Rate limit by IP (public endpoint)
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    const rl = await limiter.check('customerPortal', ip, 20, 60_000);
-    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     const { phone, call_number } = await req.json();
 

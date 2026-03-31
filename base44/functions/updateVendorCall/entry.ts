@@ -1,8 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
-
-const kv = await Deno.openKv();
-const limiter = createRateLimiter(kv);
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // Fields a vendor is allowed to update on a call
 const ALLOWED_VENDOR_FIELDS = [
@@ -29,9 +25,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const rl = await limiter.check('updateVendorCall', user.id, 30, 60_000);
-    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
-
     const { call_id, updates } = await req.json();
 
     if (!call_id || !updates || typeof updates !== 'object') {
@@ -46,7 +39,7 @@ Deno.serve(async (req) => {
     const call = calls[0];
 
     // Ownership check: vendors can only update calls assigned to them
-    if (user.role === 'vendor') {
+    if (user.role === 'vendor' || user.role === 'ספק') {
       const vendorRecords = await base44.entities.Vendor.filter({ email: user.email });
       if (!vendorRecords.length || call.assigned_vendor_id !== vendorRecords[0].id) {
         return Response.json({ error: 'Forbidden - this call is not assigned to you' }, { status: 403 });
@@ -58,14 +51,14 @@ Deno.serve(async (req) => {
     // Filter to allowed fields only (vendors can't change arbitrary fields)
     const sanitizedUpdates: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(updates)) {
-      if (user.role === 'vendor' && !ALLOWED_VENDOR_FIELDS.includes(key)) {
+      if ((user.role === 'vendor' || user.role === 'ספק') && !ALLOWED_VENDOR_FIELDS.includes(key)) {
         continue; // Silently skip disallowed fields for vendors
       }
       sanitizedUpdates[key] = value;
     }
 
     // Validate status transitions for vendors
-    if (user.role === 'vendor' && sanitizedUpdates.call_status) {
+    if ((user.role === 'vendor' || user.role === 'ספק') && sanitizedUpdates.call_status) {
       const currentStatus = call.call_status;
       const allowedNext = VENDOR_STATUS_TRANSITIONS[currentStatus] || [];
       if (!allowedNext.includes(sanitizedUpdates.call_status as string)) {
