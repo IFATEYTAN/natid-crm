@@ -99,12 +99,13 @@ function LayoutContent({ children, currentPageName }) {
     }
   }, [isLoadingAuth, currentUser, currentPageName, navigate]);
 
-  // Redirect authenticated users away from LandingPage to Dashboard
+  // Redirect authenticated users away from LandingPage to the appropriate home page
   useEffect(() => {
-    if (!isLoadingAuth && currentUser && currentPageName === 'LandingPage') {
-      navigate(createPageUrl('Dashboard'), { replace: true });
+    if (!isLoadingAuth && currentUser && currentPageName === 'LandingPage' && effectiveRoleName) {
+      const home = effectiveRoleName === 'vendor' ? 'VendorPortal' : 'Dashboard';
+      navigate(createPageUrl(home), { replace: true });
     }
-  }, [isLoadingAuth, currentUser, currentPageName, navigate]);
+  }, [isLoadingAuth, currentUser, currentPageName, navigate, effectiveRoleName]);
 
   // Reset redirect flag when page changes
   useEffect(() => {
