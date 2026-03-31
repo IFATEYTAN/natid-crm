@@ -98,6 +98,14 @@ export default function AllVendorsLeafletMap({
                     <span className="truncate" title={vendor.address}>{vendor.address}</span>
                   </div>
                 )}
+                {vendor.current_latitude && vendor.current_longitude && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <MapPin className="w-3 h-3 text-blue-500" />
+                    <span dir="ltr" className="text-blue-600 font-mono">
+                      {vendor.current_latitude.toFixed(5)}, {vendor.current_longitude.toFixed(5)}
+                    </span>
+                  </div>
+                )}
                 {vendor.last_location_update && (
                   <div className="flex items-center gap-2 text-[#6b7280] text-xs">
                     <Clock className="w-3 h-3" />
