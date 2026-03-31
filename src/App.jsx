@@ -94,14 +94,20 @@ const AuthenticatedApp = () => {
     return content;
   };
 
+  // Determine main page dynamically based on user role
+  const { user } = useAuth();
+  const isVendor = user?.role === 'vendor' || user?.role === 'ספק';
+  const effectiveMainPageKey = isVendor ? 'VendorPortal' : mainPageKey;
+  const EffectiveMainPage = Pages[effectiveMainPageKey] || MainPage;
+
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route
           path="/"
           element={
-            <LayoutWrapper currentPageName={mainPageKey}>
-              {renderPage(mainPageKey, MainPage)}
+            <LayoutWrapper currentPageName={effectiveMainPageKey}>
+              {renderPage(effectiveMainPageKey, EffectiveMainPage)}
             </LayoutWrapper>
           }
         />

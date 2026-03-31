@@ -34,7 +34,7 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
   const sendingRef = useRef(false);
   const vendorIdRef = useRef(vendorId);
   const batteryRef = useRef(batteryLevel);
-  const isInitialMount = useRef(true);
+  const userToggledRef = useRef(false);
 
   useEffect(() => { vendorIdRef.current = vendorId; }, [vendorId]);
   useEffect(() => { batteryRef.current = batteryLevel; }, [batteryLevel]);
@@ -139,8 +139,8 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
 
   // Single effect: start/stop based on sharingEnabled ONLY
   useEffect(() => {
-    const isMount = isInitialMount.current;
-    isInitialMount.current = false;
+    const wasToggled = userToggledRef.current;
+    userToggledRef.current = false;
 
     if (!sharingEnabled) {
       cleanupGeo();
@@ -176,17 +176,21 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       }, MIN_SEND_INTERVAL_MS);
     };
 
-    if (isMount && navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        if (result.state === 'granted') {
-          startTracking();
-        } else {
-          setLocationError('נדרשת לחיצה כדי להפעיל מיקום (לחץ למטה)');
-          setIsTracking(false);
-        }
-      }).catch(() => startTracking());
-    } else {
+    if (wasToggled) {
       startTracking();
+    } else {
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+          if (result.state === 'granted') {
+            startTracking();
+          } else {
+            setLocationError('נדרשת לחיצה כדי לאשר מיקום');
+            setIsTracking(false);
+          }
+        }).catch(() => startTracking());
+      } else {
+        startTracking();
+      }
     }
 
     return () => { cleanupGeo(); };
@@ -194,6 +198,7 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
 
   // Toggle handler — local state + persist to server
   const handleToggle = async (enabled) => {
+    userToggledRef.current = true;
     setSharingEnabled(enabled);
     try {
       await base44.entities.Vendor.update(vendorId, { is_location_sharing_enabled: enabled });
