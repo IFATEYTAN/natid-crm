@@ -65,7 +65,7 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
       <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
       <FitBounds vendors={vendors} />
 
-      {vendors.map((vendor) => (
+      {vendors.filter(v => v.current_latitude != null && v.current_longitude != null).map((vendor) => (
         <Marker
           key={vendor.id}
           position={[vendor.current_latitude, vendor.current_longitude]}
@@ -111,6 +111,26 @@ export default function VendorTrackingLeafletMap({ vendors = [], onSelectVendor 
                   </div>
                 )}
               </div>
+              {vendor.current_latitude && vendor.current_longitude && (
+                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-100">
+                  <a
+                    href={`https://waze.com/ul?ll=${vendor.current_latitude},${vendor.current_longitude}&navigate=yes`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 text-center py-1.5 bg-blue-50 text-blue-600 rounded text-xs font-medium hover:bg-blue-100 transition-colors"
+                  >
+                    Waze
+                  </a>
+                  <a
+                    href={`https://maps.google.com/?q=${vendor.current_latitude},${vendor.current_longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 text-center py-1.5 bg-gray-50 text-gray-700 rounded text-xs font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Google Maps
+                  </a>
+                </div>
+              )}
             </div>
           </Popup>
         </Marker>
