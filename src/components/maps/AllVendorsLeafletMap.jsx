@@ -118,6 +118,26 @@ export default function AllVendorsLeafletMap({
                   </div>
                 )}
               </div>
+              {vendor.current_latitude && vendor.current_longitude && (
+                <div className="flex items-center gap-2 mb-3 pt-2 border-t border-gray-100">
+                  <a
+                    href={`https://waze.com/ul?ll=${vendor.current_latitude},${vendor.current_longitude}&navigate=yes`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 text-center py-1.5 bg-blue-50 text-blue-600 rounded text-xs font-medium hover:bg-blue-100 transition-colors"
+                  >
+                    Waze
+                  </a>
+                  <a
+                    href={`https://maps.google.com/?q=${vendor.current_latitude},${vendor.current_longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 text-center py-1.5 bg-gray-50 text-gray-700 rounded text-xs font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Google Maps
+                  </a>
+                </div>
+              )}
               <Link to={createPageUrl(`VendorDetails?id=${vendor.id}`)}>
                 <Button size="sm" className="w-full gap-2 bg-[#3b82f6] hover:bg-[#2563eb]">
                   <Eye className="w-3 h-3" />
