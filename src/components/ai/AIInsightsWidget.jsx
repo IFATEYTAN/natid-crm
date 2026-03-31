@@ -36,24 +36,25 @@ export default function AIInsightsWidget() {
     if (calls.length === 0) return;
     setLoading(true);
 
-    const openCalls = calls.filter((c) => !['completed', 'cancelled'].includes(c.call_status));
-    const completedToday = calls.filter((c) => {
-      if (!c.created_date || c.call_status !== 'completed') return false;
-      const d = new Date(c.created_date);
-      if (isNaN(d.getTime())) return false;
-      return d.toDateString() === new Date().toDateString();
-    });
-    const urgentOpen = openCalls.filter(
-      (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
-    );
-    const waitingLong = openCalls.filter((c) => {
-      if (!c.created_date) return false;
-      const d = new Date(c.created_date);
-      if (isNaN(d.getTime())) return false;
-      return (Date.now() - d.getTime()) / 60000 > 30;
-    });
+    try {
+      const openCalls = calls.filter((c) => !['completed', 'cancelled'].includes(c.call_status));
+      const completedToday = calls.filter((c) => {
+        if (!c.created_date || c.call_status !== 'completed') return false;
+        const d = new Date(c.created_date);
+        if (isNaN(d.getTime())) return false;
+        return d.toDateString() === new Date().toDateString();
+      });
+      const urgentOpen = openCalls.filter(
+        (c) => c.call_priority === 'urgent' || c.call_priority === 'critical'
+      );
+      const waitingLong = openCalls.filter((c) => {
+        if (!c.created_date) return false;
+        const d = new Date(c.created_date);
+        if (isNaN(d.getTime())) return false;
+        return (Date.now() - d.getTime()) / 60000 > 30;
+      });
 
-    const prompt = `אתה מערכת AI לניהול מוקד שירותי דרך. נתח את הנתונים הבאים וצור 3 תובנות חכמות ומשמעותיות.
+      const prompt = `אתה מערכת AI לניהול מוקד שירותי דרך. נתח את הנתונים הבאים וצור 3 תובנות חכמות ומשמעותיות.
 
 נתונים:
 - סה"כ קריאות פתוחות: ${openCalls.length}
@@ -64,31 +65,36 @@ export default function AIInsightsWidget() {
 
 צור 3 תובנות שונות. כל תובנה צריכה להיות קצרה ומעשית.`;
 
-    const response = await base44.integrations.Core.InvokeLLM({
-      prompt,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          insights: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                title: { type: 'string', description: 'כותרת קצרה (3-5 מילים)' },
-                description: { type: 'string', description: 'תובנה קצרה (משפט אחד)' },
-                type: { type: 'string', enum: ['info', 'warning', 'success', 'danger'] },
-                icon: { type: 'string', enum: ['trend', 'sla', 'time', 'general'] },
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            insights: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string', description: 'כותרת קצרה (3-5 מילים)' },
+                  description: { type: 'string', description: 'תובנה קצרה (משפט אחד)' },
+                  type: { type: 'string', enum: ['info', 'warning', 'success', 'danger'] },
+                  icon: { type: 'string', enum: ['trend', 'sla', 'time', 'general'] },
+                },
+                required: ['title', 'description', 'type', 'icon'],
               },
-              required: ['title', 'description', 'type', 'icon'],
             },
           },
+          required: ['insights'],
         },
-        required: ['insights'],
-      },
-    });
+      });
 
-    setInsights(response.insights || []);
-    setLoading(false);
+      setInsights(response.insights || []);
+    } catch (err) {
+      console.warn('AI Insights failed:', err.message);
+      setInsights([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
