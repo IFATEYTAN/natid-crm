@@ -101,6 +101,29 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
     }
   };
 
+  // Explicitly request permission — useful on mobile browsers that block silent requests
+  const requestPermission = async () => {
+    setLocationError(null);
+    try {
+      // This triggers the browser permission prompt
+      const pos = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0,
+        });
+      });
+      latestPosRef.current = pos;
+      sendLocation(pos);
+      // If permission granted, enable sharing
+      if (!sharingEnabled) {
+        handleToggle(true);
+      }
+    } catch (err) {
+      onPosError(err);
+    }
+  };
+
   // Single effect: start/stop based on sharingEnabled ONLY
   useEffect(() => {
     if (!sharingEnabled) {
@@ -180,8 +203,16 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
           </div>
           {lastUpdate && <p className="text-xs text-gray-500">עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}</p>}
           {locationError && (
-            <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
-              <AlertCircle className="w-4 h-4" />{locationError}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
+                <AlertCircle className="w-4 h-4" />{locationError}
+              </div>
+              <button
+                onClick={requestPermission}
+                className="text-sm text-blue-600 underline hover:text-blue-800"
+              >
+                לחץ כאן לאשר גישה למיקום
+              </button>
             </div>
           )}
         </div>

@@ -186,7 +186,21 @@ function LayoutContent({ children, currentPageName }) {
     }));
   };
 
-  const navigationGroups = [
+  // Vendor-specific compact navigation
+  const vendorNavigationGroups = [
+    {
+      title: 'פורטל ספקים',
+      items: [
+        { name: 'פורטל ספקים', href: 'VendorPortal' },
+        { name: 'ניהול קריאה', href: 'VendorCallManagement' },
+        { name: 'הפרופיל שלי', href: 'MyVendorProfile' },
+        { name: 'מדריך', href: 'VendorGuide' },
+        { name: 'הגדרות התראות', href: 'MyNotificationSettings' },
+      ],
+    },
+  ];
+
+  const fullNavigationGroups = [
     {
       title: 'תפעול יומי',
       items: [
@@ -258,6 +272,8 @@ function LayoutContent({ children, currentPageName }) {
       ],
     },
   ];
+
+  const navigationGroups = effectiveRoleName === 'vendor' ? vendorNavigationGroups : fullNavigationGroups;
 
   const handleLogout = async () => {
     await base44.auth.logout();
