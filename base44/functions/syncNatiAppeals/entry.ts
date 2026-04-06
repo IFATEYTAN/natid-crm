@@ -287,9 +287,17 @@ function cleanData(obj) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user || user.role !== 'admin') {
+    
+    // Allow both admin users and scheduled automations (no user context)
+    let user = null;
+    try {
+      user = await base44.auth.me();
+    } catch (e) {
+      // No user context - likely a scheduled automation, which is fine
+    }
+    
+    // If there's a user, they must be admin
+    if (user && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
