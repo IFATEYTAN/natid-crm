@@ -295,7 +295,7 @@ function LayoutContent({ children, currentPageName }) {
   if (!currentUser) return null;
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#FAFAFA] flex">
+    <div dir="rtl" className="min-h-screen bg-[#FAFAFA] flex overflow-x-hidden">
       {/* Skip to main content link - visible on keyboard focus */}
       <a
         href="#main-content"
@@ -397,7 +397,7 @@ function LayoutContent({ children, currentPageName }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 right-0 h-full w-64 bg-white border-l border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out flex flex-col',
+          'fixed top-0 right-0 h-[100dvh] w-[280px] sm:w-64 bg-white border-l border-[#E0E0E0] z-50 transition-transform duration-300 ease-in-out flex flex-col',
           sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         )}
       >
@@ -486,9 +486,9 @@ function LayoutContent({ children, currentPageName }) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 lg:mr-64 min-h-screen flex flex-col transition-all duration-300 overflow-x-hidden">
+      <div className="flex-1 lg:mr-64 min-h-[100dvh] flex flex-col transition-all duration-300 w-full overflow-x-hidden">
         {/* Top Bar */}
-        <header className="sticky top-0 h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <header className="sticky top-0 h-14 sm:h-16 bg-white border-b border-[#E0E0E0] z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -612,7 +612,7 @@ function LayoutContent({ children, currentPageName }) {
           ref={mainContentRef}
           role="main"
           aria-live="polite"
-          className="flex-1 p-4 md:p-6"
+          className="flex-1 p-3 sm:p-4 md:p-6 max-w-full"
         >
           {children}
         </main>

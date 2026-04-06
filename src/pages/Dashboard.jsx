@@ -178,22 +178,22 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500" dir="rtl">
+    <div className="space-y-5 sm:space-y-8 animate-in fade-in duration-500 max-w-full" dir="rtl">
       {/* Header Section */}
-      <div className="pb-6 border-b border-gray-200">
+      <div className="pb-4 sm:pb-6 border-b border-gray-200">
         {/* Row 1: Greeting (right-aligned) */}
-        <div className="text-right mb-4">
-          <h1 className="text-3xl font-bold text-[#111827] tracking-tight">
+        <div className="text-right mb-3 sm:mb-4">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827] tracking-tight">
             {currentUser ? `${getGreeting()}, ${currentUser.full_name}` : 'NatID 360 Control'}
           </h1>
-          <p className="text-[#6b7280] text-sm mb-1">ברוכים הבאים ל-NatID 360 Control</p>
+          <p className="text-[#6b7280] text-xs sm:text-sm mb-1">ברוכים הבאים ל-NatID 360 Control</p>
           <div className="flex items-center gap-2 text-gray-500 mt-1 justify-end">
             <p className="text-sm">{format(today, 'EEEE, d בMMMM yyyy', { locale: he })}</p>
             <Calendar className="w-4 h-4" />
           </div>
         </div>
         {/* Row 2: Action Buttons */}
-        <div className="flex gap-3 justify-end">
+        <div className="flex gap-2 sm:gap-3 justify-end flex-wrap">
           <Button
             variant="outline"
             onClick={handleRefreshData}
@@ -216,7 +216,7 @@ export default function Dashboard() {
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
-        <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-gray-200 w-full md:w-auto grid grid-cols-3 md:inline-flex h-auto">
+        <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-gray-200 w-full md:w-auto grid grid-cols-3 md:inline-flex h-auto overflow-x-auto">
           <TabsTrigger
             value="dashboard"
             className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"
@@ -245,7 +245,7 @@ export default function Dashboard() {
 
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-6 mt-6 focus-visible:outline-none">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
                 title="קריאות פעילות"
@@ -317,7 +317,7 @@ export default function Dashboard() {
           </Suspense>
 
           {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5">
             <Link to={createPageUrl('CustomerFeedback')} className="block">
               <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
                 <CardHeader className="pb-2">

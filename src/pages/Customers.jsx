@@ -187,11 +187,11 @@ export default function CustomersPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 max-w-full">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#172B4D]">לקוחות</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#172B4D]">לקוחות</h1>
           <p className="text-[#6B778C] text-sm">ניהול לקוחות וחברות ביטוח</p>
         </div>
         <Link to={createPageUrl('NewCustomer')}>
@@ -203,7 +203,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
         <Card className="bg-white">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-[#172B4D]">{stats.total}</div>

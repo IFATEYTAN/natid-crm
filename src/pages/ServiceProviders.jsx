@@ -377,7 +377,7 @@ export default function ServiceProvidersPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#111827]">נותני שירות</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#111827]">נותני שירות</h1>
             <p className="text-[#6b7280] text-sm">ניהול גררים וספקי שירות</p>
           </div>
           <Link to={createPageUrl('NewVendor')}>
@@ -389,7 +389,7 @@ export default function ServiceProvidersPage() {
         </div>
 
         {/* KPI Stats - like Fleet Management */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4" dir="rtl">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4" dir="rtl">
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',

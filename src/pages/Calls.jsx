@@ -145,12 +145,12 @@ export default function CallsPage() {
   }
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="space-y-4 sm:space-y-6 max-w-full" dir="rtl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div className="text-right">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#111827]">ניהול קריאות</h1>
-          <p className="text-[#6b7280] text-sm">צפייה וניהול כל הקריאות במערכת</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827]">ניהול קריאות</h1>
+          <p className="text-[#6b7280] text-xs sm:text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 justify-end">
           <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
@@ -167,7 +167,7 @@ export default function CallsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
         {[
           { label: 'סה"כ קריאות', value: stats.total, color: 'text-[#172B4D]' },
           { label: 'חדשות', value: stats.new, color: 'text-yellow-600' },
@@ -236,15 +236,70 @@ export default function CallsPage() {
 
       {/* Table */}
       <Card className="bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-[#172B4D]">
+        <CardHeader className="pb-2 px-3 sm:px-6">
+          <CardTitle className="text-sm sm:text-base font-semibold text-[#172B4D]">
             {isLoading
               ? 'טוען...'
               : `${filtered.length} קריאות | עמוד ${currentPage} מתוך ${totalPages}`}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-2 p-3">
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="bg-gray-50 rounded-lg p-4 animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-2" />
+                  <div className="h-3 bg-gray-200 rounded w-32" />
+                </div>
+              ))
+            ) : paginated.length === 0 ? (
+              <div className="text-center py-8 text-[#6B778C]">אין קריאות להצגה</div>
+            ) : (
+              paginated.map((c) => (
+                <Link key={c.id} to={createPageUrl(`CallDetails?id=${c.id}`)} className="block">
+                  <div className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all active:bg-gray-50">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-sm text-[#172B4D] truncate">
+                          {c.customer_name || 'ללא שם'}
+                        </div>
+                        <div className="text-xs text-[#6B778C] mt-0.5">#{c.call_number || c.id.slice(0, 8)}</div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 ms-2 flex-shrink-0">
+                        {c.call_status && (
+                          <Badge className={cn('text-[10px] px-2 py-0.5', STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600')}>
+                            {STATUS_LABELS[c.call_status] || c.call_status}
+                          </Badge>
+                        )}
+                        {c.call_priority && c.call_priority !== 'normal' && (
+                          <Badge className={cn('text-[10px] px-2 py-0.5', PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600')}>
+                            {PRIORITY_LABELS[c.call_priority] || c.call_priority}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6B778C]">
+                      {c.pickup_location_city && (
+                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{c.pickup_location_city}</span>
+                      )}
+                      {c.service_category && (
+                        <span>{SERVICE_TYPE_LABELS[c.service_category] || c.service_category}</span>
+                      )}
+                      {c.assigned_vendor_name && (
+                        <span className="truncate max-w-[120px]">{c.assigned_vendor_name}</span>
+                      )}
+                      {c.created_date && (
+                        <span>{format(new Date(c.created_date), 'dd/MM HH:mm')}</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm text-right min-w-[800px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -372,7 +427,7 @@ export default function CallsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+            <div className="flex items-center justify-between px-3 sm:px-4 py-3 border-t border-gray-200">
               <span className="text-sm text-[#6B778C]">
                 מציג {(currentPage - 1) * PAGE_SIZE + 1}–
                 {Math.min(currentPage * PAGE_SIZE, filtered.length)} מתוך {filtered.length}
