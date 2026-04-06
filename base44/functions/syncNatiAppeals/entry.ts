@@ -183,7 +183,7 @@ function mapAppealToCall(appeal) {
     issue_detail: appeal.serve_type || '',
     // Customer info
     customer_name: appeal.client_name || appeal.user_name || '',
-    customer_phone: appeal.tel || '',
+    customer_phone: appeal.tel || appeal.intermediary_phone || 'לא צוין',
     customer_phone_2: appeal.intermediary_phone || '',
     customer_id_number: appeal.client_id || '',
     customer_email: appeal.client_email || '',
@@ -199,7 +199,7 @@ function mapAppealToCall(appeal) {
     vehicle_type: mapVehicleType(appeal.vehicle_class),
     vehicle_code: appeal.car_code || '',
     // Pickup location
-    pickup_location_address: appeal.address || '',
+    pickup_location_address: appeal.address || 'לא צוין',
     pickup_location_city: appeal.city || '',
     pickup_location_area: mapArea(appeal.area || ''),
     // Dropoff location
@@ -382,6 +382,10 @@ Deno.serve(async (req) => {
     }
     console.log(`[SYNC] Customers: ${customersCreated} created, ${existingCustomers.length} existing`);
 
+    // Batch config to avoid rate limiting
+    const BATCH_SIZE = 10;
+    const BATCH_DELAY_MS = 1500;
+
     // ============ STEP 3: Sync Cases ============
     console.log('[SYNC] Step 3: Syncing cases...');
     const existingCases = await base44.asServiceRole.entities.Case.filter({});
@@ -392,36 +396,45 @@ Deno.serve(async (req) => {
 
     let casesCreated = 0, casesUpdated = 0, casesErrors = 0;
 
-    for (const appeal of appeals) {
-      try {
-        const caseData = cleanData(mapAppealToCase(appeal));
+    for (let i = 0; i < appeals.length; i += BATCH_SIZE) {
+      const batch = appeals.slice(i, i + BATCH_SIZE);
+      
+      for (const appeal of batch) {
+        try {
+          const caseData = cleanData(mapAppealToCase(appeal));
 
-        // Link vendor ID
-        const vendorName = caseData.assigned_provider_name;
-        if (vendorName && vendorByName[vendorName]) {
-          caseData.assigned_provider_id = vendorByName[vendorName].id;
-        }
+          // Link vendor ID
+          const vendorName = caseData.assigned_provider_name;
+          if (vendorName && vendorByName[vendorName]) {
+            caseData.assigned_provider_id = vendorByName[vendorName].id;
+          }
 
-        // Link customer ID
-        const extCustId = caseData.customer_id;
-        if (extCustId && customerByExtId[extCustId]) {
-          caseData.customer_id = customerByExtId[extCustId].id;
-        } else if (caseData.customer_name) {
-          const custByName = customerByName[caseData.customer_name.trim()];
-          if (custByName) caseData.customer_id = custByName.id;
-        }
+          // Link customer ID
+          const extCustId = caseData.customer_id;
+          if (extCustId && customerByExtId[extCustId]) {
+            caseData.customer_id = customerByExtId[extCustId].id;
+          } else if (caseData.customer_name) {
+            const custByName = customerByName[caseData.customer_name.trim()];
+            if (custByName) caseData.customer_id = custByName.id;
+          }
 
-        const existing = caseByNumber[caseData.case_number];
-        if (existing) {
-          await base44.asServiceRole.entities.Case.update(existing.id, caseData);
-          casesUpdated++;
-        } else {
-          await base44.asServiceRole.entities.Case.create(caseData);
-          casesCreated++;
+          const existing = caseByNumber[caseData.case_number];
+          if (existing) {
+            await base44.asServiceRole.entities.Case.update(existing.id, caseData);
+            casesUpdated++;
+          } else {
+            await base44.asServiceRole.entities.Case.create(caseData);
+            casesCreated++;
+          }
+        } catch (e) {
+          console.error(`[SYNC] Case error ${appeal.appeal_id}:`, e.message);
+          casesErrors++;
         }
-      } catch (e) {
-        console.error(`[SYNC] Case error ${appeal.appeal_id}:`, e.message);
-        casesErrors++;
+      }
+
+      // Delay between batches
+      if (i + BATCH_SIZE < appeals.length) {
+        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
       }
     }
     console.log(`[SYNC] Cases: ${casesCreated} created, ${casesUpdated} updated, ${casesErrors} errors`);
@@ -436,27 +449,37 @@ Deno.serve(async (req) => {
 
     let callsCreated = 0, callsUpdated = 0, callsErrors = 0;
 
-    for (const appeal of appeals) {
-      try {
-        const callData = cleanData(mapAppealToCall(appeal));
 
-        // Link vendor ID
-        const vendorName = callData.assigned_vendor_name;
-        if (vendorName && vendorByName[vendorName]) {
-          callData.assigned_vendor_id = vendorByName[vendorName].id;
-        }
+    for (let i = 0; i < appeals.length; i += BATCH_SIZE) {
+      const batch = appeals.slice(i, i + BATCH_SIZE);
+      
+      for (const appeal of batch) {
+        try {
+          const callData = cleanData(mapAppealToCall(appeal));
 
-        const existing = callByNumber[callData.call_number];
-        if (existing) {
-          await base44.asServiceRole.entities.Call.update(existing.id, callData);
-          callsUpdated++;
-        } else {
-          await base44.asServiceRole.entities.Call.create(callData);
-          callsCreated++;
+          // Link vendor ID
+          const vendorName = callData.assigned_vendor_name;
+          if (vendorName && vendorByName[vendorName]) {
+            callData.assigned_vendor_id = vendorByName[vendorName].id;
+          }
+
+          const existing = callByNumber[callData.call_number];
+          if (existing) {
+            await base44.asServiceRole.entities.Call.update(existing.id, callData);
+            callsUpdated++;
+          } else {
+            await base44.asServiceRole.entities.Call.create(callData);
+            callsCreated++;
+          }
+        } catch (e) {
+          console.error(`[SYNC] Call error ${appeal.appeal_id}:`, e.message);
+          callsErrors++;
         }
-      } catch (e) {
-        console.error(`[SYNC] Call error ${appeal.appeal_id}:`, e.message);
-        callsErrors++;
+      }
+
+      // Delay between batches to avoid rate limiting
+      if (i + BATCH_SIZE < appeals.length) {
+        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
       }
     }
     console.log(`[SYNC] Calls: ${callsCreated} created, ${callsUpdated} updated, ${callsErrors} errors`);
