@@ -127,25 +127,25 @@ export default function AutomationSettingsPage() {
 
   return (
     <RoleGuard allowedRoles={['admin']}>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-4 sm:space-y-6 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-[#172B4D] flex items-center gap-2">
-              <Zap className="w-6 h-6 text-red-600" />
+            <h1 className="text-xl sm:text-2xl font-bold text-[#172B4D] flex items-center gap-2">
+              <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 shrink-0" />
               הגדרות שיבוץ אוטומטי
             </h1>
             <p className="text-[#6B778C] text-sm">קביעת כללים לשיבוץ ספקים אוטומטי</p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={handleReset} className="gap-2">
+            <Button variant="outline" onClick={handleReset} className="gap-2 h-11">
               <RotateCcw className="w-4 h-4" />
               איפוס
             </Button>
             <Button
               onClick={handleSave}
               disabled={!hasChanges || saveMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 gap-2"
+              className="bg-red-600 hover:bg-red-700 gap-2 h-11"
             >
               {saveMutation.isPending ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -330,12 +330,12 @@ export default function AutomationSettingsPage() {
                 color: 'text-purple-600',
               },
             ].map(({ key, label, icon: Icon, color }) => (
-              <div key={key} className="flex items-center gap-4">
+              <div key={key} className="flex items-center gap-3 sm:gap-4">
                 <Icon className={cn('w-5 h-5 shrink-0', color)} />
-                <div className="flex-1">
-                  <div className="flex justify-between mb-1">
-                    <Label className="text-sm">{label}</Label>
-                    <span className="text-sm font-medium">{settings.priority_weights[key]}%</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between mb-1 gap-2">
+                    <Label className="text-sm truncate">{label}</Label>
+                    <span className="text-sm font-medium shrink-0">{settings.priority_weights[key]}%</span>
                   </div>
                   <Slider
                     value={[settings.priority_weights[key]]}
@@ -359,34 +359,37 @@ export default function AutomationSettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <Label>הסלמה אוטומטית בחריגת SLA</Label>
+            <div className="flex items-center justify-between gap-3 py-3">
+              <div className="flex-1 min-w-0">
+                <Label className="text-sm">הסלמה אוטומטית בחריגת SLA</Label>
                 <p className="text-xs text-[#6B778C]">התראה למנהל כאשר קריאה חורגת מזמן התגובה</p>
               </div>
               <Switch
+                className="shrink-0"
                 checked={settings.auto_escalate_on_sla_breach}
                 onCheckedChange={(checked) => updateSetting('auto_escalate_on_sla_breach', checked)}
               />
             </div>
 
-            <div className="flex items-center justify-between py-2 border-t">
-              <div>
-                <Label>התראה כשאין ספקים זמינים</Label>
+            <div className="flex items-center justify-between gap-3 py-3 border-t">
+              <div className="flex-1 min-w-0">
+                <Label className="text-sm">התראה כשאין ספקים זמינים</Label>
                 <p className="text-xs text-[#6B778C]">שלח התראה למנהל כשלא נמצא ספק מתאים</p>
               </div>
               <Switch
+                className="shrink-0"
                 checked={settings.notify_admin_on_no_vendors}
                 onCheckedChange={(checked) => updateSetting('notify_admin_on_no_vendors', checked)}
               />
             </div>
 
-            <div className="flex items-center justify-between py-2 border-t">
-              <div>
-                <Label>העדפה לספקים עם מיקום פעיל</Label>
+            <div className="flex items-center justify-between gap-3 py-3 border-t">
+              <div className="flex-1 min-w-0">
+                <Label className="text-sm">העדפה לספקים עם מיקום פעיל</Label>
                 <p className="text-xs text-[#6B778C]">עדיפות לספקים שמשתפים GPS בזמן אמת</p>
               </div>
               <Switch
+                className="shrink-0"
                 checked={settings.prefer_vendors_with_location}
                 onCheckedChange={(checked) =>
                   updateSetting('prefer_vendors_with_location', checked)

@@ -116,35 +116,35 @@ export default function AdminDataCleanup() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6" dir="rtl">
+    <div className="max-w-2xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6" dir="rtl">
       {/* Sync Section */}
       <Card className="border-blue-200 bg-blue-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-700">
-            <RefreshCw className="w-6 h-6" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-blue-700 text-base sm:text-lg">
+            <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
             סנכרון נתונים מנתיד
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-blue-700 text-sm">
+        <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+          <p className="text-blue-700 text-sm leading-relaxed">
             סנכרון יעדכן קריאות, ייצור ספקים ולקוחות חדשים, ויקשר ביניהם אוטומטית.
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
               onClick={() => handleSync(true)}
               disabled={isSyncing}
-              className="flex-1"
+              className="flex-1 h-12 text-base"
             >
-              {isSyncing ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Eye className="w-4 h-4 me-2" />}
+              {isSyncing ? <Loader2 className="w-5 h-5 me-2 animate-spin" /> : <Eye className="w-5 h-5 me-2" />}
               בדיקה (Dry Run)
             </Button>
             <Button
               onClick={() => handleSync(false)}
               disabled={isSyncing}
-              className="flex-1"
+              className="flex-1 h-12 text-base"
             >
-              {isSyncing ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <RefreshCw className="w-4 h-4 me-2" />}
+              {isSyncing ? <Loader2 className="w-5 h-5 me-2 animate-spin" /> : <RefreshCw className="w-5 h-5 me-2" />}
               סנכרון מלא
             </Button>
           </div>
@@ -160,50 +160,49 @@ export default function AdminDataCleanup() {
       </Card>
 
       <Card className="border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-700">
-            <AlertTriangle className="w-6 h-6" />
-            מחיקת כל הנתונים - Cases & Customers
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-red-700 text-base sm:text-lg">
+            <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+            <span>מחיקת כל הנתונים - Cases & Customers</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-red-600 font-medium">
-            פעולה זו תמחק את כל הקריאות (Cases) ואת כל הלקוחות (Customers) מהמערכת. פעולה זו בלתי
-            הפיכה!
+        <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+          <p className="text-red-600 font-medium text-sm sm:text-base leading-relaxed">
+            פעולה זו תמחק את כל הקריאות (Cases) ואת כל הלקוחות (Customers) מהמערכת. פעולה זו בלתי הפיכה!
           </p>
 
           {!confirmed ? (
             <Button
               variant="destructive"
               onClick={() => setConfirmed(true)}
-              className="w-full"
+              className="w-full h-12 text-base"
               disabled={isDeleting}
             >
-              <Trash2 className="w-4 h-4 me-2" />
+              <Trash2 className="w-5 h-5 me-2" />
               אני מבין, אני רוצה למחוק
             </Button>
           ) : (
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="destructive"
                 onClick={handleDeleteAll}
                 disabled={isDeleting}
-                className="flex-1"
+                className="flex-1 h-12 text-base"
               >
                 {isDeleting ? (
-                  <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                  <Loader2 className="w-5 h-5 me-2 animate-spin" />
                 ) : (
-                  <Trash2 className="w-4 h-4 me-2" />
+                  <Trash2 className="w-5 h-5 me-2" />
                 )}
                 {isDeleting ? 'מוחק...' : 'אישור סופי - מחק הכל!'}
               </Button>
               {isDeleting && (
-                <Button variant="outline" onClick={handleAbort}>
+                <Button variant="outline" onClick={handleAbort} className="h-12 text-base">
                   עצור
                 </Button>
               )}
               {!isDeleting && (
-                <Button variant="outline" onClick={() => setConfirmed(false)}>
+                <Button variant="outline" onClick={() => setConfirmed(false)} className="h-12 text-base">
                   ביטול
                 </Button>
               )}

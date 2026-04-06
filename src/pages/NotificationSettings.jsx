@@ -100,15 +100,15 @@ export default function NotificationSettingsPage() {
 
   return (
     <SlideUp>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-[#111827]">הגדרות התראות</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#111827]">הגדרות התראות</h1>
             <p className="text-[#6b7280] text-sm">הגדרת התראות אוטומטיות לאירועים במערכת</p>
           </div>
-          <Button onClick={() => setShowDialog(true)}>
-            <Plus className="w-4 h-4 ms-1" />
+          <Button onClick={() => setShowDialog(true)} className="h-11 text-base w-full sm:w-auto">
+            <Plus className="w-5 h-5 ms-1" />
             הגדרה חדשה
           </Button>
         </div>
@@ -168,7 +168,7 @@ export default function NotificationSettingsPage() {
         </Dialog>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <Card className="bg-white border border-[#e5e7eb]">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -220,7 +220,7 @@ export default function NotificationSettingsPage() {
                   return (
                     <div
                       key={setting.id}
-                      className="flex items-center gap-4 p-4 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
+                      className="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
                     >
                       <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
                         <Icon className="w-5 h-5 text-[#6b7280]" />
@@ -251,7 +251,7 @@ export default function NotificationSettingsPage() {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <Switch
                           checked={setting.enabled}
                           onCheckedChange={() => handleToggle(setting.id, setting.enabled)}
@@ -259,7 +259,7 @@ export default function NotificationSettingsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-[#6b7280] hover:text-[#ef4444]"
+                          className="text-[#6b7280] hover:text-[#ef4444] h-10 w-10"
                           onClick={() =>
                             deleteMutation.mutate(setting.id, {
                               onSuccess: () => showToast.success('ההגדרה נמחקה'),
@@ -284,13 +284,13 @@ export default function NotificationSettingsPage() {
             <CardTitle className="text-lg">אירועים זמינים</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {Object.entries(eventLabels).map(([key, label]) => {
                 const Icon = eventIcons[key] || Bell;
                 return (
-                  <div key={key} className="p-3 rounded-[8px] border border-[#e5e7eb] bg-[#f9fafb]">
+                  <div key={key} className="p-3 sm:p-4 rounded-[8px] border border-[#e5e7eb] bg-[#f9fafb]">
                     <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4 text-[#6b7280]" />
+                      <Icon className="w-5 h-5 text-[#6b7280] shrink-0" />
                       <span className="text-sm text-[#111827]">{label}</span>
                     </div>
                   </div>
