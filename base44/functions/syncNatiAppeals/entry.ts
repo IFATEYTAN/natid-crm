@@ -4,21 +4,37 @@ const NATI_API_BASE = 'https://api.natid.co.il/api';
 const FALLBACK_JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJOYXRpZCIsImlhdCI6MTc3NTUwMTkwMSwiZXhwIjo0MDc5MTg1MDgyLCJhdWQiOiJhcGkubmF0aWQuY28uaWwiLCJzdWIiOiJhZG1pbkBuYXRpZC5jby5pbCIsInVzZXJuYW1lIjoiYmFzZTQ0In0.msS8au2-b4nF770ngilLaYvSaAsmDZwWxPLM0f6S0CiJA82x3x1_fNQuwJZTezjd4mup9AsLkl0_v1p6-fvGxA';
 const FALLBACK_CLIENT_ID = '62c66127-cdb9-4579-9f18-a9b6ff9d06fd';
 
-// Map Nati status codes to our Case status
-function mapStatus(natiStatus) {
+// ========== STATUS MAPPINGS ==========
+
+// Map Nati status codes to Case entity status
+function mapCaseStatus(natiStatus) {
   const statusMap = {
-    '0': 'new',          // חדש
-    '1': 'assigned',     // שובץ ספק
-    '2': 'en_route',     // ספק בדרך
-    '3': 'on_site',      // ספק הגיע
-    '4': 'in_progress',  // בטיפול
-    '5': 'completed',    // הושלם
-    '6': 'cancelled',    // בוטל
+    '0': 'new',
+    '1': 'assigned',
+    '2': 'en_route',
+    '3': 'on_site',
+    '4': 'in_progress',
+    '5': 'completed',
+    '6': 'cancelled',
   };
   return statusMap[String(natiStatus)] || 'new';
 }
 
-// Map Nati department to our department
+// Map Nati status codes to Call entity status (different enum!)
+function mapCallStatus(natiStatus) {
+  const statusMap = {
+    '0': 'waiting_treatment',
+    '1': 'assigning',
+    '2': 'vendor_enroute',
+    '3': 'vendor_arrived',
+    '4': 'in_progress',
+    '5': 'completed',
+    '6': 'cancelled',
+  };
+  return statusMap[String(natiStatus)] || 'waiting_treatment';
+}
+
+// Map Nati department
 function mapDepartment(dept) {
   const deptMap = {
     'גרירה': 'גרירה',
@@ -31,8 +47,8 @@ function mapDepartment(dept) {
   return deptMap[dept] || 'אחר';
 }
 
-// Map Nati serve_type to our service_type
-function mapServiceType(serveType, dept) {
+// Map Nati serve_type to Case service_type
+function mapCaseServiceType(serveType, dept) {
   if (dept === 'גרירה') return 'towing';
   const typeMap = {
     'תקר': 'flat_tire',
@@ -48,23 +64,68 @@ function mapServiceType(serveType, dept) {
   return 'other';
 }
 
-// Parse Nati date format "DD/MM/YYYY HH:mm:ss" to ISO
+// Map Nati serve_type to Call service_category
+function mapCallServiceCategory(serveType, dept) {
+  if (dept === 'גרירה') return 'towing';
+  if (dept === 'ניידת' || dept === 'ניידת שירות') return 'mobile_unit';
+  return 'other';
+}
+
+// Map Nati serve_type to Call issue_type
+function mapCallIssueType(serveType, dept) {
+  if (dept === 'גרירה') return 'stopped_driving';
+  const typeMap = {
+    'תקר': 'flat_tire',
+    'מצבר': 'dead_battery',
+    'נעילה': 'locked_keys',
+    'דלק': 'no_fuel',
+    'תאונה': 'accident',
+    'מכני': 'mechanical',
+    'גלגל': 'stuck_wheel',
+  };
+  for (const [key, val] of Object.entries(typeMap)) {
+    if (serveType && serveType.includes(key)) return val;
+  }
+  return 'other';
+}
+
+// Map vehicle type
+function mapVehicleType(vehicleClass) {
+  const map = { '1': 'private', '2': 'motorcycle', '3': 'truck', '4': 'commercial_light' };
+  return map[String(vehicleClass)] || 'private';
+}
+
+// Map area from Nati area codes
+function mapArea(area) {
+  const areaMap = {
+    'מרכז': 'center',
+    'שרון': 'sharon',
+    'צפון': 'north',
+    'דרום': 'south',
+    'ירושלים': 'jerusalem',
+    'שפלה': 'lowlands',
+  };
+  return areaMap[area] || 'undefined';
+}
+
+// ========== DATE PARSING ==========
+
 function parseNatiDate(dateStr) {
   if (!dateStr) return null;
-  // Format: "07/04/2026 00:32:57"
   const match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
   if (!match) return null;
   const [, day, month, year, hour, min, sec] = match;
   return `${year}-${month}-${day}T${hour}:${min}:${sec}`;
 }
 
-// Parse future service date "YYYY-MM-DD HH:MM:SS" - skip zero dates
 function parseFutureDate(dateStr) {
   if (!dateStr || dateStr.startsWith('0000')) return null;
   return dateStr.replace(' ', 'T');
 }
 
-// Map a single Nati appeal to Case entity
+// ========== ENTITY MAPPERS ==========
+
+// Map Nati appeal → Case entity
 function mapAppealToCase(appeal) {
   return {
     case_number: appeal.appeal_id,
@@ -73,14 +134,14 @@ function mapAppealToCase(appeal) {
     caller_phone: appeal.tel || appeal.intermediary_phone || '',
     vehicle_number: appeal.car_num || '',
     vehicle_model: appeal.kod_degem_name || '',
-    vehicle_type: appeal.vehicle_class === '1' ? 'car' : appeal.vehicle_class === '2' ? 'motorcycle' : appeal.vehicle_class === '3' ? 'truck' : 'car',
+    vehicle_type: mapVehicleType(appeal.vehicle_class),
     vehicle_model_code: appeal.car_code || '',
-    service_type: mapServiceType(appeal.serve_type, appeal.department),
+    service_type: mapCaseServiceType(appeal.serve_type, appeal.department),
     location_address: appeal.address || '',
     location_city: appeal.city || '',
     destination_address: appeal.grar_address || '',
     destination_city: appeal.grar_city || '',
-    status: mapStatus(appeal.status),
+    status: mapCaseStatus(appeal.status),
     priority: appeal.vip === '1' ? 'urgent' : 'normal',
     assigned_provider_name: (appeal.supplier_name || '').trim(),
     department: mapDepartment(appeal.department),
@@ -101,7 +162,6 @@ function mapAppealToCase(appeal) {
     customer_email: appeal.client_email || '',
     remaining_days: appeal.days_remain ? parseInt(appeal.days_remain) : undefined,
     coverage_details: appeal.serve_type || '',
-    // Dates
     ...(appeal.arrive_time ? { arrived_at: parseNatiDate(appeal.arrive_time) || undefined } : {}),
     ...(appeal.finish_time ? { completed_at: parseNatiDate(appeal.finish_time) || undefined } : {}),
     ...(appeal.supplier_assigned_date ? { assigned_at: parseNatiDate(appeal.supplier_assigned_date) || undefined } : {}),
@@ -110,32 +170,95 @@ function mapAppealToCase(appeal) {
   };
 }
 
-// Extract unique vendor names from appeals
+// Map Nati appeal → Call entity (this is what the app UI uses!)
+function mapAppealToCall(appeal) {
+  return {
+    call_number: appeal.appeal_id,
+    call_status: mapCallStatus(appeal.status),
+    call_priority: appeal.vip === '1' ? 'urgent' : 'normal',
+    is_vip: appeal.vip === '1',
+    service_category: mapCallServiceCategory(appeal.serve_type, appeal.department),
+    issue_type: mapCallIssueType(appeal.serve_type, appeal.department),
+    issue_description: appeal.problem_desc || appeal.diagnose || '',
+    issue_detail: appeal.serve_type || '',
+    // Customer info
+    customer_name: appeal.client_name || appeal.user_name || '',
+    customer_phone: appeal.tel || '',
+    customer_phone_2: appeal.intermediary_phone || '',
+    customer_id_number: appeal.client_id || '',
+    customer_email: appeal.client_email || '',
+    // Insurance / package
+    insurance_company: appeal.agent_name || '',
+    insurance_agent: appeal.agent_name || '',
+    membership_package: appeal.package_name || '',
+    membership_number: appeal.sub_num || '',
+    coverage_details: appeal.serve_type || '',
+    // Vehicle
+    vehicle_plate: appeal.car_num || '',
+    vehicle_model: appeal.kod_degem_name || '',
+    vehicle_type: mapVehicleType(appeal.vehicle_class),
+    vehicle_code: appeal.car_code || '',
+    // Pickup location
+    pickup_location_address: appeal.address || '',
+    pickup_location_city: appeal.city || '',
+    pickup_location_area: mapArea(appeal.area || ''),
+    // Dropoff location
+    dropoff_location_address: appeal.grar_address || '',
+    dropoff_location_city: appeal.grar_city || '',
+    dropoff_garage_name: appeal.grar_address || '',
+    // Vendor info
+    assigned_vendor_name: (appeal.supplier_name || '').trim(),
+    // Operator / notes
+    operator_notes: appeal.q_notes || '',
+    vendor_notes: appeal.supplier_notes || '',
+    // Timestamps
+    ...(appeal.supplier_assigned_date ? { assigned_at: parseNatiDate(appeal.supplier_assigned_date) || undefined } : {}),
+    ...(appeal.arrive_expected_time ? { vendor_arrival_time_estimated: parseNatiDate(appeal.arrive_expected_time) || undefined } : {}),
+    ...(appeal.arrive_time ? { vendor_arrival_time_actual: parseNatiDate(appeal.arrive_time) || undefined } : {}),
+    ...(appeal.finish_time ? { service_end_time: parseNatiDate(appeal.finish_time) || undefined } : {}),
+    ...(appeal.finish_time ? { closed_at: parseNatiDate(appeal.finish_time) || undefined } : {}),
+    // Financial
+    ...(appeal.claim_total_cost && parseFloat(appeal.claim_total_cost) > 0 ? { total_cost: parseFloat(appeal.claim_total_cost) } : {}),
+    ...(appeal.wait_time && parseInt(appeal.wait_time) > 0 ? { time_waiting: parseInt(appeal.wait_time) } : {}),
+    // Future service
+    ...(parseFutureDate(appeal.future_service_from) ? { future_service_date: parseFutureDate(appeal.future_service_from).split('T')[0] } : {}),
+    // QA
+    passed_quality_control: appeal.inspector_approves === '1',
+    quality_controller_name: appeal.inspector_name || '',
+    // Source info
+    created_by_source: appeal.open_from_api === '1' ? 'bot' : 'operator',
+  };
+}
+
+// ========== VENDOR / CUSTOMER EXTRACTION ==========
+
 function extractUniqueVendors(appeals) {
   const vendors = new Map();
   for (const appeal of appeals) {
     const name = (appeal.supplier_name || '').trim();
     if (name && !vendors.has(name)) {
-      vendors.set(name, { vendor_name: name, is_active: true });
+      vendors.set(name, {
+        vendor_name: name,
+        phone: appeal.supplier_phone || '',
+        is_active: true,
+        is_available_now: true,
+        availability_status: 'available',
+      });
     }
   }
   return Array.from(vendors.values());
 }
 
-// Extract unique customers from appeals
 function extractUniqueCustomers(appeals) {
   const customers = new Map();
   for (const appeal of appeals) {
-    const clientId = appeal.client_id;
     const name = (appeal.client_name || '').trim();
     if (!name) continue;
-    
-    // Use client_id as key if available, otherwise name
-    const key = clientId || name;
+    const key = appeal.client_id || name;
     if (!customers.has(key)) {
       customers.set(key, {
         name: name,
-        customer_id_external: clientId || '',
+        customer_id_external: appeal.client_id || '',
         phone: appeal.tel || '',
         email: appeal.client_email || '',
         insurance_company: appeal.agent_name || '',
@@ -150,6 +273,17 @@ function extractUniqueCustomers(appeals) {
   return Array.from(customers.values());
 }
 
+// ========== HELPER: clean empty/undefined/null ==========
+function cleanData(obj) {
+  const clean = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined && v !== null && v !== '') clean[k] = v;
+  }
+  return clean;
+}
+
+// ========== MAIN HANDLER ==========
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -160,7 +294,8 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { dep = -1, callStatus = -1, dryRun = false } = body;
+    const { dep = -1, callStatus = -1, dryRun = false, dry_run = false } = body;
+    const isDryRun = dryRun || dry_run;
 
     const JWT_TOKEN = Deno.env.get('NATI_API_JWT_TOKEN') || FALLBACK_JWT;
     const CLIENT_ID = Deno.env.get('NATI_API_CLIENT_ID') || FALLBACK_CLIENT_ID;
@@ -189,21 +324,22 @@ Deno.serve(async (req) => {
     }
 
     const appeals = natiData.data;
-    const mappedCases = appeals.map(mapAppealToCase);
 
     // If dry run, return what would be synced
-    if (dryRun) {
+    if (isDryRun) {
       return Response.json({
         success: true,
         mode: 'dry_run',
         total_from_nati: natiData.total,
         unique_vendors: extractUniqueVendors(appeals).length,
         unique_customers: extractUniqueCustomers(appeals).length,
-        sample_mapped: mappedCases.slice(0, 3),
+        sample_case: appeals.length > 0 ? cleanData(mapAppealToCase(appeals[0])) : null,
+        sample_call: appeals.length > 0 ? cleanData(mapAppealToCall(appeals[0])) : null,
       });
     }
 
     // ============ STEP 1: Sync Vendors ============
+    console.log('[SYNC] Step 1: Syncing vendors...');
     const existingVendors = await base44.asServiceRole.entities.Vendor.filter({});
     const vendorByName = {};
     for (const v of existingVendors) {
@@ -219,8 +355,10 @@ Deno.serve(async (req) => {
         vendorsCreated++;
       }
     }
+    console.log(`[SYNC] Vendors: ${vendorsCreated} created, ${existingVendors.length} existing`);
 
     // ============ STEP 2: Sync Customers ============
+    console.log('[SYNC] Step 2: Syncing customers...');
     const existingCustomers = await base44.asServiceRole.entities.Customer.filter({});
     const customerByExtId = {};
     const customerByName = {};
@@ -232,7 +370,6 @@ Deno.serve(async (req) => {
     const newCustomers = extractUniqueCustomers(appeals);
     let customersCreated = 0;
     for (const custData of newCustomers) {
-      const key = custData.customer_id_external || custData.name;
       const exists = custData.customer_id_external
         ? customerByExtId[custData.customer_id_external]
         : customerByName[custData.name];
@@ -243,58 +380,86 @@ Deno.serve(async (req) => {
         customersCreated++;
       }
     }
+    console.log(`[SYNC] Customers: ${customersCreated} created, ${existingCustomers.length} existing`);
 
     // ============ STEP 3: Sync Cases ============
+    console.log('[SYNC] Step 3: Syncing cases...');
     const existingCases = await base44.asServiceRole.entities.Case.filter({});
-    const existingByNumber = {};
+    const caseByNumber = {};
     for (const c of existingCases) {
-      if (c.case_number) existingByNumber[c.case_number] = c;
+      if (c.case_number) caseByNumber[c.case_number] = c;
     }
 
-    let casesCreated = 0;
-    let casesUpdated = 0;
-    let casesErrors = 0;
+    let casesCreated = 0, casesUpdated = 0, casesErrors = 0;
 
-    for (const caseData of mappedCases) {
+    for (const appeal of appeals) {
       try {
-        // Clean undefined/null/empty values
-        const cleanData = {};
-        for (const [k, v] of Object.entries(caseData)) {
-          if (v !== undefined && v !== null && v !== '') {
-            cleanData[k] = v;
-          }
-        }
+        const caseData = cleanData(mapAppealToCase(appeal));
 
         // Link vendor ID
-        const vendorName = cleanData.assigned_provider_name;
+        const vendorName = caseData.assigned_provider_name;
         if (vendorName && vendorByName[vendorName]) {
-          cleanData.assigned_provider_id = vendorByName[vendorName].id;
+          caseData.assigned_provider_id = vendorByName[vendorName].id;
         }
 
-        // Link customer ID (use external id stored in customer_id field)
-        const extCustId = cleanData.customer_id;
+        // Link customer ID
+        const extCustId = caseData.customer_id;
         if (extCustId && customerByExtId[extCustId]) {
-          cleanData.customer_id = customerByExtId[extCustId].id;
-        } else if (cleanData.customer_name) {
-          const custByName = customerByName[cleanData.customer_name.trim()];
-          if (custByName) {
-            cleanData.customer_id = custByName.id;
-          }
+          caseData.customer_id = customerByExtId[extCustId].id;
+        } else if (caseData.customer_name) {
+          const custByName = customerByName[caseData.customer_name.trim()];
+          if (custByName) caseData.customer_id = custByName.id;
         }
 
-        const existing = existingByNumber[caseData.case_number];
+        const existing = caseByNumber[caseData.case_number];
         if (existing) {
-          await base44.asServiceRole.entities.Case.update(existing.id, cleanData);
+          await base44.asServiceRole.entities.Case.update(existing.id, caseData);
           casesUpdated++;
         } else {
-          await base44.asServiceRole.entities.Case.create(cleanData);
+          await base44.asServiceRole.entities.Case.create(caseData);
           casesCreated++;
         }
       } catch (e) {
-        console.error(`Error syncing appeal ${caseData.case_number}:`, e.message);
+        console.error(`[SYNC] Case error ${appeal.appeal_id}:`, e.message);
         casesErrors++;
       }
     }
+    console.log(`[SYNC] Cases: ${casesCreated} created, ${casesUpdated} updated, ${casesErrors} errors`);
+
+    // ============ STEP 4: Sync Calls (main UI entity) ============
+    console.log('[SYNC] Step 4: Syncing calls (UI entity)...');
+    const existingCalls = await base44.asServiceRole.entities.Call.filter({});
+    const callByNumber = {};
+    for (const c of existingCalls) {
+      if (c.call_number) callByNumber[c.call_number] = c;
+    }
+
+    let callsCreated = 0, callsUpdated = 0, callsErrors = 0;
+
+    for (const appeal of appeals) {
+      try {
+        const callData = cleanData(mapAppealToCall(appeal));
+
+        // Link vendor ID
+        const vendorName = callData.assigned_vendor_name;
+        if (vendorName && vendorByName[vendorName]) {
+          callData.assigned_vendor_id = vendorByName[vendorName].id;
+        }
+
+        const existing = callByNumber[callData.call_number];
+        if (existing) {
+          await base44.asServiceRole.entities.Call.update(existing.id, callData);
+          callsUpdated++;
+        } else {
+          await base44.asServiceRole.entities.Call.create(callData);
+          callsCreated++;
+        }
+      } catch (e) {
+        console.error(`[SYNC] Call error ${appeal.appeal_id}:`, e.message);
+        callsErrors++;
+      }
+    }
+    console.log(`[SYNC] Calls: ${callsCreated} created, ${callsUpdated} updated, ${callsErrors} errors`);
 
     return Response.json({
       success: true,
@@ -302,6 +467,7 @@ Deno.serve(async (req) => {
       vendors: { existing: existingVendors.length, created: vendorsCreated },
       customers: { existing: existingCustomers.length, created: customersCreated },
       cases: { created: casesCreated, updated: casesUpdated, errors: casesErrors },
+      calls: { created: callsCreated, updated: callsUpdated, errors: callsErrors },
     });
   } catch (error) {
     console.error('syncNatiAppeals error:', error);
