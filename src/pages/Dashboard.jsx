@@ -205,7 +205,7 @@ export default function Dashboard() {
           </Button>
           <PermissionGuard category="calls" permission="create">
             <Link to={createPageUrl('NewCase')}>
-              <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-6 transition-all transform hover:scale-105">
+              <Button className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 rounded-full px-4 sm:px-6 h-10 sm:h-11 text-sm sm:text-base transition-all transform hover:scale-105">
                 <Plus className="w-5 h-5 me-2" />
                 קריאה חדשה
               </Button>
@@ -216,7 +216,7 @@ export default function Dashboard() {
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
-        <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-gray-200 w-full md:w-auto grid grid-cols-3 md:inline-flex h-auto overflow-x-auto">
+        <TabsList className="bg-white p-1 rounded-xl shadow-sm border border-gray-200 w-full md:w-auto grid grid-cols-3 md:inline-flex h-auto">
           <TabsTrigger
             value="dashboard"
             className="rounded-lg px-4 py-2 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none gap-2"

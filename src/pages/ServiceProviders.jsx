@@ -373,23 +373,23 @@ export default function ServiceProvidersPage() {
 
   return (
     <SlideUp>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-[#111827]">נותני שירות</h1>
             <p className="text-[#6b7280] text-sm">ניהול גררים וספקי שירות</p>
           </div>
           <Link to={createPageUrl('NewVendor')}>
-            <Button className="bg-[#f97316] hover:bg-[#ea580c] gap-2">
+            <Button className="bg-[#f97316] hover:bg-[#ea580c] gap-2 h-11 w-full sm:w-auto">
               <Plus className="w-4 h-4" />
               ספק חדש
             </Button>
           </Link>
         </div>
 
-        {/* KPI Stats - like Fleet Management */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4" dir="rtl">
+        {/* KPI Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3" dir="rtl">
           <Card
             className={cn(
               'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',

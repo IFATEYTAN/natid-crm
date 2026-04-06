@@ -312,14 +312,14 @@ export default function CallDetailsPage() {
     <QueryStateWrapper query={callQuery}>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה" className="shrink-0 h-10 w-10">
               <ArrowRight className="w-5 h-5" />
             </Button>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-[#172B4D]">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg sm:text-2xl font-bold text-[#172B4D]">
                   קריאה {call?.call_number || `#${callId?.slice(-6)}`}
                 </h1>
                 <Badge className={cn('text-sm', statusColors[call?.call_status])}>
@@ -336,9 +336,10 @@ export default function CallDetailsPage() {
                 <PermissionGuard category="calls" permission="assign">
                   <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="gap-2">
+                      <Button variant="outline" className="gap-2 h-10 text-sm">
                         <Truck className="w-4 h-4" />
-                        שבץ ספק
+                        <span className="hidden sm:inline">שבץ ספק</span>
+                        <span className="sm:hidden">שיבוץ</span>
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
@@ -405,7 +406,7 @@ export default function CallDetailsPage() {
             )}
 
             <PermissionGuard category="calls" permission="edit">
-              <Button variant="outline" className="gap-2" onClick={() => setShowEditDialog(true)}>
+              <Button variant="outline" className="gap-2 h-10 text-sm" onClick={() => setShowEditDialog(true)}>
                 <Pencil className="w-4 h-4" />
                 ערוך קריאה
               </Button>

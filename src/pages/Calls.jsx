@@ -153,14 +153,15 @@ export default function CallsPage() {
           <p className="text-[#6b7280] text-xs sm:text-sm">צפייה וניהול כל הקריאות במערכת</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 justify-end">
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2 h-10">
             <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן
           </Button>
           <Link to={createPageUrl('NewCase')}>
-            <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2">
+            <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2 h-10">
               <Plus className="w-4 h-4" />
-              קריאה חדשה
+              <span className="hidden sm:inline">קריאה חדשה</span>
+              <span className="sm:hidden">חדשה</span>
             </Button>
           </Link>
         </div>

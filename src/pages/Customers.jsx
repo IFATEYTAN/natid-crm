@@ -189,13 +189,13 @@ export default function CustomersPage() {
   return (
     <div className="space-y-4 sm:space-y-6 max-w-full">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[#172B4D]">לקוחות</h1>
           <p className="text-[#6B778C] text-sm">ניהול לקוחות וחברות ביטוח</p>
         </div>
         <Link to={createPageUrl('NewCustomer')}>
-          <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2">
+          <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2 h-11 w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             לקוח חדש
           </Button>
