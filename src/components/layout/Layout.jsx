@@ -270,6 +270,7 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'הגדרות תצוגה', href: 'AdminDisplaySettings' },
         { name: 'הגדרות מערכת', href: 'Settings' },
         { name: 'הגדרות CTI', href: 'CTISettings' },
+        { name: 'ניקוי וסנכרון נתונים', href: 'AdminDataCleanup' },
       ],
     },
   ];
