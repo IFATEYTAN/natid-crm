@@ -297,8 +297,8 @@ Deno.serve(async (req) => {
     const { dep = -1, callStatus = -1, dryRun = false, dry_run = false } = body;
     const isDryRun = dryRun || dry_run;
 
-    const JWT_TOKEN = Deno.env.get('NATI_API_JWT_TOKEN') || FALLBACK_JWT;
-    const CLIENT_ID = Deno.env.get('NATI_API_CLIENT_ID') || FALLBACK_CLIENT_ID;
+    const JWT_TOKEN = FALLBACK_JWT;
+    const CLIENT_ID = FALLBACK_CLIENT_ID;
 
     // Fetch appeals from Nati
     const params = new URLSearchParams({ dep: String(dep), callStatus: String(callStatus), dir: 'DESC' });
