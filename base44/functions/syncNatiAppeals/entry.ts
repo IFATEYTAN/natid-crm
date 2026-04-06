@@ -348,11 +348,20 @@ Deno.serve(async (req) => {
 
     const newVendors = extractUniqueVendors(appeals);
     let vendorsCreated = 0;
+    let vendorsUpdated = 0;
     for (const vendorData of newVendors) {
-      if (!vendorByName[vendorData.vendor_name]) {
+      const existing = vendorByName[vendorData.vendor_name];
+      if (!existing) {
         const created = await base44.asServiceRole.entities.Vendor.create(vendorData);
         vendorByName[vendorData.vendor_name] = created;
         vendorsCreated++;
+      } else {
+        // Update phone if we have it from Nati and vendor doesn't have one
+        if (vendorData.phone && (!existing.phone || existing.phone === '')) {
+          await base44.asServiceRole.entities.Vendor.update(existing.id, { phone: vendorData.phone });
+          existing.phone = vendorData.phone;
+          vendorsUpdated++;
+        }
       }
     }
     console.log(`[SYNC] Vendors: ${vendorsCreated} created, ${existingVendors.length} existing`);

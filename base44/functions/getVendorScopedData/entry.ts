@@ -26,10 +26,31 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'entity_type is required' }, { status: 400 });
     }
 
-    // Find vendor linked to this user
-    const vendors = await base44.asServiceRole.entities.Vendor.filter({ email: user.email });
+    // Find vendor linked to this user - multiple strategies
+    let vendors = await base44.asServiceRole.entities.Vendor.filter({ email: user.email });
+    
+    // Fallback: try matching by vendor_name to user full_name
+    if (!vendors.length && user.full_name) {
+      vendors = await base44.asServiceRole.entities.Vendor.filter({ vendor_name: user.full_name });
+    }
+    
+    // Fallback: try matching by phone if user has vendor_phone saved on profile
+    if (!vendors.length && user.vendor_phone) {
+      vendors = await base44.asServiceRole.entities.Vendor.filter({ phone: user.vendor_phone });
+    }
+    
+    // Fallback: try matching by vendor_id if admin saved it on user profile
+    if (!vendors.length && user.vendor_id) {
+      vendors = await base44.asServiceRole.entities.Vendor.filter({ id: user.vendor_id });
+    }
+    
     if (!vendors.length) {
-      return Response.json({ error: 'No vendor profile linked to this account' }, { status: 404 });
+      return Response.json({ 
+        error: 'No vendor profile linked to this account',
+        hint: 'Admin should set vendor email to match user email, or save vendor_id on user profile',
+        user_email: user.email,
+        user_name: user.full_name
+      }, { status: 404 });
     }
     const vendor = vendors[0];
 

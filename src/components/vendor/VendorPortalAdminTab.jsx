@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { MapPin } from 'lucide-react';
+import VendorEmailLinker from './VendorEmailLinker';
 import { format } from 'date-fns';
 import { issueTypeLabels } from '@/config/labels';
 
@@ -151,6 +152,8 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
           </Button>
         </CardContent>
       </Card>
+
+      <VendorEmailLinker vendors={allVendorsQuery.data || []} />
 
       <Card className="bg-white">
         <CardHeader>

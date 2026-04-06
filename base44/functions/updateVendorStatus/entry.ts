@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     }
 
     // Get vendor
-    const vendors = await base44.entities.Vendor.filter({ id: vendor_id });
+    const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
     if (!vendors.length) {
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     }
 
     // Update status
-    await base44.entities.Vendor.update(vendor_id, {
+    await base44.asServiceRole.entities.Vendor.update(vendor_id, {
       availability_status: status,
       last_location_update: new Date().toISOString() // refresh timestamp
     });

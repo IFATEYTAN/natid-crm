@@ -10,9 +10,12 @@ const ALLOWED_VENDOR_FIELDS = [
 ];
 
 // Valid status transitions for vendors
-const VENDOR_STATUS_TRANSITIONS: Record<string, string[]> = {
-  vendor_assigned: ['vendor_enroute'],
-  vendor_enroute: ['in_progress'],
+const VENDOR_STATUS_TRANSITIONS = {
+  assigning: ['vendor_enroute'],
+  awaiting_assignment: ['vendor_enroute'],
+  assigned: ['vendor_enroute'],
+  vendor_enroute: ['vendor_arrived', 'in_progress'],
+  vendor_arrived: ['in_progress'],
   in_progress: ['completed'],
 };
 
@@ -32,15 +35,15 @@ Deno.serve(async (req) => {
     }
 
     // Get the call
-    const calls = await base44.entities.Call.filter({ id: call_id });
-    if (!calls || calls.length === 0) {
+    const allCalls = await base44.asServiceRole.entities.Call.filter({ id: call_id });
+    if (!allCalls || allCalls.length === 0) {
       return Response.json({ error: 'Call not found' }, { status: 404 });
     }
-    const call = calls[0];
+    const call = allCalls[0];
 
     // Ownership check: vendors can only update calls assigned to them
     if (user.role === 'vendor' || user.role === 'ספק') {
-      const vendorRecords = await base44.entities.Vendor.filter({ email: user.email });
+      const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ email: user.email });
       if (!vendorRecords.length || call.assigned_vendor_id !== vendorRecords[0].id) {
         return Response.json({ error: 'Forbidden - this call is not assigned to you' }, { status: 403 });
       }
@@ -49,7 +52,7 @@ Deno.serve(async (req) => {
     }
 
     // Filter to allowed fields only (vendors can't change arbitrary fields)
-    const sanitizedUpdates: Record<string, unknown> = {};
+    const sanitizedUpdates = {};
     for (const [key, value] of Object.entries(updates)) {
       if ((user.role === 'vendor' || user.role === 'ספק') && !ALLOWED_VENDOR_FIELDS.includes(key)) {
         continue; // Silently skip disallowed fields for vendors
@@ -61,7 +64,7 @@ Deno.serve(async (req) => {
     if ((user.role === 'vendor' || user.role === 'ספק') && sanitizedUpdates.call_status) {
       const currentStatus = call.call_status;
       const allowedNext = VENDOR_STATUS_TRANSITIONS[currentStatus] || [];
-      if (!allowedNext.includes(sanitizedUpdates.call_status as string)) {
+      if (!allowedNext.includes(sanitizedUpdates.call_status)) {
         return Response.json({
           error: `Invalid status transition from ${currentStatus} to ${sanitizedUpdates.call_status}`,
         }, { status: 400 });
@@ -73,7 +76,33 @@ Deno.serve(async (req) => {
     }
 
     // Perform the update
-    await base44.entities.Call.update(call_id, sanitizedUpdates);
+    await base44.asServiceRole.entities.Call.update(call_id, sanitizedUpdates);
+
+    // Also update corresponding Case entity if it exists
+    const cases = await base44.asServiceRole.entities.Case.filter({ case_number: call.call_number });
+    if (cases.length > 0) {
+      const caseUpdates = {};
+      if (sanitizedUpdates.call_status) {
+        const statusMap = {
+          'vendor_enroute': 'en_route',
+          'vendor_arrived': 'on_site', 
+          'in_progress': 'in_progress',
+          'completed': 'completed',
+        };
+        if (statusMap[sanitizedUpdates.call_status]) {
+          caseUpdates.status = statusMap[sanitizedUpdates.call_status];
+        }
+      }
+      if (sanitizedUpdates.vendor_arrival_time_actual) {
+        caseUpdates.arrived_at = sanitizedUpdates.vendor_arrival_time_actual;
+      }
+      if (sanitizedUpdates.closed_at) {
+        caseUpdates.completed_at = sanitizedUpdates.closed_at;
+      }
+      if (Object.keys(caseUpdates).length > 0) {
+        await base44.asServiceRole.entities.Case.update(cases[0].id, caseUpdates);
+      }
+    }
 
     return Response.json({
       success: true,
