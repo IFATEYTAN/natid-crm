@@ -618,9 +618,7 @@ function LayoutContent({ children, currentPageName }) {
           {children}
         </main>
 
-        <Suspense fallback={null}>
-          <AccessibilityWidget />
-        </Suspense>
+
 
         {/* PWA Components */}
         <Suspense fallback={null}>
