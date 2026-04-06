@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react';
+import { Trash2, AlertTriangle, Loader2, CheckCircle2, RefreshCw, Eye } from 'lucide-react';
 
 const BATCH_SIZE = 10;
 const DELAY_BETWEEN_BATCHES = 1000; // 1 second between batches
@@ -14,6 +14,8 @@ export default function AdminDataCleanup() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const abortRef = useRef(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
 
   const addLog = (msg, type = 'info') => {
     setLog((prev) => [...prev, { msg, type, time: new Date().toLocaleTimeString() }]);
@@ -89,8 +91,74 @@ export default function AdminDataCleanup() {
     abortRef.current = true;
   };
 
+  const handleSync = async (dryRun = false) => {
+    setIsSyncing(true);
+    setSyncResult(null);
+    addLog(dryRun ? '=== מריץ בדיקת סנכרון (Dry Run) ===' : '=== מריץ סנכרון מלא מנתיד ===');
+    try {
+      const res = await base44.functions.invoke('syncNatiAppeals', { dryRun });
+      setSyncResult(res.data);
+      if (dryRun) {
+        addLog(`סה"כ מנתיד: ${res.data.total_from_nati} קריאות`, 'info');
+        addLog(`ספקים ייחודיים: ${res.data.unique_vendors}`, 'info');
+        addLog(`לקוחות ייחודיים: ${res.data.unique_customers}`, 'info');
+      } else {
+        addLog(`ספקים: ${res.data.vendors?.created || 0} חדשים (${res.data.vendors?.existing || 0} קיימים)`, 'success');
+        addLog(`לקוחות: ${res.data.customers?.created || 0} חדשים (${res.data.customers?.existing || 0} קיימים)`, 'success');
+        addLog(`קריאות: ${res.data.cases?.created || 0} חדשות, ${res.data.cases?.updated || 0} עודכנו, ${res.data.cases?.errors || 0} שגיאות`, 
+          res.data.cases?.errors > 0 ? 'warn' : 'success');
+      }
+      addLog('=== הסנכרון הסתיים ===', 'success');
+    } catch (err) {
+      addLog(`שגיאת סנכרון: ${err.message}`, 'error');
+    }
+    setIsSyncing(false);
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6" dir="rtl">
+      {/* Sync Section */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-blue-700">
+            <RefreshCw className="w-6 h-6" />
+            סנכרון נתונים מנתיד
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-blue-700 text-sm">
+            סנכרון יעדכן קריאות, ייצור ספקים ולקוחות חדשים, ויקשר ביניהם אוטומטית.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => handleSync(true)}
+              disabled={isSyncing}
+              className="flex-1"
+            >
+              {isSyncing ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Eye className="w-4 h-4 me-2" />}
+              בדיקה (Dry Run)
+            </Button>
+            <Button
+              onClick={() => handleSync(false)}
+              disabled={isSyncing}
+              className="flex-1"
+            >
+              {isSyncing ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <RefreshCw className="w-4 h-4 me-2" />}
+              סנכרון מלא
+            </Button>
+          </div>
+          {syncResult && (
+            <div className="bg-white rounded-lg p-3 border text-sm space-y-1">
+              <div className="font-medium">תוצאות אחרונות:</div>
+              <pre className="text-xs text-gray-600 overflow-auto max-h-40 whitespace-pre-wrap">
+                {JSON.stringify(syncResult, null, 2)}
+              </pre>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="border-red-200 bg-red-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-700">
