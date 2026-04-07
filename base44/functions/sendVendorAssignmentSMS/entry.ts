@@ -2,67 +2,81 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
+  const body = await req.json().catch(() => ({}));
   
-  // This function can be called from automations (entity trigger) or directly
-  const body = await req.json();
+  // Entity automation payload: { event: { type, entity_name, entity_id }, data: {...}, old_data: {...} }
+  // Direct call: { call_id, vendor_id }
+  const isAutomation = !!body.event;
   
-  // Support both direct call and entity automation payload
-  const callData = body.data || body;
-  const callId = callData.id || body.call_id;
-  const vendorId = callData.assigned_vendor_id || body.vendor_id;
+  let callId, callData;
   
-  if (!vendorId || !callId) {
-    return Response.json({ success: false, error: 'Missing vendor_id or call_id' }, { status: 400 });
+  if (isAutomation) {
+    callId = body.event?.entity_id;
+    callData = body.data;
+    console.log(`[SMS] Automation trigger: call ${callId}, vendor changed to ${callData?.assigned_vendor_id}`);
+  } else {
+    callId = body.call_id;
+    callData = null;
+    console.log(`[SMS] Direct call: call_id=${callId}`);
   }
   
-  // Fetch vendor details
-  const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
-  if (vendors.length === 0) {
+  if (!callId) {
+    return Response.json({ success: false, error: 'Missing call_id' }, { status: 400 });
+  }
+  
+  // Fetch full call if needed
+  if (!callData || !callData.assigned_vendor_id) {
+    const calls = await base44.asServiceRole.entities.Call.filter({});
+    const found = calls.find(c => c.id === callId);
+    if (!found) {
+      return Response.json({ success: false, error: 'Call not found' }, { status: 404 });
+    }
+    callData = found;
+  }
+  
+  const vendorId = callData.assigned_vendor_id;
+  if (!vendorId) {
+    return Response.json({ success: false, error: 'No vendor assigned to this call' }, { status: 400 });
+  }
+  
+  // Fetch vendor
+  const vendors = await base44.asServiceRole.entities.Vendor.filter({});
+  const vendor = vendors.find(v => v.id === vendorId);
+  if (!vendor) {
+    console.error(`[SMS] Vendor ${vendorId} not found`);
     return Response.json({ success: false, error: 'Vendor not found' }, { status: 404 });
   }
-  const vendor = vendors[0];
   
   if (!vendor.phone) {
-    return Response.json({ success: false, error: 'Vendor has no phone number' }, { status: 400 });
+    console.log(`[SMS] Vendor ${vendor.vendor_name} has no phone — skipping SMS`);
+    return Response.json({ success: false, error: `Vendor "${vendor.vendor_name}" has no phone number`, skipped: true });
   }
-  
-  // Fetch call details
-  const calls = await base44.asServiceRole.entities.Call.filter({ id: callId });
-  if (calls.length === 0) {
-    return Response.json({ success: false, error: 'Call not found' }, { status: 404 });
-  }
-  const call = calls[0];
   
   // Build SMS message
-  const message = `נתיד - קריאה חדשה #${call.call_number || ''}\n` +
-    `לקוח: ${call.customer_name || ''}\n` +
-    `כתובת: ${call.pickup_location_address || ''}\n` +
-    `סוג תקלה: ${call.issue_type || ''}\n` +
-    `היכנס לפורטל לאישור הקריאה.`;
+  const message = `נתיד - קריאה חדשה #${callData.call_number || ''}\n` +
+    `לקוח: ${callData.customer_name || ''}\n` +
+    `כתובת: ${callData.pickup_location_address || ''}\n` +
+    `סוג: ${callData.issue_type || callData.service_category || ''}\n` +
+    `היכנס לפורטל לאישור.`;
   
-  // Send SMS via Twilio
+  // Check Twilio config
   const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN');
   const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER');
   
   if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-    console.log('Twilio not configured - SMS not sent');
+    console.log('[SMS] Twilio not configured — SMS not sent');
     return Response.json({ success: false, error: 'Twilio not configured' }, { status: 503 });
   }
   
-  // Format phone number for Israel
-  let formattedPhone = vendor.phone.replace(/[\s\-()]/g, '');
-  if (formattedPhone.startsWith('0')) {
-    formattedPhone = '972' + formattedPhone.substring(1);
-  }
-  if (!formattedPhone.startsWith('+')) {
-    formattedPhone = '+' + formattedPhone;
-  }
+  // Format Israeli phone
+  let phone = vendor.phone.replace(/[\s\-()]/g, '');
+  if (phone.startsWith('0')) phone = '972' + phone.substring(1);
+  if (!phone.startsWith('+')) phone = '+' + phone;
   
   const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
-  
   const formData = new URLSearchParams();
-  formData.append('To', formattedPhone);
+  formData.append('To', phone);
   formData.append('From', twilioPhoneNumber);
   formData.append('Body', message);
   
@@ -77,24 +91,21 @@ Deno.serve(async (req) => {
   
   if (!smsResponse.ok) {
     const errorText = await smsResponse.text();
-    console.error('Twilio SMS to vendor failed:', errorText);
-    return Response.json({ success: false, error: 'SMS send failed' }, { status: 502 });
+    console.error('[SMS] Twilio error:', errorText);
+    return Response.json({ success: false, error: 'SMS send failed', details: errorText }, { status: 502 });
   }
   
   const smsResult = await smsResponse.json();
+  console.log(`[SMS] Sent to ${vendor.vendor_name} (${phone}): SID ${smsResult.sid}`);
   
   // Log to call history
   await base44.asServiceRole.entities.CallHistory.create({
     call_id: callId,
-    call_number: call.call_number,
+    call_number: callData.call_number || '',
     change_type: 'note',
     new_value: `SMS נשלח לספק ${vendor.vendor_name}: ${vendor.phone}`,
     changed_by: 'מערכת',
   });
   
-  return Response.json({
-    success: true,
-    sid: smsResult.sid,
-    vendor_phone: vendor.phone,
-  });
+  return Response.json({ success: true, sid: smsResult.sid, vendor_phone: phone });
 });

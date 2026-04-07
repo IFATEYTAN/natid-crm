@@ -233,7 +233,7 @@ function extractCustomers(appeals) {
 
 async function syncEntity(sdk, entityName, items, keyField, existingLookup, linkFn) {
   let created = 0, updated = 0, errors = 0;
-  const BATCH = 5;
+  const BATCH = 3;
   
   for (let i = 0; i < items.length; i += BATCH) {
     const batch = items.slice(i, i + BATCH);
@@ -257,7 +257,7 @@ async function syncEntity(sdk, entityName, items, keyField, existingLookup, link
     });
     await Promise.all(promises);
     // Delay between batches to avoid rate limits
-    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 1500));
+    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 3000));
   }
   return { created, updated, errors };
 }
