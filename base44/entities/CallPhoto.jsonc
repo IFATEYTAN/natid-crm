@@ -1,0 +1,74 @@
+{
+  "name": "CallPhoto",
+  "type": "object",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "uploaded_by": {
+      "type": "string",
+      "description": "\u05de\u05d9 \u05d4\u05e2\u05dc\u05d4"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05d4\u05e7\u05d5\u05d1\u05e5"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e7\u05d5\u05d1\u05e5"
+    },
+    "file_size": {
+      "type": "number",
+      "description": "\u05d2\u05d5\u05d3\u05dc \u05d1\u05e7\u05d9\u05dc\u05d5\u05d1\u05d9\u05d9\u05d8"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "before_treatment",
+        "after_treatment",
+        "damage",
+        "customer_document",
+        "customer_signature",
+        "license_plate",
+        "odometer",
+        "insurance_card",
+        "other"
+      ],
+      "description": "\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d9\u05ea \u05ea\u05de\u05d5\u05e0\u05d4"
+    },
+    "note": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d4"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05e0\u05de\u05d7\u05e7"
+    },
+    "ai_extracted_data": {
+      "type": "object",
+      "description": "\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e9\u05d7\u05d5\u05dc\u05e6\u05d5 \u05de\u05d4\u05ea\u05de\u05d5\u05e0\u05d4 \u05e2\u05dc \u05d9\u05d3\u05d9 AI"
+    },
+    "ai_extraction_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "skipped"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05d7\u05d9\u05dc\u05d5\u05e5 AI"
+    },
+    "ai_extraction_summary": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05db\u05d5\u05dd \u05d8\u05e7\u05e1\u05d8\u05d5\u05d0\u05dc\u05d9 \u05e9\u05dc \u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e9\u05d7\u05d5\u05dc\u05e6\u05d5"
+    }
+  },
+  "required": [
+    "call_id",
+    "file_url",
+    "category"
+  ]
+}

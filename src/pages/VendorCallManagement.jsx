@@ -1,23 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  Camera,
-  AlertCircle,
-  ArrowRight,
-  Loader2,
-  FileText,
-  Image,
-  MessageSquare,
-  Route,
+  Camera, AlertCircle, ArrowRight, Loader2, FileText,
+  MessageSquare, Route, Sparkles,
 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -33,14 +25,8 @@ import VendorCallCustomerInfo from '@/components/vendor/VendorCallCustomerInfo';
 import VendorCallVehicleInfo from '@/components/vendor/VendorCallVehicleInfo';
 import VendorCallActionBar from '@/components/vendor/VendorCallActionBar';
 import VendorCustomerJourney from '@/components/vendor/VendorCustomerJourney';
-
-const photoCategories = [
-  { key: 'before_treatment', label: 'לפני טיפול' },
-  { key: 'after_treatment', label: 'אחרי טיפול' },
-  { key: 'damage', label: 'נזק' },
-  { key: 'customer_document', label: 'מסמך לקוח' },
-  { key: 'other', label: 'אחר' },
-];
+import VendorPhotoUploader from '@/components/vendor/VendorPhotoUploader';
+import VendorPhotoAIExtractor from '@/components/vendor/VendorPhotoAIExtractor';
 
 export default function VendorCallManagementPage() {
   const { currentUser, effectiveRole } = usePermissions();
@@ -48,11 +34,8 @@ export default function VendorCallManagementPage() {
   const [vendorProfile, setVendorProfile] = useState(null);
   const [selectedCallId, setSelectedCallId] = useState(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
-  const [showPhotoDialog, setShowPhotoDialog] = useState(false);
   const [vendorNotes, setVendorNotes] = useState('');
-  const [photoCategory, setPhotoCategory] = useState('before_treatment');
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -131,17 +114,9 @@ export default function VendorCallManagementPage() {
     },
   });
 
-  const addPhotoMutation = useMutation({
-    mutationFn: (data) => base44.entities.CallPhoto.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(selectedCallId) });
-      showToast.success('התמונה נוספה בהצלחה');
-      setShowPhotoDialog(false);
-    },
-    onError: () => {
-      showToast.error('שגיאה בהעלאת תמונה');
-    },
-  });
+  const refreshPhotos = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(selectedCallId) });
+  };
 
   const addHistoryMutation = useMutation({
     mutationFn: (data) => base44.entities.CallHistory.create(data),
@@ -196,29 +171,6 @@ export default function VendorCallManagementPage() {
     updateCallMutation.mutate({ vendor_notes: vendorNotes });
   };
 
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      addPhotoMutation.mutate({
-        call_id: selectedCallId,
-        uploaded_by: vendorProfile?.vendor_name || 'ספק',
-        file_url,
-        file_name: file.name,
-        file_size: file.size,
-        category: photoCategory,
-        is_deleted: false,
-      });
-    } catch (error) {
-      showToast.error('שגיאה בהעלאת התמונה');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleSignatureSave = async (signatureDataUrl) => {
     setUploading(true);
     try {
@@ -227,13 +179,12 @@ export default function VendorCallManagementPage() {
       const file = new File([blob], 'signature.png', { type: 'image/png' });
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // Generate signature hash for integrity verification
       const arrayBuffer = await blob.arrayBuffer();
       const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const signatureHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-      addPhotoMutation.mutate({
+      await base44.entities.CallPhoto.create({
         call_id: selectedCallId,
         uploaded_by: vendorProfile?.vendor_name || 'ספק',
         file_url,
@@ -241,7 +192,9 @@ export default function VendorCallManagementPage() {
         category: 'customer_signature',
         is_deleted: false,
       });
+      refreshPhotos();
       setShowSignatureDialog(false);
+      showToast.success('החתימה נשמרה בהצלחה');
     } catch (error) {
       showToast.error('שגיאה בשמירת החתימה');
     } finally {
@@ -319,18 +272,23 @@ export default function VendorCallManagementPage() {
       <VendorCallCustomerInfo call={call} />
       <VendorCallVehicleInfo call={call} />
 
-      {/* Tabs for Journey, Photos, Notes, Messages */}
+      {/* Tabs for Journey, Photos, AI, Notes, Messages */}
       <Tabs defaultValue="journey" className="w-full">
-        <TabsList className={`w-full grid ${isCompleted ? 'grid-cols-5' : 'grid-cols-4'} h-auto`}>
+        <TabsList className={`w-full grid ${isCompleted ? 'grid-cols-6' : 'grid-cols-5'} h-auto`}>
           <TabsTrigger value="journey" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
             <Route className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span className="hidden sm:inline">מסע לקוח</span>
             <span className="sm:hidden">מסע</span>
           </TabsTrigger>
           <TabsTrigger value="photos" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
-            <Image className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-            <span className="hidden sm:inline">תמונות ({photos.length})</span>
-            <span className="sm:hidden">{photos.length}📷</span>
+            <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">תמונות ({photos.filter(p => !p.is_deleted).length})</span>
+            <span className="sm:hidden">{photos.filter(p => !p.is_deleted).length}📷</span>
+          </TabsTrigger>
+          <TabsTrigger value="ai" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">ניתוח AI</span>
+            <span className="sm:hidden">AI</span>
           </TabsTrigger>
           <TabsTrigger value="notes" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
             <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
@@ -356,40 +314,26 @@ export default function VendorCallManagementPage() {
         <TabsContent value="photos" className="mt-4">
           <Card className="bg-white">
             <CardContent className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-medium">תמונות</h3>
-                <Button
-                  size="sm"
-                  onClick={() => setShowPhotoDialog(true)}
-                  disabled={isCompleted}
-                  className="gap-1"
-                >
-                  <Camera className="w-4 h-4" />
-                  הוסף תמונה
-                </Button>
-              </div>
-              {photos.length === 0 ? (
-                <div className="text-center py-8 text-[#6B778C]">
-                  <Camera className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>אין תמונות</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {photos.map((photo) => (
-                    <div key={photo.id} className="relative">
-                      <img
-                        src={photo.file_url}
-                        alt={photo.file_name}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <Badge className="absolute bottom-2 end-2 text-xs">
-                        {photoCategories.find((c) => c.key === photo.category)?.label ||
-                          photo.category}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <VendorPhotoUploader
+                callId={selectedCallId}
+                vendorName={vendorProfile?.vendor_name}
+                photos={photos}
+                onPhotoAdded={() => refreshPhotos()}
+                onPhotoDeleted={() => refreshPhotos()}
+                disabled={isCompleted}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-4">
+          <Card className="bg-white">
+            <CardContent className="p-4">
+              <VendorPhotoAIExtractor
+                photos={photos}
+                callId={selectedCallId}
+                onDataExtracted={() => refreshPhotos()}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -451,54 +395,6 @@ export default function VendorCallManagementPage() {
         onComplete={handleCompleteCall}
         isPending={updateCallMutation.isPending}
       />
-
-      {/* Photo Upload Dialog */}
-      <Dialog open={showPhotoDialog} onOpenChange={setShowPhotoDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>הוספת תמונה</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>קטגוריה</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {photoCategories.map((cat) => (
-                  <Button
-                    key={cat.key}
-                    variant={photoCategory === cat.key ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setPhotoCategory(cat.key)}
-                  >
-                    {cat.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div className="border-2 border-dashed rounded-lg p-8 text-center">
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handlePhotoUpload}
-                ref={fileInputRef}
-                className="hidden"
-              />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="gap-2"
-              >
-                {uploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Camera className="w-4 h-4" />
-                )}
-                {uploading ? 'מעלה...' : 'צלם או בחר תמונה'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Signature Dialog */}
       <Dialog open={showSignatureDialog} onOpenChange={setShowSignatureDialog}>
