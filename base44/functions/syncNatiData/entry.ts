@@ -233,7 +233,7 @@ function extractCustomers(appeals) {
 
 async function syncEntity(sdk, entityName, items, keyField, existingLookup, linkFn) {
   let created = 0, updated = 0, errors = 0;
-  const BATCH = 10;
+  const BATCH = 5;
   
   for (let i = 0; i < items.length; i += BATCH) {
     const batch = items.slice(i, i + BATCH);
@@ -256,8 +256,8 @@ async function syncEntity(sdk, entityName, items, keyField, existingLookup, link
       }
     });
     await Promise.all(promises);
-    // Small delay between batches
-    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 500));
+    // Delay between batches to avoid rate limits
+    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 1500));
   }
   return { created, updated, errors };
 }
@@ -290,9 +290,17 @@ Deno.serve(async (req) => {
       sync_customers = true,
     } = body;
 
-    // Use secrets (with hardcoded fallback for backward compat)
-    const JWT_TOKEN = Deno.env.get('NATI_API_JWT_TOKEN') || 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJOYXRpZCIsImlhdCI6MTc3NTUwMTkwMSwiZXhwIjo0MDc5MTg1MDgyLCJhdWQiOiJhcGkubmF0aWQuY28uaWwiLCJzdWIiOiJhZG1pbkBuYXRpZC5jby5pbCIsInVzZXJuYW1lIjoiYmFzZTQ0In0.msS8au2-b4nF770ngilLaYvSaAsmDZwWxPLM0f6S0CiJA82x3x1_fNQuwJZTezjd4mup9AsLkl0_v1p6-fvGxA';
-    const CLIENT_ID = Deno.env.get('NATI_API_CLIENT_ID') || '62c66127-cdb9-4579-9f18-a9b6ff9d06fd';
+    // Use secrets — clean CLIENT_ID which has trailing " JWT" from bad secret entry
+    const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
+    const CLIENT_ID_RAW = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim();
+    // Strip trailing " JWT" if present (known bad secret value)
+    const CLIENT_ID = CLIENT_ID_RAW.replace(/\s+JWT$/i, '').trim();
+    
+    if (!JWT_TOKEN || !CLIENT_ID) {
+      return Response.json({ error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' }, { status: 500 });
+    }
+    
+    console.log(`[SYNC] Using Client ID: ${CLIENT_ID.substring(0, 8)}... (cleaned from raw length ${CLIENT_ID_RAW.length})`);
 
     // Build Nati API request
     const params = new URLSearchParams({ dep: String(dep), callStatus: String(callStatus), dir: 'DESC' });
