@@ -185,7 +185,7 @@ function extractVendors(appeals) {
     if (name && !map.has(name)) {
       map.set(name, clean({
         vendor_name: name,
-        phone: a.supplier_phone || '',
+        phone: a.intermediary_phone || '',
         is_active: true,
         is_available_now: true,
         availability_status: 'available',
