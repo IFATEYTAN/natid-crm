@@ -83,8 +83,8 @@ function mapToCall(a) {
     issue_description: a.problem_desc || a.diagnose || '',
     issue_detail: a.serve_type || '',
     customer_name: a.client_name || a.user_name || '',
-    customer_phone: a.tel || a.intermediary_phone || 'לא צוין',
-    customer_phone_2: a.intermediary_phone || '',
+    customer_phone: a.tel || 'לא צוין',
+    customer_phone_2: a.tel2 || '',
     customer_id_number: a.client_id || '',
     customer_email: a.client_email || '',
     insurance_company: a.agent_name || '',
@@ -373,14 +373,33 @@ Deno.serve(async (req) => {
     const caseLookup = {};
     for (const c of existingCases) { if (c.case_number) caseLookup[c.case_number] = c.id; }
 
-    // ---- VENDORS (only create new ones) ----
+    // ---- VENDORS (create new or update phone if missing) ----
     if (sync_vendors) {
       console.log('[SYNC] Syncing vendors...');
       const vendorData = extractVendors(appeals);
-      let vendorsCreated = 0, vendorsSkipped = 0;
+      let vendorsCreated = 0, vendorsSkipped = 0, vendorsPhoneUpdated = 0;
+      
+      // Build a phone lookup from existing vendors to know which ones lack a phone
+      const vendorPhoneLookup = {};
+      for (const v of existingVendors) {
+        if (v.vendor_name) vendorPhoneLookup[v.vendor_name.trim()] = v.phone || '';
+      }
+      
       for (const vd of vendorData) {
-        if (vendorLookup[vd.vendor_name]) {
-          vendorsSkipped++;
+        const existingId = vendorLookup[vd.vendor_name];
+        if (existingId) {
+          // If existing vendor has no phone but we have one from Nati, update it
+          const existingPhone = vendorPhoneLookup[vd.vendor_name] || '';
+          if (!existingPhone && vd.phone) {
+            try {
+              await sdk.entities.Vendor.update(existingId, { phone: vd.phone });
+              vendorsPhoneUpdated++;
+            } catch (e) {
+              console.error('[SYNC] Vendor phone update error:', e.message);
+            }
+          } else {
+            vendorsSkipped++;
+          }
         } else {
           try {
             const created = await sdk.entities.Vendor.create(vd);
@@ -391,7 +410,7 @@ Deno.serve(async (req) => {
           }
         }
       }
-      results.vendors = { existing: existingVendors.length, created: vendorsCreated, skipped: vendorsSkipped };
+      results.vendors = { existing: existingVendors.length, created: vendorsCreated, skipped: vendorsSkipped, phone_updated: vendorsPhoneUpdated };
     }
 
     // ---- CUSTOMERS (only create new ones) ----
