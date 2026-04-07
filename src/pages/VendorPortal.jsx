@@ -48,6 +48,7 @@ import VendorContractsView from '@/components/vendor/VendorContractsView';
 import VendorBreakHistory from '@/components/vendor/VendorBreakHistory';
 import VendorPDFDownload from '@/components/vendor/VendorPDFDownload';
 import VendorGPSTracker from '@/components/vendor/VendorGPSTracker';
+import VendorActiveCallsGoogleMap from '@/components/vendor/VendorActiveCallsGoogleMap';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { showToast } from '@/components/ui/FeedbackToast';
@@ -687,6 +688,12 @@ export default function VendorPortalPage() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Google Maps - Active Calls */}
+              <VendorActiveCallsGoogleMap
+                vendorProfile={vendorProfile}
+                activeCalls={activeCalls}
+              />
 
               {/* Contracts View */}
               <Card>
