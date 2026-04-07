@@ -1,21 +1,11 @@
 /**
- * syncNatiData — Unified sync from Nati CRM API
+ * syncNatiData — Optimized sync from Nati CRM API
  * 
- * Fetches open appeals from Nati and syncs to local entities:
- *   - Call (main UI entity)
- *   - Case (secondary)
- *   - Vendor (extracted from appeals)
- *   - Customer (extracted from appeals)
- * 
- * Params (all optional):
- *   - dep: department filter (-1=all, 3=towing, 4=rent, 5=windshields, 10=radiodisc, 11=combined)
- *   - callStatus: status filter (-1=all open)
- *   - from_date / to_date: YYYY-MM-DD
- *   - dry_run: true to preview without writing
- *   - sync_calls: true (default) — sync Call entity
- *   - sync_cases: true (default) — sync Case entity  
- *   - sync_vendors: true (default) — sync Vendor entity
- *   - sync_customers: true (default) — sync Customer entity
+ * Optimizations:
+ *   - Processes max 30 appeals per run (avoids timeout)
+ *   - Skips vendors/customers that already exist (fast lookup)
+ *   - Batches of 5 with 1s delay (faster but safe)
+ *   - Uses has_updated flag to prioritize changed records
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
@@ -232,8 +222,8 @@ function extractCustomers(appeals) {
 // ========== BULK SYNC HELPER ==========
 
 async function syncEntity(sdk, entityName, items, keyField, existingLookup, linkFn) {
-  let created = 0, updated = 0, errors = 0;
-  const BATCH = 3;
+  let created = 0, updated = 0, skipped = 0, errors = 0;
+  const BATCH = 5;
   
   for (let i = 0; i < items.length; i += BATCH) {
     const batch = items.slice(i, i + BATCH);
@@ -256,10 +246,10 @@ async function syncEntity(sdk, entityName, items, keyField, existingLookup, link
       }
     });
     await Promise.all(promises);
-    // Delay between batches to avoid rate limits
-    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 3000));
+    // Shorter delay — 1s between batches
+    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 1000));
   }
-  return { created, updated, errors };
+  return { created, updated, skipped, errors };
 }
 
 // ========== MAIN HANDLER ==========
@@ -330,8 +320,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Nati API returned unsuccessful', raw: natiData }, { status: 502 });
     }
 
-    const appeals = natiData.data;
-    console.log(`[SYNC] Got ${appeals.length} appeals from Nati (total: ${natiData.total})`);
+    const allAppeals = natiData.data;
+    console.log(`[SYNC] Got ${allAppeals.length} appeals from Nati (total: ${natiData.total})`);
+
+    // OPTIMIZATION 1: Prioritize updated records, limit to 30 per run
+    const MAX_PER_RUN = 30;
+    // Sort: has_updated='1' first, then by date_added_unix descending
+    const sorted = [...allAppeals].sort((a, b) => {
+      if (a.has_updated === '1' && b.has_updated !== '1') return -1;
+      if (b.has_updated === '1' && a.has_updated !== '1') return 1;
+      return (parseInt(b.date_added_unix) || 0) - (parseInt(a.date_added_unix) || 0);
+    });
+    const appeals = sorted.slice(0, MAX_PER_RUN);
+    console.log(`[SYNC] Processing ${appeals.length} of ${allAppeals.length} (prioritized updated/recent)`);
 
     // Dry run — return preview
     if (dry_run) {
@@ -349,64 +350,78 @@ Deno.serve(async (req) => {
     const sdk = base44.asServiceRole;
     const results = {};
 
-    // ---- VENDORS ----
+    // OPTIMIZATION 2: Pre-load all lookups in parallel
+    console.log('[SYNC] Loading existing records...');
+    const [existingVendors, existingCustomers, existingCalls, existingCases] = await Promise.all([
+      sync_vendors ? sdk.entities.Vendor.filter({}) : [],
+      sync_customers ? sdk.entities.Customer.filter({}) : [],
+      sync_calls ? sdk.entities.Call.filter({}) : [],
+      sync_cases ? sdk.entities.Case.filter({}) : [],
+    ]);
+    console.log(`[SYNC] Loaded: ${existingVendors.length} vendors, ${existingCustomers.length} customers, ${existingCalls.length} calls, ${existingCases.length} cases`);
+
+    // Build lookups once
+    const vendorLookup = {};
+    for (const v of existingVendors) { if (v.vendor_name) vendorLookup[v.vendor_name.trim()] = v.id; }
+    const custByExtId = {}, custByName = {};
+    for (const c of existingCustomers) {
+      if (c.customer_id_external) custByExtId[c.customer_id_external] = c.id;
+      if (c.name) custByName[c.name.trim()] = c.id;
+    }
+    const callLookup = {};
+    for (const c of existingCalls) { if (c.call_number) callLookup[c.call_number] = c.id; }
+    const caseLookup = {};
+    for (const c of existingCases) { if (c.case_number) caseLookup[c.case_number] = c.id; }
+
+    // ---- VENDORS (only create new ones) ----
     if (sync_vendors) {
       console.log('[SYNC] Syncing vendors...');
-      const existing = await sdk.entities.Vendor.filter({});
-      const lookup = {};
-      for (const v of existing) { if (v.vendor_name) lookup[v.vendor_name.trim()] = v.id; }
-      
       const vendorData = extractVendors(appeals);
-      // Only create new vendors, don't overwrite existing ones
-      let vendorsCreated = 0;
+      let vendorsCreated = 0, vendorsSkipped = 0;
       for (const vd of vendorData) {
-        if (!lookup[vd.vendor_name]) {
-          const created = await sdk.entities.Vendor.create(vd);
-          lookup[vd.vendor_name] = created.id;
-          vendorsCreated++;
+        if (vendorLookup[vd.vendor_name]) {
+          vendorsSkipped++;
+        } else {
+          try {
+            const created = await sdk.entities.Vendor.create(vd);
+            vendorLookup[vd.vendor_name] = created.id;
+            vendorsCreated++;
+          } catch (e) {
+            console.error('[SYNC] Vendor create error:', e.message);
+          }
         }
       }
-      results.vendors = { existing: existing.length, created: vendorsCreated };
-      // Store lookup for linking
-      results._vendorLookup = lookup;
+      results.vendors = { existing: existingVendors.length, created: vendorsCreated, skipped: vendorsSkipped };
     }
 
-    // ---- CUSTOMERS ----
+    // ---- CUSTOMERS (only create new ones) ----
     if (sync_customers) {
       console.log('[SYNC] Syncing customers...');
-      const existing = await sdk.entities.Customer.filter({});
-      const byExtId = {}, byName = {};
-      for (const c of existing) {
-        if (c.customer_id_external) byExtId[c.customer_id_external] = c.id;
-        if (c.name) byName[c.name.trim()] = c.id;
-      }
-      
       const custData = extractCustomers(appeals);
-      let customersCreated = 0;
+      let customersCreated = 0, customersSkipped = 0;
       for (const cd of custData) {
-        const existsId = cd.customer_id_external ? byExtId[cd.customer_id_external] : byName[cd.name];
-        if (!existsId) {
-          const created = await sdk.entities.Customer.create(cd);
-          if (cd.customer_id_external) byExtId[cd.customer_id_external] = created.id;
-          byName[cd.name] = created.id;
-          customersCreated++;
+        const existsId = cd.customer_id_external ? custByExtId[cd.customer_id_external] : custByName[cd.name];
+        if (existsId) {
+          customersSkipped++;
+        } else {
+          try {
+            const created = await sdk.entities.Customer.create(cd);
+            if (cd.customer_id_external) custByExtId[cd.customer_id_external] = created.id;
+            custByName[cd.name] = created.id;
+            customersCreated++;
+          } catch (e) {
+            console.error('[SYNC] Customer create error:', e.message);
+          }
         }
       }
-      results.customers = { existing: existing.length, created: customersCreated };
+      results.customers = { existing: existingCustomers.length, created: customersCreated, skipped: customersSkipped };
     }
 
-    // ---- CALLS (main UI entity) ----
+    // ---- CALLS ----
     if (sync_calls) {
       console.log('[SYNC] Syncing calls...');
-      const existing = await sdk.entities.Call.filter({});
-      const lookup = {};
-      for (const c of existing) { if (c.call_number) lookup[c.call_number] = c.id; }
-
       const callItems = appeals.map(mapToCall);
-      const vendorLookup = results._vendorLookup || {};
-      
-      const callResult = await syncEntity(sdk, 'Call', callItems, 'call_number', lookup, (item) => {
-        // Link vendor ID
+      const callResult = await syncEntity(sdk, 'Call', callItems, 'call_number', callLookup, (item) => {
         if (item.assigned_vendor_name && vendorLookup[item.assigned_vendor_name]) {
           item.assigned_vendor_id = vendorLookup[item.assigned_vendor_name];
         }
@@ -417,14 +432,8 @@ Deno.serve(async (req) => {
     // ---- CASES ----
     if (sync_cases) {
       console.log('[SYNC] Syncing cases...');
-      const existing = await sdk.entities.Case.filter({});
-      const lookup = {};
-      for (const c of existing) { if (c.case_number) lookup[c.case_number] = c.id; }
-
       const caseItems = appeals.map(mapToCase);
-      const vendorLookup = results._vendorLookup || {};
-
-      const caseResult = await syncEntity(sdk, 'Case', caseItems, 'case_number', lookup, (item) => {
+      const caseResult = await syncEntity(sdk, 'Case', caseItems, 'case_number', caseLookup, (item) => {
         if (item.assigned_provider_name && vendorLookup[item.assigned_provider_name]) {
           item.assigned_provider_id = vendorLookup[item.assigned_provider_name];
         }
@@ -432,8 +441,7 @@ Deno.serve(async (req) => {
       results.cases = caseResult;
     }
 
-    // Cleanup internal data
-    delete results._vendorLookup;
+    // No internal cleanup needed
 
     const duration = Date.now() - startTime;
     console.log(`[SYNC] Done in ${duration}ms`);
@@ -441,7 +449,8 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       total_from_nati: natiData.total,
-      synced_appeals: appeals.length,
+      processed_appeals: appeals.length,
+      total_appeals: allAppeals.length,
       duration_ms: duration,
       ...results,
     });
