@@ -219,6 +219,7 @@ function LayoutContent({ children, currentPageName }) {
       title: 'ניהול ספקים',
       items: [
         { name: 'נותני שירות', href: 'ServiceProviders' },
+        { name: 'חיבור ספקים', href: 'VendorOnboarding' },
         { name: 'ניהול חוזים', href: 'VendorContracts' },
         { name: 'מפת ספקים', href: 'AllVendorsMap' },
         { name: 'אזורי כיסוי', href: 'CoverageAreas' },

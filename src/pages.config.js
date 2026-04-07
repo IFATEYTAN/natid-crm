@@ -66,6 +66,8 @@ export const PAGES = {
     "VendorMobileApp": lazy(() => import('./pages/VendorMobileApp')),
     "VendorPortal": lazy(() => import('./pages/VendorPortal')),
     "VendorTracking": lazy(() => import('./pages/VendorTracking')),
+    "VendorOnboarding": lazy(() => import('./pages/VendorOnboarding')),
+    "InsuranceAgentPackages": lazy(() => import('./pages/InsuranceAgentPackages')),
 }
 
 export const pagesConfig = {

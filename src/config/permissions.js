@@ -12,7 +12,9 @@
 
 export const PAGE_PERMISSIONS = {
   // Admin only - system management & financial
+  AdminDataCleanup: ['admin'],
   AdminDisplaySettings: ['admin'],
+  VendorOnboarding: ['admin'],
   AuditLog: ['admin'],
   AutomationSettings: ['admin'],
   CTISettings: ['admin'],
