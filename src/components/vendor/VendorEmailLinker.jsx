@@ -18,9 +18,16 @@ import { showToast } from '@/components/ui/FeedbackToast';
 export default function VendorEmailLinker({ vendors = [] }) {
   const [selectedVendorId, setSelectedVendorId] = useState('');
   const [email, setEmail] = useState('');
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const queryClient = useQueryClient();
 
   const selectedVendor = vendors.find(v => v.id === selectedVendorId);
+
+  const handleSubmit = () => {
+    setSubmitAttempted(true);
+    if (!selectedVendorId || !email.trim()) return;
+    linkMutation.mutate();
+  };
 
   const linkMutation = useMutation({
     mutationFn: async () => {
@@ -33,6 +40,7 @@ export default function VendorEmailLinker({ vendors = [] }) {
       showToast.success(`האימייל ${email} קושר בהצלחה לספק ${selectedVendor?.vendor_name}`);
       setEmail('');
       setSelectedVendorId('');
+      setSubmitAttempted(false);
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
     },
     onError: (err) => {
@@ -68,14 +76,16 @@ export default function VendorEmailLinker({ vendors = [] }) {
         </div>
 
         {/* Link form */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-1 block">בחר ספק</label>
             <Select value={selectedVendorId} onValueChange={(val) => {
               setSelectedVendorId(val);
+              setSubmitAttempted(false);
               const v = vendors.find(x => x.id === val);
               if (v?.email) setEmail(v.email);
             }}>
-              <SelectTrigger>
+              <SelectTrigger className={!selectedVendorId && submitAttempted ? 'border-red-400' : ''}>
                 <SelectValue placeholder="בחר ספק..." />
               </SelectTrigger>
               <SelectContent>
@@ -101,21 +111,28 @@ export default function VendorEmailLinker({ vendors = [] }) {
                 )}
               </SelectContent>
             </Select>
+            {!selectedVendorId && submitAttempted && (
+              <p className="text-xs text-red-500 mt-1">יש לבחור ספק מהרשימה</p>
+            )}
           </div>
-          <div className="flex-1">
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-1 block">כתובת אימייל</label>
             <Input
               type="email"
               dir="ltr"
               placeholder="email@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className={!email.trim() && submitAttempted ? 'border-red-400' : ''}
             />
+            {!email.trim() && submitAttempted && (
+              <p className="text-xs text-red-500 mt-1">יש להזין כתובת אימייל</p>
+            )}
           </div>
           <Button
-            onClick={() => linkMutation.mutate()}
-            disabled={!selectedVendorId || !email.trim() || linkMutation.isPending}
+            onClick={handleSubmit}
             isLoading={linkMutation.isPending}
-            className="shrink-0"
+            className="w-full"
           >
             <Mail className="w-4 h-4" />
             קשר אימייל
