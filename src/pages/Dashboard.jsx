@@ -62,10 +62,23 @@ export default function Dashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { currentUser, hasPermission, canAccessPage } = usePermissions();
 
+  const [isSyncingNati, setIsSyncingNati] = useState(false);
+
   const handleRefreshData = async () => {
     setIsRefreshing(true);
     await queryClient.invalidateQueries();
     setIsRefreshing(false);
+  };
+
+  const handleSyncFromNati = async () => {
+    setIsSyncingNati(true);
+    try {
+      await base44.functions.invoke('syncNatiAppeals', {});
+      await queryClient.invalidateQueries();
+    } catch (err) {
+      console.error('Nati sync error:', err);
+    }
+    setIsSyncingNati(false);
   };
 
   const today = new Date();
@@ -194,6 +207,17 @@ export default function Dashboard() {
         </div>
         {/* Row 2: Action Buttons */}
         <div className="flex gap-2 sm:gap-3 justify-end flex-wrap">
+          <PermissionGuard category="calls" permission="create">
+            <Button
+              variant="outline"
+              onClick={handleSyncFromNati}
+              disabled={isSyncingNati}
+              className="rounded-full px-4 transition-all border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              <RefreshCw className={`w-4 h-4 me-2 ${isSyncingNati ? 'animate-spin' : ''}`} />
+              {isSyncingNati ? 'מסנכרן...' : 'סנכרון מנתיד'}
+            </Button>
+          </PermissionGuard>
           <Button
             variant="outline"
             onClick={handleRefreshData}
