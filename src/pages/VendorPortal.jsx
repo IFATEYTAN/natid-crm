@@ -2,6 +2,7 @@ import { lazyRetry } from '@/lib/lazyRetry';
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
+import VendorOnboardingWizard from '@/components/vendor/VendorOnboardingWizard';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
@@ -58,6 +59,7 @@ export default function VendorPortalPage() {
   const [isAvailable, setIsAvailable] = useState(false);
   const [pendingCall, setPendingCall] = useState(null);
   const [showNewCallAlert, setShowNewCallAlert] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const queryClient = useQueryClient();
 
   const isAdmin = effectiveRole === 'admin';
@@ -66,6 +68,14 @@ export default function VendorPortalPage() {
   const isVendorUser = effectiveRoleNormalized === 'vendor' || effectiveRoleNormalized === 'ספק' || currentUserRoleNormalized === 'vendor' || currentUserRoleNormalized === 'ספק';
   const [activeTab, setActiveTab] = useState(() => (effectiveRole === 'admin' ? 'admin' : 'vendor'));
   const [callsTab, setCallsTab] = useState('all');
+
+  // Check if vendor needs onboarding wizard
+  useEffect(() => {
+    if (isVendorUser && currentUser && !currentUser.vendor_onboarding_completed) {
+      setShowOnboarding(true);
+    }
+  }, [isVendorUser, currentUser]);
+
   useEffect(() => {
     if (isAdmin && activeTab === 'vendor' && !vendorProfile) setActiveTab('admin');
   }, [isAdmin, activeTab, vendorProfile]);
@@ -291,6 +301,23 @@ export default function VendorPortalPage() {
     });
     callsQuery.refetch();
   };
+
+  // Show onboarding wizard for first-time vendor users
+  if (showOnboarding && isVendorUser && vendorProfile) {
+    return (
+      <VendorOnboardingWizard
+        vendorProfile={vendorProfile}
+        onComplete={async () => {
+          await base44.auth.updateMe({ vendor_onboarding_completed: true });
+          setShowOnboarding(false);
+        }}
+        onSkip={async () => {
+          await base44.auth.updateMe({ vendor_onboarding_completed: true });
+          setShowOnboarding(false);
+        }}
+      />
+    );
+  }
 
   // Show loading state while vendor profile is being fetched
   if (vendorQuery.isLoading) {
