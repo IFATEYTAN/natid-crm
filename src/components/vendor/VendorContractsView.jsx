@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Calendar, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
@@ -82,14 +82,18 @@ export default function VendorContractsView({ vendorId, isVendorUser }) {
               <div className="flex items-center gap-2">
                 <Calendar className="w-3 h-3 text-gray-400" />
                 <span className="text-gray-500">סוג:</span>
-                <span className="text-gray-900">{typeLabels[contract.contract_type] || contract.contract_type}</span>
+                <span className="text-gray-900">
+                  {typeLabels[contract.contract_type] || contract.contract_type}
+                </span>
               </div>
 
               {contract.start_date && (
                 <div className="flex items-center gap-2">
                   <Calendar className="w-3 h-3 text-gray-400" />
                   <span className="text-gray-500">מ:</span>
-                  <span className="text-gray-900">{format(new Date(contract.start_date), 'dd/MM/yyyy')}</span>
+                  <span className="text-gray-900">
+                    {format(new Date(contract.start_date), 'dd/MM/yyyy')}
+                  </span>
                 </div>
               )}
 
@@ -97,7 +101,9 @@ export default function VendorContractsView({ vendorId, isVendorUser }) {
                 <div className="flex items-center gap-2">
                   <Calendar className="w-3 h-3 text-gray-400" />
                   <span className="text-gray-500">עד:</span>
-                  <span className="text-gray-900">{format(new Date(contract.end_date), 'dd/MM/yyyy')}</span>
+                  <span className="text-gray-900">
+                    {format(new Date(contract.end_date), 'dd/MM/yyyy')}
+                  </span>
                 </div>
               )}
 
@@ -110,9 +116,7 @@ export default function VendorContractsView({ vendorId, isVendorUser }) {
               )}
 
               {contract.sla_arrival_minutes > 0 && (
-                <div className="text-gray-600">
-                  SLA הגעה: {contract.sla_arrival_minutes} דק'
-                </div>
+                <div className="text-gray-600">SLA הגעה: {contract.sla_arrival_minutes} דק'</div>
               )}
             </div>
 

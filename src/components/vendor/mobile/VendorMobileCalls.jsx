@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,7 +23,11 @@ export default function VendorMobileCalls({
     switch (call.call_status) {
       case 'assigned':
       case 'assigning':
-        return { label: 'יצא לדרך', status: 'vendor_enroute', color: 'bg-blue-600 hover:bg-blue-700' };
+        return {
+          label: 'יצא לדרך',
+          status: 'vendor_enroute',
+          color: 'bg-blue-600 hover:bg-blue-700',
+        };
       case 'vendor_enroute':
         return { label: 'הגעתי', status: 'in_progress', color: 'bg-green-600 hover:bg-green-700' };
       case 'in_progress':
@@ -122,7 +126,10 @@ export default function VendorMobileCalls({
                         rel="noopener noreferrer"
                         className="flex-1"
                       >
-                        <Button variant="outline" className="w-full h-11 rounded-xl gap-2 text-sm font-medium">
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 rounded-xl gap-2 text-sm font-medium"
+                        >
                           <Navigation className="w-4 h-4 text-blue-600" />
                           נווט
                         </Button>
@@ -131,7 +138,10 @@ export default function VendorMobileCalls({
 
                     {call.customer_phone && (
                       <a href={`tel:${call.customer_phone}`} className="flex-1">
-                        <Button variant="outline" className="w-full h-11 rounded-xl gap-2 text-sm font-medium">
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 rounded-xl gap-2 text-sm font-medium"
+                        >
                           <Phone className="w-4 h-4 text-green-600" />
                           חייג
                         </Button>
@@ -140,7 +150,10 @@ export default function VendorMobileCalls({
 
                     {action && (
                       <Button
-                        className={cn('flex-1 h-11 rounded-xl text-sm font-bold text-white', action.color)}
+                        className={cn(
+                          'flex-1 h-11 rounded-xl text-sm font-bold text-white',
+                          action.color
+                        )}
                         onClick={() => onUpdateCallStatus(call.id, action.status)}
                       >
                         {action.label}
@@ -148,7 +161,10 @@ export default function VendorMobileCalls({
                     )}
 
                     {call.call_status === 'in_progress' && (
-                      <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)} className="flex-1">
+                      <Link
+                        to={createPageUrl(`VendorCallManagement?id=${call.id}`)}
+                        className="flex-1"
+                      >
                         <Button className="w-full h-11 rounded-xl text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white">
                           סיים וחתם
                         </Button>

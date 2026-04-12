@@ -1,20 +1,38 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 // ─── Excel (real .xlsx) ───────────────────────────────────────────────────────
-export function exportToExcel(data, filename, title = '') {
+export async function exportToExcel(data, filename, title = '') {
   if (!data || data.length === 0) return;
 
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(data, { cellStyles: true });
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet(title || filename.slice(0, 31));
 
-  // Column widths – auto-fit up to 40 chars
-  const cols = Object.keys(data[0]).map(k => ({
-    wch: Math.min(40, Math.max(k.length, ...data.map(r => String(r[k] ?? '').length)))
+  const headers = Object.keys(data[0]);
+
+  // Column definitions with auto-fit widths (up to 40 chars)
+  ws.columns = headers.map((key) => ({
+    header: key,
+    key,
+    width: Math.min(
+      40,
+      Math.max(key.length + 2, ...data.map((r) => String(r[key] ?? '').length + 2))
+    ),
   }));
-  ws['!cols'] = cols;
 
-  XLSX.utils.book_append_sheet(wb, ws, title || filename.slice(0, 31));
-  XLSX.writeFile(wb, `${filename}.xlsx`);
+  // Add data rows
+  data.forEach((row) => ws.addRow(row));
+
+  // Write to buffer and download
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── HTML table → styled RTL A4 HTML file ────────────────────────────────────
@@ -22,9 +40,9 @@ export function exportToHTML(data, filename, title = '') {
   if (!data || data.length === 0) return;
   const headers = Object.keys(data[0]);
 
-  const rows = data.map(row =>
-    `<tr>${headers.map(h => `<td>${row[h] ?? ''}</td>`).join('')}</tr>`
-  ).join('\n');
+  const rows = data
+    .map((row) => `<tr>${headers.map((h) => `<td>${row[h] ?? ''}</td>`).join('')}</tr>`)
+    .join('\n');
 
   const html = `<!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -54,7 +72,7 @@ export function exportToHTML(data, filename, title = '') {
   <p>תאריך הפקה: ${new Date().toLocaleDateString('he-IL')} | ${data.length} שורות</p>
 </div>
 <table>
-<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+<thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
 <tbody>${rows}</tbody>
 </table>
 <div class="footer">הופק על ידי מערכת Natid CRM</div>
@@ -64,7 +82,9 @@ export function exportToHTML(data, filename, title = '') {
   const blob = new Blob(['\uFEFF' + html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `${filename}.html`; a.click();
+  a.href = url;
+  a.download = `${filename}.html`;
+  a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -73,9 +93,9 @@ export function exportToPDF(data, filename, title = '') {
   if (!data || data.length === 0) return;
   const headers = Object.keys(data[0]);
 
-  const rows = data.map(row =>
-    `<tr>${headers.map(h => `<td>${row[h] ?? ''}</td>`).join('')}</tr>`
-  ).join('\n');
+  const rows = data
+    .map((row) => `<tr>${headers.map((h) => `<td>${row[h] ?? ''}</td>`).join('')}</tr>`)
+    .join('\n');
 
   const html = `<!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -108,7 +128,7 @@ export function exportToPDF(data, filename, title = '') {
   <p>תאריך הפקה: ${new Date().toLocaleDateString('he-IL')} | ${data.length} רשומות</p>
 </div>
 <table>
-<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+<thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
 <tbody>${rows}</tbody>
 </table>
 <div class="footer">הופק על ידי מערכת Natid CRM</div>
@@ -117,5 +137,8 @@ export function exportToPDF(data, filename, title = '') {
 </html>`;
 
   const w = window.open('', '_blank');
-  if (w) { w.document.write(html); w.document.close(); }
+  if (w) {
+    w.document.write(html);
+    w.document.close();
+  }
 }

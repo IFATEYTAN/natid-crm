@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { UserPlus, Link2, Mail, Loader2, CheckCircle, AlertCircle, ArrowDown } from 'lucide-react';
+import { UserPlus, Link2, Mail, CheckCircle, ArrowDown } from 'lucide-react';
 import { showToast } from '@/components/ui/FeedbackToast';
 
 export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], onRefresh }) {
@@ -20,12 +20,12 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
   const [step, setStep] = useState(1); // 1=select, 2=invite, 3=link
   const [inviteStatus, setInviteStatus] = useState(null); // null, 'success', 'error', 'exists'
 
-  const selectedVendor = vendors.find(v => v.id === selectedVendorId);
-  const vendorsWithoutEmail = vendors.filter(v => !v.email);
-  const vendorsWithEmail = vendors.filter(v => v.email);
+  const selectedVendor = vendors.find((v) => v.id === selectedVendorId);
+  const vendorsWithoutEmail = vendors.filter((v) => !v.email);
+  const vendorsWithEmail = vendors.filter((v) => v.email);
 
   // Check if email already exists as a user
-  const existingUser = vendorUsers.find(u => u.email === email.trim().toLowerCase());
+  const existingUser = vendorUsers.find((u) => u.email === email.trim().toLowerCase());
 
   // Step 1: Invite user
   const inviteMutation = useMutation({
@@ -122,11 +122,15 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
               { num: 3, label: 'קישור' },
             ].map((s, i) => (
               <div key={s.num} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
-                  ${step >= s.num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+                  ${step >= s.num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}
+                >
                   {step > s.num ? <CheckCircle className="w-4 h-4" /> : s.num}
                 </div>
-                <span className={`text-sm ${step >= s.num ? 'text-blue-600 font-medium' : 'text-gray-400'}`}>
+                <span
+                  className={`text-sm ${step >= s.num ? 'text-blue-600 font-medium' : 'text-gray-400'}`}
+                >
                   {s.label}
                 </span>
                 {i < 2 && <ArrowDown className="w-4 h-4 text-gray-300 rotate-[-90deg]" />}
@@ -153,7 +157,7 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
                         <div className="px-2 py-1.5 text-xs font-semibold text-amber-600">
                           ⚠️ ללא קישור ({vendorsWithoutEmail.length})
                         </div>
-                        {vendorsWithoutEmail.map(v => (
+                        {vendorsWithoutEmail.map((v) => (
                           <SelectItem key={v.id} value={v.id}>
                             {v.vendor_name} {v.phone ? `(${v.phone})` : ''}
                           </SelectItem>
@@ -165,7 +169,7 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
                         <div className="px-2 py-1.5 text-xs font-semibold text-green-600">
                           ✅ מקושרים ({vendorsWithEmail.length})
                         </div>
-                        {vendorsWithEmail.map(v => (
+                        {vendorsWithEmail.map((v) => (
                           <SelectItem key={v.id} value={v.id}>
                             {v.vendor_name} ({v.email})
                           </SelectItem>
@@ -184,7 +188,7 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
                     dir="ltr"
                     placeholder="vendor@example.com"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="ps-10"
                     disabled={step > 1}
                   />
@@ -216,8 +220,8 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
               <CardContent className="pt-4 space-y-3">
                 <h3 className="font-bold text-blue-800">שלב 2: הזמנת משתמש</h3>
                 <p className="text-sm text-blue-700">
-                  המשתמש <strong dir="ltr">{email}</strong> יקבל הזמנה להצטרף למערכת עם תפקיד "ספק" (vendor).
-                  לאחר ההרשמה, הוא יקבל גישה לפורטל הספקים.
+                  המשתמש <strong dir="ltr">{email}</strong> יקבל הזמנה להצטרף למערכת עם תפקיד "ספק"
+                  (vendor). לאחר ההרשמה, הוא יקבל גישה לפורטל הספקים.
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -244,9 +248,8 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
                 <p className="text-sm text-green-700">
                   {inviteStatus === 'exists'
                     ? `המשתמש ${email} כבר קיים במערכת.`
-                    : `ההזמנה נשלחה ל-${email}.`
-                  }
-                  {' '}כעת נקשר את המייל לפרופיל הספק <strong>{selectedVendor?.vendor_name}</strong>.
+                    : `ההזמנה נשלחה ל-${email}.`}{' '}
+                  כעת נקשר את המייל לפרופיל הספק <strong>{selectedVendor?.vendor_name}</strong>.
                 </p>
                 <p className="text-xs text-green-600">
                   הפעולה תעדכן את שדה האימייל בפרופיל הספק ותגדיר את תפקיד המשתמש ל-"vendor".
@@ -283,11 +286,15 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
             </div>
           ) : (
             <div className="divide-y max-h-64 overflow-y-auto">
-              {vendorsWithoutEmail.map(v => (
+              {vendorsWithoutEmail.map((v) => (
                 <div key={v.id} className="flex items-center justify-between py-2.5">
                   <div>
                     <span className="font-medium text-sm">{v.vendor_name}</span>
-                    {v.phone && <span className="text-xs text-gray-500 mr-2" dir="ltr">{v.phone}</span>}
+                    {v.phone && (
+                      <span className="text-xs text-gray-500 mr-2" dir="ltr">
+                        {v.phone}
+                      </span>
+                    )}
                   </div>
                   <Button
                     size="sm"

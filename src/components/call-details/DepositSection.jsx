@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Wallet, Plus, CreditCard, RotateCcw, AlertTriangle, ShieldCheck, Clock } from 'lucide-react';
+import { Wallet, Plus, CreditCard, RotateCcw, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -57,7 +57,16 @@ export default function DepositSection({ call, callId, currentUser }) {
 
   // ===== 90-Day Deposit Exemption Logic (משימה 339) =====
   // לפי דורית נתי גרופ: פטור חל רק אם הקריאה הנוכחית היא מסוג תאונה, תדר (תקלת דלק) או אזל דלק
-  const EXEMPT_SERVICE_TYPES = ['accident', 'fuel', 'fuel_empty', 'breakdown_fuel', 'tader', 'תדר', 'תאונה', 'אזל_דלק'];
+  const EXEMPT_SERVICE_TYPES = [
+    'accident',
+    'fuel',
+    'fuel_empty',
+    'breakdown_fuel',
+    'tader',
+    'תדר',
+    'תאונה',
+    'אזל_דלק',
+  ];
   const currentServiceType = (call?.service_type || '').toLowerCase();
   const isExemptServiceType = EXEMPT_SERVICE_TYPES.some((t) =>
     currentServiceType.includes(t.toLowerCase())
@@ -181,11 +190,13 @@ export default function DepositSection({ call, callId, currentUser }) {
           <div className="flex items-start gap-2 p-3 mb-3 rounded-lg bg-green-50 border border-green-300">
             <ShieldCheck className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-green-800 font-semibold text-sm">פטור מערבון קש"ס — קריאה חוזרת ב-90 יום</p>
+              <p className="text-green-800 font-semibold text-sm">
+                פטור מערבון קש"ס — קריאה חוזרת ב-90 יום
+              </p>
               <p className="text-green-700 text-xs mt-0.5">
                 ללקוח הייתה קריאה פרטית שהושלמה ב-90 הימים האחרונים
-                {exemptCall?.call_number && ` (קריאה ${exemptCall.call_number})`}.
-                לפי הנהלים, אין לדרוש ערבון קש"ס בקריאה זו.
+                {exemptCall?.call_number && ` (קריאה ${exemptCall.call_number})`}. לפי הנהלים, אין
+                לדרוש ערבון קש"ס בקריאה זו.
               </p>
             </div>
           </div>

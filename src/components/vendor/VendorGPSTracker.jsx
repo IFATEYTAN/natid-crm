@@ -24,7 +24,9 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
   const [sharingEnabled, setSharingEnabled] = useState(!!initialSharingEnabled);
 
   // Log version ONCE on mount to confirm new code is loaded
-  useEffect(() => { console.log('[GPS-TRACKER]', GPS_VERSION, 'mounted, vendorId:', vendorId); }, []);
+  useEffect(() => {
+    console.log('[GPS-TRACKER]', GPS_VERSION, 'mounted, vendorId:', vendorId);
+  }, []);
 
   // Refs for mutable values used inside geolocation callbacks
   const watchIdRef = useRef(null);
@@ -36,13 +38,19 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
   const batteryRef = useRef(batteryLevel);
   const userToggledRef = useRef(false);
 
-  useEffect(() => { vendorIdRef.current = vendorId; }, [vendorId]);
-  useEffect(() => { batteryRef.current = batteryLevel; }, [batteryLevel]);
+  useEffect(() => {
+    vendorIdRef.current = vendorId;
+  }, [vendorId]);
+  useEffect(() => {
+    batteryRef.current = batteryLevel;
+  }, [batteryLevel]);
 
   // Battery
   useEffect(() => {
     let bat = null;
-    const onChange = () => { if (bat) setBatteryLevel(Math.round(bat.level * 100)); };
+    const onChange = () => {
+      if (bat) setBatteryLevel(Math.round(bat.level * 100));
+    };
     (async () => {
       if ('getBattery' in navigator && typeof navigator.getBattery === 'function') {
         bat = await navigator.getBattery();
@@ -50,7 +58,9 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
         bat.addEventListener('levelchange', onChange);
       }
     })();
-    return () => { if (bat) bat.removeEventListener('levelchange', onChange); };
+    return () => {
+      if (bat) bat.removeEventListener('levelchange', onChange);
+    };
   }, []);
 
   // Send location — uses refs only, no state deps
@@ -80,14 +90,22 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
 
   const onPosition = (pos) => {
     latestPosRef.current = pos;
-    setCurrentLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+    setCurrentLocation({
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+    });
     if (Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
       sendLocation(pos);
     }
   };
 
   const onPosError = (err) => {
-    const msgs = { 1: 'גישה למיקום נדחתה. אנא אשר גישה בהגדרות הדפדפן.', 2: 'מידע מיקום לא זמין', 3: 'בקשת מיקום פגה' };
+    const msgs = {
+      1: 'גישה למיקום נדחתה. אנא אשר גישה בהגדרות הדפדפן.',
+      2: 'מידע מיקום לא זמין',
+      3: 'בקשת מיקום פגה',
+    };
     setLocationError(msgs[err.code] || 'שגיאה בקבלת מיקום');
   };
 
@@ -121,10 +139,11 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
         handleToggle(true);
       } else {
         cleanupGeo();
-        watchIdRef.current = navigator.geolocation.watchPosition(
-          onPosition, onPosError,
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
-        );
+        watchIdRef.current = navigator.geolocation.watchPosition(onPosition, onPosError, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 5000,
+        });
         intervalRef.current = setInterval(() => {
           if (latestPosRef.current && Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
             sendLocation(latestPosRef.current);
@@ -159,15 +178,19 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       setIsTracking(true);
 
       navigator.geolocation.getCurrentPosition(
-        (pos) => { latestPosRef.current = pos; sendLocation(pos); },
+        (pos) => {
+          latestPosRef.current = pos;
+          sendLocation(pos);
+        },
         onPosError,
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
 
-      watchIdRef.current = navigator.geolocation.watchPosition(
-        onPosition, onPosError,
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
-      );
+      watchIdRef.current = navigator.geolocation.watchPosition(onPosition, onPosError, {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 5000,
+      });
 
       intervalRef.current = setInterval(() => {
         if (latestPosRef.current && Date.now() - lastSendRef.current >= MIN_SEND_INTERVAL_MS) {
@@ -182,8 +205,10 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       startTracking();
     }
 
-    return () => { cleanupGeo(); };
-  }, [sharingEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      cleanupGeo();
+    };
+  }, [sharingEnabled]);
 
   // Toggle handler — local state + persist to server
   const handleToggle = async (enabled) => {
@@ -204,7 +229,9 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
           <span className="font-medium text-gray-900">מעקב מיקום</span>
         </div>
         <div className="flex items-center gap-2">
-          <Label htmlFor="gps-sharing-toggle" className="text-sm text-gray-600">שתף מיקום</Label>
+          <Label htmlFor="gps-sharing-toggle" className="text-sm text-gray-600">
+            שתף מיקום
+          </Label>
           <Switch id="gps-sharing-toggle" checked={sharingEnabled} onCheckedChange={handleToggle} />
         </div>
       </div>
@@ -212,24 +239,39 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       {sharingEnabled ? (
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className={cn('gap-1', isTracking ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500')}>
+            <Badge
+              variant="outline"
+              className={cn(
+                'gap-1',
+                isTracking ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500'
+              )}
+            >
               {isTracking ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
               {isTracking ? 'מעקב פעיל' : 'לא פעיל'}
             </Badge>
             {batteryLevel !== null && (
-              <Badge variant="outline" className="gap-1"><Battery className="w-3 h-3" />{batteryLevel}%</Badge>
+              <Badge variant="outline" className="gap-1">
+                <Battery className="w-3 h-3" />
+                {batteryLevel}%
+              </Badge>
             )}
             {currentLocation && (
               <Badge variant="outline" className="gap-1 text-blue-600 border-blue-200 bg-blue-50">
-                <Navigation className="w-3 h-3" />דיוק: {Math.round(currentLocation.accuracy)}מ׳
+                <Navigation className="w-3 h-3" />
+                דיוק: {Math.round(currentLocation.accuracy)}מ׳
               </Badge>
             )}
           </div>
-          {lastUpdate && <p className="text-xs text-gray-500">עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}</p>}
+          {lastUpdate && (
+            <p className="text-xs text-gray-500">
+              עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}
+            </p>
+          )}
           {locationError && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
-                <AlertCircle className="w-4 h-4" />{locationError}
+                <AlertCircle className="w-4 h-4" />
+                {locationError}
               </div>
               <button
                 onClick={requestPermission}
@@ -241,7 +283,9 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
           )}
         </div>
       ) : (
-        <p className="text-sm text-gray-500">הפעל שיתוף מיקום כדי לאפשר למנהלים לעקוב אחר מיקומך בזמן אמת</p>
+        <p className="text-sm text-gray-500">
+          הפעל שיתוף מיקום כדי לאפשר למנהלים לעקוב אחר מיקומך בזמן אמת
+        </p>
       )}
     </div>
   );

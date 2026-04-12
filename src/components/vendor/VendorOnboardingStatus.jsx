@@ -1,15 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, AlertCircle, User, Mail, Phone, MapPin, Shield } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 function StatusIcon({ ok }) {
-  return ok
-    ? <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
-    : <XCircle className="w-4 h-4 text-red-400 shrink-0" />;
+  return ok ? (
+    <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+  ) : (
+    <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+  );
 }
 
 function getVendorReadiness(vendor, users) {
-  const linkedUser = users.find(u => u.email === vendor.email);
+  const linkedUser = users.find((u) => u.email === vendor.email);
   const hasEmail = !!vendor.email;
   const hasPhone = !!vendor.phone;
   const hasUser = !!linkedUser;
@@ -26,7 +28,7 @@ function getVendorReadiness(vendor, users) {
     { key: 'service', label: 'סוגי שירות', ok: hasServiceType },
   ];
 
-  const score = checks.filter(c => c.ok).length;
+  const score = checks.filter((c) => c.ok).length;
   const total = checks.length;
   const ready = score === total;
 
@@ -34,7 +36,7 @@ function getVendorReadiness(vendor, users) {
 }
 
 export default function VendorOnboardingStatus({ vendors = [], users = [] }) {
-  const enriched = vendors.map(v => ({
+  const enriched = vendors.map((v) => ({
     vendor: v,
     ...getVendorReadiness(v, users),
   }));
@@ -54,23 +56,30 @@ export default function VendorOnboardingStatus({ vendors = [], users = [] }) {
               <div>
                 <h3 className="font-bold text-sm">{vendor.vendor_name}</h3>
                 {vendor.email && (
-                  <p className="text-xs text-gray-500" dir="ltr">{vendor.email}</p>
+                  <p className="text-xs text-gray-500" dir="ltr">
+                    {vendor.email}
+                  </p>
                 )}
               </div>
-              <Badge className={ready
-                ? 'bg-green-100 text-green-800'
-                : score >= 4
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-red-100 text-red-800'
-              }>
+              <Badge
+                className={
+                  ready
+                    ? 'bg-green-100 text-green-800'
+                    : score >= 4
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-red-100 text-red-800'
+                }
+              >
                 {ready ? 'מוכן' : `${score}/${total}`}
               </Badge>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {checks.map(check => (
+              {checks.map((check) => (
                 <div key={check.key} className="flex items-center gap-1.5 text-xs">
                   <StatusIcon ok={check.ok} />
-                  <span className={check.ok ? 'text-gray-700' : 'text-gray-400'}>{check.label}</span>
+                  <span className={check.ok ? 'text-gray-700' : 'text-gray-400'}>
+                    {check.label}
+                  </span>
                 </div>
               ))}
             </div>

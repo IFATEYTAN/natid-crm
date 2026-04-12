@@ -7,15 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { issueTypeLabels } from '@/config/labels';
-import {
-  Map, Navigation, Loader2, Phone, Clock, MapPin, ExternalLink, LocateFixed,
-} from 'lucide-react';
+import { Map, Navigation, Loader2, Clock, MapPin, ExternalLink, LocateFixed } from 'lucide-react';
 
 const ROUTE_COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed', '#0891b2'];
 
 function loadGoogleMapsScript(apiKey) {
   return new Promise((resolve, reject) => {
-    if (window.google?.maps) { resolve(window.google.maps); return; }
+    if (window.google?.maps) {
+      resolve(window.google.maps);
+      return;
+    }
     const existing = document.getElementById('google-maps-script');
     if (existing) {
       existing.addEventListener('load', () => resolve(window.google.maps));
@@ -45,17 +46,20 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
   const [selectedCallId, setSelectedCallId] = useState(null);
 
   const callsWithLocation = (activeCalls || []).filter(
-    c => c.pickup_location_lat && c.pickup_location_lon
+    (c) => c.pickup_location_lat && c.pickup_location_lon
   );
 
   // Get user location
   useEffect(() => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
-      pos => setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      (pos) => setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => {
         if (vendorProfile?.current_latitude && vendorProfile?.current_longitude) {
-          setMyLocation({ lat: vendorProfile.current_latitude, lng: vendorProfile.current_longitude });
+          setMyLocation({
+            lat: vendorProfile.current_latitude,
+            lng: vendorProfile.current_longitude,
+          });
         }
       },
       { enableHighAccuracy: true, timeout: 8000 }
@@ -166,14 +170,17 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
         if (myLocation) {
           try {
             const result = await new Promise((resolve, reject) => {
-              directionsService.route({
-                origin: myLocation,
-                destination: pos,
-                travelMode: maps.TravelMode.DRIVING,
-              }, (res, status) => {
-                if (status === 'OK') resolve(res);
-                else reject(status);
-              });
+              directionsService.route(
+                {
+                  origin: myLocation,
+                  destination: pos,
+                  travelMode: maps.TravelMode.DRIVING,
+                },
+                (res, status) => {
+                  if (status === 'OK') resolve(res);
+                  else reject(status);
+                }
+              );
             });
 
             const leg = result.routes[0].legs[0];
@@ -217,8 +224,8 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
   useEffect(() => {
     if (mapRef.current) initMap();
     return () => {
-      markersRef.current.forEach(m => m.setMap && m.setMap(null));
-      routesRef.current.forEach(r => r.setMap && r.setMap(null));
+      markersRef.current.forEach((m) => m.setMap && m.setMap(null));
+      routesRef.current.forEach((r) => r.setMap && r.setMap(null));
       markersRef.current = [];
       routesRef.current = [];
     };
@@ -227,7 +234,7 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
   const recenterMap = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
-      pos => {
+      (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setMyLocation(loc);
         if (mapInstanceRef.current) {
@@ -280,7 +287,9 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
               <div className="text-center space-y-2">
                 <MapPin className="w-8 h-8 text-red-400 mx-auto" />
                 <p className="text-sm text-red-500">שגיאה בטעינת המפה</p>
-                <Button size="sm" onClick={initMap}>נסה שוב</Button>
+                <Button size="sm" onClick={initMap}>
+                  נסה שוב
+                </Button>
               </div>
             </div>
           )}
@@ -352,16 +361,19 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
                       href={`https://waze.com/ul?ll=${call.pickup_location_lat},${call.pickup_location_lon}&navigate=yes`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <Button size="sm" className="gap-1 h-7 text-xs bg-blue-600 hover:bg-blue-700 w-full">
+                      <Button
+                        size="sm"
+                        className="gap-1 h-7 text-xs bg-blue-600 hover:bg-blue-700 w-full"
+                      >
                         <Navigation className="w-3 h-3" />
                         נווט
                       </Button>
                     </a>
                     <Link
                       to={createPageUrl(`VendorCallManagement?id=${call.id}`)}
-                      onClick={e => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <Button size="sm" variant="outline" className="gap-1 h-7 text-xs w-full">
                         <ExternalLink className="w-3 h-3" />

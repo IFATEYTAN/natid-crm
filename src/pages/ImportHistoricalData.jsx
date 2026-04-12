@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Upload,
-  FileSpreadsheet,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 // Maps any input value -> Case.service_type enum
 const CASE_SERVICE_TYPE_MAP = {
@@ -45,7 +45,11 @@ const CASE_SERVICE_TYPE_MAP = {
 
 const normalizeCaseServiceType = (value) => {
   if (!value) return 'other';
-  const key = value.toString().toLowerCase().trim().replace(/[\s\-]/g, '_');
+  const key = value
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\-]/g, '_');
   return CASE_SERVICE_TYPE_MAP[key] || 'other';
 };
 
@@ -140,18 +144,40 @@ const COLUMN_MAPS = {
 
 // Numeric fields per entity
 const NUMERIC_FIELDS = {
-  Vendor: ['vendor_number', 'base_rate', 'rate_per_km', 'rate_per_km_regular', 'rate_per_km_double',
-    'rate_per_km_tow', 'rate_flat_km', 'rate_empty_km', 'rate_road_toll',
-    'total_calls_completed', 'total_calls_assigned', 'average_rating', 'total_ratings',
-    'average_response_time', 'average_completion_time', 'completion_rate',
-    'payment_rate_per_call', 'total_revenue', 'pending_payments'],
+  Vendor: [
+    'vendor_number',
+    'base_rate',
+    'rate_per_km',
+    'rate_per_km_regular',
+    'rate_per_km_double',
+    'rate_per_km_tow',
+    'rate_flat_km',
+    'rate_empty_km',
+    'rate_road_toll',
+    'total_calls_completed',
+    'total_calls_assigned',
+    'average_rating',
+    'total_ratings',
+    'average_response_time',
+    'average_completion_time',
+    'completion_rate',
+    'payment_rate_per_call',
+    'total_revenue',
+    'pending_payments',
+  ],
   Case: ['distance_km', 'price', 'cost', 'customer_rating'],
   Customer: ['sla_response_minutes', 'sla_arrival_minutes', 'monthly_budget'],
 };
 
 // Boolean fields per entity
 const BOOLEAN_FIELDS = {
-  Vendor: ['is_active', 'is_available_now', 'works_24_7', 'deposit_required', 'is_location_sharing_enabled'],
+  Vendor: [
+    'is_active',
+    'is_available_now',
+    'works_24_7',
+    'deposit_required',
+    'is_location_sharing_enabled',
+  ],
 };
 
 const toBoolean = (value) => {
@@ -177,7 +203,10 @@ const IGNORED_FIELDS = {
 const toArray = (value) => {
   if (!value || value === '') return [];
   if (Array.isArray(value)) return value;
-  return String(value).split(',').map(s => s.trim()).filter(Boolean);
+  return String(value)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 };
 
 const IMPORT_TARGETS = {
@@ -193,9 +222,7 @@ const IMPORT_TARGETS = {
   Vendor: {
     label: 'ספקים',
     entity: 'Vendor',
-    requiredFields: [
-      { key: 'vendor_name', fallback: null },
-    ],
+    requiredFields: [{ key: 'vendor_name', fallback: null }],
     info: 'שדות חובה: vendor_name',
   },
   Customer: {
@@ -210,9 +237,7 @@ const IMPORT_TARGETS = {
   Case: {
     label: 'קריאות',
     entity: 'Case',
-    requiredFields: [
-      { key: 'service_type', fallback: 'other' },
-    ],
+    requiredFields: [{ key: 'service_type', fallback: 'other' }],
     info: 'שדה חובה: service_type',
   },
 };
@@ -263,8 +288,10 @@ export default function ImportHistoricalDataPage() {
           for (let i = 0; i < text.length; i++) {
             const char = text[i];
             if (char === '"') {
-              if (inQuotes && text[i + 1] === '"') { currentLine += '"'; i++; }
-              else inQuotes = !inQuotes;
+              if (inQuotes && text[i + 1] === '"') {
+                currentLine += '"';
+                i++;
+              } else inQuotes = !inQuotes;
             } else if (char === '\n' && !inQuotes) {
               if (currentLine.trim()) lines.push(currentLine);
               currentLine = '';
@@ -282,8 +309,10 @@ export default function ImportHistoricalDataPage() {
           for (let i = 0; i < line.length; i++) {
             const char = line[i];
             if (char === '"') {
-              if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-              else inQuotes = !inQuotes;
+              if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i++;
+              } else inQuotes = !inQuotes;
             } else if (char === ',' && !inQuotes) {
               values.push(current.trim().replace(/^"|"$/g, ''));
               current = '';
@@ -299,24 +328,38 @@ export default function ImportHistoricalDataPage() {
         const dataRows = lines.slice(1).map((line) => {
           const values = parseRow(line);
           const row = {};
-          headers.forEach((header, idx) => { row[header] = values[idx] || ''; });
+          headers.forEach((header, idx) => {
+            row[header] = values[idx] || '';
+          });
           return row;
         });
         setFilePreview({ sheets: [{ name: 'Sheet1', headers, rows: dataRows }] });
         toast.success('הקובץ טופל בהצלחה');
       } else {
         const arrayBuffer = await selectedFile.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheets = workbook.SheetNames.map((sheetName) => {
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-          if (jsonData.length === 0) return { name: sheetName, headers: [], rows: [] };
-          const headers = jsonData[0].map(h => String(h || '').trim());
-          const rows = jsonData.slice(1).map((row) => {
-            const rowObj = {};
-            headers.forEach((header, idx) => { rowObj[header] = String(row[idx] || '').trim(); });
-            return rowObj;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(arrayBuffer);
+        const sheets = workbook.worksheets.map((worksheet) => {
+          const sheetName = worksheet.name;
+          if (worksheet.rowCount === 0) return { name: sheetName, headers: [], rows: [] };
+          const headerRow = worksheet.getRow(1);
+          const headers = [];
+          headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            headers[colNumber - 1] = String(cell.value || '').trim();
           });
+          const rows = [];
+          for (let i = 2; i <= worksheet.rowCount; i++) {
+            const row = worksheet.getRow(i);
+            const rowObj = {};
+            let hasData = false;
+            headers.forEach((header, idx) => {
+              const cell = row.getCell(idx + 1);
+              const val = String(cell.value ?? '').trim();
+              rowObj[header] = val;
+              if (val) hasData = true;
+            });
+            if (hasData) rows.push(rowObj);
+          }
           return { name: sheetName, headers, rows };
         });
         setFilePreview({ sheets });
@@ -339,76 +382,90 @@ export default function ImportHistoricalDataPage() {
       console.log('[Import] Total rows in sheet:', currentSheet.rows.length);
       const columnMap = COLUMN_MAPS[target.entity] || {};
       const ignoredFields = IGNORED_FIELDS[target.entity] || [];
-      const recordsToInsert = currentSheet.rows.map((row) => {
-        const record = {};
-        currentSheet.headers.forEach((header) => {
-          const value = row[header];
-          const normalizedHeader = header.toLowerCase().replace(/[\s_\-]/g, '');
-          // Skip ignored fields
-          if (ignoredFields.includes(normalizedHeader)) return;
-          if (value !== null && value !== undefined && value !== '') {
-            const mappedKey = columnMap[normalizedHeader] || header;
-            record[mappedKey] = value;
+      const recordsToInsert = currentSheet.rows
+        .map((row) => {
+          const record = {};
+          currentSheet.headers.forEach((header) => {
+            const value = row[header];
+            const normalizedHeader = header.toLowerCase().replace(/[\s_\-]/g, '');
+            // Skip ignored fields
+            if (ignoredFields.includes(normalizedHeader)) return;
+            if (value !== null && value !== undefined && value !== '') {
+              const mappedKey = columnMap[normalizedHeader] || header;
+              record[mappedKey] = value;
+            }
+          });
+          // Case-specific normalizations
+          if (target.entity === 'Case') {
+            if (record.service_type)
+              record.service_type = normalizeCaseServiceType(record.service_type);
+            if (record.vehicle_type)
+              record.vehicle_type = normalizeVehicleType(record.vehicle_type);
           }
-        });
-        // Case-specific normalizations
-        if (target.entity === 'Case') {
-          if (record.service_type) record.service_type = normalizeCaseServiceType(record.service_type);
-          if (record.vehicle_type) record.vehicle_type = normalizeVehicleType(record.vehicle_type);
-        }
-        // Convert numeric fields
-        const numericFields = NUMERIC_FIELDS[target.entity] || [];
-        numericFields.forEach((key) => {
-          if (record[key] !== undefined && record[key] !== '') {
-            const parsed = parseFloat(record[key]);
-            record[key] = isNaN(parsed) ? undefined : parsed;
-          }
-        });
-        // Convert boolean fields
-        const booleanFields = BOOLEAN_FIELDS[target.entity] || [];
-        booleanFields.forEach((key) => {
-          if (record[key] !== undefined && record[key] !== '') {
-            record[key] = toBoolean(record[key]);
-          }
-        });
-        // Convert array fields: always convert to array, even if single value
-        const arrayFields = ARRAY_FIELDS[target.entity] || [];
-        arrayFields.forEach((key) => {
-          const val = record[key];
-          if (Array.isArray(val)) {
-            // already array, fine
-          } else if (val && String(val).trim() !== '') {
-            record[key] = String(val).split(',').map(s => s.trim()).filter(Boolean);
-          } else {
-            record[key] = [];
-          }
-        });
+          // Convert numeric fields
+          const numericFields = NUMERIC_FIELDS[target.entity] || [];
+          numericFields.forEach((key) => {
+            if (record[key] !== undefined && record[key] !== '') {
+              const parsed = parseFloat(record[key]);
+              record[key] = isNaN(parsed) ? undefined : parsed;
+            }
+          });
+          // Convert boolean fields
+          const booleanFields = BOOLEAN_FIELDS[target.entity] || [];
+          booleanFields.forEach((key) => {
+            if (record[key] !== undefined && record[key] !== '') {
+              record[key] = toBoolean(record[key]);
+            }
+          });
+          // Convert array fields: always convert to array, even if single value
+          const arrayFields = ARRAY_FIELDS[target.entity] || [];
+          arrayFields.forEach((key) => {
+            const val = record[key];
+            if (Array.isArray(val)) {
+              // already array, fine
+            } else if (val && String(val).trim() !== '') {
+              record[key] = String(val)
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean);
+            } else {
+              record[key] = [];
+            }
+          });
 
-        // Apply fallbacks for required fields
-        target.requiredFields.forEach(({ key, fallback }) => {
-          if (!record[key] && fallback !== null) record[key] = fallback;
+          // Apply fallbacks for required fields
+          target.requiredFields.forEach(({ key, fallback }) => {
+            if (!record[key] && fallback !== null) record[key] = fallback;
+          });
+          return record;
+        })
+        .filter((record) => {
+          // Keep only records that have all required fields (with no fallback)
+          // For Vendor: only vendor_name is required
+          return target.requiredFields
+            .filter(({ fallback }) => fallback === null)
+            .every(({ key }) => record[key] && String(record[key]).trim() !== '');
         });
-        return record;
-      }).filter((record) => {
-        // Keep only records that have all required fields (with no fallback)
-        // For Vendor: only vendor_name is required
-        return target.requiredFields
-          .filter(({ fallback }) => fallback === null)
-          .every(({ key }) => record[key] && String(record[key]).trim() !== '');
-      });
 
       if (recordsToInsert.length === 0) {
         throw new Error('לא נמצאו רשומות תקינות לייבוא (בדוק שיש ערכים בשדות החובה)');
       }
 
-      console.log('[Import] Records to insert:', recordsToInsert.length, 'to entity:', target.entity);
+      console.log(
+        '[Import] Records to insert:',
+        recordsToInsert.length,
+        'to entity:',
+        target.entity
+      );
       console.log('[Import] Sample record:', recordsToInsert[0]);
 
       // Send in batches of 500
       const BATCH_SIZE = 500;
       for (let i = 0; i < recordsToInsert.length; i += BATCH_SIZE) {
         const batch = recordsToInsert.slice(i, i + BATCH_SIZE);
-        console.log(`[Import] Sending batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(recordsToInsert.length / BATCH_SIZE)} (${batch.length} records)`);
+        console.log(
+          `[Import] Sending batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(recordsToInsert.length / BATCH_SIZE)} (${batch.length} records)`
+        );
         await base44.entities[target.entity].bulkCreate(batch);
       }
 
@@ -446,7 +503,9 @@ export default function ImportHistoricalDataPage() {
             </SelectTrigger>
             <SelectContent>
               {Object.entries(IMPORT_TARGETS).map(([key, val]) => (
-                <SelectItem key={key} value={key}>{val.label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {val.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -460,7 +519,9 @@ export default function ImportHistoricalDataPage() {
           <CardTitle>שלב 2: בחר קובץ</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${file ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-blue-400'}`}>
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${file ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-blue-400'}`}
+          >
             <input
               type="file"
               accept=".csv,.xlsx"
@@ -493,7 +554,9 @@ export default function ImportHistoricalDataPage() {
           {/* Step 3: Select Sheet */}
           {filePreview.sheets.length > 1 && (
             <Card className="mb-6">
-              <CardHeader><CardTitle>שלב 3: בחר גיליון</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>שלב 3: בחר גיליון</CardTitle>
+              </CardHeader>
               <CardContent>
                 <div className="flex gap-2 flex-wrap">
                   {filePreview.sheets.map((sheet, idx) => (
@@ -515,7 +578,9 @@ export default function ImportHistoricalDataPage() {
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>תצוגה מקדימה - {target.label}</CardTitle>
-                <CardDescription>{currentSheet.rows.length} רשומות | {currentSheet.headers.length} עמודות</CardDescription>
+                <CardDescription>
+                  {currentSheet.rows.length} רשומות | {currentSheet.headers.length} עמודות
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -523,10 +588,14 @@ export default function ImportHistoricalDataPage() {
                     <thead className="bg-gray-100">
                       <tr>
                         {currentSheet.headers.map((h) => {
-                          const isRequired = target.requiredFields.some(f => f.key === h);
+                          const isRequired = target.requiredFields.some((f) => f.key === h);
                           return (
-                            <th key={h} className={`px-2 py-1 text-end text-xs font-semibold ${isRequired ? 'bg-blue-100 text-blue-900' : ''}`}>
-                              {h}{isRequired && <span className="text-red-500"> *</span>}
+                            <th
+                              key={h}
+                              className={`px-2 py-1 text-end text-xs font-semibold ${isRequired ? 'bg-blue-100 text-blue-900' : ''}`}
+                            >
+                              {h}
+                              {isRequired && <span className="text-red-500"> *</span>}
                             </th>
                           );
                         })}
@@ -537,7 +606,9 @@ export default function ImportHistoricalDataPage() {
                         <tr key={idx} className="border-t">
                           {currentSheet.headers.map((h, hIdx) => (
                             <td key={hIdx} className="px-2 py-1 text-end text-xs text-gray-600">
-                              {row[h]?.toString().substring(0, 30) || <span className="text-gray-400">-</span>}
+                              {row[h]?.toString().substring(0, 30) || (
+                                <span className="text-gray-400">-</span>
+                              )}
                             </td>
                           ))}
                         </tr>
@@ -545,7 +616,9 @@ export default function ImportHistoricalDataPage() {
                     </tbody>
                   </table>
                   {currentSheet.rows.length > 5 && (
-                    <p className="text-xs text-gray-400 mt-2 text-center">מוצגות 5 שורות ראשונות מתוך {currentSheet.rows.length}</p>
+                    <p className="text-xs text-gray-400 mt-2 text-center">
+                      מוצגות 5 שורות ראשונות מתוך {currentSheet.rows.length}
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -555,22 +628,36 @@ export default function ImportHistoricalDataPage() {
           {/* Import Button */}
           <Card>
             <CardContent className="pt-6">
-              <Button onClick={handleImport} disabled={!currentSheet || isUploading} className="w-full bg-blue-600 hover:bg-blue-700">
+              <Button
+                onClick={handleImport}
+                disabled={!currentSheet || isUploading}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
                 {isUploading ? (
-                  <><Loader2 className="w-4 h-4 ms-2 animate-spin" />מייבא נתונים...</>
+                  <>
+                    <Loader2 className="w-4 h-4 ms-2 animate-spin" />
+                    מייבא נתונים...
+                  </>
                 ) : (
-                  <><Upload className="w-4 h-4 ms-2" />ייבא {currentSheet?.rows.length || 0} רשומות ל{target.label}</>
+                  <>
+                    <Upload className="w-4 h-4 ms-2" />
+                    ייבא {currentSheet?.rows.length || 0} רשומות ל{target.label}
+                  </>
                 )}
               </Button>
             </CardContent>
           </Card>
 
           {importResult && (
-            <div className={`p-4 rounded-lg mt-4 ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+            <div
+              className={`p-4 rounded-lg mt-4 ${importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
+            >
               {importResult.success ? (
                 <div className="flex items-center gap-2 text-green-700">
                   <CheckCircle className="w-5 h-5" />
-                  <span>יובאו {importResult.count} רשומות ל{target.label} בהצלחה ✅</span>
+                  <span>
+                    יובאו {importResult.count} רשומות ל{target.label} בהצלחה ✅
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-700">
