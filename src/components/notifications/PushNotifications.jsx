@@ -3,7 +3,6 @@ import { Bell, BellOff, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { base44 } from '@/api/base44Client';
 import {
   isPushSupported,
   getNotificationPermission,
@@ -14,7 +13,13 @@ import {
 } from './pushNotificationUtils';
 
 // Re-export utilities for backward compatibility
-export { isPushSupported, getNotificationPermission, requestNotificationPermission, createAppNotification, NotificationTypes } from './pushNotificationUtils';
+export {
+  isPushSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  createAppNotification,
+  NotificationTypes,
+} from './pushNotificationUtils';
 
 // Hook for managing push notifications
 export function usePushNotifications() {
@@ -204,7 +209,9 @@ export function NotificationSettings() {
         <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
         <div>
           <div className="font-medium text-amber-800">התראות לא נתמכות</div>
-          <div className="text-sm text-amber-600">הדפדפן שלך לא תומך בהתראות Push. נסה דפדפן אחר.</div>
+          <div className="text-sm text-amber-600">
+            הדפדפן שלך לא תומך בהתראות Push. נסה דפדפן אחר.
+          </div>
         </div>
       </div>
     );
@@ -259,7 +266,10 @@ export function NotificationSettings() {
             { key: 'vendorUpdates', label: 'עדכוני ספקים', desc: 'הגעה ליעד, השלמת קריאה' },
             { key: 'systemAlerts', label: 'התראות מערכת', desc: 'הודעות מערכת חשובות' },
           ].map((item) => (
-            <div key={item.key} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+            <div
+              key={item.key}
+              className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
+            >
               <div>
                 <div className="font-medium text-gray-900">{item.label}</div>
                 <div className="text-sm text-gray-500">{item.desc}</div>
@@ -268,7 +278,9 @@ export function NotificationSettings() {
                 onClick={() => handleToggle(item.key)}
                 className={`relative w-11 h-6 rounded-full transition-colors ${settings[item.key] ? 'bg-blue-600' : 'bg-gray-300'}`}
               >
-                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings[item.key] ? 'translate-x-5' : ''}`} />
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings[item.key] ? 'translate-x-5' : ''}`}
+                />
               </button>
             </div>
           ))}

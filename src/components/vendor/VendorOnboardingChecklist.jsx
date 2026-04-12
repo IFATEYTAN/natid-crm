@@ -1,5 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Circle, UserPlus, Mail, Link2, ToggleRight, MapPin, Bell, FileText, Smartphone } from 'lucide-react';
+import {
+  UserPlus,
+  Mail,
+  Link2,
+  ToggleRight,
+  MapPin,
+  Bell,
+  FileText,
+  Smartphone,
+} from 'lucide-react';
 
 const adminSteps = [
   {
@@ -53,12 +62,36 @@ const vendorSteps = [
 ];
 
 const callFlowSteps = [
-  { step: '1', title: 'קריאה חדשה מתקבלת', desc: 'המוקד פותח קריאה ומשבץ ספק. הספק מקבל SMS + התראת Push.' },
-  { step: '2', title: 'אישור/דחיית הקריאה', desc: 'לספק יש 5 דקות לאשר. אם דוחה, הקריאה מועברת לספק הבא.' },
-  { step: '3', title: 'יציאה לדרך', desc: 'הספק לוחץ "יצאתי לדרך". המוקד רואה את הסטטוס בזמן אמת.' },
-  { step: '4', title: 'הגעה למקום', desc: 'הספק לוחץ "הגעתי". זמן ההגעה נרשם ומשפיע על ETA עתידי.' },
-  { step: '5', title: 'ביצוע + תיעוד', desc: 'הספק מצלם לפני/אחרי, מוסיף הערות, ומתקשר עם המוקד בצ\'אט.' },
-  { step: '6', title: 'חתימה וסיום', desc: 'חתימה דיגיטלית מהלקוח → סגירת קריאה → משוב (אופציונלי).' },
+  {
+    step: '1',
+    title: 'קריאה חדשה מתקבלת',
+    desc: 'המוקד פותח קריאה ומשבץ ספק. הספק מקבל SMS + התראת Push.',
+  },
+  {
+    step: '2',
+    title: 'אישור/דחיית הקריאה',
+    desc: 'לספק יש 5 דקות לאשר. אם דוחה, הקריאה מועברת לספק הבא.',
+  },
+  {
+    step: '3',
+    title: 'יציאה לדרך',
+    desc: 'הספק לוחץ "יצאתי לדרך". המוקד רואה את הסטטוס בזמן אמת.',
+  },
+  {
+    step: '4',
+    title: 'הגעה למקום',
+    desc: 'הספק לוחץ "הגעתי". זמן ההגעה נרשם ומשפיע על ETA עתידי.',
+  },
+  {
+    step: '5',
+    title: 'ביצוע + תיעוד',
+    desc: "הספק מצלם לפני/אחרי, מוסיף הערות, ומתקשר עם המוקד בצ'אט.",
+  },
+  {
+    step: '6',
+    title: 'חתימה וסיום',
+    desc: 'חתימה דיגיטלית מהלקוח → סגירת קריאה → משוב (אופציונלי).',
+  },
 ];
 
 function StepList({ steps, showNumbers = false }) {

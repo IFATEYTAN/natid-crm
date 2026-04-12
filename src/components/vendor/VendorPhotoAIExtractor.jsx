@@ -4,10 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { showToast } from '@/components/ui/FeedbackToast';
-import {
-  Sparkles, Loader2, CheckCircle, AlertCircle, Car, FileText,
-  Shield, Gauge, ChevronDown, ChevronUp, Copy
-} from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 
 const CATEGORY_PROMPTS = {
   license_plate: {
@@ -17,14 +14,14 @@ const CATEGORY_PROMPTS = {
 - סוג לוחית (plate_type: פרטי/מסחרי/דיפלומטי/צבאי/אחר)
 - צבע רכב אם ניתן לראות (vehicle_color)`,
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        license_plate: { type: "string", description: "מספר רכב" },
-        plate_type: { type: "string", description: "סוג לוחית" },
-        vehicle_color: { type: "string", description: "צבע רכב" },
-        confidence: { type: "string", description: "רמת ודאות: גבוהה/בינונית/נמוכה" }
-      }
-    }
+        license_plate: { type: 'string', description: 'מספר רכב' },
+        plate_type: { type: 'string', description: 'סוג לוחית' },
+        vehicle_color: { type: 'string', description: 'צבע רכב' },
+        confidence: { type: 'string', description: 'רמת ודאות: גבוהה/בינונית/נמוכה' },
+      },
+    },
   },
   odometer: {
     label: 'מד אוץ',
@@ -33,14 +30,14 @@ const CATEGORY_PROMPTS = {
 - יחידה (unit: ק"מ/מיילים)
 - נורות התרעה דולקות אם ניתן לראות (warning_lights)`,
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        odometer_reading: { type: "string", description: "קריאת מד אוץ" },
-        unit: { type: "string", description: "יחידה" },
-        warning_lights: { type: "array", items: { type: "string" }, description: "נורות אזהרה" },
-        confidence: { type: "string", description: "רמת ודאות" }
-      }
-    }
+        odometer_reading: { type: 'string', description: 'קריאת מד אוץ' },
+        unit: { type: 'string', description: 'יחידה' },
+        warning_lights: { type: 'array', items: { type: 'string' }, description: 'נורות אזהרה' },
+        confidence: { type: 'string', description: 'רמת ודאות' },
+      },
+    },
   },
   insurance_card: {
     label: 'תעודת ביטוח',
@@ -52,17 +49,17 @@ const CATEGORY_PROMPTS = {
 - תוקף הפוליסה (valid_until)
 - סוג כיסוי (coverage_type)`,
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        insurance_company: { type: "string" },
-        policy_number: { type: "string" },
-        owner_name: { type: "string" },
-        vehicle_number: { type: "string" },
-        valid_until: { type: "string" },
-        coverage_type: { type: "string" },
-        confidence: { type: "string" }
-      }
-    }
+        insurance_company: { type: 'string' },
+        policy_number: { type: 'string' },
+        owner_name: { type: 'string' },
+        vehicle_number: { type: 'string' },
+        valid_until: { type: 'string' },
+        coverage_type: { type: 'string' },
+        confidence: { type: 'string' },
+      },
+    },
   },
   damage: {
     label: 'נזק',
@@ -73,16 +70,16 @@ const CATEGORY_PROMPTS = {
 - סוג הנזק (damage_type: שריטה/מכה/שבר/התעקמות/אחר)
 - הערכה האם הרכב נסיע (drivable: כן/לא/לא ברור)`,
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        damage_description: { type: "string" },
-        severity: { type: "string" },
-        location: { type: "string" },
-        damage_type: { type: "string" },
-        drivable: { type: "string" },
-        confidence: { type: "string" }
-      }
-    }
+        damage_description: { type: 'string' },
+        severity: { type: 'string' },
+        location: { type: 'string' },
+        damage_type: { type: 'string' },
+        drivable: { type: 'string' },
+        confidence: { type: 'string' },
+      },
+    },
   },
   customer_document: {
     label: 'מסמך לקוח',
@@ -93,16 +90,16 @@ const CATEGORY_PROMPTS = {
 - תאריך תוקף אם קיים (expiry_date)
 - פרטים נוספים (additional_info)`,
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        document_type: { type: "string" },
-        name: { type: "string" },
-        id_number: { type: "string" },
-        expiry_date: { type: "string" },
-        additional_info: { type: "string" },
-        confidence: { type: "string" }
-      }
-    }
+        document_type: { type: 'string' },
+        name: { type: 'string' },
+        id_number: { type: 'string' },
+        expiry_date: { type: 'string' },
+        additional_info: { type: 'string' },
+        confidence: { type: 'string' },
+      },
+    },
   },
   before_treatment: {
     label: 'לפני טיפול',
@@ -113,16 +110,16 @@ const CATEGORY_PROMPTS = {
 - נזקים קיימים שנראים (existing_damage)
 - מיקום הרכב (location_description)`,
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        general_condition: { type: "string" },
-        vehicle_type: { type: "string" },
-        color: { type: "string" },
-        existing_damage: { type: "string" },
-        location_description: { type: "string" },
-        confidence: { type: "string" }
-      }
-    }
+        general_condition: { type: 'string' },
+        vehicle_type: { type: 'string' },
+        color: { type: 'string' },
+        existing_damage: { type: 'string' },
+        location_description: { type: 'string' },
+        confidence: { type: 'string' },
+      },
+    },
   },
   after_treatment: {
     label: 'אחרי טיפול',
@@ -131,15 +128,15 @@ const CATEGORY_PROMPTS = {
 - האם הרכב נראה תקין (looks_fixed)
 - הערות נוספות (notes)`,
     schema: {
-      type: "object",
+      type: 'object',
       properties: {
-        post_treatment_condition: { type: "string" },
-        looks_fixed: { type: "string" },
-        notes: { type: "string" },
-        confidence: { type: "string" }
-      }
-    }
-  }
+        post_treatment_condition: { type: 'string' },
+        looks_fixed: { type: 'string' },
+        notes: { type: 'string' },
+        confidence: { type: 'string' },
+      },
+    },
+  },
 };
 
 export default function VendorPhotoAIExtractor({ photos, callId, onDataExtracted }) {
@@ -147,17 +144,17 @@ export default function VendorPhotoAIExtractor({ photos, callId, onDataExtracted
   const [results, setResults] = useState({});
   const [expanded, setExpanded] = useState({});
 
-  const activePhotos = (photos || []).filter(p => !p.is_deleted);
-  const extractablePhotos = activePhotos.filter(p =>
-    CATEGORY_PROMPTS[p.category] && p.ai_extraction_status !== 'completed'
+  const activePhotos = (photos || []).filter((p) => !p.is_deleted);
+  const extractablePhotos = activePhotos.filter(
+    (p) => CATEGORY_PROMPTS[p.category] && p.ai_extraction_status !== 'completed'
   );
-  const completedPhotos = activePhotos.filter(p => p.ai_extraction_status === 'completed');
+  const completedPhotos = activePhotos.filter((p) => p.ai_extraction_status === 'completed');
 
   const extractSingle = async (photo) => {
     const config = CATEGORY_PROMPTS[photo.category];
     if (!config) return;
 
-    setProcessing(prev => ({ ...prev, [photo.id]: true }));
+    setProcessing((prev) => ({ ...prev, [photo.id]: true }));
 
     await base44.entities.CallPhoto.update(photo.id, { ai_extraction_status: 'processing' });
 
@@ -180,8 +177,8 @@ ${config.prompt}
       ai_extraction_summary: summary,
     });
 
-    setResults(prev => ({ ...prev, [photo.id]: result }));
-    setProcessing(prev => ({ ...prev, [photo.id]: false }));
+    setResults((prev) => ({ ...prev, [photo.id]: result }));
+    setProcessing((prev) => ({ ...prev, [photo.id]: false }));
     onDataExtracted?.(photo.id, result, summary);
     showToast.success(`ניתוח ${config.label} הושלם`);
   };
@@ -226,7 +223,7 @@ ${config.prompt}
       {/* Extractable photos */}
       {extractablePhotos.length > 0 && (
         <div className="space-y-2">
-          {extractablePhotos.map(photo => {
+          {extractablePhotos.map((photo) => {
             const config = CATEGORY_PROMPTS[photo.category];
             const isProcessing = processing[photo.id];
             return (
@@ -234,7 +231,9 @@ ${config.prompt}
                 <CardContent className="p-3 flex items-center gap-3">
                   <img src={photo.file_url} alt="" className="w-14 h-14 object-cover rounded-lg" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900">{config?.label || photo.category}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {config?.label || photo.category}
+                    </div>
                     <div className="text-xs text-gray-500 truncate">{photo.file_name}</div>
                   </div>
                   <Button
@@ -265,7 +264,7 @@ ${config.prompt}
             <CheckCircle className="w-4 h-4 text-green-500" />
             תמונות שנותחו ({completedPhotos.length})
           </div>
-          {completedPhotos.map(photo => {
+          {completedPhotos.map((photo) => {
             const config = CATEGORY_PROMPTS[photo.category];
             const data = results[photo.id] || photo.ai_extracted_data;
             const isExpanded = expanded[photo.id];
@@ -273,9 +272,15 @@ ${config.prompt}
               <Card key={photo.id} className="bg-green-50 border-green-200">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                    <img src={photo.file_url} alt="" className="w-12 h-12 object-cover rounded-lg" />
+                    <img
+                      src={photo.file_url}
+                      alt=""
+                      className="w-12 h-12 object-cover rounded-lg"
+                    />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900">{config?.label || photo.category}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {config?.label || photo.category}
+                      </div>
                       <div className="text-xs text-green-700 truncate">
                         {photo.ai_extraction_summary || 'ניתוח הושלם'}
                       </div>
@@ -290,13 +295,16 @@ ${config.prompt}
                         </button>
                       )}
                       <button
-                        onClick={() => setExpanded(prev => ({ ...prev, [photo.id]: !prev[photo.id] }))}
+                        onClick={() =>
+                          setExpanded((prev) => ({ ...prev, [photo.id]: !prev[photo.id] }))
+                        }
                         className="w-7 h-7 rounded-full hover:bg-green-100 flex items-center justify-center"
                       >
-                        {isExpanded ?
-                          <ChevronUp className="w-4 h-4 text-green-600" /> :
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-green-600" />
+                        ) : (
                           <ChevronDown className="w-4 h-4 text-green-600" />
-                        }
+                        )}
                       </button>
                     </div>
                   </div>
@@ -304,7 +312,9 @@ ${config.prompt}
                     <div className="mt-3 pt-3 border-t border-green-200 space-y-1.5">
                       {Object.entries(data).map(([key, value]) => {
                         if (!value || key === 'confidence') return null;
-                        const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
+                        const displayValue = Array.isArray(value)
+                          ? value.join(', ')
+                          : String(value);
                         if (displayValue === 'לא ניתן לזהות') return null;
                         return (
                           <div key={key} className="flex items-start gap-2 text-sm">
@@ -316,7 +326,10 @@ ${config.prompt}
                         );
                       })}
                       {data.confidence && (
-                        <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300 mt-1">
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-green-100 text-green-700 border-green-300 mt-1"
+                        >
                           ודאות: {data.confidence}
                         </Badge>
                       )}
