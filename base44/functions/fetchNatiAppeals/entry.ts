@@ -2,10 +2,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const NATI_API_BASE = 'https://api.natid.co.il/api';
 
-// Hardcoded fallback credentials (also set as secrets)
-const FALLBACK_JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJOYXRpZCIsImlhdCI6MTc3NTUwMTkwMSwiZXhwIjo0MDc5MTg1MDgyLCJhdWQiOiJhcGkubmF0aWQuY28uaWwiLCJzdWIiOiJhZG1pbkBuYXRpZC5jby5pbCIsInVzZXJuYW1lIjoiYmFzZTQ0In0.msS8au2-b4nF770ngilLaYvSaAsmDZwWxPLM0f6S0CiJA82x3x1_fNQuwJZTezjd4mup9AsLkl0_v1p6-fvGxA';
-const FALLBACK_CLIENT_ID = '62c66127-cdb9-4579-9f18-a9b6ff9d06fd';
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -20,8 +16,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const JWT_TOKEN = Deno.env.get('NATI_API_JWT_TOKEN') || FALLBACK_JWT;
-    const CLIENT_ID = Deno.env.get('NATI_API_CLIENT_ID') || FALLBACK_CLIENT_ID;
+    const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
+    const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '').trim();
+
+    if (!JWT_TOKEN || !CLIENT_ID) {
+      return Response.json({ error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' }, { status: 500 });
+    }
 
     // Parse optional filters from request body
     const body = await req.json().catch(() => ({}));
