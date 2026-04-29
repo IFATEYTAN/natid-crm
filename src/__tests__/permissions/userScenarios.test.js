@@ -187,8 +187,8 @@ describe('Scenario: Operator handles daily call center operations', () => {
       expect(ctx.canAccessPage('RoleManagement')).toBe(false);
     });
 
-    it('CANNOT access vendor portal (vendor-only)', () => {
-      expect(ctx.canAccessPage('VendorPortal')).toBe(false);
+    it('CAN access vendor portal (tracking visibility for service continuity)', () => {
+      expect(ctx.canAccessPage('VendorPortal')).toBe(true);
     });
 
     it('CANNOT access audit log', () => {

@@ -98,10 +98,15 @@ describe('PAGE_PERMISSIONS structure', () => {
   });
 
   // Vendor-only pages
-  const vendorPages = ['MyVendorProfile', 'VendorCallManagement', 'VendorGuide', 'VendorPortal'];
+  const vendorPages = ['MyVendorProfile', 'VendorCallManagement', 'VendorGuide'];
 
   it.each(vendorPages)('"%s" should allow vendor only', (page) => {
     expect(PAGE_PERMISSIONS[page]).toEqual(['vendor']);
+  });
+
+  // Shared with operator/admin for tracking continuity (call → vendor → customer record)
+  it('"VendorPortal" should allow admin, operator, and vendor', () => {
+    expect(PAGE_PERMISSIONS.VendorPortal).toEqual(['admin', 'operator', 'vendor']);
   });
 
   // All-roles pages
@@ -131,8 +136,8 @@ describe('getPageRoles', () => {
     expect(getPageRoles('Settings')).toEqual(['admin']);
   });
 
-  it('should return vendor roles for VendorPortal', () => {
-    expect(getPageRoles('VendorPortal')).toEqual(['vendor']);
+  it('should return admin/operator/vendor roles for VendorPortal', () => {
+    expect(getPageRoles('VendorPortal')).toEqual(['admin', 'operator', 'vendor']);
   });
 });
 

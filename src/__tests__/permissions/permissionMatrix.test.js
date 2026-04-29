@@ -154,15 +154,15 @@ describe('Operator role - operational access', () => {
   });
 
   // Vendor-only pages should be blocked
-  const vendorOnlyPages = [
-    'MyVendorProfile',
-    'VendorCallManagement',
-    'VendorGuide',
-    'VendorPortal',
-  ];
+  const vendorOnlyPages = ['MyVendorProfile', 'VendorCallManagement', 'VendorGuide'];
 
   it.each(vendorOnlyPages)('cannot access vendor page "%s"', (page) => {
     expect(canAccessPage(page)).toBe(false);
+  });
+
+  // VendorPortal is shared with operator for tracking continuity
+  it('CAN access VendorPortal (tracking visibility)', () => {
+    expect(canAccessPage('VendorPortal')).toBe(true);
   });
 
   // All-roles pages

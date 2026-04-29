@@ -89,8 +89,11 @@ describe('Navigation visibility by role', () => {
       expect(blocked).toContain('הסכמי תמחור');
     });
 
-    it('should NOT see vendor portal (vendor-only)', () => {
-      expect(blocked).toContain('פורטל ספקים');
+    // Operator now has tracking visibility into vendor portal so they can
+    // monitor calls after they're handed off to a vendor (continuity of
+    // service - the customer/insured stays under operator's responsibility).
+    it('should see vendor portal (tracking visibility)', () => {
+      expect(visible).toContain('פורטל ספקים');
     });
 
     it('should NOT see fleet management (admin-only)', () => {
@@ -213,15 +216,21 @@ describe('Navigation: cross-role comparison', () => {
     expect(adminItems.size).toBeGreaterThan(vendorItems.length);
   });
 
-  it('operator and vendor have no overlapping operational pages', () => {
+  it('operator and vendor overlap only on tracking pages (e.g. VendorPortal)', () => {
     const operatorItems = getExpectedNavItems('operator');
     const vendorItems = getExpectedNavItems('vendor');
-    const allRolesNames = ['מסך הבית', 'הפרופיל שלי']; // shared items
+    const sharedItems = ['מסך הבית', 'הפרופיל שלי']; // shared with all roles
+    // Operator shares VendorPortal with vendor for tracking continuity (call
+    // → vendor → customer record). This is intentional, not a leak.
+    const allowedTrackingOverlap = ['פורטל ספקים'];
 
-    const operatorOnly = operatorItems.filter((i) => !allRolesNames.includes(i));
-    const vendorOnly = vendorItems.filter((i) => !allRolesNames.includes(i));
+    const operatorOnly = operatorItems.filter(
+      (i) => !sharedItems.includes(i) && !allowedTrackingOverlap.includes(i)
+    );
+    const vendorOnly = vendorItems.filter(
+      (i) => !sharedItems.includes(i) && !allowedTrackingOverlap.includes(i)
+    );
 
-    // No operational overlap
     for (const item of vendorOnly) {
       expect(operatorOnly).not.toContain(item);
     }
