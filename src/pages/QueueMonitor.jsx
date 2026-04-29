@@ -211,7 +211,7 @@ export default function QueueMonitor() {
       );
 
       await workQueueQuery.refetch();
-      await callsQuery.refetch();
+      await casesQuery.refetch();
     } finally {
       setSeeding(false);
     }

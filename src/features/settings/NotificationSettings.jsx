@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -98,11 +98,10 @@ const defaultNotification = {
 };
 
 export default function NotificationSettings() {
+  const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingNotification, setEditingNotification] = useState(null);
-
-  useEffect(() => {}, []);
 
   // Fetch settings from DB
   const { data: dbSettings, isLoading } = useQuery({
