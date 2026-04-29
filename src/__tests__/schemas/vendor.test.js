@@ -38,26 +38,26 @@ describe('vendorCreateSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('should REJECT unknown fields (vehicle_types_supported)', () => {
+  it('should accept vehicle_types_supported (now a known field)', () => {
     const data = {
       vendor_name: 'גרר הצפון',
       phone: '050-1234567',
       vehicle_types_supported: ['private', 'truck'],
     };
     const result = vendorCreateSchema.safeParse(data);
-    expect(result.success).toBe(false);
-    expect(result.error.issues[0].code).toBe('unrecognized_keys');
+    expect(result.success).toBe(true);
+    expect(result.data.vehicle_types_supported).toEqual(['private', 'truck']);
   });
 
-  it('should REJECT unknown fields (coverage_cities)', () => {
+  it('should accept coverage_cities (now a known field)', () => {
     const data = {
       vendor_name: 'גרר הצפון',
       phone: '050-1234567',
       coverage_cities: 'תל אביב, חיפה',
     };
     const result = vendorCreateSchema.safeParse(data);
-    expect(result.success).toBe(false);
-    expect(result.error.issues[0].code).toBe('unrecognized_keys');
+    expect(result.success).toBe(true);
+    expect(result.data.coverage_cities).toBe('תל אביב, חיפה');
   });
 
   it('should REJECT payment_rate_per_call as empty string', () => {
@@ -129,15 +129,14 @@ describe('vendorCreateSchema', () => {
     expect(result.data.payment_rate_per_call).toBe(350);
   });
 
-  it('should accept payment_rate_per_call as null', () => {
+  it('should accept payment_rate_per_call when omitted', () => {
     const data = {
       vendor_name: 'גרר הצפון',
       phone: '050-1234567',
-      payment_rate_per_call: null,
     };
     const result = vendorCreateSchema.safeParse(data);
     expect(result.success).toBe(true);
-    expect(result.data.payment_rate_per_call).toBeNull();
+    expect(result.data.payment_rate_per_call).toBeUndefined();
   });
 });
 
@@ -153,15 +152,15 @@ describe('vendorUpdateSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('should still reject unknown fields', () => {
+  it('should accept vehicle_types_supported in updates (known field)', () => {
     const data = { vehicle_types_supported: ['private'] };
     const result = vendorUpdateSchema.safeParse(data);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
 
 describe('sanitizeVendorCreate', () => {
-  it('should strip unknown fields from form data', () => {
+  it('should accept full form data including vehicle_types_supported and coverage_cities', () => {
     const formData = {
       vendor_name: 'גרר הצפון',
       phone: '050-1234567',
@@ -171,8 +170,11 @@ describe('sanitizeVendorCreate', () => {
       is_available_now: true,
     };
 
-    // Should throw because of unknown fields
-    expect(() => sanitizeVendorCreate(formData)).toThrow('ולידציה');
+    const result = sanitizeVendorCreate(formData);
+    expect(result.vendor_name).toBe('גרר הצפון');
+    expect(result.vehicle_types_supported).toEqual(['private', 'truck']);
+    expect(result.coverage_cities).toBe('תל אביב');
+    expect(result.is_available_now).toBe(true);
   });
 
   it('should convert payment_rate_per_call from string to number', () => {
@@ -186,17 +188,17 @@ describe('sanitizeVendorCreate', () => {
     expect(typeof result.payment_rate_per_call).toBe('number');
   });
 
-  it('should convert empty payment_rate_per_call to null', () => {
+  it('should remove empty payment_rate_per_call (converts to undefined, not null)', () => {
     const formData = {
       vendor_name: 'גרר הצפון',
       phone: '050-1234567',
       payment_rate_per_call: '',
     };
     const result = sanitizeVendorCreate(formData);
-    expect(result.payment_rate_per_call).toBeNull();
+    expect(result.payment_rate_per_call).toBeUndefined();
   });
 
-  it('should handle the exact form data from NewVendor page (fixed version)', () => {
+  it('should handle the exact form data from NewVendor page', () => {
     const formData = {
       vendor_name: 'גרר טסט',
       contact_person: 'ישראל',
@@ -216,9 +218,9 @@ describe('sanitizeVendorCreate', () => {
     const result = sanitizeVendorCreate(formData);
     expect(result.vendor_name).toBe('גרר טסט');
     expect(result.payment_rate_per_call).toBe(200);
-    expect(result).not.toHaveProperty('vehicle_types_supported');
-    expect(result).not.toHaveProperty('coverage_cities');
-    expect(result).not.toHaveProperty('is_available_now');
+    // Schema applies defaults for optional fields not in formData
+    expect(result.vehicle_types_supported).toEqual([]);
+    expect(result.coverage_cities).toBe('');
   });
 
   it('should throw on missing required fields', () => {
@@ -237,7 +239,7 @@ describe('sanitizeVendorUpdate', () => {
     expect(result.vendor_name).toBe('שם חדש');
   });
 
-  it('should handle the exact form data from EditVendor page (fixed version)', () => {
+  it('should handle the exact form data from EditVendor page', () => {
     const formData = {
       vendor_name: 'גרר טסט',
       contact_person: 'ישראל',
@@ -254,7 +256,8 @@ describe('sanitizeVendorUpdate', () => {
     };
     const result = sanitizeVendorUpdate(formData);
     expect(result.vendor_name).toBe('גרר טסט');
-    expect(result).not.toHaveProperty('vehicle_types_supported');
-    expect(result).not.toHaveProperty('coverage_cities');
+    // Update schema is partial, so missing optional fields stay missing
+    expect(result.vehicle_types_supported).toBeUndefined();
+    expect(result.coverage_cities).toBeUndefined();
   });
 });
