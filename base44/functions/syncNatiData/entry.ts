@@ -12,15 +12,28 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 const NATI_API_BASE = 'https://api.natid.co.il/api';
 
 // ========== STATUS / FIELD MAPPINGS ==========
+// Source: src/docs/nati-api-reference.md (Status Codes Reference table)
+// Nati: 0=ממתין, 1=בטיפול, 2=באחסנה, 3=המשך טיפול, 4=בוצע לא סגור,
+//       5=הגיע, 6=שירות עתידי. Codes 7-10 are filter-only modifiers.
 
 const CASE_STATUS_MAP = {
-  '0': 'new', '1': 'assigned', '2': 'en_route', '3': 'on_site',
-  '4': 'in_progress', '5': 'completed', '6': 'cancelled',
+  '0': 'new',
+  '1': 'in_progress',
+  '2': 'in_progress',
+  '3': 'in_progress',
+  '4': 'in_progress',
+  '5': 'on_site',
+  '6': 'new',
 };
 
 const CALL_STATUS_MAP = {
-  '0': 'waiting_treatment', '1': 'assigning', '2': 'vendor_enroute',
-  '3': 'vendor_arrived', '4': 'in_progress', '5': 'completed', '6': 'cancelled',
+  '0': 'waiting_treatment',
+  '1': 'in_progress',
+  '2': 'in_storage',
+  '3': 'continued_treatment',
+  '4': 'awaiting_payment',
+  '5': 'vendor_arrived',
+  '6': 'future_service',
 };
 
 const DEPT_MAP = {
@@ -155,7 +168,9 @@ function mapToCase(a) {
     passed_qa: a.inspector_approves === '1',
     is_vip: a.vip === '1',
     opening_source: a.open_from_api === '1' ? 'app' : 'call_center',
-    source_status: (a.status === '5' || a.status === '6') ? 'closed' : 'open',
+    // Nati's get_appeals_list only returns OPEN appeals (callStatus=-1).
+    // A real "closed" state at source is detected by finish_time being set.
+    source_status: a.finish_time && !a.finish_time.startsWith('0000') ? 'closed' : 'open',
     dispatcher_name: a.user_name || '',
     case_reference_code: a.sub_num || '',
     customer_id: a.client_id || '',

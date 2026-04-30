@@ -1,11 +1,11 @@
 // Test sync without auth - just to verify the mapping works
 
 const NATI_API_BASE = 'https://api.natid.co.il/api';
-const JWT_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJOYXRpZCIsImlhdCI6MTc3NTUwMTkwMSwiZXhwIjo0MDc5MTg1MDgyLCJhdWQiOiJhcGkubmF0aWQuY28uaWwiLCJzdWIiOiJhZG1pbkBuYXRpZC5jby5pbCIsInVzZXJuYW1lIjoiYmFzZTQ0In0.msS8au2-b4nF770ngilLaYvSaAsmDZwWxPLM0f6S0CiJA82x3x1_fNQuwJZTezjd4mup9AsLkl0_v1p6-fvGxA';
-const CLIENT_ID = '62c66127-cdb9-4579-9f18-a9b6ff9d06fd';
 
+// Nati status codes (per src/docs/nati-api-reference.md):
+// 0=ממתין, 1=בטיפול, 2=באחסנה, 3=המשך טיפול, 4=בוצע לא סגור, 5=הגיע, 6=שירות עתידי
 function mapStatus(s) {
-  return { '0': 'new', '1': 'assigned', '2': 'en_route', '3': 'on_site', '4': 'in_progress', '5': 'completed', '6': 'cancelled' }[String(s)] || 'new';
+  return { '0': 'new', '1': 'in_progress', '2': 'in_progress', '3': 'in_progress', '4': 'in_progress', '5': 'on_site', '6': 'new' }[String(s)] || 'new';
 }
 
 function mapDepartment(d) {
@@ -42,7 +42,7 @@ function mapAppeal(a) {
     problem_description: a.problem_desc || a.diagnose || '',
     inspector_name: a.inspector_name || '',
     is_vip: a.vip === '1',
-    source_status: a.status === '5' || a.status === '6' ? 'closed' : 'open',
+    source_status: a.finish_time && !a.finish_time.startsWith('0000') ? 'closed' : 'open',
     dispatcher_name: a.user_name || '',
     case_reference_code: a.sub_num || '',
   };
@@ -50,6 +50,13 @@ function mapAppeal(a) {
 
 Deno.serve(async (req) => {
   try {
+    const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
+    const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '').trim();
+
+    if (!JWT_TOKEN || !CLIENT_ID) {
+      return Response.json({ error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' }, { status: 500 });
+    }
+
     const url = `${NATI_API_BASE}/get_appeals_list?dep=-1&callStatus=-1&dir=DESC`;
     const response = await fetch(url, {
       method: 'GET',

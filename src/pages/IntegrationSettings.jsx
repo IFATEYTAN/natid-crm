@@ -7,6 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Link2, Settings, CheckCircle, XCircle, ExternalLink, RefreshCw } from 'lucide-react';
+import { useAuth } from '@/providers/AuthProvider';
+import NatiSyncPanel from '@/components/integrations/NatiSyncPanel';
 
 const integrations = [
   {
@@ -54,6 +56,8 @@ const integrations = [
 ];
 
 export default function IntegrationSettingsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [integrationStates, setIntegrationStates] = useState(
     integrations.reduce((acc, int) => ({ ...acc, [int.id]: { enabled: false, apiKey: '' } }), {})
   );
@@ -77,6 +81,9 @@ export default function IntegrationSettingsPage() {
         <h1 className="text-2xl font-bold text-[#111827]">אינטגרציות CRM</h1>
         <p className="text-[#6b7280] text-sm">חיבור למערכות חיצוניות וסנכרון נתונים</p>
       </div>
+
+      {/* Nati Sync Panel - admin only */}
+      {isAdmin && <NatiSyncPanel />}
 
       {/* Info Card */}
       <Card className="bg-[#f3f4f6] border border-[#e5e7eb]">

@@ -42,3 +42,40 @@ export const markNotificationAsRead = (id) => {
 export const deleteNotification = (id) => {
   return base44.entities.Notification.delete(id);
 };
+
+// ========== Nati Sync ==========
+// Invokes the syncNatiData backend function. See base44/functions/syncNatiData/entry.ts.
+// Filter params (all optional) match the documented Nati API:
+//   dep:        Department code (-1=all, 3=towing, 4=rent, 5=windshields, 10=radiodisc, 11=combined)
+//   callStatus: -1=all open, or one of the documented status codes
+//   from_date / to_date: 'YYYY-MM-DD'
+//   sync_calls / sync_cases / sync_vendors / sync_customers: which entities to write
+const buildNatiSyncPayload = ({
+  dep = -1,
+  callStatus = -1,
+  from_date,
+  to_date,
+  sync_calls = true,
+  sync_cases = true,
+  sync_vendors = true,
+  sync_customers = true,
+} = {}) => {
+  const payload = { dep, callStatus, sync_calls, sync_cases, sync_vendors, sync_customers };
+  if (from_date) payload.from_date = from_date;
+  if (to_date) payload.to_date = to_date;
+  return payload;
+};
+
+export const runNatiSyncDryRun = (filters = {}) => {
+  return base44.functions.invoke('syncNatiData', {
+    ...buildNatiSyncPayload(filters),
+    dry_run: true,
+  });
+};
+
+export const runNatiSync = (filters = {}) => {
+  return base44.functions.invoke('syncNatiData', {
+    ...buildNatiSyncPayload(filters),
+    dry_run: false,
+  });
+};
