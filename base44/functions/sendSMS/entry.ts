@@ -1,8 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
-
-const kv = await Deno.openKv();
-const limiter = createRateLimiter(kv);
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -11,16 +7,6 @@ Deno.serve(async (req) => {
 
     if (!user || !['admin', 'operator'].includes(user.role)) {
       return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
-    }
-
-    // Rate limit: 10 SMS per user per minute, 100 per day
-    const perMinute = await limiter.check('sms', user.id, 10, 60_000);
-    if (!perMinute.allowed) return rateLimitResponse(perMinute.resetAt);
-
-    const dailyCount = await limiter.getDailyCount('sms');
-    if (dailyCount >= 10_000) {
-      console.error('Daily SMS quota reached:', dailyCount);
-      return Response.json({ error: 'Daily SMS quota exceeded' }, { status: 429 });
     }
 
     const { phone, message, callId } = await req.json();
@@ -92,7 +78,6 @@ Deno.serve(async (req) => {
     }
 
     const smsResult = await smsResponse.json();
-    await limiter.incrementDaily('sms');
 
     return Response.json({
       success: true,
