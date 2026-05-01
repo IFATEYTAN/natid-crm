@@ -12,10 +12,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Database, Eye, Play, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Database, Eye, Play, AlertCircle, CheckCircle, Loader2, Clock } from 'lucide-react';
 import { useNatiSyncDryRun, useNatiSyncRun } from '@/features/settings/hooks/useNatiSync';
 
 const STORAGE_KEY = 'natid_sync_panel_filters';
+const LAST_SYNC_KEY = 'natid_last_sync_at';
+
+/**
+ * Returns a Hebrew "X minutes ago" style relative time, or null if no value.
+ */
+function formatRelative(isoString) {
+  if (!isoString) return null;
+  const then = new Date(isoString).getTime();
+  if (isNaN(then)) return null;
+  const diffSec = Math.floor((Date.now() - then) / 1000);
+  if (diffSec < 30) return 'לפני רגע';
+  if (diffSec < 60) return `לפני ${diffSec} שניות`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `לפני ${diffMin} דקות`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `לפני ${diffH} שעות`;
+  const diffD = Math.floor(diffH / 24);
+  return `לפני ${diffD} ימים`;
+}
 
 // Source: src/docs/nati-api-reference.md
 const DEPARTMENT_OPTIONS = [
@@ -96,16 +115,44 @@ const ResultStat = ({ label, value, tone = 'default' }) => {
 
 export default function NatiSyncPanel() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [lastSyncAt, setLastSyncAt] = useState(null);
+  // Tick once a minute to keep the relative timestamp ("לפני X דקות") fresh
+  // without re-rendering on every keystroke.
+  const [, forceTick] = useState(0);
   const dryRun = useNatiSyncDryRun();
   const runSync = useNatiSyncRun();
 
   useEffect(() => {
     setFilters(loadFilters());
+    try {
+      setLastSyncAt(localStorage.getItem(LAST_SYNC_KEY));
+    } catch {
+      // localStorage may be unavailable - silently ignore
+    }
   }, []);
 
   useEffect(() => {
     saveFilters(filters);
   }, [filters]);
+
+  // Keep the "X minutes ago" label fresh.
+  useEffect(() => {
+    const id = setInterval(() => forceTick((n) => n + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Persist the timestamp the moment a real sync succeeds.
+  useEffect(() => {
+    if (runSync.isSuccess && !runSync.data?.data?.error) {
+      const now = new Date().toISOString();
+      try {
+        localStorage.setItem(LAST_SYNC_KEY, now);
+      } catch {
+        // localStorage may be unavailable - silently ignore
+      }
+      setLastSyncAt(now);
+    }
+  }, [runSync.isSuccess, runSync.data]);
 
   const update = (key, value) => setFilters((prev) => ({ ...prev, [key]: value }));
 
@@ -119,6 +166,7 @@ export default function NatiSyncPanel() {
   const isPending = dryRun.isPending || runSync.isPending;
   const dryRunData = dryRun.data?.data ?? dryRun.data;
   const runData = runSync.data?.data ?? runSync.data;
+  const lastSyncRelative = formatRelative(lastSyncAt);
 
   return (
     <Card className="bg-white border border-[#e5e7eb]">
@@ -136,6 +184,12 @@ export default function NatiSyncPanel() {
               משיכת קריאות, ספקים ולקוחות מה-API של נתי לתוך מערכת ה-CRM. השלב הראשון הוא קריאה בלבד
               - שינויים בממשק שלנו לא יחזרו לנתי בשלב זה.
             </CardDescription>
+            {lastSyncRelative && (
+              <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-[#6b7280]">
+                <Clock className="w-3.5 h-3.5" />
+                <span>סנכרון אחרון: {lastSyncRelative}</span>
+              </div>
+            )}
           </div>
         </div>
       </CardHeader>
