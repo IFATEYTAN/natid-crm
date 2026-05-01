@@ -32,12 +32,19 @@ Deno.serve(async (req) => {
       },
     });
 
+    let responseBody = null;
+    try {
+      const text = await testEnv.text();
+      responseBody = text.substring(0, 2000);
+      try { responseBody = JSON.parse(text); } catch {}
+    } catch {}
+
     return Response.json({
       env_token_exists: true,
       env_token_first20: envToken.substring(0, 20) + '...',
       env_client_id: envClientId,
       env_client_id_was_trimmed: envClientIdRaw !== envClientId,
-      test_with_env: { status: testEnv.status },
+      test_with_env: { status: testEnv.status, body: responseBody },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
