@@ -604,10 +604,15 @@ export default function VendorPortalPage() {
                 />
               </Suspense>
 
-              <VendorGPSTracker
-                vendorId={vendorProfile?.id}
-                initialSharingEnabled={!!vendorProfile?.is_location_sharing_enabled}
-              />
+              {/* Only the actual vendor user should push their GPS to the vendor profile.
+                  Operators who switch into a vendor's view via the admin/tracking tab
+                  must NOT broadcast their browser's location to that vendor's profile. */}
+              {isVendorUser && (
+                <VendorGPSTracker
+                  vendorId={vendorProfile?.id}
+                  initialSharingEnabled={!!vendorProfile?.is_location_sharing_enabled}
+                />
+              )}
 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>

@@ -58,9 +58,8 @@ function CityAutocomplete({ value, onChange, placeholder = 'הקלד שם עיר
   const [cityOpen, setCityOpen] = useState(false);
   const [cityHighlighted, setCityHighlighted] = useState(0);
 
-  const filteredCities = cityQuery.length > 0
-    ? ALL_CITIES.filter((c) => c.city.includes(cityQuery)).slice(0, 10)
-    : [];
+  const filteredCities =
+    cityQuery.length > 0 ? ALL_CITIES.filter((c) => c.city.includes(cityQuery)).slice(0, 10) : [];
 
   const handleCitySelect = (cityObj) => {
     onChange(cityObj.city);
@@ -70,10 +69,22 @@ function CityAutocomplete({ value, onChange, placeholder = 'הקלד שם עיר
 
   const handleCityKeyDown = (e) => {
     if (!cityOpen || filteredCities.length === 0) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); setCityHighlighted((h) => Math.min(h + 1, filteredCities.length - 1)); }
-    if (e.key === 'ArrowUp') { e.preventDefault(); setCityHighlighted((h) => Math.max(h - 1, 0)); }
-    if (e.key === 'Enter') { e.preventDefault(); handleCitySelect(filteredCities[cityHighlighted]); }
-    if (e.key === 'Escape') { setCityOpen(false); setCityQuery(''); }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setCityHighlighted((h) => Math.min(h + 1, filteredCities.length - 1));
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setCityHighlighted((h) => Math.max(h - 1, 0));
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleCitySelect(filteredCities[cityHighlighted]);
+    }
+    if (e.key === 'Escape') {
+      setCityOpen(false);
+      setCityQuery('');
+    }
   };
 
   return (
@@ -81,14 +92,29 @@ function CityAutocomplete({ value, onChange, placeholder = 'הקלד שם עיר
       {value ? (
         <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-white">
           <span className="flex-1 text-sm">{value}</span>
-          <button type="button" onClick={() => { onChange(''); setCityQuery(''); }} className="text-gray-400 hover:text-red-500 text-xs font-bold">✕</button>
+          <button
+            type="button"
+            onClick={() => {
+              onChange('');
+              setCityQuery('');
+            }}
+            className="text-gray-400 hover:text-red-500 text-xs font-bold"
+          >
+            ✕
+          </button>
         </div>
       ) : (
         <Input
           id={id}
           value={cityQuery}
-          onChange={(e) => { setCityQuery(e.target.value); setCityOpen(true); setCityHighlighted(0); }}
-          onFocus={() => { if (cityQuery) setCityOpen(true); }}
+          onChange={(e) => {
+            setCityQuery(e.target.value);
+            setCityOpen(true);
+            setCityHighlighted(0);
+          }}
+          onFocus={() => {
+            if (cityQuery) setCityOpen(true);
+          }}
           onBlur={() => setTimeout(() => setCityOpen(false), 150)}
           onKeyDown={handleCityKeyDown}
           placeholder={placeholder}
@@ -187,8 +213,16 @@ export default function NewCase() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const [motLookupState, setMotLookupState] = useState({ loading: false, result: null, error: null });
-  const [cargoQuestion, setCargoQuestion] = useState({ show: false, has_cargo: false, cargo_description: '' });
+  const [motLookupState, setMotLookupState] = useState({
+    loading: false,
+    result: null,
+    error: null,
+  });
+  const [cargoQuestion, setCargoQuestion] = useState({
+    show: false,
+    has_cargo: false,
+    cargo_description: '',
+  });
 
   // MOT Vehicle Lookup
   const handleMotLookup = useCallback(async () => {
@@ -217,9 +251,15 @@ export default function NewCase() {
         } else {
           setCargoQuestion({ show: false, has_cargo: false, cargo_description: '' });
         }
-        showToast.success(`רכב זוהה: ${v.vehicle_model} ${v.vehicle_year || ''} — טסט: ${v.test_status}`);
+        showToast.success(
+          `רכב זוהה: ${v.vehicle_model} ${v.vehicle_year || ''} — טסט: ${v.test_status}`
+        );
       } else {
-        setMotLookupState({ loading: false, result: null, error: res?.data?.error || 'רכב לא נמצא' });
+        setMotLookupState({
+          loading: false,
+          result: null,
+          error: res?.data?.error || 'רכב לא נמצא',
+        });
         showToast.error(res?.data?.error || 'רכב לא נמצא במאגר משרד התחבורה');
       }
     } catch (err) {
@@ -235,8 +275,8 @@ export default function NewCase() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      // Generate case number
-      const caseNumber = `C-${Date.now().toString().slice(-8)}`;
+      // Generate call number
+      const callNumber = `C-${Date.now().toString().slice(-8)}`;
 
       // Calculate SLA deadlines based on customer
       const customer = customers.find((c) => c.id === data.customer_id);
@@ -248,26 +288,97 @@ export default function NewCase() {
       const slaResponseDeadline = new Date(now.getTime() + slaResponseMinutes * 60000);
       const slaArrivalDeadline = new Date(now.getTime() + slaArrivalMinutes * 60000);
 
-      return base44.entities.Case.create({
-        ...data,
-        case_number: caseNumber,
-        status: 'new',
+      // Map form data (Case-shaped) → Call entity. The vendor portal, GPS,
+      // assignment, photo upload, customer portal, etc. all consume Call —
+      // creating a Case here meant new openings never reached the vendor side.
+      const callPayload = {
+        // Identifiers + status
+        call_number: callNumber,
+        call_status: 'waiting_treatment',
+        call_priority: data.priority,
+        // Customer
+        customer_id: data.customer_id || undefined,
+        customer_name: data.customer_name || data.caller_name || '',
+        customer_phone: data.caller_phone,
+        customer_source: data.customer_source,
+        // Vehicle
+        vehicle_plate: data.vehicle_number,
+        vehicle_type: data.vehicle_type,
+        vehicle_model: data.vehicle_model,
+        vehicle_year: data.vehicle_year ? parseInt(data.vehicle_year, 10) : undefined,
+        fuel_type: data.fuel_type || undefined,
+        vehicle_model_code: data.vehicle_model_code,
+        // Service
+        service_type: data.service_type,
+        dispatch_type: data.dispatch_type || undefined,
+        issue_description: data.problem_description,
+        coverage_details: data.coverage_details,
+        // Locations (form uses location_*/destination_*, Call uses pickup_*/dropoff_*)
+        pickup_location_address: data.location_address,
+        pickup_location_city: data.location_city,
+        dropoff_location_address: data.destination_address,
+        dropoff_location_city: data.destination_city,
+        // Notes + answers
+        internal_notes: data.internal_notes,
+        questionnaire_answers: data.questionnaire_answers,
+        // Exception questionnaire
+        is_in_parking: data.is_in_parking,
+        is_at_garage: data.is_at_garage,
+        was_towed_before: data.was_towed_before,
+        is_toll_road: data.is_toll_road,
+        is_dirt_road: data.is_dirt_road,
+        // Customer questionnaire
+        questionnaire_engine_starts: data.questionnaire_engine_starts,
+        questionnaire_gearbox_ok: data.questionnaire_gearbox_ok,
+        questionnaire_starter_sound: data.questionnaire_starter_sound,
+        questionnaire_automatic_neutral: data.questionnaire_automatic_neutral,
+        questionnaire_steering_free: data.questionnaire_steering_free,
+        questionnaire_handbrake_electric: data.questionnaire_handbrake_electric,
+        questionnaire_truck_access: data.questionnaire_truck_access,
+        // Deposit
+        deposit_type: data.deposit_type,
+        deposit_amount: data.deposit_amount ? parseFloat(data.deposit_amount) : undefined,
+        deposit_date: data.deposit_date,
+        deposit_reason: data.deposit_reason,
+        deposit_agent: data.deposit_agent,
+        deposit_status: data.deposit_status || undefined,
+        // Payment
+        payment_type: data.payment_type,
+        payment_date: data.payment_date,
+        payment_amount: data.payment_amount ? parseFloat(data.payment_amount) : undefined,
+        payment_total: data.payment_total ? parseFloat(data.payment_total) : undefined,
+        payment_installments: data.payment_installments
+          ? parseInt(data.payment_installments, 10)
+          : undefined,
+        payment_delivered_to: data.payment_delivered_to,
+        payment_agent: data.payment_agent,
+        payment_paid_for: data.payment_paid_for,
+        // Early alert
+        early_alert_minutes: data.early_alert_minutes
+          ? parseInt(data.early_alert_minutes, 10)
+          : undefined,
+        // SLA — primary deadline used by autoAssignVendor
+        sla_deadline: slaResponseDeadline.toISOString(),
         sla_response_deadline: slaResponseDeadline.toISOString(),
         sla_arrival_deadline: slaArrivalDeadline.toISOString(),
-      });
+      };
+
+      return base44.entities.Call.create(callPayload);
     },
     onSuccess: (result, data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
       showToast.success('קריאה נוצרה בהצלחה');
 
-      // Auto SMS confirmation to caller
-      if (data.caller_phone) {
-        const callerName = data.caller_name?.split(' ')[0] || 'לקוח יקר';
-        const caseNumber = result.case_number || result.id?.slice(-8);
-        const smsMessage = `שלום ${callerName}, קריאת שירות מספר ${caseNumber} נפתחה בהצלחה. נציג יטפל בבקשתך בהקדם. תודה שבחרת בנתי!`;
+      // Auto SMS confirmation to customer
+      const customerPhone = data.caller_phone;
+      if (customerPhone) {
+        const rawName = (data.caller_name || data.customer_name || '').trim();
+        const callerName = rawName.split(/\s+/)[0] || 'לקוח יקר';
+        const callNumber = result.call_number || result.id?.slice(-8);
+        const smsMessage = `שלום ${callerName}, קריאת שירות מספר ${callNumber} נפתחה בהצלחה. נציג יטפל בבקשתך בהקדם. תודה שבחרת בנתי!`;
         base44.functions
           .invoke('sendSMS', {
-            phone: data.caller_phone,
+            phone: customerPhone,
             message: smsMessage,
             callId: result.id,
           })
@@ -277,7 +388,7 @@ export default function NewCase() {
           });
       }
 
-      navigate(createPageUrl(`CaseDetails?id=${result.id}`));
+      navigate(createPageUrl(`CallDetails?id=${result.id}`));
     },
     onError: (error) => {
       showToast.error(`שגיאה ביצירת קריאה: ${error.message || 'שגיאה לא ידועה'}`);
@@ -405,10 +516,22 @@ export default function NewCase() {
                 <div className="flex-1">
                   <span className="font-semibold text-green-800">רכב זוהה ממשרד התחבורה: </span>
                   <span className="text-green-700">
-                    {motLookupState.result.vehicle_model} {motLookupState.result.vehicle_year} &nbsp;|&nbsp;
-                    דלק: {motLookupState.result.fuel_type_raw} &nbsp;|&nbsp;
-                    טסט: <span className={motLookupState.result.has_valid_test ? 'text-green-700 font-semibold' : 'text-red-600 font-semibold'}>{motLookupState.result.test_status}</span>
-                    {motLookupState.result.is_commercial && <span className="mr-2 px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-semibold">רכב מסחרי</span>}
+                    {motLookupState.result.vehicle_model} {motLookupState.result.vehicle_year}{' '}
+                    &nbsp;|&nbsp; דלק: {motLookupState.result.fuel_type_raw} &nbsp;|&nbsp; טסט:{' '}
+                    <span
+                      className={
+                        motLookupState.result.has_valid_test
+                          ? 'text-green-700 font-semibold'
+                          : 'text-red-600 font-semibold'
+                      }
+                    >
+                      {motLookupState.result.test_status}
+                    </span>
+                    {motLookupState.result.is_commercial && (
+                      <span className="mr-2 px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-semibold">
+                        רכב מסחרי
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
@@ -440,7 +563,11 @@ export default function NewCase() {
                     title="זהה רכב ממשרד התחבורה"
                     className="flex-shrink-0"
                   >
-                    {motLookupState.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                    {motLookupState.loading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Search className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">לחץ על הזכוכית המגדלת לזיהוי אוטומטי</p>
@@ -483,9 +610,7 @@ export default function NewCase() {
                 <Label>קוד דגם</Label>
                 <Input
                   value={formData.vehicle_model_code}
-                  onChange={(e) =>
-                    setFormData({ ...formData, vehicle_model_code: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, vehicle_model_code: e.target.value })}
                 />
               </div>
               <div>
@@ -513,17 +638,24 @@ export default function NewCase() {
               <div className="p-4 rounded-lg bg-orange-50 border border-orange-200">
                 <div className="flex items-center gap-2 mb-3">
                   <Package className="w-4 h-4 text-orange-600" />
-                  <span className="font-semibold text-orange-800 text-sm">רכב מסחרי זוהה — שאלת סחורה</span>
+                  <span className="font-semibold text-orange-800 text-sm">
+                    רכב מסחרי זוהה — שאלת סחורה
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 mb-3">
                   <input
                     type="checkbox"
                     id="has_cargo"
                     checked={cargoQuestion.has_cargo}
-                    onChange={(e) => setCargoQuestion((prev) => ({ ...prev, has_cargo: e.target.checked }))}
+                    onChange={(e) =>
+                      setCargoQuestion((prev) => ({ ...prev, has_cargo: e.target.checked }))
+                    }
                     className="w-4 h-4"
                   />
-                  <Label htmlFor="has_cargo" className="cursor-pointer text-sm font-medium text-orange-800">
+                  <Label
+                    htmlFor="has_cargo"
+                    className="cursor-pointer text-sm font-medium text-orange-800"
+                  >
                     האם יש סחורה / מטען ברכב?
                   </Label>
                 </div>
@@ -532,7 +664,9 @@ export default function NewCase() {
                     <Label className="text-sm">תיאור הסחורה / המטען</Label>
                     <Input
                       value={cargoQuestion.cargo_description}
-                      onChange={(e) => setCargoQuestion((prev) => ({ ...prev, cargo_description: e.target.value }))}
+                      onChange={(e) =>
+                        setCargoQuestion((prev) => ({ ...prev, cargo_description: e.target.value }))
+                      }
                       placeholder="סוג הסחורה, משקל משוער, הערות מיוחדות..."
                       className="mt-1"
                     />
@@ -699,7 +833,9 @@ export default function NewCase() {
                     type="checkbox"
                     id="is_paid_service"
                     checked={formData.is_paid_service}
-                    onChange={(e) => setFormData({ ...formData, is_paid_service: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, is_paid_service: e.target.checked })
+                    }
                     className="w-4 h-4"
                   />
                   <Label htmlFor="is_paid_service" className="cursor-pointer font-medium">
@@ -711,7 +847,10 @@ export default function NewCase() {
                     <CreditCard className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-red-700 font-bold text-sm">שימו לב — שירות בתשלום!</p>
-                      <p className="text-red-600 text-xs mt-1">הלקוח אינו מכוסה בביטוח או חברות. יש לגבות תשלום לפני או בעת מתן השירות. ודא קבלת פרטי תשלום לפני שיגור הספק.</p>
+                      <p className="text-red-600 text-xs mt-1">
+                        הלקוח אינו מכוסה בביטוח או חברות. יש לגבות תשלום לפני או בעת מתן השירות. ודא
+                        קבלת פרטי תשלום לפני שיגור הספק.
+                      </p>
                     </div>
                   </div>
                 )}
@@ -791,9 +930,7 @@ export default function NewCase() {
                     type="checkbox"
                     id={`case-${item.key}`}
                     checked={formData[item.key]}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [item.key]: e.target.checked })
-                    }
+                    onChange={(e) => setFormData({ ...formData, [item.key]: e.target.checked })}
                     className="w-4 h-4"
                   />
                   <Label htmlFor={`case-${item.key}`} className="cursor-pointer text-sm">
@@ -844,9 +981,7 @@ export default function NewCase() {
                     type="checkbox"
                     id={`case-${item.key}`}
                     checked={formData[item.key]}
-                    onChange={(e) =>
-                      setFormData({ ...formData, [item.key]: e.target.checked })
-                    }
+                    onChange={(e) => setFormData({ ...formData, [item.key]: e.target.checked })}
                     className="w-4 h-4"
                   />
                   <Label htmlFor={`case-${item.key}`} className="cursor-pointer text-sm">

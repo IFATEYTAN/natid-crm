@@ -32,7 +32,7 @@ describe('callCreateSchema', () => {
       pickup_location_address: 'רחוב הרצל 1',
       pickup_location_city: 'תל אביב',
       pickup_location_lat: 32.0853,
-      pickup_location_lng: 34.7818,
+      pickup_location_lon: 34.7818,
       dropoff_location_address: 'רחוב בן יהודה 50',
       dropoff_location_city: 'תל אביב',
       internal_notes: 'לקוח VIP',
