@@ -7,7 +7,7 @@
  *   - Batches of 5 with 1s delay (faster but safe)
  *   - Uses has_updated flag to prioritize changed records
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const NATI_API_BASE = 'https://api.natid.co.il/api';
 
@@ -324,15 +324,34 @@ Deno.serve(async (req) => {
       },
     });
 
+    // Status 203 from Nati = authentication failure (token/clientId invalid or expired)
+    if (response.status === 203) {
+      const errorBody = await response.text();
+      console.error('[SYNC] Nati API returned 203 (auth failure):', errorBody);
+      return Response.json({ 
+        error: 'שגיאת אימות מול Nati API — ה-JWT Token או Client ID לא תקינים או שפג תוקפם. יש לפנות ל-Nati לקבלת credentials חדשים.',
+        status_code: 203,
+        details: errorBody 
+      }, { status: 401 });
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[SYNC] Nati API error ${response.status}:`, errorText);
       return Response.json({ error: `Nati API error ${response.status}`, details: errorText }, { status: 502 });
     }
 
-    const natiData = await response.json();
+    let natiData;
+    try {
+      natiData = await response.json();
+    } catch (e) {
+      const rawText = await response.text();
+      console.error('[SYNC] Failed to parse Nati response as JSON:', rawText.substring(0, 500));
+      return Response.json({ error: 'Nati API returned invalid JSON', raw: rawText.substring(0, 500) }, { status: 502 });
+    }
+
     if (!natiData.success || !natiData.data) {
-      return Response.json({ error: 'Nati API returned unsuccessful', raw: natiData }, { status: 502 });
+      return Response.json({ error: 'Nati API returned unsuccessful response', raw: natiData }, { status: 502 });
     }
 
     const allAppeals = natiData.data;
