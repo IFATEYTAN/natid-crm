@@ -250,6 +250,39 @@ export default function CallDetailsPage() {
 
   const handleAssignVendor = async () => {
     if (!selectedVendor || !canAssign) return;
+    // Re-fetch the call right before assigning to detect a concurrent
+    // assignment by another operator. autoAssignVendor has its own dedupe
+    // server-side, but manual assignment from this dialog had no guard, so
+    // two operators clicking simultaneously would both succeed and the
+    // second one would silently overwrite the first.
+    let fresh;
+    try {
+      fresh = await base44.entities.Call.get(callId);
+    } catch (error) {
+      toast.error(`לא ניתן לאמת את מצב הקריאה: ${error?.message || 'שגיאת רשת'}`);
+      return;
+    }
+
+    const lockedStatuses = [
+      'assigning',
+      'assigned',
+      'vendor_enroute',
+      'vendor_arrived',
+      'in_progress',
+    ];
+    if (
+      fresh?.assigned_vendor_id &&
+      fresh.assigned_vendor_id !== selectedVendor &&
+      lockedStatuses.includes(fresh.call_status)
+    ) {
+      toast.error(
+        `הקריאה כבר שובצה ל-${fresh.assigned_vendor_name || 'ספק אחר'} (${fresh.call_status}). רענני את הדף.`
+      );
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
+      setShowAssignDialog(false);
+      return;
+    }
+
     const vendor = vendors.find((v) => v.id === selectedVendor);
     await base44.entities.Call.update(callId, {
       assigned_vendor_id: selectedVendor,
@@ -314,7 +347,13 @@ export default function CallDetailsPage() {
         {/* Header */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה" className="shrink-0 h-10 w-10">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              aria-label="חזרה"
+              className="shrink-0 h-10 w-10"
+            >
               <ArrowRight className="w-5 h-5" />
             </Button>
             <div className="min-w-0 flex-1">
@@ -406,7 +445,11 @@ export default function CallDetailsPage() {
             )}
 
             <PermissionGuard category="calls" permission="edit">
-              <Button variant="outline" className="gap-2 h-10 text-sm" onClick={() => setShowEditDialog(true)}>
+              <Button
+                variant="outline"
+                className="gap-2 h-10 text-sm"
+                onClick={() => setShowEditDialog(true)}
+              >
                 <Pencil className="w-4 h-4" />
                 ערוך קריאה
               </Button>
@@ -434,28 +477,53 @@ export default function CallDetailsPage() {
         {/* Main Content */}
         <Tabs defaultValue="details" className="space-y-4" dir="rtl">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
-            <TabsTrigger value="details" className="text-xs sm:text-sm px-2 sm:px-3">פרטים</TabsTrigger>
-            <TabsTrigger value="finance" className="text-xs sm:text-sm px-2 sm:px-3">כלכלה</TabsTrigger>
-            <TabsTrigger value="reminders" className="text-xs sm:text-sm px-2 sm:px-3">תזכורות</TabsTrigger>
-            <TabsTrigger value="map" className="text-xs sm:text-sm px-2 sm:px-3">מפה</TabsTrigger>
-            <TabsTrigger value="chat" className="text-xs sm:text-sm px-2 sm:px-3">צ'אט</TabsTrigger>
-            <TabsTrigger value="operatorNotes" className="text-xs sm:text-sm px-2 sm:px-3">הערות</TabsTrigger>
-            <TabsTrigger value="files" className="text-xs sm:text-sm px-2 sm:px-3">קבצים ({photos.length})</TabsTrigger>
-            <TabsTrigger value="history" className="text-xs sm:text-sm px-2 sm:px-3">היסטוריה</TabsTrigger>
-            {(call?.call_status === 'in_progress' || call?.call_status === 'vendor_arrived' || call?.call_status === 'future_service' || call?.call_status === 'completed') && (
-              <TabsTrigger value="closing" className="relative text-xs sm:text-sm px-2 sm:px-3">
-                סגירה
-                {call?.boy_marked && <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />}
+            <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+              <TabsTrigger value="details" className="text-xs sm:text-sm px-2 sm:px-3">
+                פרטים
               </TabsTrigger>
-            )}
-            {call?.call_status === 'completed' && (
-              <>
-                <TabsTrigger value="summary" className="text-xs sm:text-sm px-2 sm:px-3">סיכום</TabsTrigger>
-                <TabsTrigger value="feedback" className="text-xs sm:text-sm px-2 sm:px-3">משוב</TabsTrigger>
-              </>
-            )}
-          </TabsList>
+              <TabsTrigger value="finance" className="text-xs sm:text-sm px-2 sm:px-3">
+                כלכלה
+              </TabsTrigger>
+              <TabsTrigger value="reminders" className="text-xs sm:text-sm px-2 sm:px-3">
+                תזכורות
+              </TabsTrigger>
+              <TabsTrigger value="map" className="text-xs sm:text-sm px-2 sm:px-3">
+                מפה
+              </TabsTrigger>
+              <TabsTrigger value="chat" className="text-xs sm:text-sm px-2 sm:px-3">
+                צ'אט
+              </TabsTrigger>
+              <TabsTrigger value="operatorNotes" className="text-xs sm:text-sm px-2 sm:px-3">
+                הערות
+              </TabsTrigger>
+              <TabsTrigger value="files" className="text-xs sm:text-sm px-2 sm:px-3">
+                קבצים ({photos.length})
+              </TabsTrigger>
+              <TabsTrigger value="history" className="text-xs sm:text-sm px-2 sm:px-3">
+                היסטוריה
+              </TabsTrigger>
+              {(call?.call_status === 'in_progress' ||
+                call?.call_status === 'vendor_arrived' ||
+                call?.call_status === 'future_service' ||
+                call?.call_status === 'completed') && (
+                <TabsTrigger value="closing" className="relative text-xs sm:text-sm px-2 sm:px-3">
+                  סגירה
+                  {call?.boy_marked && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-400 rounded-full" />
+                  )}
+                </TabsTrigger>
+              )}
+              {call?.call_status === 'completed' && (
+                <>
+                  <TabsTrigger value="summary" className="text-xs sm:text-sm px-2 sm:px-3">
+                    סיכום
+                  </TabsTrigger>
+                  <TabsTrigger value="feedback" className="text-xs sm:text-sm px-2 sm:px-3">
+                    משוב
+                  </TabsTrigger>
+                </>
+              )}
+            </TabsList>
           </div>
 
           <TabsContent value="details">
@@ -601,10 +669,15 @@ export default function CallDetailsPage() {
           </TabsContent>
 
           {/* Closing & Score Tab (משימות 333, 336, 252) */}
-          {(call?.call_status === 'in_progress' || call?.call_status === 'vendor_arrived' || call?.call_status === 'future_service' || call?.call_status === 'completed') && (
+          {(call?.call_status === 'in_progress' ||
+            call?.call_status === 'vendor_arrived' ||
+            call?.call_status === 'future_service' ||
+            call?.call_status === 'completed') && (
             <TabsContent value="closing">
               <div className="max-w-2xl">
-                <Suspense fallback={<div className="h-40 w-full bg-gray-50 rounded animate-pulse" />}>
+                <Suspense
+                  fallback={<div className="h-40 w-full bg-gray-50 rounded animate-pulse" />}
+                >
                   <CallClosingSection call={call} callId={callId} currentUser={currentUser} />
                 </Suspense>
               </div>
@@ -675,12 +748,13 @@ export default function CallDetailsPage() {
                 </p>
               </div>
               <p className="text-sm text-gray-600 leading-relaxed">
-                חשוב לנו לקבל משוב מהלקוח — כל מילוי סקר עוזר לנו לשפר את השירות.
-                אנא וודא שהשירות הסתיים בפועל לפני הסגירה.
+                חשוב לנו לקבל משוב מהלקוח — כל מילוי סקר עוזר לנו לשפר את השירות. אנא וודא שהשירות
+                הסתיים בפועל לפני הסגירה.
               </p>
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                 <p className="text-xs text-amber-700">
-                  💡 <strong>טיפ:</strong> ניתן לציין ללקוח בעל פה: "תקבל/י עכשיו SMS עם סקר קצר — חשוב לנו שתמלא/י אותו!"
+                  💡 <strong>טיפ:</strong> ניתן לציין ללקוח בעל פה: "תקבל/י עכשיו SMS עם סקר קצר —
+                  חשוב לנו שתמלא/י אותו!"
                 </p>
               </div>
             </div>

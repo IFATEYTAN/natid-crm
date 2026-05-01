@@ -8,22 +8,72 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { showToast } from '@/components/ui/FeedbackToast';
 import {
-  Camera, Upload, Loader2, X, CheckCircle, Image, Trash2, ZoomIn,
-  Car, FileText, Shield, Gauge
+  Camera,
+  Upload,
+  Loader2,
+  X,
+  CheckCircle,
+  Image,
+  Trash2,
+  ZoomIn,
+  Car,
+  FileText,
+  Shield,
+  Gauge,
 } from 'lucide-react';
 
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_MIME_PREFIXES = ['image/', 'application/pdf'];
+
 const PHOTO_CATEGORIES = [
-  { key: 'before_treatment', label: 'לפני טיפול', icon: Camera, color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  { key: 'after_treatment', label: 'אחרי טיפול', icon: CheckCircle, color: 'bg-green-100 text-green-700 border-green-200' },
+  {
+    key: 'before_treatment',
+    label: 'לפני טיפול',
+    icon: Camera,
+    color: 'bg-blue-100 text-blue-700 border-blue-200',
+  },
+  {
+    key: 'after_treatment',
+    label: 'אחרי טיפול',
+    icon: CheckCircle,
+    color: 'bg-green-100 text-green-700 border-green-200',
+  },
   { key: 'damage', label: 'נזק', icon: Shield, color: 'bg-red-100 text-red-700 border-red-200' },
-  { key: 'license_plate', label: 'לוחית רישוי', icon: Car, color: 'bg-purple-100 text-purple-700 border-purple-200' },
-  { key: 'odometer', label: 'מד אוץ', icon: Gauge, color: 'bg-orange-100 text-orange-700 border-orange-200' },
-  { key: 'insurance_card', label: 'תעודת ביטוח', icon: FileText, color: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
-  { key: 'customer_document', label: 'מסמך לקוח', icon: FileText, color: 'bg-amber-100 text-amber-700 border-amber-200' },
+  {
+    key: 'license_plate',
+    label: 'לוחית רישוי',
+    icon: Car,
+    color: 'bg-purple-100 text-purple-700 border-purple-200',
+  },
+  {
+    key: 'odometer',
+    label: 'מד אוץ',
+    icon: Gauge,
+    color: 'bg-orange-100 text-orange-700 border-orange-200',
+  },
+  {
+    key: 'insurance_card',
+    label: 'תעודת ביטוח',
+    icon: FileText,
+    color: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+  },
+  {
+    key: 'customer_document',
+    label: 'מסמך לקוח',
+    icon: FileText,
+    color: 'bg-amber-100 text-amber-700 border-amber-200',
+  },
   { key: 'other', label: 'אחר', icon: Image, color: 'bg-gray-100 text-gray-700 border-gray-200' },
 ];
 
-export default function VendorPhotoUploader({ callId, vendorName, photos, onPhotoAdded, onPhotoDeleted, disabled }) {
+export default function VendorPhotoUploader({
+  callId,
+  vendorName,
+  photos,
+  onPhotoAdded,
+  onPhotoDeleted,
+  disabled,
+}) {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showPreview, setShowPreview] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('before_treatment');
@@ -35,10 +85,30 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
 
   const handleFiles = async (files) => {
     if (!files?.length) return;
+
+    // Validate files BEFORE starting upload — keeps oversized videos and
+    // unsupported file types from silently failing at the storage layer.
+    const valid = [];
+    const rejections = [];
+    for (const file of Array.from(files)) {
+      const isAllowedType = ALLOWED_MIME_PREFIXES.some((p) => file.type?.startsWith(p));
+      if (!isAllowedType) {
+        rejections.push(`${file.name}: סוג קובץ לא נתמך (${file.type || 'לא ידוע'})`);
+      } else if (file.size > MAX_FILE_BYTES) {
+        rejections.push(`${file.name}: גודל הקובץ חורג מ-10MB`);
+      } else {
+        valid.push(file);
+      }
+    }
+    if (rejections.length) {
+      showToast.error(rejections.join('\n'));
+    }
+    if (!valid.length) return;
+
     setUploading(true);
 
     const newPhotos = [];
-    for (const file of Array.from(files)) {
+    for (const file of valid) {
       const preview = URL.createObjectURL(file);
       newPhotos.push({ file, preview, status: 'uploading' });
     }
@@ -66,29 +136,38 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
         onPhotoAdded?.({ ...photoData, id: created.id, file_url });
       } catch (err) {
         newPhotos[i].status = 'error';
+        newPhotos[i].errorMessage = err?.message || 'שגיאה בהעלאה';
         setUploadQueue([...newPhotos]);
       }
     }
 
     setUploading(false);
     setNote('');
-    showToast.success(`${newPhotos.filter(p => p.status === 'done').length} תמונות הועלו בהצלחה`);
+    const succeeded = newPhotos.filter((p) => p.status === 'done').length;
+    const failed = newPhotos.length - succeeded;
+    if (succeeded > 0) showToast.success(`${succeeded} תמונות הועלו בהצלחה`);
+    if (failed > 0) showToast.error(`${failed} תמונות נכשלו - נסי שוב`);
     setTimeout(() => {
       setUploadQueue([]);
-      setShowUploadDialog(false);
+      if (failed === 0) setShowUploadDialog(false);
     }, 1000);
   };
 
   const handleDelete = async (photoId) => {
-    await base44.entities.CallPhoto.update(photoId, { is_deleted: true });
-    onPhotoDeleted?.(photoId);
-    showToast.success('התמונה נמחקה');
+    try {
+      await base44.entities.CallPhoto.update(photoId, { is_deleted: true });
+      onPhotoDeleted?.(photoId);
+      showToast.success('התמונה נמחקה');
+    } catch (error) {
+      showToast.error(`מחיקת התמונה נכשלה: ${error?.message || 'שגיאת רשת'}`);
+    }
   };
 
-  const getCategoryInfo = (key) => PHOTO_CATEGORIES.find(c => c.key === key) || PHOTO_CATEGORIES[PHOTO_CATEGORIES.length - 1];
+  const getCategoryInfo = (key) =>
+    PHOTO_CATEGORIES.find((c) => c.key === key) || PHOTO_CATEGORIES[PHOTO_CATEGORIES.length - 1];
 
   const groupedPhotos = PHOTO_CATEGORIES.reduce((acc, cat) => {
-    const catPhotos = (photos || []).filter(p => p.category === cat.key && !p.is_deleted);
+    const catPhotos = (photos || []).filter((p) => p.category === cat.key && !p.is_deleted);
     if (catPhotos.length > 0) acc.push({ ...cat, photos: catPhotos });
     return acc;
   }, []);
@@ -99,7 +178,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-gray-900 flex items-center gap-2">
           <Camera className="w-5 h-5" />
-          תמונות ומסמכים ({(photos || []).filter(p => !p.is_deleted).length})
+          תמונות ומסמכים ({(photos || []).filter((p) => !p.is_deleted).length})
         </h3>
         <Button
           size="sm"
@@ -122,7 +201,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
           </CardContent>
         </Card>
       ) : (
-        groupedPhotos.map(group => (
+        groupedPhotos.map((group) => (
           <div key={group.key}>
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="outline" className={`text-xs ${group.color}`}>
@@ -130,7 +209,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
               </Badge>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {group.photos.map(photo => (
+              {group.photos.map((photo) => (
                 <div key={photo.id} className="relative group rounded-lg overflow-hidden border">
                   <img
                     src={photo.file_url}
@@ -186,7 +265,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
             <div>
               <Label className="mb-2 block">קטגוריה</Label>
               <div className="grid grid-cols-2 gap-2">
-                {PHOTO_CATEGORIES.map(cat => {
+                {PHOTO_CATEGORIES.map((cat) => {
                   const Icon = cat.icon;
                   return (
                     <button
@@ -211,7 +290,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
               <Label>הערה (אופציונלי)</Label>
               <Textarea
                 value={note}
-                onChange={e => setNote(e.target.value)}
+                onChange={(e) => setNote(e.target.value)}
                 placeholder="תיאור קצר..."
                 rows={2}
               />
@@ -223,7 +302,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
                 type="file"
                 accept="image/*"
                 capture="environment"
-                onChange={e => handleFiles(e.target.files)}
+                onChange={(e) => handleFiles(e.target.files)}
                 ref={cameraInputRef}
                 className="hidden"
               />
@@ -241,7 +320,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={e => handleFiles(e.target.files)}
+                onChange={(e) => handleFiles(e.target.files)}
                 ref={fileInputRef}
                 className="hidden"
               />
@@ -265,7 +344,9 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
                     <div className="flex-1 min-w-0">
                       <div className="text-xs truncate text-gray-600">{item.file.name}</div>
                     </div>
-                    {item.status === 'uploading' && <Loader2 className="w-4 h-4 animate-spin text-blue-500" />}
+                    {item.status === 'uploading' && (
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                    )}
                     {item.status === 'done' && <CheckCircle className="w-4 h-4 text-green-500" />}
                     {item.status === 'error' && <X className="w-4 h-4 text-red-500" />}
                   </div>
@@ -297,9 +378,7 @@ export default function VendorPhotoUploader({ callId, vendorName, photos, onPhot
                     </Badge>
                   )}
                 </div>
-                {showPreview.note && (
-                  <p className="text-sm text-gray-600">{showPreview.note}</p>
-                )}
+                {showPreview.note && <p className="text-sm text-gray-600">{showPreview.note}</p>}
                 {showPreview.ai_extraction_summary && (
                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="text-xs font-medium text-blue-800 mb-1">ניתוח AI:</div>

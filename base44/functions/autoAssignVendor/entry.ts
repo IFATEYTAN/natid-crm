@@ -109,7 +109,17 @@ Deno.serve(async (req) => {
       }
 
       // 2. Service type match (20 points)
-      const serviceTypeMap = {
+      // Primary: explicit call.service_type from the form (towing/mobile_unit/...)
+      // Fallback: infer from call.issue_type (flat_tire/dead_battery/...)
+      const serviceCategoryMap = {
+        'towing': ['tow_truck', 'multi_service'],
+        'towing_storage': ['tow_truck', 'multi_service'],
+        'towing_mobile': ['tow_truck', 'mechanic', 'multi_service'],
+        'mobile_unit': ['mechanic', 'multi_service'],
+        'storage_only': ['tow_truck', 'multi_service'],
+        'other': ['multi_service', 'tow_truck'],
+      };
+      const issueTypeMap = {
         'mechanical': ['mechanic', 'multi_service'],
         'stopped_driving': ['tow_truck', 'multi_service'],
         'flat_tire': ['tire_service', 'tow_truck', 'multi_service'],
@@ -118,13 +128,17 @@ Deno.serve(async (req) => {
         'no_fuel': ['fuel_delivery', 'multi_service'],
         'dead_battery': ['mechanic', 'multi_service'],
         'locked_keys': ['locksmith', 'multi_service'],
-        'other': ['multi_service', 'tow_truck']
+        'other': ['multi_service', 'tow_truck'],
       };
-      
-      const neededServices = serviceTypeMap[call.issue_type] || ['tow_truck'];
+
+      const neededServices =
+        serviceCategoryMap[call.service_type] ||
+        serviceCategoryMap[call.service_category] ||
+        issueTypeMap[call.issue_type] ||
+        ['tow_truck'];
       const vendorServices = vendor.service_type || [];
       const serviceMatch = neededServices.some(s => vendorServices.includes(s));
-      
+
       if (serviceMatch) {
         score += 20;
         details.service_match = true;

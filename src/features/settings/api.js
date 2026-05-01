@@ -79,3 +79,30 @@ export const runNatiSync = (filters = {}) => {
     dry_run: false,
   });
 };
+
+// ========== Demo Data Seed ==========
+// Invokes the seedDemoData backend function (admin only).
+// See base44/functions/seedDemoData/entry.ts. Generates ~250 realistic
+// Israeli calls plus vendors, customers, fleet vehicles, and queue items.
+export const seedDemoData = (options = {}) => {
+  const {
+    seed_users = true,
+    seed_customers = true,
+    seed_vendors = true,
+    seed_calls = true,
+    seed_history = true,
+    seed_ratings = true,
+    seed_notifications = true,
+    seed_queue = true,
+  } = options;
+  return base44.functions.invoke('seedDemoData', {
+    seed_users,
+    seed_customers,
+    seed_vendors,
+    seed_calls,
+    seed_history,
+    seed_ratings,
+    seed_notifications,
+    seed_queue,
+  });
+};

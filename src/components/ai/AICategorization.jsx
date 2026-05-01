@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Loader2, Check, AlertTriangle } from 'lucide-react';
+import { showToast } from '@/components/ui/FeedbackToast';
 import {
   serviceTypeLabels,
   priorityLabels,
@@ -25,14 +26,21 @@ export default function AICategorization({
     if (!problemDescription || problemDescription.trim().length < 3) return;
     setLoading(true);
     setApplied(false);
-    const response = await base44.functions.invoke('categorizeCall', {
-      problem_description: problemDescription,
-      location_address: locationAddress,
-      location_city: locationCity,
-      vehicle_type: vehicleType,
-    });
-    setResult(response.data);
-    setLoading(false);
+    try {
+      const response = await base44.functions.invoke('categorizeCall', {
+        problem_description: problemDescription,
+        location_address: locationAddress,
+        location_city: locationCity,
+        vehicle_type: vehicleType,
+      });
+      setResult(response?.data || null);
+    } catch (error) {
+      // Don't leave the button stuck in "loading" if the LLM call throws.
+      showToast.error(`סיווג ה-AI נכשל: ${error?.message || 'שגיאה לא ידועה'}`);
+      setResult(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApply = () => {
@@ -102,10 +110,14 @@ export default function AICategorization({
             </div>
           </div>
 
-          <div className="bg-white rounded-lg p-3 border border-indigo-100">
-            <div className="text-xs text-gray-500 mb-1">הסבר ({result.confidence}% ביטחון)</div>
-            <p className="text-sm text-gray-700">{result.reasoning}</p>
-          </div>
+          {(result.confidence != null || result.reasoning) && (
+            <div className="bg-white rounded-lg p-3 border border-indigo-100">
+              <div className="text-xs text-gray-500 mb-1">
+                הסבר{result.confidence != null ? ` (${result.confidence}% ביטחון)` : ''}
+              </div>
+              <p className="text-sm text-gray-700">{result.reasoning || 'אין הסבר נוסף'}</p>
+            </div>
+          )}
 
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="outline" onClick={handleCategorize} className="gap-1">

@@ -5,6 +5,7 @@ import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +26,8 @@ import { issueTypeLabels } from '@/config/labels';
 const DataTableLazy = lazyRetry(() => import('@/components/ui/DataTable'));
 
 export default function VendorPortalAdminTab({ onSelectVendor }) {
+  const { effectiveRole } = usePermissions();
+  const isAdmin = effectiveRole === 'admin';
   const [selectedVendorId, setSelectedVendorId] = React.useState('');
 
   const allVendorsQuery = useQuery({
@@ -120,40 +123,45 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
         </div>
       </div>
 
-      <Card className="max-w-xl">
-        <CardHeader>
-          <CardTitle className="text-lg">פתח פורטל לספק</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="label-text">בחר ספק</label>
-            <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
-              <SelectTrigger>
-                <SelectValue placeholder="בחר ספק" />
-              </SelectTrigger>
-              <SelectContent>
-                {(allVendorsQuery.data || []).map((v) => (
-                  <SelectItem key={v.id} value={v.id}>
-                    {v.vendor_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            className="w-full"
-            disabled={!selectedVendorId}
-            onClick={() => {
-              const v = (allVendorsQuery.data || []).find((x) => x.id === selectedVendorId);
-              if (v) onSelectVendor(v);
-            }}
-          >
-            פתח פורטל לספק
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Admin-only: open another vendor's portal view (writes vendor profile state).
+          Operators get read-only tracking only and shouldn't be able to spoof vendors. */}
+      {isAdmin && (
+        <Card className="max-w-xl">
+          <CardHeader>
+            <CardTitle className="text-lg">פתח פורטל לספק</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="label-text">בחר ספק</label>
+              <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="בחר ספק" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(allVendorsQuery.data || []).map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.vendor_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              className="w-full"
+              disabled={!selectedVendorId}
+              onClick={() => {
+                const v = (allVendorsQuery.data || []).find((x) => x.id === selectedVendorId);
+                if (v) onSelectVendor(v);
+              }}
+            >
+              פתח פורטל לספק
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      <VendorEmailLinker vendors={allVendorsQuery.data || []} />
+      {/* Admin-only: linkVendorEmail backend rejects non-admin with 403. */}
+      {isAdmin && <VendorEmailLinker vendors={allVendorsQuery.data || []} />}
 
       <Card className="bg-white">
         <CardHeader>

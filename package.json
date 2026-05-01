@@ -13,6 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:report": "playwright show-report",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
@@ -89,6 +92,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@playwright/test": "^1.59.1",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-links": "^8.6.15",
     "@storybook/blocks": "^8.6.14",

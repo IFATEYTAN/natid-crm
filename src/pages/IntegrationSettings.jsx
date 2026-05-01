@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { Link2, Settings, CheckCircle, XCircle, ExternalLink, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import NatiSyncPanel from '@/components/integrations/NatiSyncPanel';
+import DemoDataPanel from '@/components/integrations/DemoDataPanel';
 
 const integrations = [
   {
@@ -84,6 +85,9 @@ export default function IntegrationSettingsPage() {
 
       {/* Nati Sync Panel - admin only */}
       {isAdmin && <NatiSyncPanel />}
+
+      {/* Demo Data Panel - admin only */}
+      {isAdmin && <DemoDataPanel />}
 
       {/* Info Card */}
       <Card className="bg-[#f3f4f6] border border-[#e5e7eb]">
