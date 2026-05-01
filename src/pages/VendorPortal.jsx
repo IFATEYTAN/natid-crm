@@ -279,13 +279,23 @@ export default function VendorPortalPage() {
 
   const toggleAvailability = async () => {
     if (!vendorProfile) return;
+    const previousStatus = isAvailable;
     const newStatus = !isAvailable;
+    // Optimistic flip — UI feels snappy, but we MUST roll back on error,
+    // otherwise the toggle says "available" while the DB still says "offline"
+    // and pendingAssignmentsQuery starts firing for a vendor who isn't really
+    // back online.
     setIsAvailable(newStatus);
-    await base44.entities.Vendor.update(vendorProfile.id, {
-      is_available_now: newStatus,
-      availability_status: newStatus ? 'available' : 'offline',
-    });
-    showToast.success(newStatus ? 'הסטטוס עודכן לזמין' : 'הסטטוס עודכן ללא זמין');
+    try {
+      await base44.entities.Vendor.update(vendorProfile.id, {
+        is_available_now: newStatus,
+        availability_status: newStatus ? 'available' : 'offline',
+      });
+      showToast.success(newStatus ? 'הסטטוס עודכן לזמין' : 'הסטטוס עודכן ללא זמין');
+    } catch (error) {
+      setIsAvailable(previousStatus);
+      showToast.error(`עדכון הסטטוס נכשל: ${error?.message || 'שגיאת רשת'}`);
+    }
   };
 
   const handleAcceptCall = () => {
@@ -563,7 +573,13 @@ export default function VendorPortalPage() {
                   <h2 className="text-xl font-bold mb-1">בחר ספק לצפייה</h2>
                   <p className="text-[#6B778C] text-sm">בחר ספק מהרשימה כדי לצפות בפורטל שלו</p>
                 </div>
-                {isAdmin && (
+                {/* Operator + Admin can both pick a vendor from the empty state.
+                    Previously this was admin-only, leaving operators stuck with no
+                    way to recover when vendorProfile reset (e.g. after a refresh
+                    or a stale vendor pick). The role-correctness check above (the
+                    canSeeAdminTab→admin tab effect) handles the auto-redirect, but
+                    this Select is the explicit recovery affordance. */}
+                {canSeeAdminTab && (
                   <div className="space-y-3">
                     <Select
                       onValueChange={(vendorId) => {

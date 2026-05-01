@@ -601,6 +601,9 @@ export default function NewCase() {
                 <Label>שנת ייצור</Label>
                 <Input
                   type="number"
+                  min="1950"
+                  max={new Date().getFullYear() + 1}
+                  step="1"
                   value={formData.vehicle_year}
                   onChange={(e) => setFormData({ ...formData, vehicle_year: e.target.value })}
                   placeholder="2024"
@@ -1011,6 +1014,8 @@ export default function NewCase() {
                 <Label>סכום ערבון</Label>
                 <Input
                   type="number"
+                  min="0"
+                  step="1"
                   value={formData.deposit_amount}
                   onChange={(e) => setFormData({ ...formData, deposit_amount: e.target.value })}
                 />
@@ -1084,6 +1089,8 @@ export default function NewCase() {
                 <Label>סכום תשלום</Label>
                 <Input
                   type="number"
+                  min="0"
+                  step="1"
                   value={formData.payment_amount}
                   onChange={(e) => setFormData({ ...formData, payment_amount: e.target.value })}
                 />
@@ -1092,6 +1099,8 @@ export default function NewCase() {
                 <Label>סה"כ</Label>
                 <Input
                   type="number"
+                  min="0"
+                  step="1"
                   value={formData.payment_total}
                   onChange={(e) => setFormData({ ...formData, payment_total: e.target.value })}
                 />
@@ -1100,6 +1109,9 @@ export default function NewCase() {
                 <Label>תשלומים</Label>
                 <Input
                   type="number"
+                  min="1"
+                  max="60"
+                  step="1"
                   value={formData.payment_installments}
                   onChange={(e) =>
                     setFormData({ ...formData, payment_installments: e.target.value })
@@ -1159,6 +1171,9 @@ export default function NewCase() {
                 <Label>להודיע על הגעת עזרה לפני X דקות</Label>
                 <Input
                   type="number"
+                  min="0"
+                  max="120"
+                  step="1"
                   value={formData.early_alert_minutes}
                   onChange={(e) =>
                     setFormData({ ...formData, early_alert_minutes: e.target.value })
