@@ -305,7 +305,7 @@ export default function NatiSyncPanel() {
             בצע סנכרון
           </Button>
           <p className="text-xs text-[#6b7280] flex-1 self-center">
-            סנכרון מוגבל ל-30 רשומות בכל הרצה. להרצה מלאה - הריצי כמה פעמים.
+            סנכרון מוגבל ל-50 רשומות בכל הרצה. להרצה מלאה - הריצי כמה פעמים.
           </p>
         </div>
 
