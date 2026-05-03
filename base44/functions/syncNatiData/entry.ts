@@ -85,19 +85,38 @@ function clean(obj) {
 
 // ========== MAPPERS ==========
 
+function parseCoords(location) {
+  if (!location) return null;
+  // Handle object format { lat: ..., lng: ... } or { lat: ..., lon: ... }
+  if (typeof location === 'object') {
+    const lat = parseFloat(location.lat || location.latitude);
+    const lon = parseFloat(location.lng || location.lon || location.longitude);
+    if (!isNaN(lat) && !isNaN(lon) && lat !== 0 && lon !== 0) return { lat, lon };
+    return null;
+  }
+  // Handle string format "lat,lon"
+  if (typeof location === 'string') {
+    const parts = location.split(',').map(s => parseFloat(s.trim()));
+    if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[0] !== 0) {
+      return { lat: parts[0], lon: parts[1] };
+    }
+  }
+  return null;
+}
+
 function mapToCall(a) {
   const data = {
     call_number: a.appeal_id,
     call_status: CALL_STATUS_MAP[String(a.status)] || 'waiting_treatment',
-    call_priority: a.vip === '1' ? 'urgent' : 'normal',
-    is_vip: a.vip === '1',
+    call_priority: a.vip === '1' || a.yashir_top_client === '1' ? 'urgent' : 'normal',
+    is_vip: a.vip === '1' || a.yashir_top_client === '1',
     service_category: a.department === 'גרירה' ? 'towing' : (a.department?.includes('ניידת') ? 'mobile_unit' : 'other'),
     issue_type: a.department === 'גרירה' ? 'stopped_driving' : (matchKeyword(a.serve_type, ISSUE_TYPE_KEYWORDS) || 'other'),
     issue_description: a.problem_desc || a.diagnose || '',
     issue_detail: a.serve_type || '',
     customer_name: a.client_name || a.user_name || '',
-    customer_phone: a.tel || 'לא צוין',
-    customer_phone_2: a.tel2 || '',
+    customer_phone: a.tel || a.tel1 || 'לא צוין',
+    customer_phone_2: a.tel1 || '',
     customer_id_number: a.client_id || '',
     customer_email: a.client_email || '',
     insurance_company: a.agent_name || '',
@@ -106,27 +125,54 @@ function mapToCall(a) {
     membership_number: a.sub_num || '',
     coverage_details: a.serve_type || '',
     vehicle_plate: a.car_num || '',
-    vehicle_model: a.kod_degem_name || '',
-    vehicle_type: VEHICLE_TYPE_MAP[String(a.vehicle_class)] || 'private',
-    vehicle_code: a.car_code || '',
+    vehicle_model: a.kod_degem_name || a.car_type_name || '',
+    vehicle_type: VEHICLE_TYPE_MAP[String(a.car_type)] || VEHICLE_TYPE_MAP[String(a.vehicle_class)] || 'private',
+    vehicle_code: a.car_code || a.mispar_shilda || '',
     pickup_location_address: a.address || 'לא צוין',
     pickup_location_city: a.city || '',
     pickup_location_area: AREA_MAP[a.area] || 'undefined',
     dropoff_location_address: a.grar_address || '',
     dropoff_location_city: a.grar_city || '',
     dropoff_garage_name: a.grar_address || '',
+    // Storage location
+    storage_location_address: a.store_address || '',
+    storage_location_city: a.store_city || '',
+    // Vendor
     assigned_vendor_name: (a.supplier_name || '').trim(),
     operator_notes: a.q_notes || '',
     vendor_notes: a.supplier_notes || '',
     passed_quality_control: a.inspector_approves === '1',
     quality_controller_name: a.inspector_name || '',
     created_by_source: a.open_from_api === '1' ? 'bot' : 'operator',
+    // New fields from Nati
+    customer_response_code: a.car_pin || '',
+    key_location: a.key_location || '',
+    early_notification_minutes: a.reminder ? parseInt(a.reminder) : 30,
+    operation_instructions: a.continue_id && a.continue_id !== '0' ? `קריאת המשך מ-${a.continue_id}` : '',
   };
+
+  // GPS coordinates
+  const fromCoords = parseCoords(a.from_location);
+  if (fromCoords) {
+    data.pickup_location_lat = fromCoords.lat;
+    data.pickup_location_lon = fromCoords.lon;
+  }
+  const toCoords = parseCoords(a.to_location);
+  // No dropoff lat/lon on Call entity, but we can use it if added later
+
   // Timestamps
   const assignedAt = parseNatiDate(a.supplier_assigned_date);
   if (assignedAt) data.assigned_at = assignedAt;
+  // supplier_choice_time = how long it took to choose vendor (in seconds)
+  if (a.supplier_choice_time && parseInt(a.supplier_choice_time) > 0) {
+    data.time_to_vendor_assignment = Math.round(parseInt(a.supplier_choice_time) / 60);
+  }
   const etaTime = parseNatiDate(a.arrive_expected_time);
   if (etaTime) data.vendor_arrival_time_estimated = etaTime;
+  if (a.expected_time && a.expected_time !== '0') {
+    const parsedExpected = parseNatiDate(a.expected_time);
+    if (parsedExpected) data.estimated_arrival_time = parsedExpected;
+  }
   const arriveTime = parseNatiDate(a.arrive_time);
   if (arriveTime) data.vendor_arrival_time_actual = arriveTime;
   const finishTime = parseNatiDate(a.finish_time);
@@ -134,9 +180,14 @@ function mapToCall(a) {
   // Financial
   if (a.claim_total_cost && parseFloat(a.claim_total_cost) > 0) data.total_cost = parseFloat(a.claim_total_cost);
   if (a.wait_time && parseInt(a.wait_time) > 0) data.time_waiting = parseInt(a.wait_time);
-  // Future service
+  // Future service with time range
   if (a.future_service_from && !a.future_service_from.startsWith('0000')) {
     data.future_service_date = a.future_service_from.split(' ')[0] || a.future_service_from.split('T')[0];
+    if (a.future_service_to && !a.future_service_to.startsWith('0000')) {
+      const fromTime = a.future_service_from.split(' ')[1] || '';
+      const toTime = a.future_service_to.split(' ')[1] || '';
+      if (fromTime && toTime) data.future_service_time_range = `${fromTime.substring(0,5)}-${toTime.substring(0,5)}`;
+    }
   }
   return clean(data);
 }
@@ -146,18 +197,19 @@ function mapToCase(a) {
     case_number: a.appeal_id,
     customer_name: a.client_name || a.user_name || '',
     caller_name: a.requester || a.user_name || '',
-    caller_phone: a.tel || a.intermediary_phone || '',
+    caller_phone: a.tel || a.tel1 || a.intermediary_phone || '',
     vehicle_number: a.car_num || '',
-    vehicle_model: a.kod_degem_name || '',
-    vehicle_type: VEHICLE_TYPE_MAP[String(a.vehicle_class)] || 'private',
-    vehicle_model_code: a.car_code || '',
+    vehicle_model: a.kod_degem_name || a.car_type_name || '',
+    vehicle_type: VEHICLE_TYPE_MAP[String(a.car_type)] || VEHICLE_TYPE_MAP[String(a.vehicle_class)] || 'private',
+    vehicle_model_code: a.car_code || a.mispar_shilda || '',
+    fuel_type: a.fuel_type || '',
     service_type: a.department === 'גרירה' ? 'towing' : (matchKeyword(a.serve_type, SERVICE_TYPE_KEYWORDS) || 'other'),
     location_address: a.address || '',
     location_city: a.city || '',
     destination_address: a.grar_address || '',
     destination_city: a.grar_city || '',
     status: CASE_STATUS_MAP[String(a.status)] || 'new',
-    priority: a.vip === '1' ? 'urgent' : 'normal',
+    priority: a.vip === '1' || a.yashir_top_client === '1' ? 'urgent' : 'normal',
     assigned_provider_name: (a.supplier_name || '').trim(),
     department: DEPT_MAP[a.department] || 'אחר',
     insurance_company: a.agent_name || '',
@@ -166,16 +218,26 @@ function mapToCase(a) {
     internal_notes: a.q_notes || '',
     inspector_name: a.inspector_name || '',
     passed_qa: a.inspector_approves === '1',
-    is_vip: a.vip === '1',
+    is_vip: a.vip === '1' || a.yashir_top_client === '1',
     opening_source: a.open_from_api === '1' ? 'app' : 'call_center',
-    // Nati's get_appeals_list only returns OPEN appeals (callStatus=-1).
-    // A real "closed" state at source is detected by finish_time being set.
     source_status: a.finish_time && !a.finish_time.startsWith('0000') ? 'closed' : 'open',
     dispatcher_name: a.user_name || '',
     case_reference_code: a.sub_num || '',
     customer_id: a.client_id || '',
     coverage_details: a.serve_type || '',
+    // New fields
+    early_alert_minutes: a.reminder ? parseInt(a.reminder) : 30,
+    early_alert_sent: a.reminder_canceled === '1',
+    is_special_customer: a.yashir_top_client === '1',
   };
+
+  // GPS coordinates
+  const fromCoords = parseCoords(a.from_location);
+  if (fromCoords) {
+    data.location_lat = fromCoords.lat;
+    data.location_lng = fromCoords.lon;
+  }
+
   if (a.claim_total_cost && parseFloat(a.claim_total_cost) > 0) data.price = parseFloat(a.claim_total_cost);
   if (a.wait_time && parseInt(a.wait_time) > 0) data.waiting_time_minutes = parseInt(a.wait_time);
   if (a.days_remain) data.remaining_days = parseInt(a.days_remain);
@@ -189,6 +251,10 @@ function mapToCase(a) {
   if (etaTime) data.vendor_arrival_time = etaTime;
   if (a.future_service_from && !a.future_service_from.startsWith('0000')) {
     data.future_service_time = a.future_service_from.replace(' ', 'T');
+  }
+  // Return date (relevant for rentals)
+  if (a.return_date && !a.return_date.startsWith('0000')) {
+    data.resolution_notes = (data.resolution_notes || '') + ` תאריך החזרה: ${a.return_date}`;
   }
   return clean(data);
 }
@@ -220,13 +286,17 @@ function extractCustomers(appeals) {
       map.set(key, clean({
         name,
         customer_id_external: a.client_id || '',
-        phone: a.tel || '',
+        phone: a.tel || a.tel1 || '',
         email: a.client_email || '',
         insurance_company: a.agent_name || '',
         package_name: a.package_name || '',
         vehicle_number: a.car_num || '',
-        vehicle_model: a.kod_degem_name || '',
+        vehicle_model: a.kod_degem_name || a.car_type_name || '',
+        vehicle_model_code: a.car_code || '',
         customer_type: a.agent_name ? 'insurance_company' : 'individual',
+        is_vip: a.vip === '1' || a.yashir_top_client === '1',
+        is_special_customer: a.yashir_top_client === '1',
+        subscription_sequence: a.sub_num ? parseInt(a.sub_num) || 0 : 0,
         status: 'active',
       }));
     }
