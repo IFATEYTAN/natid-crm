@@ -1,8 +1,9 @@
 // Triggered on new Case creation
 // 1. Creates WorkQueue entry
-// 2. Sends notification to operators
-// 3. Links vendor by name matching
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+// 2. Auto-assigns to least-busy on-shift operator (only if no vendor assigned)
+// 3. Sends notification to operators
+// 4. Links vendor by name matching
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -16,21 +17,24 @@ Deno.serve(async (req) => {
 
     const caseId = event.entity_id;
     const caseData = data;
-    const results = { workQueue: null, notifications: 0, vendorLinked: false };
+    const results = { workQueue: null, autoAssigned: null, notifications: 0, vendorLinked: false };
+    const sdk = base44.asServiceRole;
+
+    // Determine if this case already has a vendor assigned
+    const hasVendor = !!(caseData.assigned_provider_name && caseData.assigned_provider_name.trim());
 
     // ===== 1. CREATE WORK QUEUE ENTRY =====
+    let queueEntry = null;
     try {
-      // Check if already in queue
-      const existingQueue = await base44.asServiceRole.entities.WorkQueue.filter({ call_id: caseId });
+      const existingQueue = await sdk.entities.WorkQueue.filter({ call_id: caseId });
       if (existingQueue.length === 0) {
-        // Calculate priority score based on case properties
-        let priorityScore = 50; // default
+        let priorityScore = 50;
         if (caseData.priority === 'urgent') priorityScore = 90;
         else if (caseData.priority === 'high') priorityScore = 75;
         else if (caseData.priority === 'low') priorityScore = 25;
         if (caseData.is_vip) priorityScore = Math.min(100, priorityScore + 15);
 
-        await base44.asServiceRole.entities.WorkQueue.create({
+        queueEntry = await sdk.entities.WorkQueue.create({
           call_id: caseId,
           queue_status: 'waiting_in_queue',
           priority_score: priorityScore,
@@ -39,6 +43,7 @@ Deno.serve(async (req) => {
         results.workQueue = 'created';
         console.log(`WorkQueue entry created for case ${caseData.case_number}`);
       } else {
+        queueEntry = existingQueue[0];
         results.workQueue = 'already_exists';
       }
     } catch (e) {
@@ -46,9 +51,34 @@ Deno.serve(async (req) => {
       results.workQueue = 'error: ' + e.message;
     }
 
-    // ===== 2. NOTIFY OPERATORS =====
+    // ===== 2. AUTO-ASSIGN TO LEAST-BUSY ON-SHIFT OPERATOR =====
+    // Only for cases WITHOUT an assigned vendor
+    if (!hasVendor && queueEntry) {
+      try {
+        const assignedAgent = await findLeastBusyAgent(sdk);
+        if (assignedAgent) {
+          await sdk.entities.WorkQueue.update(queueEntry.id, {
+            assigned_to_agent: assignedAgent.email,
+            queue_status: 'assigned_to_agent',
+            assigned_at: new Date().toISOString(),
+          });
+          results.autoAssigned = assignedAgent.email;
+          console.log(`Auto-assigned case ${caseData.case_number} to ${assignedAgent.name} (${assignedAgent.email}) — load: ${assignedAgent.openCount} open calls`);
+        } else {
+          console.log(`No on-shift operators available for case ${caseData.case_number}, staying in queue`);
+          results.autoAssigned = 'no_available_agent';
+        }
+      } catch (e) {
+        console.error('Auto-assign error:', e.message);
+        results.autoAssigned = 'error: ' + e.message;
+      }
+    } else if (hasVendor) {
+      results.autoAssigned = 'skipped_has_vendor';
+    }
+
+    // ===== 3. NOTIFY OPERATORS =====
     try {
-      const users = await base44.asServiceRole.entities.User.filter({});
+      const users = await sdk.entities.User.filter({});
       const operators = users.filter(u => {
         const role = (u.role || '').toLowerCase().trim();
         return role === 'admin' || role === 'operator' || role === 'מנהל' || role === 'מוקדן';
@@ -57,12 +87,15 @@ Deno.serve(async (req) => {
       const deptLabel = caseData.department || 'כללי';
       const customerName = caseData.customer_name || 'לא ידוע';
       const location = caseData.location_city || caseData.location_address || '';
+      const assignedNote = results.autoAssigned && results.autoAssigned !== 'no_available_agent' && results.autoAssigned !== 'skipped_has_vendor'
+        ? ` | שובץ ל: ${results.autoAssigned}`
+        : '';
 
       for (const op of operators) {
-        await base44.asServiceRole.entities.Notification.create({
+        await sdk.entities.Notification.create({
           user_id: op.id,
           title: `קריאה חדשה #${caseData.case_number || ''}`,
-          message: `${deptLabel} | ${customerName} | ${location}`,
+          message: `${deptLabel} | ${customerName} | ${location}${assignedNote}`,
           type: caseData.priority === 'urgent' ? 'warning' : 'info',
           is_read: false,
           link: `/CallDetails?id=${caseId}`,
@@ -76,20 +109,19 @@ Deno.serve(async (req) => {
       console.error('Notification error:', e.message);
     }
 
-    // ===== 3. LINK VENDOR BY NAME =====
+    // ===== 4. LINK VENDOR BY NAME =====
     try {
       const vendorName = caseData.assigned_provider_name;
       if (vendorName && vendorName.trim()) {
-        const vendors = await base44.asServiceRole.entities.Vendor.filter({});
-        // Find vendor by exact or partial name match
-        const match = vendors.find(v => 
-          v.vendor_name === vendorName || 
-          v.vendor_name?.includes(vendorName) || 
+        const vendors = await sdk.entities.Vendor.filter({});
+        const match = vendors.find(v =>
+          v.vendor_name === vendorName ||
+          v.vendor_name?.includes(vendorName) ||
           vendorName.includes(v.vendor_name)
         );
 
         if (match) {
-          await base44.asServiceRole.entities.Case.update(caseId, {
+          await sdk.entities.Case.update(caseId, {
             assigned_provider_id: match.id,
             assigned_provider_name: match.vendor_name,
           });
@@ -109,3 +141,72 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
+
+/**
+ * Find the on-shift operator with the fewest open (non-completed) queue items.
+ * Returns { email, name, openCount } or null if nobody is on shift.
+ */
+async function findLeastBusyAgent(sdk) {
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+  const currentHHMM = now.toISOString().substring(11, 16); // HH:MM in UTC
+
+  // 1. Get today's active/scheduled shifts
+  const allShifts = await sdk.entities.AgentShift.filter({ shift_date: todayStr });
+  const activeShifts = allShifts.filter(s => {
+    if (s.status !== 'active' && s.status !== 'scheduled') return false;
+    // Check if current time is within shift hours
+    if (s.start_time && s.end_time) {
+      return currentHHMM >= s.start_time && currentHHMM <= s.end_time;
+    }
+    return true; // If no times specified, consider them on shift
+  });
+
+  if (activeShifts.length === 0) {
+    console.log('[AUTO-ASSIGN] No active shifts found for today');
+    return null;
+  }
+
+  // Collect unique agent emails from active shifts
+  const onShiftEmails = [...new Set(activeShifts.map(s => s.agent_email).filter(Boolean))];
+  console.log(`[AUTO-ASSIGN] On-shift agents: ${onShiftEmails.join(', ')}`);
+
+  if (onShiftEmails.length === 0) return null;
+
+  // 2. Count open queue items per agent
+  const allQueueItems = await sdk.entities.WorkQueue.filter({});
+  const openStatuses = ['assigned_to_agent', 'in_progress', 'waiting_in_queue'];
+  const openItems = allQueueItems.filter(q => openStatuses.includes(q.queue_status));
+
+  // Count per agent
+  const loadMap = {};
+  for (const email of onShiftEmails) {
+    loadMap[email] = 0;
+  }
+  for (const item of openItems) {
+    if (item.assigned_to_agent && loadMap[item.assigned_to_agent] !== undefined) {
+      loadMap[item.assigned_to_agent]++;
+    }
+  }
+
+  // 3. Pick the agent with the least open items
+  let bestEmail = null;
+  let bestCount = Infinity;
+  for (const email of onShiftEmails) {
+    const count = loadMap[email] || 0;
+    if (count < bestCount) {
+      bestCount = count;
+      bestEmail = email;
+    }
+  }
+
+  if (!bestEmail) return null;
+
+  // Get agent name from shift data
+  const shift = activeShifts.find(s => s.agent_email === bestEmail);
+  return {
+    email: bestEmail,
+    name: shift?.agent_name || bestEmail,
+    openCount: bestCount,
+  };
+}
