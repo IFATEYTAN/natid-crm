@@ -1,5 +1,5 @@
 import { Input } from './input';
-import { Search, Mail, Phone as PhoneIcon, Lock } from 'lucide-react';
+import { Search, Mail, Phone, Lock } from 'lucide-react';
 
 /**
  * Input Component Stories
@@ -111,7 +111,7 @@ export const FormExample = {
       <div className="space-y-2">
         <label className="text-sm font-medium">טלפון</label>
         <div className="relative">
-          <PhoneIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input className="ps-10" type="tel" placeholder="050-0000000" />
         </div>
       </div>
