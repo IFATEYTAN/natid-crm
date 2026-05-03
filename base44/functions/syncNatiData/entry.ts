@@ -308,11 +308,12 @@ function extractCustomers(appeals) {
 
 async function syncEntity(sdk, entityName, items, keyField, existingLookup, linkFn) {
   let created = 0, updated = 0, skipped = 0, errors = 0;
-  const BATCH = 5;
+  const BATCH = 2; // Small batches to avoid rate limits
   
   for (let i = 0; i < items.length; i += BATCH) {
     const batch = items.slice(i, i + BATCH);
-    const promises = batch.map(async (item) => {
+    // Sequential within batch to minimize rate limit pressure
+    for (const item of batch) {
       try {
         if (linkFn) linkFn(item);
         const key = item[keyField];
@@ -329,10 +330,9 @@ async function syncEntity(sdk, entityName, items, keyField, existingLookup, link
         console.error(`[SYNC] ${entityName} error:`, e.message);
         errors++;
       }
-    });
-    await Promise.all(promises);
-    // Shorter delay — 1s between batches
-    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 1000));
+    }
+    // Delay between batches to avoid rate limits
+    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 1500));
   }
   return { created, updated, skipped, errors };
 }
@@ -363,6 +363,7 @@ Deno.serve(async (req) => {
       sync_cases = true,
       sync_vendors = true,
       sync_customers = true,
+      close_missing = false, // Auto-close calls/cases missing from Nati open list
     } = body;
 
     // Use secrets — clean CLIENT_ID which has trailing " JWT" from bad secret entry
@@ -431,7 +432,7 @@ Deno.serve(async (req) => {
     // function comfortably under Base44's timeout. 50 is a balance: high
     // enough to absorb a burst of changes between cron runs, low enough that
     // even with the 1s-per-batch delays we stay well under 60s total.
-    const MAX_PER_RUN = 50;
+    const MAX_PER_RUN = 30;
     // Sort: has_updated='1' first, then by date_added_unix descending
     const sorted = [...allAppeals].sort((a, b) => {
       if (a.has_updated === '1' && b.has_updated !== '1') return -1;
@@ -567,7 +568,72 @@ Deno.serve(async (req) => {
       results.cases = caseResult;
     }
 
-    // No internal cleanup needed
+    // ---- AUTO-CLOSE: Detect calls/cases that disappeared from Nati (= closed there) ----
+    if (close_missing) {
+      console.log('[SYNC] Checking for calls/cases to auto-close...');
+      // Build set of ALL open appeal IDs from Nati (not just processed batch)
+      const natiOpenIds = new Set(allAppeals.map(a => a.appeal_id));
+      
+      // Statuses we consider "open" in our system
+      const OPEN_CALL_STATUSES = ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress', 'vendor_arrived', 'future_service', 'in_followup', 'in_storage', 'continued_treatment', 'awaiting_payment'];
+      const OPEN_CASE_STATUSES = ['new', 'assigned', 'en_route', 'on_site', 'in_progress'];
+      
+      let callsClosed = 0, casesClosed = 0;
+      const CLOSE_BATCH = 3;
+      
+      // Close calls
+      if (sync_calls) {
+        const openLocalCalls = existingCalls.filter(c => 
+          c.call_number && OPEN_CALL_STATUSES.includes(c.call_status) && !natiOpenIds.has(c.call_number)
+        );
+        console.log(`[SYNC] Found ${openLocalCalls.length} calls open locally but missing from Nati`);
+        
+        for (let i = 0; i < openLocalCalls.length; i += CLOSE_BATCH) {
+          const batch = openLocalCalls.slice(i, i + CLOSE_BATCH);
+          await Promise.all(batch.map(async (call) => {
+            try {
+              await sdk.entities.Call.update(call.id, { 
+                call_status: 'completed',
+                closed_at: new Date().toISOString(),
+                operator_notes: (call.operator_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
+              });
+              callsClosed++;
+            } catch (e) {
+              console.error('[SYNC] Call close error:', e.message);
+            }
+          }));
+          if (i + CLOSE_BATCH < openLocalCalls.length) await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+      
+      // Close cases
+      if (sync_cases) {
+        const openLocalCases = existingCases.filter(c => 
+          c.case_number && OPEN_CASE_STATUSES.includes(c.status) && !natiOpenIds.has(c.case_number)
+        );
+        console.log(`[SYNC] Found ${openLocalCases.length} cases open locally but missing from Nati`);
+        
+        for (let i = 0; i < openLocalCases.length; i += CLOSE_BATCH) {
+          const batch = openLocalCases.slice(i, i + CLOSE_BATCH);
+          await Promise.all(batch.map(async (cs) => {
+            try {
+              await sdk.entities.Case.update(cs.id, { 
+                status: 'completed',
+                completed_at: new Date().toISOString(),
+                source_status: 'closed',
+                internal_notes: (cs.internal_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
+              });
+              casesClosed++;
+            } catch (e) {
+              console.error('[SYNC] Case close error:', e.message);
+            }
+          }));
+          if (i + CLOSE_BATCH < openLocalCases.length) await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+      
+      results.auto_closed = { calls_closed: callsClosed, cases_closed: casesClosed };
+    }
 
     const duration = Date.now() - startTime;
     console.log(`[SYNC] Done in ${duration}ms`);
