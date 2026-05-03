@@ -357,8 +357,11 @@ Deno.serve(async (req) => {
     const allAppeals = natiData.data;
     console.log(`[SYNC] Got ${allAppeals.length} appeals from Nati (total: ${natiData.total})`);
 
-    // OPTIMIZATION 1: Prioritize updated records, limit to 30 per run
-    const MAX_PER_RUN = 30;
+    // OPTIMIZATION 1: Prioritize updated records, limit per run to keep
+    // function comfortably under Base44's timeout. 50 is a balance: high
+    // enough to absorb a burst of changes between cron runs, low enough that
+    // even with the 1s-per-batch delays we stay well under 60s total.
+    const MAX_PER_RUN = 50;
     // Sort: has_updated='1' first, then by date_added_unix descending
     const sorted = [...allAppeals].sort((a, b) => {
       if (a.has_updated === '1' && b.has_updated !== '1') return -1;
