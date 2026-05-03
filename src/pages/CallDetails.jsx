@@ -114,13 +114,13 @@ export default function CallDetailsPage() {
 
   const callQuery = useQuery({
     queryKey: queryKeys.calls.single(callId),
-    queryFn: () => base44.entities.Call.filter({ id: callId }),
+    queryFn: () => base44.entities.Call.get(callId),
     enabled: !!callId,
     refetchInterval: 15000,
   });
   const vendorsQuery = useVendors();
 
-  const call = callQuery.data?.[0];
+  const call = callQuery.data;
   const vendors = vendorsQuery.data || [];
   const availableVendors = vendors.filter((v) => v.is_available_now && v.is_active);
 
