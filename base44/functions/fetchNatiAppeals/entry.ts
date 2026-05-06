@@ -20,7 +20,10 @@ Deno.serve(async (req) => {
     const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '').trim();
 
     if (!JWT_TOKEN || !CLIENT_ID) {
-      return Response.json({ error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' }, { status: 500 });
+      return Response.json(
+        { error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' },
+        { status: 500 }
+      );
     }
 
     // Parse optional filters from request body
@@ -34,23 +37,23 @@ Deno.serve(async (req) => {
       q,
     } = body;
 
-    // Build query params
+    // Build query params - שמות הפרמטרים לפי תיעוד ה-API של נתי
     const params = new URLSearchParams();
     params.set('dep', String(dep));
     params.set('callStatus', String(callStatus));
     if (dir) params.set('dir', dir);
-    if (from_date) params.set('from_date', from_date);
-    if (to_date) params.set('to_date', to_date);
+    if (from_date) params.set('fromdate', from_date);
+    if (to_date) params.set('todate', to_date);
     if (q) params.set('q', q);
 
-    const url = `${NATI_API_BASE}/get_appeals_list?${params.toString()}`;
+    const url = `${NATI_API_BASE}/getappealslist?${params.toString()}`;
 
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${JWT_TOKEN}`,
         'clientId': CLIENT_ID,
-        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     });
 
