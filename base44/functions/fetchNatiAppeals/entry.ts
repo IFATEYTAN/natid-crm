@@ -11,7 +11,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Only admins can fetch from external API
     if (user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
@@ -26,7 +25,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse optional filters from request body
     const body = await req.json().catch(() => ({}));
     const {
       dep = -1,
@@ -37,16 +35,15 @@ Deno.serve(async (req) => {
       q,
     } = body;
 
-    // Build query params - שמות הפרמטרים לפי תיעוד ה-API של נתי
     const params = new URLSearchParams();
     params.set('dep', String(dep));
     params.set('callStatus', String(callStatus));
     if (dir) params.set('dir', dir);
-    if (from_date) params.set('fromdate', from_date);
-    if (to_date) params.set('todate', to_date);
+    if (from_date) params.set('from_date', from_date);
+    if (to_date) params.set('to_date', to_date);
     if (q) params.set('q', q);
 
-    const url = `${NATI_API_BASE}/getappealslist?${params.toString()}`;
+    const url = `${NATI_API_BASE}/get_appeals_list?${params.toString()}`;
 
     const response = await fetch(url, {
       method: 'GET',
