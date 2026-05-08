@@ -1,32 +1,44 @@
-// Inspect full structure of Nati API data - returns first record with all fields
+/**
+ * inspectNatiData — Direct MySQL: returns first 2 records with all fields
+ */
+import mysql from 'npm:mysql2@3.9.7/promise';
+
+function getDbConfig() {
+  return {
+    host: Deno.env.get('NATID_DB_HOST'),
+    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+    user: Deno.env.get('NATID_DB_USER'),
+    password: Deno.env.get('NATID_DB_PASSWORD'),
+    database: Deno.env.get('NATID_DB_NAME'),
+    connectTimeout: 15000,
+    ssl: { rejectUnauthorized: false },
+  };
+}
+
+async function getConnection() {
+  const config = getDbConfig();
+  if (!config.host || !config.user || !config.password) {
+    throw new Error('Missing NATID_DB_* secrets');
+  }
+  try {
+    return await mysql.createConnection(config);
+  } catch (e) {
+    const { ssl, ...noSsl } = config;
+    return await mysql.createConnection(noSsl);
+  }
+}
 
 Deno.serve(async (req) => {
-  const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
-  const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '').trim();
-
-  if (!JWT_TOKEN || !CLIENT_ID) {
-    return Response.json({ error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' }, { status: 500 });
-  }
-
   try {
-    const url = 'https://api.natid.co.il/api/get_appeals_list?dep=-1&callStatus=-1&dir=DESC';
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${JWT_TOKEN}`,
-        'clientId': CLIENT_ID,
-        'Content-Type': 'application/json',
-      },
-    });
+    const connection = await getConnection();
+    const [rows] = await connection.query('SELECT * FROM appeals ORDER BY date_added_unix DESC LIMIT 2');
+    await connection.end();
 
-    const data = await response.json();
-    
-    // Return summary + first 2 full records
     return Response.json({
-      success: data.success,
-      total: data.total,
-      fields: data.data && data.data.length > 0 ? Object.keys(data.data[0]) : [],
-      sample_records: data.data ? data.data.slice(0, 2) : [],
+      success: true,
+      total: rows.length,
+      fields: rows.length > 0 ? Object.keys(rows[0]) : [],
+      sample_records: rows,
     });
   } catch (e) {
     return Response.json({ error: e.message }, { status: 500 });

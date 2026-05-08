@@ -1,248 +1,178 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/**
+ * syncNatiAppeals — Direct MySQL sync from Natid DB
+ * Full sync: vendors, customers, cases, calls.
+ */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import mysql from 'npm:mysql2@3.9.7/promise';
 
-const NATI_API_BASE = 'https://api.natid.co.il/api';
+// ========== DB CONNECTION ==========
 
-// ========== STATUS MAPPINGS ==========
-// Source: src/docs/nati-api-reference.md
-// Nati: 0=ממתין, 1=בטיפול, 2=באחסנה, 3=המשך טיפול, 4=בוצע לא סגור,
-//       5=הגיע, 6=שירות עתידי
-
-function mapCaseStatus(natiStatus) {
-  const statusMap = {
-    '0': 'new',
-    '1': 'in_progress',
-    '2': 'in_progress',
-    '3': 'in_progress',
-    '4': 'in_progress',
-    '5': 'on_site',
-    '6': 'new',
+function getDbConfig() {
+  return {
+    host: Deno.env.get('NATID_DB_HOST'),
+    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+    user: Deno.env.get('NATID_DB_USER'),
+    password: Deno.env.get('NATID_DB_PASSWORD'),
+    database: Deno.env.get('NATID_DB_NAME'),
+    connectTimeout: 15000,
+    ssl: { rejectUnauthorized: false },
   };
-  return statusMap[String(natiStatus)] || 'new';
 }
 
-function mapCallStatus(natiStatus) {
-  const statusMap = {
-    '0': 'waiting_treatment',
-    '1': 'in_progress',
-    '2': 'in_storage',
-    '3': 'continued_treatment',
-    '4': 'awaiting_payment',
-    '5': 'vendor_arrived',
-    '6': 'future_service',
-  };
-  return statusMap[String(natiStatus)] || 'waiting_treatment';
+async function getConnection() {
+  const config = getDbConfig();
+  if (!config.host || !config.user || !config.password) {
+    throw new Error('Missing NATID_DB_* secrets');
+  }
+  try {
+    return await mysql.createConnection(config);
+  } catch (e) {
+    const { ssl, ...noSsl } = config;
+    return await mysql.createConnection(noSsl);
+  }
 }
 
-// Map Nati department
-function mapDepartment(dept) {
-  const deptMap = {
-    'גרירה': 'גרירה',
-    'ניידת': 'ניידת שירות',
-    'ניידת שירות': 'ניידת שירות',
-    'שמשות': 'שמשות',
-    'רכב חליפי': 'רכב חליפי',
-    'רדיו דיסק': 'רדיו דיסק',
-  };
-  return deptMap[dept] || 'אחר';
-}
+// ========== MAPPINGS ==========
 
-// Map Nati serve_type to Case service_type
-function mapCaseServiceType(serveType, dept) {
+function mapCaseStatus(s) { return { '0': 'new', '1': 'in_progress', '2': 'in_progress', '3': 'in_progress', '4': 'in_progress', '5': 'on_site', '6': 'new' }[String(s)] || 'new'; }
+function mapCallStatus(s) { return { '0': 'waiting_treatment', '1': 'in_progress', '2': 'in_storage', '3': 'continued_treatment', '4': 'awaiting_payment', '5': 'vendor_arrived', '6': 'future_service' }[String(s)] || 'waiting_treatment'; }
+function mapDepartment(d) { return { 'גרירה': 'גרירה', 'ניידת': 'ניידת שירות', 'ניידת שירות': 'ניידת שירות', 'שמשות': 'שמשות', 'רכב חליפי': 'רכב חליפי', 'רדיו דיסק': 'רדיו דיסק' }[d] || 'אחר'; }
+function mapVehicleType(vc) { return { '1': 'private', '2': 'motorcycle', '3': 'truck', '4': 'commercial_light' }[String(vc)] || 'private'; }
+function mapArea(a) { return { 'מרכז': 'center', 'שרון': 'sharon', 'צפון': 'north', 'דרום': 'south', 'ירושלים': 'jerusalem', 'שפלה': 'lowlands' }[a] || 'undefined'; }
+
+function mapCaseServiceType(st, dept) {
   if (dept === 'גרירה') return 'towing';
-  const typeMap = {
-    'תקר': 'flat_tire',
-    'מצבר': 'battery',
-    'נעילה': 'lockout',
-    'דלק': 'fuel',
-    'תאונה': 'accident',
-    'מכני': 'mechanical',
-  };
-  for (const [key, val] of Object.entries(typeMap)) {
-    if (serveType && serveType.includes(key)) return val;
+  for (const [k, v] of Object.entries({ 'תקר': 'flat_tire', 'מצבר': 'battery', 'נעילה': 'lockout', 'דלק': 'fuel', 'תאונה': 'accident', 'מכני': 'mechanical' })) {
+    if (st && String(st).includes(k)) return v;
   }
   return 'other';
 }
 
-// Map Nati serve_type to Call service_category
-function mapCallServiceCategory(serveType, dept) {
-  if (dept === 'גרירה') return 'towing';
-  if (dept === 'ניידת' || dept === 'ניידת שירות') return 'mobile_unit';
-  return 'other';
-}
-
-// Map Nati serve_type to Call issue_type
-function mapCallIssueType(serveType, dept) {
+function mapCallIssueType(st, dept) {
   if (dept === 'גרירה') return 'stopped_driving';
-  const typeMap = {
-    'תקר': 'flat_tire',
-    'מצבר': 'dead_battery',
-    'נעילה': 'locked_keys',
-    'דלק': 'no_fuel',
-    'תאונה': 'accident',
-    'מכני': 'mechanical',
-    'גלגל': 'stuck_wheel',
-  };
-  for (const [key, val] of Object.entries(typeMap)) {
-    if (serveType && serveType.includes(key)) return val;
+  for (const [k, v] of Object.entries({ 'תקר': 'flat_tire', 'מצבר': 'dead_battery', 'נעילה': 'locked_keys', 'דלק': 'no_fuel', 'תאונה': 'accident', 'מכני': 'mechanical', 'גלגל': 'stuck_wheel' })) {
+    if (st && String(st).includes(k)) return v;
   }
   return 'other';
 }
-
-// Map vehicle type
-function mapVehicleType(vehicleClass) {
-  const map = { '1': 'private', '2': 'motorcycle', '3': 'truck', '4': 'commercial_light' };
-  return map[String(vehicleClass)] || 'private';
-}
-
-// Map area from Nati area codes
-function mapArea(area) {
-  const areaMap = {
-    'מרכז': 'center',
-    'שרון': 'sharon',
-    'צפון': 'north',
-    'דרום': 'south',
-    'ירושלים': 'jerusalem',
-    'שפלה': 'lowlands',
-  };
-  return areaMap[area] || 'undefined';
-}
-
-// ========== DATE PARSING ==========
 
 function parseNatiDate(dateStr) {
   if (!dateStr) return null;
-  const match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
-  if (!match) return null;
-  const [, day, month, year, hour, min, sec] = match;
-  return `${year}-${month}-${day}T${hour}:${min}:${sec}`;
+  const s = String(dateStr);
+  const m = s.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}:${m[6]}`;
+  if (s.includes('-') && s.length >= 19) return s.replace(' ', 'T').substring(0, 19);
+  return null;
 }
 
-function parseFutureDate(dateStr) {
-  if (!dateStr || dateStr.startsWith('0000')) return null;
-  return dateStr.replace(' ', 'T');
+function parseFutureDate(d) { if (!d || String(d).startsWith('0000')) return null; return String(d).replace(' ', 'T'); }
+
+function cleanData(obj) {
+  const c = {};
+  for (const [k, v] of Object.entries(obj)) { if (v !== undefined && v !== null && v !== '') c[k] = v; }
+  return c;
 }
 
 // ========== ENTITY MAPPERS ==========
 
-// Map Nati appeal → Case entity
-function mapAppealToCase(appeal) {
+function mapAppealToCase(a) {
+  const vip = String(a.vip) === '1' || String(a.yashir_top_client) === '1';
   return {
-    case_number: appeal.appeal_id,
-    customer_name: appeal.client_name || appeal.user_name || '',
-    caller_name: appeal.requester || appeal.user_name || '',
-    caller_phone: appeal.tel || appeal.intermediary_phone || '',
-    vehicle_number: appeal.car_num || '',
-    vehicle_model: appeal.kod_degem_name || '',
-    vehicle_type: mapVehicleType(appeal.vehicle_class),
-    vehicle_model_code: appeal.car_code || '',
-    service_type: mapCaseServiceType(appeal.serve_type, appeal.department),
-    location_address: appeal.address || '',
-    location_city: appeal.city || '',
-    destination_address: appeal.grar_address || '',
-    destination_city: appeal.grar_city || '',
-    status: mapCaseStatus(appeal.status),
-    priority: appeal.vip === '1' ? 'urgent' : 'normal',
-    assigned_provider_name: (appeal.supplier_name || '').trim(),
-    department: mapDepartment(appeal.department),
-    insurance_company: appeal.agent_name || '',
-    package_name: appeal.package_name || '',
-    problem_description: appeal.problem_desc || appeal.diagnose || '',
-    internal_notes: appeal.q_notes || '',
-    inspector_name: appeal.inspector_name || '',
-    passed_qa: appeal.inspector_approves === '1',
-    is_vip: appeal.vip === '1',
-    opening_source: appeal.open_from_api === '1' ? 'app' : 'call_center',
-    source_status: appeal.finish_time && !appeal.finish_time.startsWith('0000') ? 'closed' : 'open',
-    dispatcher_name: appeal.user_name || '',
-    price: appeal.claim_total_cost ? parseFloat(appeal.claim_total_cost) : undefined,
-    waiting_time_minutes: appeal.wait_time ? parseInt(appeal.wait_time) : undefined,
-    case_reference_code: appeal.sub_num || '',
-    customer_id: appeal.client_id || '',
-    customer_email: appeal.client_email || '',
-    remaining_days: appeal.days_remain ? parseInt(appeal.days_remain) : undefined,
-    coverage_details: appeal.serve_type || '',
-    ...(appeal.arrive_time ? { arrived_at: parseNatiDate(appeal.arrive_time) || undefined } : {}),
-    ...(appeal.finish_time ? { completed_at: parseNatiDate(appeal.finish_time) || undefined } : {}),
-    ...(appeal.supplier_assigned_date ? { assigned_at: parseNatiDate(appeal.supplier_assigned_date) || undefined } : {}),
-    ...(parseFutureDate(appeal.future_service_from) ? { future_service_time: parseFutureDate(appeal.future_service_from) } : {}),
-    ...(appeal.arrive_expected_time ? { vendor_arrival_time: parseNatiDate(appeal.arrive_expected_time) || undefined } : {}),
+    case_number: String(a.appeal_id),
+    customer_name: a.client_name || a.user_name || '',
+    caller_name: a.requester || a.user_name || '',
+    caller_phone: a.tel || a.intermediary_phone || '',
+    vehicle_number: a.car_num || '',
+    vehicle_model: a.kod_degem_name || '',
+    vehicle_type: mapVehicleType(a.vehicle_class),
+    vehicle_model_code: a.car_code || '',
+    service_type: mapCaseServiceType(a.serve_type, a.department),
+    location_address: a.address || '',
+    location_city: a.city || '',
+    destination_address: a.grar_address || '',
+    destination_city: a.grar_city || '',
+    status: mapCaseStatus(a.status),
+    priority: vip ? 'urgent' : 'normal',
+    assigned_provider_name: String(a.supplier_name || '').trim(),
+    department: mapDepartment(a.department),
+    insurance_company: a.agent_name || '',
+    package_name: a.package_name || '',
+    problem_description: a.problem_desc || a.diagnose || '',
+    internal_notes: a.q_notes || '',
+    inspector_name: a.inspector_name || '',
+    passed_qa: String(a.inspector_approves) === '1',
+    is_vip: vip,
+    opening_source: String(a.open_from_api) === '1' ? 'app' : 'call_center',
+    source_status: a.finish_time && !String(a.finish_time).startsWith('0000') ? 'closed' : 'open',
+    dispatcher_name: a.user_name || '',
+    price: a.claim_total_cost ? parseFloat(a.claim_total_cost) : undefined,
+    waiting_time_minutes: a.wait_time ? parseInt(a.wait_time) : undefined,
+    case_reference_code: a.sub_num ? String(a.sub_num) : '',
+    customer_id: a.client_id ? String(a.client_id) : '',
+    coverage_details: a.serve_type || '',
+    remaining_days: a.days_remain ? parseInt(a.days_remain) : undefined,
+    ...(a.arrive_time ? { arrived_at: parseNatiDate(a.arrive_time) || undefined } : {}),
+    ...(a.finish_time ? { completed_at: parseNatiDate(a.finish_time) || undefined } : {}),
+    ...(a.supplier_assigned_date ? { assigned_at: parseNatiDate(a.supplier_assigned_date) || undefined } : {}),
+    ...(parseFutureDate(a.future_service_from) ? { future_service_time: parseFutureDate(a.future_service_from) } : {}),
+    ...(a.arrive_expected_time ? { vendor_arrival_time: parseNatiDate(a.arrive_expected_time) || undefined } : {}),
   };
 }
 
-// Map Nati appeal → Call entity (this is what the app UI uses!)
-function mapAppealToCall(appeal) {
+function mapAppealToCall(a) {
+  const vip = String(a.vip) === '1' || String(a.yashir_top_client) === '1';
   return {
-    call_number: appeal.appeal_id,
-    call_status: mapCallStatus(appeal.status),
-    call_priority: appeal.vip === '1' ? 'urgent' : 'normal',
-    is_vip: appeal.vip === '1',
-    service_category: mapCallServiceCategory(appeal.serve_type, appeal.department),
-    issue_type: mapCallIssueType(appeal.serve_type, appeal.department),
-    issue_description: appeal.problem_desc || appeal.diagnose || '',
-    issue_detail: appeal.serve_type || '',
-    // Customer info
-    customer_name: appeal.client_name || appeal.user_name || '',
-    customer_phone: appeal.tel || appeal.intermediary_phone || 'לא צוין',
-    customer_phone_2: appeal.intermediary_phone || '',
-    customer_id_number: appeal.client_id || '',
-    customer_email: appeal.client_email || '',
-    // Insurance / package
-    insurance_company: appeal.agent_name || '',
-    insurance_agent: appeal.agent_name || '',
-    membership_package: appeal.package_name || '',
-    membership_number: appeal.sub_num || '',
-    coverage_details: appeal.serve_type || '',
-    // Vehicle
-    vehicle_plate: appeal.car_num || '',
-    vehicle_model: appeal.kod_degem_name || '',
-    vehicle_type: mapVehicleType(appeal.vehicle_class),
-    vehicle_code: appeal.car_code || '',
-    // Pickup location
-    pickup_location_address: appeal.address || 'לא צוין',
-    pickup_location_city: appeal.city || '',
-    pickup_location_area: mapArea(appeal.area || ''),
-    // Dropoff location
-    dropoff_location_address: appeal.grar_address || '',
-    dropoff_location_city: appeal.grar_city || '',
-    dropoff_garage_name: appeal.grar_address || '',
-    // Vendor info
-    assigned_vendor_name: (appeal.supplier_name || '').trim(),
-    // Operator / notes
-    operator_notes: appeal.q_notes || '',
-    vendor_notes: appeal.supplier_notes || '',
-    // Timestamps
-    ...(appeal.supplier_assigned_date ? { assigned_at: parseNatiDate(appeal.supplier_assigned_date) || undefined } : {}),
-    ...(appeal.arrive_expected_time ? { vendor_arrival_time_estimated: parseNatiDate(appeal.arrive_expected_time) || undefined } : {}),
-    ...(appeal.arrive_time ? { vendor_arrival_time_actual: parseNatiDate(appeal.arrive_time) || undefined } : {}),
-    ...(appeal.finish_time ? { service_end_time: parseNatiDate(appeal.finish_time) || undefined } : {}),
-    ...(appeal.finish_time ? { closed_at: parseNatiDate(appeal.finish_time) || undefined } : {}),
-    // Financial
-    ...(appeal.claim_total_cost && parseFloat(appeal.claim_total_cost) > 0 ? { total_cost: parseFloat(appeal.claim_total_cost) } : {}),
-    ...(appeal.wait_time && parseInt(appeal.wait_time) > 0 ? { time_waiting: parseInt(appeal.wait_time) } : {}),
-    // Future service
-    ...(parseFutureDate(appeal.future_service_from) ? { future_service_date: parseFutureDate(appeal.future_service_from).split('T')[0] } : {}),
-    // QA
-    passed_quality_control: appeal.inspector_approves === '1',
-    quality_controller_name: appeal.inspector_name || '',
-    // Source info
-    created_by_source: appeal.open_from_api === '1' ? 'bot' : 'operator',
+    call_number: String(a.appeal_id),
+    call_status: mapCallStatus(a.status),
+    call_priority: vip ? 'urgent' : 'normal',
+    is_vip: vip,
+    service_category: a.department === 'גרירה' ? 'towing' : (String(a.department || '').includes('ניידת') ? 'mobile_unit' : 'other'),
+    issue_type: mapCallIssueType(a.serve_type, a.department),
+    issue_description: a.problem_desc || a.diagnose || '',
+    issue_detail: a.serve_type || '',
+    customer_name: a.client_name || a.user_name || '',
+    customer_phone: a.tel || a.intermediary_phone || 'לא צוין',
+    customer_phone_2: a.intermediary_phone || '',
+    customer_id_number: a.client_id ? String(a.client_id) : '',
+    customer_email: a.client_email || '',
+    insurance_company: a.agent_name || '',
+    insurance_agent: a.agent_name || '',
+    membership_package: a.package_name || '',
+    membership_number: a.sub_num ? String(a.sub_num) : '',
+    coverage_details: a.serve_type || '',
+    vehicle_plate: a.car_num || '',
+    vehicle_model: a.kod_degem_name || '',
+    vehicle_type: mapVehicleType(a.vehicle_class),
+    vehicle_code: a.car_code || '',
+    pickup_location_address: a.address || 'לא צוין',
+    pickup_location_city: a.city || '',
+    pickup_location_area: mapArea(a.area || ''),
+    dropoff_location_address: a.grar_address || '',
+    dropoff_location_city: a.grar_city || '',
+    dropoff_garage_name: a.grar_address || '',
+    assigned_vendor_name: String(a.supplier_name || '').trim(),
+    operator_notes: a.q_notes || '',
+    vendor_notes: a.supplier_notes || '',
+    passed_quality_control: String(a.inspector_approves) === '1',
+    quality_controller_name: a.inspector_name || '',
+    created_by_source: String(a.open_from_api) === '1' ? 'bot' : 'operator',
+    ...(a.supplier_assigned_date ? { assigned_at: parseNatiDate(a.supplier_assigned_date) || undefined } : {}),
+    ...(a.arrive_expected_time ? { vendor_arrival_time_estimated: parseNatiDate(a.arrive_expected_time) || undefined } : {}),
+    ...(a.arrive_time ? { vendor_arrival_time_actual: parseNatiDate(a.arrive_time) || undefined } : {}),
+    ...(a.finish_time ? { service_end_time: parseNatiDate(a.finish_time) || undefined } : {}),
+    ...(a.finish_time ? { closed_at: parseNatiDate(a.finish_time) || undefined } : {}),
+    ...(a.claim_total_cost && parseFloat(a.claim_total_cost) > 0 ? { total_cost: parseFloat(a.claim_total_cost) } : {}),
+    ...(a.wait_time && parseInt(a.wait_time) > 0 ? { time_waiting: parseInt(a.wait_time) } : {}),
+    ...(parseFutureDate(a.future_service_from) ? { future_service_date: parseFutureDate(a.future_service_from).split('T')[0] } : {}),
   };
 }
-
-// ========== VENDOR / CUSTOMER EXTRACTION ==========
 
 function extractUniqueVendors(appeals) {
   const vendors = new Map();
-  for (const appeal of appeals) {
-    const name = (appeal.supplier_name || '').trim();
+  for (const a of appeals) {
+    const name = String(a.supplier_name || '').trim();
     if (name && !vendors.has(name)) {
-      vendors.set(name, {
-        vendor_name: name,
-        phone: appeal.supplier_phone || '',
-        is_active: true,
-        is_available_now: true,
-        availability_status: 'available',
-      });
+      vendors.set(name, { vendor_name: name, phone: a.supplier_phone || '', is_active: true, is_available_now: true, availability_status: 'available' });
     }
   }
   return Array.from(vendors.values());
@@ -250,35 +180,21 @@ function extractUniqueVendors(appeals) {
 
 function extractUniqueCustomers(appeals) {
   const customers = new Map();
-  for (const appeal of appeals) {
-    const name = (appeal.client_name || '').trim();
+  for (const a of appeals) {
+    const name = String(a.client_name || '').trim();
     if (!name) continue;
-    const key = appeal.client_id || name;
+    const key = a.client_id ? String(a.client_id) : name;
     if (!customers.has(key)) {
       customers.set(key, {
-        name: name,
-        customer_id_external: appeal.client_id || '',
-        phone: appeal.tel || '',
-        email: appeal.client_email || '',
-        insurance_company: appeal.agent_name || '',
-        package_name: appeal.package_name || '',
-        vehicle_number: appeal.car_num || '',
-        vehicle_model: appeal.kod_degem_name || '',
-        customer_type: appeal.agent_name ? 'insurance_company' : 'individual',
-        status: 'active',
+        name, customer_id_external: a.client_id ? String(a.client_id) : '',
+        phone: a.tel || '', email: a.client_email || '',
+        insurance_company: a.agent_name || '', package_name: a.package_name || '',
+        vehicle_number: a.car_num || '', vehicle_model: a.kod_degem_name || '',
+        customer_type: a.agent_name ? 'insurance_company' : 'individual', status: 'active',
       });
     }
   }
   return Array.from(customers.values());
-}
-
-// ========== HELPER: clean empty/undefined/null ==========
-function cleanData(obj) {
-  const clean = {};
-  for (const [k, v] of Object.entries(obj)) {
-    if (v !== undefined && v !== null && v !== '') clean[k] = v;
-  }
-  return clean;
 }
 
 // ========== MAIN HANDLER ==========
@@ -286,16 +202,8 @@ function cleanData(obj) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Allow both admin users and scheduled automations (no user context)
     let user = null;
-    try {
-      user = await base44.auth.me();
-    } catch (e) {
-      // No user context - likely a scheduled automation, which is fine
-    }
-    
-    // If there's a user, they must be admin
+    try { user = await base44.auth.me(); } catch (_) {}
     if (user && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
@@ -304,44 +212,21 @@ Deno.serve(async (req) => {
     const { dep = -1, callStatus = -1, dryRun = false, dry_run = false } = body;
     const isDryRun = dryRun || dry_run;
 
-    const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
-    const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '').trim();
+    // Fetch from MySQL
+    const connection = await getConnection();
+    let sql = 'SELECT * FROM appeals WHERE 1=1';
+    const params = [];
+    if (dep !== -1) { sql += ' AND department_id = ?'; params.push(dep); }
+    if (callStatus !== -1) { sql += ' AND status = ?'; params.push(callStatus); }
+    sql += ' ORDER BY date_added_unix DESC';
 
-    if (!JWT_TOKEN || !CLIENT_ID) {
-      return Response.json({ error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' }, { status: 500 });
-    }
+    const [appeals] = await connection.query(sql, params);
+    await connection.end();
 
-    // Fetch appeals from Nati
-    const params = new URLSearchParams({ dep: String(dep), callStatus: String(callStatus), dir: 'DESC' });
-    const url = `${NATI_API_BASE}/get_appeals_list?${params.toString()}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${JWT_TOKEN}`,
-        'clientId': CLIENT_ID,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      return Response.json({ error: `Nati API error ${response.status}`, details: errorText }, { status: 502 });
-    }
-
-    const natiData = await response.json();
-    if (!natiData.success || !natiData.data) {
-      return Response.json({ error: 'Nati API returned unsuccessful response', raw: natiData }, { status: 502 });
-    }
-
-    const appeals = natiData.data;
-
-    // If dry run, return what would be synced
     if (isDryRun) {
       return Response.json({
-        success: true,
-        mode: 'dry_run',
-        total_from_nati: natiData.total,
+        success: true, mode: 'dry_run',
+        total_from_nati: appeals.length,
         unique_vendors: extractUniqueVendors(appeals).length,
         unique_customers: extractUniqueCustomers(appeals).length,
         sample_case: appeals.length > 0 ? cleanData(mapAppealToCase(appeals[0])) : null,
@@ -349,164 +234,89 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ============ STEP 1: Sync Vendors ============
+    const BATCH_SIZE = 10;
+    const BATCH_DELAY_MS = 1500;
+    const sdk = base44.asServiceRole;
+
+    // Step 1: Vendors
     console.log('[SYNC] Step 1: Syncing vendors...');
-    const existingVendors = await base44.asServiceRole.entities.Vendor.filter({});
+    const existingVendors = await sdk.entities.Vendor.filter({});
     const vendorByName = {};
-    for (const v of existingVendors) {
-      if (v.vendor_name) vendorByName[v.vendor_name.trim()] = v;
-    }
+    for (const v of existingVendors) { if (v.vendor_name) vendorByName[v.vendor_name.trim()] = v; }
 
     const newVendors = extractUniqueVendors(appeals);
     let vendorsCreated = 0;
-    let vendorsUpdated = 0;
-    for (const vendorData of newVendors) {
-      const existing = vendorByName[vendorData.vendor_name];
-      if (!existing) {
-        const created = await base44.asServiceRole.entities.Vendor.create(vendorData);
-        vendorByName[vendorData.vendor_name] = created;
+    for (const vd of newVendors) {
+      if (!vendorByName[vd.vendor_name]) {
+        const created = await sdk.entities.Vendor.create(vd);
+        vendorByName[vd.vendor_name] = created;
         vendorsCreated++;
-      } else {
-        // Update phone if we have it from Nati and vendor doesn't have one
-        if (vendorData.phone && (!existing.phone || existing.phone === '')) {
-          await base44.asServiceRole.entities.Vendor.update(existing.id, { phone: vendorData.phone });
-          existing.phone = vendorData.phone;
-          vendorsUpdated++;
-        }
       }
     }
-    console.log(`[SYNC] Vendors: ${vendorsCreated} created, ${existingVendors.length} existing`);
 
-    // ============ STEP 2: Sync Customers ============
+    // Step 2: Customers
     console.log('[SYNC] Step 2: Syncing customers...');
-    const existingCustomers = await base44.asServiceRole.entities.Customer.filter({});
-    const customerByExtId = {};
-    const customerByName = {};
+    const existingCustomers = await sdk.entities.Customer.filter({});
+    const customerByExtId = {}, customerByName = {};
     for (const c of existingCustomers) {
       if (c.customer_id_external) customerByExtId[c.customer_id_external] = c;
       if (c.name) customerByName[c.name.trim()] = c;
     }
-
-    const newCustomers = extractUniqueCustomers(appeals);
     let customersCreated = 0;
-    for (const custData of newCustomers) {
-      const exists = custData.customer_id_external
-        ? customerByExtId[custData.customer_id_external]
-        : customerByName[custData.name];
+    for (const cd of extractUniqueCustomers(appeals)) {
+      const exists = cd.customer_id_external ? customerByExtId[cd.customer_id_external] : customerByName[cd.name];
       if (!exists) {
-        const created = await base44.asServiceRole.entities.Customer.create(custData);
-        if (custData.customer_id_external) customerByExtId[custData.customer_id_external] = created;
-        customerByName[custData.name] = created;
+        const created = await sdk.entities.Customer.create(cd);
+        if (cd.customer_id_external) customerByExtId[cd.customer_id_external] = created;
+        customerByName[cd.name] = created;
         customersCreated++;
       }
     }
-    console.log(`[SYNC] Customers: ${customersCreated} created, ${existingCustomers.length} existing`);
 
-    // Batch config to avoid rate limiting
-    const BATCH_SIZE = 10;
-    const BATCH_DELAY_MS = 1500;
-
-    // ============ STEP 3: Sync Cases ============
+    // Step 3: Cases
     console.log('[SYNC] Step 3: Syncing cases...');
-    const existingCases = await base44.asServiceRole.entities.Case.filter({});
+    const existingCases = await sdk.entities.Case.filter({});
     const caseByNumber = {};
-    for (const c of existingCases) {
-      if (c.case_number) caseByNumber[c.case_number] = c;
-    }
-
+    for (const c of existingCases) { if (c.case_number) caseByNumber[c.case_number] = c; }
     let casesCreated = 0, casesUpdated = 0, casesErrors = 0;
 
     for (let i = 0; i < appeals.length; i += BATCH_SIZE) {
-      const batch = appeals.slice(i, i + BATCH_SIZE);
-      
-      for (const appeal of batch) {
+      for (const appeal of appeals.slice(i, i + BATCH_SIZE)) {
         try {
           const caseData = cleanData(mapAppealToCase(appeal));
-
-          // Link vendor ID
           const vendorName = caseData.assigned_provider_name;
-          if (vendorName && vendorByName[vendorName]) {
-            caseData.assigned_provider_id = vendorByName[vendorName].id;
-          }
-
-          // Link customer ID
-          const extCustId = caseData.customer_id;
-          if (extCustId && customerByExtId[extCustId]) {
-            caseData.customer_id = customerByExtId[extCustId].id;
-          } else if (caseData.customer_name) {
-            const custByName = customerByName[caseData.customer_name.trim()];
-            if (custByName) caseData.customer_id = custByName.id;
-          }
-
+          if (vendorName && vendorByName[vendorName]) caseData.assigned_provider_id = vendorByName[vendorName].id;
           const existing = caseByNumber[caseData.case_number];
-          if (existing) {
-            await base44.asServiceRole.entities.Case.update(existing.id, caseData);
-            casesUpdated++;
-          } else {
-            await base44.asServiceRole.entities.Case.create(caseData);
-            casesCreated++;
-          }
-        } catch (e) {
-          console.error(`[SYNC] Case error ${appeal.appeal_id}:`, e.message);
-          casesErrors++;
-        }
+          if (existing) { await sdk.entities.Case.update(existing.id, caseData); casesUpdated++; }
+          else { await sdk.entities.Case.create(caseData); casesCreated++; }
+        } catch (e) { casesErrors++; }
       }
-
-      // Delay between batches
-      if (i + BATCH_SIZE < appeals.length) {
-        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
-      }
+      if (i + BATCH_SIZE < appeals.length) await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
     }
-    console.log(`[SYNC] Cases: ${casesCreated} created, ${casesUpdated} updated, ${casesErrors} errors`);
 
-    // ============ STEP 4: Sync Calls (main UI entity) ============
-    console.log('[SYNC] Step 4: Syncing calls (UI entity)...');
-    const existingCalls = await base44.asServiceRole.entities.Call.filter({});
+    // Step 4: Calls
+    console.log('[SYNC] Step 4: Syncing calls...');
+    const existingCalls = await sdk.entities.Call.filter({});
     const callByNumber = {};
-    for (const c of existingCalls) {
-      if (c.call_number) callByNumber[c.call_number] = c;
-    }
-
+    for (const c of existingCalls) { if (c.call_number) callByNumber[c.call_number] = c; }
     let callsCreated = 0, callsUpdated = 0, callsErrors = 0;
 
-
     for (let i = 0; i < appeals.length; i += BATCH_SIZE) {
-      const batch = appeals.slice(i, i + BATCH_SIZE);
-      
-      for (const appeal of batch) {
+      for (const appeal of appeals.slice(i, i + BATCH_SIZE)) {
         try {
           const callData = cleanData(mapAppealToCall(appeal));
-
-          // Link vendor ID
           const vendorName = callData.assigned_vendor_name;
-          if (vendorName && vendorByName[vendorName]) {
-            callData.assigned_vendor_id = vendorByName[vendorName].id;
-          }
-
+          if (vendorName && vendorByName[vendorName]) callData.assigned_vendor_id = vendorByName[vendorName].id;
           const existing = callByNumber[callData.call_number];
-          if (existing) {
-            await base44.asServiceRole.entities.Call.update(existing.id, callData);
-            callsUpdated++;
-          } else {
-            await base44.asServiceRole.entities.Call.create(callData);
-            callsCreated++;
-          }
-        } catch (e) {
-          console.error(`[SYNC] Call error ${appeal.appeal_id}:`, e.message);
-          callsErrors++;
-        }
+          if (existing) { await sdk.entities.Call.update(existing.id, callData); callsUpdated++; }
+          else { await sdk.entities.Call.create(callData); callsCreated++; }
+        } catch (e) { callsErrors++; }
       }
-
-      // Delay between batches to avoid rate limiting
-      if (i + BATCH_SIZE < appeals.length) {
-        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
-      }
+      if (i + BATCH_SIZE < appeals.length) await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
     }
-    console.log(`[SYNC] Calls: ${callsCreated} created, ${callsUpdated} updated, ${callsErrors} errors`);
 
     return Response.json({
-      success: true,
-      total_from_nati: natiData.total,
+      success: true, total_from_nati: appeals.length,
       vendors: { existing: existingVendors.length, created: vendorsCreated },
       customers: { existing: existingCustomers.length, created: customersCreated },
       cases: { created: casesCreated, updated: casesUpdated, errors: casesErrors },

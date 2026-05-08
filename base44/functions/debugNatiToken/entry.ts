@@ -1,4 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/**
+ * debugNatiToken — Now tests BOTH direct MySQL connection AND legacy API
+ * Useful for diagnosing connectivity issues.
+ */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import mysql from 'npm:mysql2@3.9.7/promise';
 
 const NATI_API_BASE = 'https://api.natid.co.il/api';
 
@@ -10,42 +15,60 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const envTokenRaw = Deno.env.get('NATI_API_JWT_TOKEN') || '';
-    const envClientIdRaw = Deno.env.get('NATI_API_CLIENT_ID') || '';
-    const envToken = envTokenRaw.trim();
-    const envClientId = envClientIdRaw.trim().replace(/\s+JWT$/i, '').trim();
+    const results = {};
 
-    if (!envToken || !envClientId) {
-      return Response.json({
-        env_token_exists: !!envToken,
-        env_client_id_exists: !!envClientId,
-        error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets',
-      }, { status: 500 });
+    // Test 1: Direct MySQL connection
+    try {
+      const dbConfig = {
+        host: Deno.env.get('NATID_DB_HOST'),
+        port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+        user: Deno.env.get('NATID_DB_USER'),
+        password: Deno.env.get('NATID_DB_PASSWORD'),
+        database: Deno.env.get('NATID_DB_NAME'),
+        connectTimeout: 15000,
+        ssl: { rejectUnauthorized: false },
+      };
+
+      results.db_config = {
+        host: dbConfig.host,
+        port: dbConfig.port,
+        user: dbConfig.user,
+        database: dbConfig.database,
+        has_password: !!dbConfig.password,
+      };
+
+      const connection = await mysql.createConnection(dbConfig);
+      const [rows] = await connection.query('SELECT 1 as test');
+      await connection.end();
+      results.mysql_direct = { status: 'OK', data: rows[0] };
+    } catch (e) {
+      results.mysql_direct = { status: 'FAILED', error: e.message };
     }
 
-    const testEnv = await fetch(`${NATI_API_BASE}/get_appeals_list?dep=-1&callStatus=-1&dir=DESC`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${envToken}`,
-        'clientId': envClientId,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    let responseBody = null;
+    // Test 2: Legacy API (for comparison)
     try {
-      const text = await testEnv.text();
-      responseBody = text.substring(0, 2000);
-      try { responseBody = JSON.parse(text); } catch {}
-    } catch {}
+      const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
+      const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '').trim();
 
-    return Response.json({
-      env_token_exists: true,
-      env_token_first20: envToken.substring(0, 20) + '...',
-      env_client_id: envClientId,
-      env_client_id_was_trimmed: envClientIdRaw !== envClientId,
-      test_with_env: { status: testEnv.status, body: responseBody },
-    });
+      if (JWT_TOKEN && CLIENT_ID) {
+        const apiRes = await fetch(`${NATI_API_BASE}/get_appeals_list?dep=-1&callStatus=-1&dir=DESC`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${JWT_TOKEN}`,
+            'clientId': CLIENT_ID,
+            'Content-Type': 'application/json',
+          },
+        });
+        const text = await apiRes.text();
+        results.legacy_api = { status: apiRes.status, body: text.substring(0, 500) };
+      } else {
+        results.legacy_api = { status: 'SKIPPED', reason: 'No API credentials configured' };
+      }
+    } catch (e) {
+      results.legacy_api = { status: 'FAILED', error: e.message };
+    }
+
+    return Response.json(results);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

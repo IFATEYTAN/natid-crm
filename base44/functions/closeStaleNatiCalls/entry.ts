@@ -1,13 +1,9 @@
 /**
- * closeStaleNatiCalls — Close calls/cases that are open locally but 
- * no longer appear in Nati's open appeals list.
- * 
- * Runs separately from sync to avoid timeout issues.
- * Processes up to `limit` records per run (default 30).
+ * closeStaleNatiCalls — Direct MySQL: Close calls/cases that are open locally
+ * but no longer appear in Nati's open appeals list.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-
-const NATI_API_BASE = 'https://api.natid.co.il/api';
+import mysql from 'npm:mysql2@3.9.7/promise';
 
 const OPEN_CALL_STATUSES = [
   'waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute',
@@ -16,12 +12,37 @@ const OPEN_CALL_STATUSES = [
 ];
 const OPEN_CASE_STATUSES = ['new', 'assigned', 'en_route', 'on_site', 'in_progress'];
 
+function getDbConfig() {
+  return {
+    host: Deno.env.get('NATID_DB_HOST'),
+    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+    user: Deno.env.get('NATID_DB_USER'),
+    password: Deno.env.get('NATID_DB_PASSWORD'),
+    database: Deno.env.get('NATID_DB_NAME'),
+    connectTimeout: 15000,
+    ssl: { rejectUnauthorized: false },
+  };
+}
+
+async function getConnection() {
+  const config = getDbConfig();
+  if (!config.host || !config.user || !config.password) {
+    throw new Error('Missing NATID_DB_* secrets');
+  }
+  try {
+    return await mysql.createConnection(config);
+  } catch (e) {
+    const { ssl, ...noSsl } = config;
+    return await mysql.createConnection(noSsl);
+  }
+}
+
 Deno.serve(async (req) => {
   const startTime = Date.now();
-  
+
   try {
     const base44 = createClientFromRequest(req);
-    
+
     let user = null;
     try { user = await base44.auth.me(); } catch (_) {}
     if (user && user.role !== 'admin') {
@@ -31,39 +52,16 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { limit = 30, dry_run = false } = body;
 
-    // Get Nati API credentials
-    const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
-    const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '').trim();
-    
-    if (!JWT_TOKEN || !CLIENT_ID) {
-      return Response.json({ error: 'Missing NATI_API_JWT_TOKEN or NATI_API_CLIENT_ID secrets' }, { status: 500 });
-    }
+    // Step 1: Fetch ALL open appeal IDs from Nati DB
+    console.log('[CLOSE] Fetching open appeal IDs from Nati DB...');
+    const connection = await getConnection();
+    // Nati statuses 0-4,6 are "open" (5 = completed/closed)
+    const [natiRows] = await connection.query(
+      'SELECT appeal_id FROM appeals WHERE status != 5'
+    );
+    await connection.end();
 
-    // Step 1: Fetch ALL open appeals from Nati (no limit, we need the full list)
-    console.log('[CLOSE] Fetching all open appeals from Nati...');
-    const url = `${NATI_API_BASE}/get_appeals_list?dep=-1&callStatus=-1&dir=DESC`;
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${JWT_TOKEN}`,
-        'clientId': CLIENT_ID,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (response.status === 203) {
-      return Response.json({ error: 'Nati auth failure' }, { status: 401 });
-    }
-    if (!response.ok) {
-      return Response.json({ error: `Nati API error ${response.status}` }, { status: 502 });
-    }
-
-    const natiData = await response.json();
-    if (!natiData.success || !natiData.data) {
-      return Response.json({ error: 'Nati API unsuccessful' }, { status: 502 });
-    }
-
-    // Build set of ALL open appeal IDs from Nati
-    const natiOpenIds = new Set(natiData.data.map(a => a.appeal_id));
+    const natiOpenIds = new Set(natiRows.map(r => String(r.appeal_id)));
     console.log(`[CLOSE] Nati has ${natiOpenIds.size} open appeals`);
 
     // Step 2: Load our open calls and cases
@@ -73,11 +71,10 @@ Deno.serve(async (req) => {
       sdk.entities.Case.filter({}),
     ]);
 
-    // Find open records that are NOT in Nati
-    const staleCalls = existingCalls.filter(c => 
+    const staleCalls = existingCalls.filter(c =>
       c.call_number && OPEN_CALL_STATUSES.includes(c.call_status) && !natiOpenIds.has(c.call_number)
     );
-    const staleCases = existingCases.filter(c => 
+    const staleCases = existingCases.filter(c =>
       c.case_number && OPEN_CASE_STATUSES.includes(c.status) && !natiOpenIds.has(c.case_number)
     );
 
@@ -85,30 +82,28 @@ Deno.serve(async (req) => {
 
     if (dry_run) {
       return Response.json({
-        success: true,
-        mode: 'dry_run',
+        success: true, mode: 'dry_run',
         nati_open_count: natiOpenIds.size,
         stale_calls: staleCalls.length,
         stale_cases: staleCases.length,
-        sample_stale_calls: staleCalls.slice(0, 5).map(c => ({ 
-          id: c.id, call_number: c.call_number, status: c.call_status, customer: c.customer_name 
+        sample_stale_calls: staleCalls.slice(0, 5).map(c => ({
+          id: c.id, call_number: c.call_number, status: c.call_status, customer: c.customer_name
         })),
-        sample_stale_cases: staleCases.slice(0, 5).map(c => ({ 
-          id: c.id, case_number: c.case_number, status: c.status, customer: c.customer_name 
+        sample_stale_cases: staleCases.slice(0, 5).map(c => ({
+          id: c.id, case_number: c.case_number, status: c.status, customer: c.customer_name
         })),
       });
     }
 
-    // Step 3: Close stale records (limited per run)
+    // Step 3: Close stale records
     const callsToClose = staleCalls.slice(0, limit);
     const casesToClose = staleCases.slice(0, limit);
     let callsClosed = 0, casesClosed = 0, errors = 0;
     const now = new Date().toISOString();
 
-    // Close calls sequentially to avoid rate limits
     for (const call of callsToClose) {
       try {
-        await sdk.entities.Call.update(call.id, { 
+        await sdk.entities.Call.update(call.id, {
           call_status: 'completed',
           closed_at: now,
           operator_notes: (call.operator_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
@@ -118,17 +113,13 @@ Deno.serve(async (req) => {
       } catch (e) {
         console.error(`[CLOSE] Call ${call.call_number} error:`, e.message);
         errors++;
-        // On rate limit, wait longer
-        if (e.message?.includes('Rate limit')) {
-          await new Promise(r => setTimeout(r, 5000));
-        }
+        if (e.message?.includes('Rate limit')) await new Promise(r => setTimeout(r, 5000));
       }
     }
 
-    // Close cases sequentially
     for (const cs of casesToClose) {
       try {
-        await sdk.entities.Case.update(cs.id, { 
+        await sdk.entities.Case.update(cs.id, {
           status: 'completed',
           completed_at: now,
           source_status: 'closed',
@@ -139,9 +130,7 @@ Deno.serve(async (req) => {
       } catch (e) {
         console.error(`[CLOSE] Case ${cs.case_number} error:`, e.message);
         errors++;
-        if (e.message?.includes('Rate limit')) {
-          await new Promise(r => setTimeout(r, 5000));
-        }
+        if (e.message?.includes('Rate limit')) await new Promise(r => setTimeout(r, 5000));
       }
     }
 

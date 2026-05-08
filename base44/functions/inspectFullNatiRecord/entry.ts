@@ -1,36 +1,55 @@
-// Inspect full raw record from Nati API to see ALL available fields
-Deno.serve(async (req) => {
-  const JWT_TOKEN = (Deno.env.get('NATI_API_JWT_TOKEN') || '').trim();
-  const CLIENT_ID = (Deno.env.get('NATI_API_CLIENT_ID') || '').trim().replace(/\s+JWT$/i, '');
+/**
+ * inspectFullNatiRecord — Direct MySQL: returns full record structure
+ * with assigned/unassigned examples and all field names
+ */
+import mysql from 'npm:mysql2@3.9.7/promise';
 
+function getDbConfig() {
+  return {
+    host: Deno.env.get('NATID_DB_HOST'),
+    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+    user: Deno.env.get('NATID_DB_USER'),
+    password: Deno.env.get('NATID_DB_PASSWORD'),
+    database: Deno.env.get('NATID_DB_NAME'),
+    connectTimeout: 15000,
+    ssl: { rejectUnauthorized: false },
+  };
+}
+
+async function getConnection() {
+  const config = getDbConfig();
+  if (!config.host || !config.user || !config.password) {
+    throw new Error('Missing NATID_DB_* secrets');
+  }
   try {
-    const url = 'https://api.natid.co.il/api/get_appeals_list?dep=-1&callStatus=-1&dir=DESC';
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${JWT_TOKEN}`,
-        'clientId': CLIENT_ID,
-        'Content-Type': 'application/json',
-      },
-    });
+    return await mysql.createConnection(config);
+  } catch (e) {
+    const { ssl, ...noSsl } = config;
+    return await mysql.createConnection(noSsl);
+  }
+}
 
-    const data = await response.json();
-    if (!data.success || !data.data) {
-      return Response.json({ error: 'API failed', raw: data }, { status: 502 });
+Deno.serve(async (req) => {
+  try {
+    const connection = await getConnection();
+
+    // Get all records to analyze field structure
+    const [rows] = await connection.query('SELECT * FROM appeals ORDER BY date_added_unix DESC LIMIT 100');
+    await connection.end();
+
+    if (rows.length === 0) {
+      return Response.json({ total_fields: 0, message: 'No records found' });
     }
 
-    const records = data.data;
-
-    // Find a record WITH a supplier (assigned)
-    const assigned = records.find(r => r.supplier_name && r.supplier_name.trim());
-    // Find one WITHOUT supplier
-    const unassigned = records.find(r => !r.supplier_name || !r.supplier_name.trim());
-
-    // List ALL unique field names across all records
+    // All unique field names
     const allFields = new Set();
-    for (const r of records) {
+    for (const r of rows) {
       Object.keys(r).forEach(k => allFields.add(k));
     }
+
+    // Find assigned and unassigned examples
+    const assigned = rows.find(r => r.supplier_name && String(r.supplier_name).trim());
+    const unassigned = rows.find(r => !r.supplier_name || !String(r.supplier_name).trim());
 
     return Response.json({
       total_fields: allFields.size,
