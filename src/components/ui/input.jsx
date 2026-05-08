@@ -1,146 +1,20 @@
-import { Input } from './input';
-import { Search, Mail, Phone, Lock } from 'lucide-react';
+import * as React from "react"
 
-/**
- * Input Component Stories
- *
- * The Input component is used for collecting user text input.
- * It supports various types and can be combined with icons.
- */
-export default {
-  title: 'UI/Input',
-  component: Input,
-  tags: ['autodocs'],
-  argTypes: {
-    type: {
-      control: 'select',
-      options: ['text', 'email', 'password', 'number', 'tel', 'search'],
-      description: 'The type of input',
-    },
-    placeholder: {
-      control: 'text',
-      description: 'Placeholder text',
-    },
-    disabled: {
-      control: 'boolean',
-      description: 'Disables the input',
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        component: 'A styled input component for text entry.',
-      },
-    },
-  },
-};
+import { cn } from "@/lib/utils"
 
-// Default input
-export const Default = {
-  args: {
-    placeholder: 'הזן טקסט...',
-  },
-};
+const Input = React.forwardRef(({ className, type, ...props }, ref) => {
+  return (
+    <input
+      type={type}
+      className={cn(
+        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+Input.displayName = "Input"
 
-// With label
-export const WithLabel = {
-  render: () => (
-    <div className="space-y-2 w-[300px]" dir="rtl">
-      <label className="text-sm font-medium">שם מלא</label>
-      <Input placeholder="הזן את שמך המלא" />
-    </div>
-  ),
-};
-
-// Different types
-export const Email = {
-  args: {
-    type: 'email',
-    placeholder: 'your@email.com',
-  },
-};
-
-export const Password = {
-  args: {
-    type: 'password',
-    placeholder: 'הזן סיסמה',
-  },
-};
-
-export const Phone = {
-  args: {
-    type: 'tel',
-    placeholder: '050-0000000',
-  },
-};
-
-export const Number = {
-  args: {
-    type: 'number',
-    placeholder: '0',
-  },
-};
-
-// States
-export const Disabled = {
-  args: {
-    placeholder: 'שדה לא זמין',
-    disabled: true,
-  },
-};
-
-// With icon (using wrapper)
-export const WithIcon = {
-  render: () => (
-    <div className="relative w-[300px]" dir="rtl">
-      <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-      <Input className="ps-10" placeholder="חיפוש..." />
-    </div>
-  ),
-};
-
-// Form example
-export const FormExample = {
-  render: () => (
-    <form className="space-y-4 w-[350px]" dir="rtl">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">שם מלא</label>
-        <Input placeholder="ישראל ישראלי" />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">טלפון</label>
-        <div className="relative">
-          <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input className="ps-10" type="tel" placeholder="050-0000000" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">אימייל</label>
-        <div className="relative">
-          <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input className="ps-10" type="email" placeholder="email@example.com" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">סיסמה</label>
-        <div className="relative">
-          <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input className="ps-10" type="password" placeholder="••••••••" />
-        </div>
-      </div>
-    </form>
-  ),
-};
-
-// Search input
-export const SearchInput = {
-  render: () => (
-    <div className="relative w-[400px]" dir="rtl">
-      <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-      <Input className="ps-10" type="search" placeholder="חיפוש לפי שם, מספר קריאה או טלפון..." />
-    </div>
-  ),
-};
+export { Input }
