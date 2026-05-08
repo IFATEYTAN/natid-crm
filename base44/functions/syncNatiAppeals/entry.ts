@@ -1,6 +1,7 @@
 /**
  * syncNatiAppeals — Direct MySQL sync from call_open_appeals
  * Full sync: vendors, customers, cases, calls.
+ * Rate-limit protection: 150ms between items, batches of 20, exponential backoff retry.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
@@ -26,13 +27,37 @@ async function getConnection() {
   catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
 }
 
+// ========== RATE LIMIT HELPERS ==========
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function retryOp(fn, label) {
+  const delays = [500, 1500, 4000];
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const isRateLimit = e.message?.includes('Rate limit') || e.message?.includes('429') || e.status === 429;
+      if (isRateLimit && attempt < delays.length) {
+        console.log(`[RETRY] ${label} attempt ${attempt + 1}, waiting ${delays[attempt]}ms`);
+        await sleep(delays[attempt]);
+      } else {
+        throw e;
+      }
+    }
+  }
+}
+
+const BATCH_SIZE = 20;
+const ITEM_DELAY_MS = 150;
+const BATCH_DELAY_MS = 1000;
+
 // ========== MAPPINGS ==========
 
 const DEPT_MAP = { 0: 'אחר', 3: 'גרירה', 4: 'ניידת שירות', 5: 'שמשות', 10: 'רכב חליפי' };
 const CASE_STATUS_MAP = { 0: 'new', 1: 'assigned', 2: 'completed', 3: 'cancelled', 6: 'completed', 7: 'completed' };
 const CALL_STATUS_MAP = { 0: 'waiting_treatment', 1: 'assigning', 2: 'completed', 3: 'cancelled', 6: 'completed', 7: 'completed' };
 const VEHICLE_TYPE_MAP = { 1: 'private', 2: 'motorcycle', 3: 'truck', 4: 'commercial_light' };
-const AREA_MAP = {};
 
 function mapServiceType(deptId) {
   if (deptId === 3) return 'towing';
@@ -167,6 +192,8 @@ function extractUniqueCustomers(appeals) {
 // ========== MAIN HANDLER ==========
 
 Deno.serve(async (req) => {
+  const startTime = Date.now();
+
   try {
     const base44 = createClientFromRequest(req);
     let user = null;
@@ -179,7 +206,6 @@ Deno.serve(async (req) => {
     const { dep = -1, callStatus = -1, dryRun = false, dry_run = false } = body;
     const isDryRun = dryRun || dry_run;
 
-    // Fetch from MySQL — call_open_appeals with supplier JOIN
     const connection = await getConnection();
     let sql = 'SELECT a.*, s.fullname as supplier_name FROM call_open_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1';
     const params = [];
@@ -201,8 +227,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const BATCH_SIZE = 10;
-    const BATCH_DELAY_MS = 1500;
     const sdk = base44.asServiceRole;
 
     // Step 1: Vendors
@@ -211,13 +235,15 @@ Deno.serve(async (req) => {
     const vendorByName = {};
     for (const v of existingVendors) { if (v.vendor_name) vendorByName[v.vendor_name.trim()] = v; }
     const newVendors = extractUniqueVendors(appeals);
-    let vendorsCreated = 0;
+    let vendorsCreated = 0, vendorsSkipped = 0;
     for (const vd of newVendors) {
-      if (!vendorByName[vd.vendor_name]) {
-        const created = await sdk.entities.Vendor.create(vd);
+      if (vendorByName[vd.vendor_name]) { vendorsSkipped++; continue; }
+      try {
+        const created = await retryOp(() => sdk.entities.Vendor.create(vd), `Vendor.create(${vd.vendor_name})`);
         vendorByName[vd.vendor_name] = created;
         vendorsCreated++;
-      }
+        await sleep(ITEM_DELAY_MS);
+      } catch (e) { console.error('[SYNC] Vendor error:', e.message); }
     }
 
     // Step 2: Customers
@@ -228,15 +254,17 @@ Deno.serve(async (req) => {
       if (c.customer_id_external) customerByExtId[c.customer_id_external] = c;
       if (c.name) customerByName[c.name.trim()] = c;
     }
-    let customersCreated = 0;
+    let customersCreated = 0, customersSkipped = 0;
     for (const cd of extractUniqueCustomers(appeals)) {
       const exists = cd.customer_id_external ? customerByExtId[cd.customer_id_external] : customerByName[cd.name];
-      if (!exists) {
-        const created = await sdk.entities.Customer.create(cd);
+      if (exists) { customersSkipped++; continue; }
+      try {
+        const created = await retryOp(() => sdk.entities.Customer.create(cd), `Customer.create(${cd.name})`);
         if (cd.customer_id_external) customerByExtId[cd.customer_id_external] = created;
         customerByName[cd.name] = created;
         customersCreated++;
-      }
+        await sleep(ITEM_DELAY_MS);
+      } catch (e) { console.error('[SYNC] Customer error:', e.message); }
     }
 
     // Step 3: Cases
@@ -244,20 +272,28 @@ Deno.serve(async (req) => {
     const existingCases = await sdk.entities.Case.filter({});
     const caseByNumber = {};
     for (const c of existingCases) { if (c.case_number) caseByNumber[c.case_number] = c; }
-    let casesCreated = 0, casesUpdated = 0, casesErrors = 0;
+    let casesCreated = 0, casesUpdated = 0, casesSkipped = 0, casesErrors = 0;
 
     for (let i = 0; i < appeals.length; i += BATCH_SIZE) {
-      for (const appeal of appeals.slice(i, i + BATCH_SIZE)) {
+      const batch = appeals.slice(i, i + BATCH_SIZE);
+      console.log(`[SYNC] Cases batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(appeals.length / BATCH_SIZE)}`);
+      for (const appeal of batch) {
         try {
           const caseData = clean(mapAppealToCase(appeal));
           const vendorName = caseData.assigned_provider_name;
           if (vendorName && vendorByName[vendorName]) caseData.assigned_provider_id = vendorByName[vendorName].id;
           const existing = caseByNumber[caseData.case_number];
-          if (existing) { await sdk.entities.Case.update(existing.id, caseData); casesUpdated++; }
-          else { await sdk.entities.Case.create(caseData); casesCreated++; }
-        } catch (e) { casesErrors++; }
+          if (existing) {
+            await retryOp(() => sdk.entities.Case.update(existing.id, caseData), `Case.update(${caseData.case_number})`);
+            casesUpdated++;
+          } else {
+            await retryOp(() => sdk.entities.Case.create(caseData), `Case.create(${caseData.case_number})`);
+            casesCreated++;
+          }
+        } catch (e) { casesErrors++; console.error('[SYNC] Case error:', e.message); }
+        await sleep(ITEM_DELAY_MS);
       }
-      if (i + BATCH_SIZE < appeals.length) await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
+      if (i + BATCH_SIZE < appeals.length) await sleep(BATCH_DELAY_MS);
     }
 
     // Step 4: Calls
@@ -265,28 +301,37 @@ Deno.serve(async (req) => {
     const existingCalls = await sdk.entities.Call.filter({});
     const callByNumber = {};
     for (const c of existingCalls) { if (c.call_number) callByNumber[c.call_number] = c; }
-    let callsCreated = 0, callsUpdated = 0, callsErrors = 0;
+    let callsCreated = 0, callsUpdated = 0, callsSkipped = 0, callsErrors = 0;
 
     for (let i = 0; i < appeals.length; i += BATCH_SIZE) {
-      for (const appeal of appeals.slice(i, i + BATCH_SIZE)) {
+      const batch = appeals.slice(i, i + BATCH_SIZE);
+      console.log(`[SYNC] Calls batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(appeals.length / BATCH_SIZE)}`);
+      for (const appeal of batch) {
         try {
           const callData = clean(mapAppealToCall(appeal));
           const vendorName = callData.assigned_vendor_name;
           if (vendorName && vendorByName[vendorName]) callData.assigned_vendor_id = vendorByName[vendorName].id;
           const existing = callByNumber[callData.call_number];
-          if (existing) { await sdk.entities.Call.update(existing.id, callData); callsUpdated++; }
-          else { await sdk.entities.Call.create(callData); callsCreated++; }
-        } catch (e) { callsErrors++; }
+          if (existing) {
+            await retryOp(() => sdk.entities.Call.update(existing.id, callData), `Call.update(${callData.call_number})`);
+            callsUpdated++;
+          } else {
+            await retryOp(() => sdk.entities.Call.create(callData), `Call.create(${callData.call_number})`);
+            callsCreated++;
+          }
+        } catch (e) { callsErrors++; console.error('[SYNC] Call error:', e.message); }
+        await sleep(ITEM_DELAY_MS);
       }
-      if (i + BATCH_SIZE < appeals.length) await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
+      if (i + BATCH_SIZE < appeals.length) await sleep(BATCH_DELAY_MS);
     }
 
+    const duration = Date.now() - startTime;
     return Response.json({
-      success: true, total_from_nati: appeals.length,
-      vendors: { existing: existingVendors.length, created: vendorsCreated },
-      customers: { existing: existingCustomers.length, created: customersCreated },
-      cases: { created: casesCreated, updated: casesUpdated, errors: casesErrors },
-      calls: { created: callsCreated, updated: callsUpdated, errors: callsErrors },
+      success: true, total_from_nati: appeals.length, duration_ms: duration,
+      vendors: { existing: existingVendors.length, created: vendorsCreated, skipped: vendorsSkipped },
+      customers: { existing: existingCustomers.length, created: customersCreated, skipped: customersSkipped },
+      cases: { created: casesCreated, updated: casesUpdated, skipped: casesSkipped, errors: casesErrors },
+      calls: { created: callsCreated, updated: callsUpdated, skipped: callsSkipped, errors: callsErrors },
     });
   } catch (error) {
     console.error('syncNatiAppeals error:', error);

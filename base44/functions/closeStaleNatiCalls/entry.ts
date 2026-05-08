@@ -1,6 +1,7 @@
 /**
  * closeStaleNatiCalls — Direct MySQL: Close calls/cases that are open locally
  * but no longer appear in call_open_appeals.
+ * Rate-limit protection: 150ms between items, batches of 20, exponential backoff retry.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
@@ -31,6 +32,29 @@ async function getConnection() {
   catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
 }
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function retryOp(fn, label) {
+  const delays = [500, 1500, 4000];
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const isRateLimit = e.message?.includes('Rate limit') || e.message?.includes('429') || e.status === 429;
+      if (isRateLimit && attempt < delays.length) {
+        console.log(`[RETRY] ${label} attempt ${attempt + 1}, waiting ${delays[attempt]}ms`);
+        await sleep(delays[attempt]);
+      } else {
+        throw e;
+      }
+    }
+  }
+}
+
+const BATCH_SIZE = 20;
+const ITEM_DELAY_MS = 150;
+const BATCH_DELAY_MS = 1000;
+
 Deno.serve(async (req) => {
   const startTime = Date.now();
 
@@ -45,7 +69,6 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { limit = 30, dry_run = false } = body;
 
-    // Step 1: Fetch ALL open appeal IDs from call_open_appeals
     console.log('[CLOSE] Fetching open appeal IDs from Nati DB...');
     const connection = await getConnection();
     const [natiRows] = await connection.query('SELECT id FROM call_open_appeals');
@@ -54,7 +77,6 @@ Deno.serve(async (req) => {
     const natiOpenIds = new Set(natiRows.map(r => String(r.id)));
     console.log(`[CLOSE] Nati has ${natiOpenIds.size} open appeals`);
 
-    // Step 2: Load our open calls and cases
     const sdk = base44.asServiceRole;
     const [existingCalls, existingCases] = await Promise.all([
       sdk.entities.Call.filter({}),
@@ -85,40 +107,47 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Step 3: Close stale records
     const callsToClose = staleCalls.slice(0, limit);
     const casesToClose = staleCases.slice(0, limit);
     let callsClosed = 0, casesClosed = 0, errors = 0;
     const now = new Date().toISOString();
 
-    for (const call of callsToClose) {
-      try {
-        await sdk.entities.Call.update(call.id, {
-          call_status: 'completed', closed_at: now,
-          operator_notes: (call.operator_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
-        });
-        callsClosed++;
-        await new Promise(r => setTimeout(r, 500));
-      } catch (e) {
-        console.error(`[CLOSE] Call ${call.call_number} error:`, e.message);
-        errors++;
-        if (e.message?.includes('Rate limit')) await new Promise(r => setTimeout(r, 5000));
+    // Close stale calls in batches
+    for (let i = 0; i < callsToClose.length; i += BATCH_SIZE) {
+      const batch = callsToClose.slice(i, i + BATCH_SIZE);
+      for (const call of batch) {
+        try {
+          await retryOp(() => sdk.entities.Call.update(call.id, {
+            call_status: 'completed', closed_at: now,
+            operator_notes: (call.operator_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
+          }), `Call.close(${call.call_number})`);
+          callsClosed++;
+        } catch (e) {
+          console.error(`[CLOSE] Call ${call.call_number} error:`, e.message);
+          errors++;
+        }
+        await sleep(ITEM_DELAY_MS);
       }
+      if (i + BATCH_SIZE < callsToClose.length) await sleep(BATCH_DELAY_MS);
     }
 
-    for (const cs of casesToClose) {
-      try {
-        await sdk.entities.Case.update(cs.id, {
-          status: 'completed', completed_at: now, source_status: 'closed',
-          internal_notes: (cs.internal_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
-        });
-        casesClosed++;
-        await new Promise(r => setTimeout(r, 500));
-      } catch (e) {
-        console.error(`[CLOSE] Case ${cs.case_number} error:`, e.message);
-        errors++;
-        if (e.message?.includes('Rate limit')) await new Promise(r => setTimeout(r, 5000));
+    // Close stale cases in batches
+    for (let i = 0; i < casesToClose.length; i += BATCH_SIZE) {
+      const batch = casesToClose.slice(i, i + BATCH_SIZE);
+      for (const cs of batch) {
+        try {
+          await retryOp(() => sdk.entities.Case.update(cs.id, {
+            status: 'completed', completed_at: now, source_status: 'closed',
+            internal_notes: (cs.internal_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
+          }), `Case.close(${cs.case_number})`);
+          casesClosed++;
+        } catch (e) {
+          console.error(`[CLOSE] Case ${cs.case_number} error:`, e.message);
+          errors++;
+        }
+        await sleep(ITEM_DELAY_MS);
       }
+      if (i + BATCH_SIZE < casesToClose.length) await sleep(BATCH_DELAY_MS);
     }
 
     const duration = Date.now() - startTime;

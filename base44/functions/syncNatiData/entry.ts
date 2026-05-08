@@ -1,8 +1,7 @@
 /**
  * syncNatiData — Optimized sync from Nati MySQL DB (direct connection)
- * 
  * Uses call_open_appeals with JOIN to suppliers for vendor names.
- * Processes max 30 appeals per run (avoids timeout).
+ * Rate-limit protection: 150ms between items, batches of 20, exponential backoff retry.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
@@ -27,6 +26,31 @@ async function getConnection() {
   try { return await mysql.createConnection(config); }
   catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
 }
+
+// ========== RATE LIMIT HELPERS ==========
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function retryOp(fn, label) {
+  const delays = [500, 1500, 4000];
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const isRateLimit = e.message?.includes('Rate limit') || e.message?.includes('429') || e.status === 429;
+      if (isRateLimit && attempt < delays.length) {
+        console.log(`[RETRY] ${label} attempt ${attempt + 1}, waiting ${delays[attempt]}ms`);
+        await sleep(delays[attempt]);
+      } else {
+        throw e;
+      }
+    }
+  }
+}
+
+const BATCH_SIZE = 20;
+const ITEM_DELAY_MS = 150;
+const BATCH_DELAY_MS = 1000;
 
 // ========== MAPPINGS ==========
 
@@ -214,21 +238,22 @@ function extractCustomers(appeals) {
 // ========== BULK SYNC HELPER ==========
 
 async function syncEntity(sdk, entityName, items, keyField, existingLookup, linkFn) {
-  let created = 0, updated = 0, errors = 0;
-  const BATCH = 2;
+  let created = 0, updated = 0, skipped = 0, errors = 0;
 
-  for (let i = 0; i < items.length; i += BATCH) {
-    const batch = items.slice(i, i + BATCH);
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE);
+    console.log(`[SYNC] ${entityName} batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(items.length / BATCH_SIZE)}`);
+
     for (const item of batch) {
       try {
         if (linkFn) linkFn(item);
         const key = item[keyField];
         const existingId = key ? existingLookup[key] : null;
         if (existingId) {
-          await sdk.entities[entityName].update(existingId, item);
+          await retryOp(() => sdk.entities[entityName].update(existingId, item), `${entityName}.update(${key})`);
           updated++;
         } else {
-          const result = await sdk.entities[entityName].create(item);
+          const result = await retryOp(() => sdk.entities[entityName].create(item), `${entityName}.create(${key})`);
           if (key) existingLookup[key] = result.id;
           created++;
         }
@@ -236,10 +261,11 @@ async function syncEntity(sdk, entityName, items, keyField, existingLookup, link
         console.error(`[SYNC] ${entityName} error:`, e.message);
         errors++;
       }
+      await sleep(ITEM_DELAY_MS);
     }
-    if (i + BATCH < items.length) await new Promise(r => setTimeout(r, 1500));
+    if (i + BATCH_SIZE < items.length) await sleep(BATCH_DELAY_MS);
   }
-  return { created, updated, errors };
+  return { created, updated, skipped, errors };
 }
 
 // ========== MAIN HANDLER ==========
@@ -263,7 +289,6 @@ Deno.serve(async (req) => {
       close_missing = false,
     } = body;
 
-    // Fetch appeals from call_open_appeals with supplier JOIN
     console.log('[SYNC] Connecting to Nati DB...');
     const connection = await getConnection();
 
@@ -278,7 +303,6 @@ Deno.serve(async (req) => {
 
     console.log(`[SYNC] Got ${allAppeals.length} open appeals from Nati DB`);
 
-    // Prioritize recently updated records, limit per run
     const MAX_PER_RUN = 30;
     const sorted = [...allAppeals].sort((a, b) => {
       if (a.has_updated === 1 && b.has_updated !== 1) return -1;
@@ -303,7 +327,6 @@ Deno.serve(async (req) => {
     const sdk = base44.asServiceRole;
     const results = {};
 
-    // Pre-load all lookups
     console.log('[SYNC] Loading existing records...');
     const [existingVendors, existingCustomers, existingCalls, existingCases] = await Promise.all([
       sync_vendors ? sdk.entities.Vendor.filter({}) : [],
@@ -332,9 +355,10 @@ Deno.serve(async (req) => {
       for (const vd of vendorData) {
         if (vendorLookup[vd.vendor_name]) { vendorsSkipped++; continue; }
         try {
-          const created = await sdk.entities.Vendor.create(vd);
+          const created = await retryOp(() => sdk.entities.Vendor.create(vd), `Vendor.create(${vd.vendor_name})`);
           vendorLookup[vd.vendor_name] = created.id;
           vendorsCreated++;
+          await sleep(ITEM_DELAY_MS);
         } catch (e) { console.error('[SYNC] Vendor create error:', e.message); }
       }
       results.vendors = { existing: existingVendors.length, created: vendorsCreated, skipped: vendorsSkipped };
@@ -349,10 +373,11 @@ Deno.serve(async (req) => {
         const existsId = cd.customer_id_external ? custByExtId[cd.customer_id_external] : custByName[cd.name];
         if (existsId) { customersSkipped++; continue; }
         try {
-          const created = await sdk.entities.Customer.create(cd);
+          const created = await retryOp(() => sdk.entities.Customer.create(cd), `Customer.create(${cd.name})`);
           if (cd.customer_id_external) custByExtId[cd.customer_id_external] = created.id;
           custByName[cd.name] = created.id;
           customersCreated++;
+          await sleep(ITEM_DELAY_MS);
         } catch (e) { console.error('[SYNC] Customer create error:', e.message); }
       }
       results.customers = { existing: existingCustomers.length, created: customersCreated, skipped: customersSkipped };
@@ -394,11 +419,12 @@ Deno.serve(async (req) => {
         );
         for (const call of openLocalCalls.slice(0, 10)) {
           try {
-            await sdk.entities.Call.update(call.id, {
+            await retryOp(() => sdk.entities.Call.update(call.id, {
               call_status: 'completed', closed_at: new Date().toISOString(),
               operator_notes: (call.operator_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
-            });
+            }), `Call.close(${call.call_number})`);
             callsClosed++;
+            await sleep(ITEM_DELAY_MS);
           } catch (e) { console.error('[SYNC] Call close error:', e.message); }
         }
       }
@@ -408,11 +434,12 @@ Deno.serve(async (req) => {
         );
         for (const cs of openLocalCases.slice(0, 10)) {
           try {
-            await sdk.entities.Case.update(cs.id, {
+            await retryOp(() => sdk.entities.Case.update(cs.id, {
               status: 'completed', completed_at: new Date().toISOString(), source_status: 'closed',
               internal_notes: (cs.internal_notes || '') + '\n[אוטומטי] נסגר - לא נמצא ברשימת הפתוחות של נתי'
-            });
+            }), `Case.close(${cs.case_number})`);
             casesClosed++;
+            await sleep(ITEM_DELAY_MS);
           } catch (e) { console.error('[SYNC] Case close error:', e.message); }
         }
       }
