@@ -1,5 +1,34 @@
+/**
+ * exploreNatiDB — Direct MySQL connection to Natid database
+ * Uses NATID_DB_* secrets for connection.
+ * Supports: list_databases, list_tables, describe_table, run_query
+ */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
+
+function getDbConfig() {
+  const host = Deno.env.get('NATID_DB_HOST');
+  const port = parseInt(Deno.env.get('NATID_DB_PORT') || '3306');
+  const user = Deno.env.get('NATID_DB_USER');
+  const password = Deno.env.get('NATID_DB_PASSWORD');
+  const database = Deno.env.get('NATID_DB_NAME');
+
+  if (!host || !user || !password) {
+    throw new Error('Missing NATID_DB_HOST, NATID_DB_USER, or NATID_DB_PASSWORD secrets');
+  }
+
+  return {
+    host,
+    port,
+    user,
+    password,
+    database: database || undefined,
+    connectTimeout: 15000,
+    waitForConnections: true,
+    connectionLimit: 5,
+    ssl: { rejectUnauthorized: false },
+  };
+}
 
 Deno.serve(async (req) => {
   try {
@@ -13,45 +42,28 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { action = 'list_tables', table_name, limit = 5, query } = body;
 
-    const host = Deno.env.get('NATI_DB_HOSTNAME');
-    const port = parseInt(Deno.env.get('NATI_DB_PORT') || '3306');
-    const dbUser = Deno.env.get('NATI_DB_USERNAME');
-    const password = Deno.env.get('NATI_DB_PASSWORD');
-
-    if (!host || !dbUser || !password) {
-      return Response.json({ error: 'Missing database credentials' }, { status: 500 });
-    }
-
-    console.log(`[DB] Connecting to ${host}:${port} as ${dbUser}`);
+    const dbConfig = getDbConfig();
+    console.log(`[DB] Connecting to ${dbConfig.host}:${dbConfig.port} as ${dbConfig.user}, db=${dbConfig.database || 'none'}`);
 
     let connection;
     try {
-      connection = await mysql.createConnection({
-        host,
-        port,
-        user: dbUser,
-        password,
-        connectTimeout: 15000,
-        ssl: { rejectUnauthorized: false },
-      });
+      connection = await mysql.createConnection(dbConfig);
+      console.log('[DB] Connected successfully with SSL');
     } catch (e) {
       console.error('[DB] SSL connection failed:', e.message);
       // Try without SSL
       try {
-        connection = await mysql.createConnection({
-          host,
-          port,
-          user: dbUser,
-          password,
-          connectTimeout: 15000,
-        });
+        const { ssl, ...configNoSsl } = dbConfig;
+        connection = await mysql.createConnection(configNoSsl);
+        console.log('[DB] Connected without SSL');
       } catch (e2) {
         return Response.json({ 
           error: 'Failed to connect to database',
           details: e2.message,
           ssl_error: e.message,
-          host: host,
-          port: port
+          host: dbConfig.host,
+          port: dbConfig.port,
+          database: dbConfig.database,
         }, { status: 502 });
       }
     }
@@ -64,44 +76,53 @@ Deno.serve(async (req) => {
       }
 
       if (action === 'list_tables') {
-        // First get available databases
-        const [dbs] = await connection.query('SHOW DATABASES');
-        const databases = dbs.map(r => r.Database).filter(d => !['information_schema', 'mysql', 'performance_schema', 'sys'].includes(d));
-
-        const allTables = [];
-        for (const db of databases) {
-          try {
-            const [tables] = await connection.query(`SHOW TABLES FROM \`${db}\``);
-            for (const t of tables) {
-              const tableName = Object.values(t)[0];
-              // Get approx row count
-              let rowCount = 0;
-              try {
-                const [countResult] = await connection.query(`SELECT COUNT(*) as cnt FROM \`${db}\`.\`${tableName}\` LIMIT 1`);
-                rowCount = countResult[0]?.cnt || 0;
-              } catch (_) {
-                // Some tables might not be accessible
+        const db = dbConfig.database;
+        if (!db) {
+          // List all databases and tables
+          const [dbs] = await connection.query('SHOW DATABASES');
+          const databases = dbs.map(r => r.Database).filter(d => !['information_schema', 'mysql', 'performance_schema', 'sys'].includes(d));
+          const allTables = [];
+          for (const dbName of databases) {
+            try {
+              const [tables] = await connection.query(`SHOW TABLES FROM \`${dbName}\``);
+              for (const t of tables) {
+                const tableName = Object.values(t)[0];
+                let rowCount = 0;
+                try {
+                  const [countResult] = await connection.query(`SELECT COUNT(*) as cnt FROM \`${dbName}\`.\`${tableName}\` LIMIT 1`);
+                  rowCount = countResult[0]?.cnt || 0;
+                } catch (_) {}
+                allTables.push({ database: dbName, table: tableName, approx_rows: rowCount });
               }
-              allTables.push({ database: db, table: tableName, approx_rows: rowCount });
+            } catch (e) {
+              allTables.push({ database: dbName, error: e.message });
             }
-          } catch (e) {
-            allTables.push({ database: db, error: e.message });
           }
+          await connection.end();
+          return Response.json({ success: true, databases, tables: allTables, total_tables: allTables.length });
         }
 
+        // List tables in the configured database
+        const [tables] = await connection.query(`SHOW TABLES`);
+        const allTables = [];
+        for (const t of tables) {
+          const tableName = Object.values(t)[0];
+          let rowCount = 0;
+          try {
+            const [countResult] = await connection.query(`SELECT COUNT(*) as cnt FROM \`${tableName}\``);
+            rowCount = countResult[0]?.cnt || 0;
+          } catch (_) {}
+          allTables.push({ database: db, table: tableName, approx_rows: rowCount });
+        }
         await connection.end();
-        return Response.json({ success: true, databases, tables: allTables, total_tables: allTables.length });
+        return Response.json({ success: true, database: db, tables: allTables, total_tables: allTables.length });
       }
 
       if (action === 'describe_table' && table_name) {
-        // table_name can be "db.table" or just "table"
         const parts = table_name.split('.');
         const fullTable = parts.length === 2 ? `\`${parts[0]}\`.\`${parts[1]}\`` : `\`${table_name}\``;
 
-        // Get columns
         const [columns] = await connection.query(`DESCRIBE ${fullTable}`);
-
-        // Get sample data
         let sample = [];
         try {
           const [rows] = await connection.query(`SELECT * FROM ${fullTable} LIMIT ${parseInt(limit)}`);
@@ -110,7 +131,6 @@ Deno.serve(async (req) => {
           sample = [{ error: e.message }];
         }
 
-        // Get row count
         let rowCount = 0;
         try {
           const [countResult] = await connection.query(`SELECT COUNT(*) as cnt FROM ${fullTable}`);
