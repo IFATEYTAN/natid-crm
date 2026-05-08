@@ -105,9 +105,9 @@ function mapAppeal(a) {
   return clean;
 }
 
-const BATCH_SIZE = 20;
-const ITEM_DELAY_MS = 150;
-const BATCH_DELAY_MS = 1000;
+const BATCH_SIZE = 15;
+const ITEM_DELAY_MS = 300;
+const BATCH_DELAY_MS = 2000;
 
 Deno.serve(async (req) => {
   try {
