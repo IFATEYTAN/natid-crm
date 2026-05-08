@@ -1,6 +1,5 @@
 /**
- * debugNatiToken — Now tests BOTH direct MySQL connection AND legacy API
- * Useful for diagnosing connectivity issues.
+ * debugNatiToken — Tests direct MySQL connection and legacy API
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
@@ -30,17 +29,25 @@ Deno.serve(async (req) => {
       };
 
       results.db_config = {
-        host: dbConfig.host,
-        port: dbConfig.port,
-        user: dbConfig.user,
-        database: dbConfig.database,
+        host: dbConfig.host, port: dbConfig.port,
+        user: dbConfig.user, database: dbConfig.database,
         has_password: !!dbConfig.password,
       };
 
-      const connection = await mysql.createConnection(dbConfig);
+      let connection;
+      try { connection = await mysql.createConnection(dbConfig); }
+      catch (e) { const { ssl, ...noSsl } = dbConfig; connection = await mysql.createConnection(noSsl); }
+
       const [rows] = await connection.query('SELECT 1 as test');
+      const [openCount] = await connection.query('SELECT COUNT(*) as cnt FROM call_open_appeals');
+      const [closedCount] = await connection.query('SELECT COUNT(*) as cnt FROM call_closed_appeals');
       await connection.end();
-      results.mysql_direct = { status: 'OK', data: rows[0] };
+
+      results.mysql_direct = {
+        status: 'OK', data: rows[0],
+        open_appeals: openCount[0]?.cnt || 0,
+        closed_appeals: closedCount[0]?.cnt || 0,
+      };
     } catch (e) {
       results.mysql_direct = { status: 'FAILED', error: e.message };
     }
@@ -53,11 +60,7 @@ Deno.serve(async (req) => {
       if (JWT_TOKEN && CLIENT_ID) {
         const apiRes = await fetch(`${NATI_API_BASE}/get_appeals_list?dep=-1&callStatus=-1&dir=DESC`, {
           method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${JWT_TOKEN}`,
-            'clientId': CLIENT_ID,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Authorization': `Bearer ${JWT_TOKEN}`, 'clientId': CLIENT_ID, 'Content-Type': 'application/json' },
         });
         const text = await apiRes.text();
         results.legacy_api = { status: apiRes.status, body: text.substring(0, 500) };

@@ -1,12 +1,13 @@
 /**
  * fetchLiveNatiData — Direct MySQL query to Natid database
- * Replaces the old Nati REST API calls with direct DB access.
+ * Uses call_open_appeals (open) or call_closed_appeals (closed) with JOIN to suppliers.
  * 
  * Params:
  *   - action: "appeals_list" | "appeal_details"
- *   - appeal_id: (for appeal_details)
- *   - dep: department filter (-1 = all)
+ *   - appeal_id: (for appeal_details — searches both tables)
+ *   - dep: department_id filter (-1 = all)
  *   - callStatus: status filter (-1 = all)
+ *   - include_closed: if true, also include closed appeals
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
@@ -25,58 +26,65 @@ function getDbConfig() {
 
 async function getConnection() {
   const config = getDbConfig();
-  if (!config.host || !config.user || !config.password) {
-    throw new Error('Missing NATID_DB_HOST, NATID_DB_USER, or NATID_DB_PASSWORD');
-  }
-  try {
-    return await mysql.createConnection(config);
-  } catch (e) {
-    // Retry without SSL
-    const { ssl, ...noSsl } = config;
-    return await mysql.createConnection(noSsl);
-  }
+  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
+  try { return await mysql.createConnection(config); }
+  catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { action = 'appeals_list', appeal_id, dep = -1, callStatus = -1 } = await req.json();
-
+    const { action = 'appeals_list', appeal_id, dep = -1, callStatus = -1, include_closed = false } = await req.json();
     const connection = await getConnection();
 
     try {
       if (action === 'appeal_details' && appeal_id) {
-        const [rows] = await connection.query('SELECT * FROM appeals WHERE appeal_id = ? LIMIT 1', [appeal_id]);
+        // Search both open and closed tables
+        let [rows] = await connection.query(
+          'SELECT a.*, s.fullname as supplier_name FROM call_open_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE a.id = ? LIMIT 1',
+          [appeal_id]
+        );
+        if (rows.length === 0) {
+          [rows] = await connection.query(
+            'SELECT a.*, s.fullname as supplier_name FROM call_closed_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE a.id = ? LIMIT 1',
+            [appeal_id]
+          );
+        }
         await connection.end();
         return Response.json({ success: true, data: rows[0] || null });
       }
 
-      // Default: appeals list
-      let sql = 'SELECT * FROM appeals WHERE 1=1';
+      // Default: appeals list from call_open_appeals
+      let sql = 'SELECT a.*, s.fullname as supplier_name FROM call_open_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1';
       const params = [];
 
-      if (dep !== -1) {
-        sql += ' AND department_id = ?';
-        params.push(dep);
-      }
-      if (callStatus !== -1) {
-        sql += ' AND status = ?';
-        params.push(callStatus);
-      }
-      sql += ' ORDER BY date_added_unix DESC';
+      if (dep !== -1) { sql += ' AND a.department_id = ?'; params.push(dep); }
+      if (callStatus !== -1) { sql += ' AND a.status = ?'; params.push(callStatus); }
+      sql += ' ORDER BY a.date_added DESC';
 
       const [rows] = await connection.query(sql, params);
+
+      let closedRows = [];
+      if (include_closed) {
+        let closedSql = 'SELECT a.*, s.fullname as supplier_name FROM call_closed_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1';
+        const closedParams = [];
+        if (dep !== -1) { closedSql += ' AND a.department_id = ?'; closedParams.push(dep); }
+        if (callStatus !== -1) { closedSql += ' AND a.status = ?'; closedParams.push(callStatus); }
+        closedSql += ' ORDER BY a.date_added DESC LIMIT 1000';
+        [closedRows] = await connection.query(closedSql, closedParams);
+      }
+
       await connection.end();
 
       return Response.json({
         success: true,
-        total: rows.length,
-        data: rows,
+        total: rows.length + closedRows.length,
+        open_count: rows.length,
+        closed_count: closedRows.length,
+        data: [...rows, ...closedRows],
         fetched_at: new Date().toISOString(),
       });
     } catch (dbErr) {

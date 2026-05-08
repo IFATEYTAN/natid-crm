@@ -1,5 +1,5 @@
 /**
- * runNatiSync — Direct MySQL: creates/updates Case entities from Nati DB
+ * runNatiSync — Direct MySQL: creates/updates Case entities from call_open_appeals
  * Simplified version for manual sync runs.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
@@ -19,78 +19,68 @@ function getDbConfig() {
 
 async function getConnection() {
   const config = getDbConfig();
-  if (!config.host || !config.user || !config.password) {
-    throw new Error('Missing NATID_DB_* secrets');
-  }
-  try {
-    return await mysql.createConnection(config);
-  } catch (e) {
-    const { ssl, ...noSsl } = config;
-    return await mysql.createConnection(noSsl);
-  }
+  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
+  try { return await mysql.createConnection(config); }
+  catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
 }
 
-function mapStatus(s) { return { '0': 'new', '1': 'in_progress', '2': 'in_progress', '3': 'in_progress', '4': 'in_progress', '5': 'on_site', '6': 'new' }[String(s)] || 'new'; }
-function mapDepartment(d) { return { 'גרירה': 'גרירה', 'ניידת': 'ניידת שירות', 'ניידת שירות': 'ניידת שירות', 'שמשות': 'שמשות', 'רכב חליפי': 'רכב חליפי', 'רדיו דיסק': 'רדיו דיסק' }[d] || 'אחר'; }
-
-function mapServiceType(st, dept) {
-  if (dept === 'גרירה') return 'towing';
-  for (const [k, v] of Object.entries({ 'תקר': 'flat_tire', 'מצבר': 'battery', 'נעילה': 'lockout', 'דלק': 'fuel', 'תאונה': 'accident', 'מכני': 'mechanical' })) {
-    if (st && String(st).includes(k)) return v;
-  }
-  return 'other';
-}
+const DEPT_MAP = { 0: 'אחר', 3: 'גרירה', 4: 'ניידת שירות', 5: 'שמשות', 10: 'רכב חליפי' };
+const CASE_STATUS_MAP = { 0: 'new', 1: 'assigned', 2: 'completed', 3: 'cancelled', 6: 'completed', 7: 'completed' };
 
 function parseNatiDate(dateStr) {
   if (!dateStr) return null;
   const s = String(dateStr);
-  const m = s.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
-  if (m) return `${m[3]}-${m[2]}-${m[1]}T${m[4]}:${m[5]}:${m[6]}`;
-  if (s.includes('-') && s.length >= 19) return s.replace(' ', 'T').substring(0, 19);
+  if (s.startsWith('0000')) return null;
+  if (s instanceof Date || (s.includes('-') && s.length >= 10)) return s.replace(' ', 'T').substring(0, 19);
   return null;
 }
 
+function mapServiceType(deptId) {
+  if (deptId === 3) return 'towing';
+  if (deptId === 4) return 'mechanical';
+  return 'other';
+}
+
 function mapAppeal(a) {
-  const vip = String(a.vip) === '1';
   const mapped = {
-    case_number: String(a.appeal_id),
-    customer_name: a.client_name || a.user_name || '',
-    caller_name: a.requester || a.user_name || '',
-    caller_phone: a.tel || '',
+    case_number: String(a.id),
+    customer_name: a.requester || '',
+    caller_name: a.requester || '',
+    caller_phone: a.tel || a.tel1 || '',
     vehicle_number: a.car_num || '',
-    vehicle_model: a.kod_degem_name || '',
-    service_type: mapServiceType(a.serve_type, a.department),
+    vehicle_year: a.car_year || undefined,
+    vehicle_model_code: a.car_code ? String(a.car_code) : '',
+    service_type: mapServiceType(a.department_id),
     location_address: a.address || '',
     location_city: a.city || '',
     destination_address: a.grar_address || '',
     destination_city: a.grar_city || '',
-    status: mapStatus(a.status),
-    priority: vip ? 'urgent' : 'normal',
-    assigned_provider_name: String(a.supplier_name || '').trim(),
-    department: mapDepartment(a.department),
-    insurance_company: a.agent_name || '',
-    package_name: a.package_name || '',
-    problem_description: a.problem_desc || a.diagnose || '',
+    status: CASE_STATUS_MAP[a.status] || 'new',
+    assigned_provider_name: a.supplier_name || '',
+    department: DEPT_MAP[a.department_id] || 'אחר',
+    problem_description: a.diagnose || '',
     internal_notes: a.q_notes || '',
-    inspector_name: a.inspector_name || '',
-    passed_qa: String(a.inspector_approves) === '1',
-    is_vip: vip,
-    opening_source: String(a.open_from_api) === '1' ? 'app' : 'call_center',
-    source_status: a.finish_time && !String(a.finish_time).startsWith('0000') ? 'closed' : 'open',
-    dispatcher_name: a.user_name || '',
+    passed_qa: a.inspector_approves === 1,
+    opening_source: a.open_from_api === 1 ? 'app' : 'call_center',
+    source_status: a.finish_time ? 'closed' : 'open',
     case_reference_code: a.sub_num ? String(a.sub_num) : '',
+    customer_id: a.client_id ? String(a.client_id) : '',
   };
-  if (a.claim_total_cost && parseFloat(a.claim_total_cost) > 0) mapped.price = parseFloat(a.claim_total_cost);
-  if (a.wait_time && parseInt(a.wait_time) > 0) mapped.waiting_time_minutes = parseInt(a.wait_time);
-  const arrivedAt = parseNatiDate(a.arrive_time);
+
+  const arrivedAt = parseNatiDate(a.arrive_actual_time);
   if (arrivedAt) mapped.arrived_at = arrivedAt;
   const completedAt = parseNatiDate(a.finish_time);
   if (completedAt) mapped.completed_at = completedAt;
   const assignedAt = parseNatiDate(a.supplier_assigned_date);
   if (assignedAt) mapped.assigned_at = assignedAt;
-  if (a.future_service_from && !String(a.future_service_from).startsWith('0000')) {
-    mapped.future_service_time = String(a.future_service_from).replace(' ', 'T');
+  const etaTime = parseNatiDate(a.arrive_expected_time);
+  if (etaTime) mapped.vendor_arrival_time = etaTime;
+  if (a.future_service_from) {
+    const fs = parseNatiDate(a.future_service_from);
+    if (fs) mapped.future_service_time = fs;
   }
+  if (a.num_of_km && a.num_of_km > 0) mapped.distance_km = a.num_of_km;
+
   const clean = {};
   for (const [k, v] of Object.entries(mapped)) { if (v !== undefined && v !== null && v !== '') clean[k] = v; }
   return clean;
@@ -104,14 +94,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin required' }, { status: 403 });
     }
 
-    // Fetch from MySQL
     const connection = await getConnection();
-    const [rows] = await connection.query('SELECT * FROM appeals ORDER BY date_added_unix DESC');
+    const [rows] = await connection.query(`
+      SELECT a.*, s.fullname as supplier_name 
+      FROM call_open_appeals a 
+      LEFT JOIN suppliers s ON a.supplier_id = s.id 
+      ORDER BY a.date_added DESC
+    `);
     await connection.end();
 
     const mapped = rows.map(mapAppeal);
 
-    // Get existing cases
     const existing = await base44.asServiceRole.entities.Case.filter({});
     const existingMap = {};
     for (const c of existing) { if (c.case_number) existingMap[c.case_number] = c.id; }

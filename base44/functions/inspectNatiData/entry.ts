@@ -1,5 +1,5 @@
 /**
- * inspectNatiData — Direct MySQL: returns first 2 records with all fields
+ * inspectNatiData — Direct MySQL: returns first 2 records from call_open_appeals with all fields
  */
 import mysql from 'npm:mysql2@3.9.7/promise';
 
@@ -17,21 +17,20 @@ function getDbConfig() {
 
 async function getConnection() {
   const config = getDbConfig();
-  if (!config.host || !config.user || !config.password) {
-    throw new Error('Missing NATID_DB_* secrets');
-  }
-  try {
-    return await mysql.createConnection(config);
-  } catch (e) {
-    const { ssl, ...noSsl } = config;
-    return await mysql.createConnection(noSsl);
-  }
+  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
+  try { return await mysql.createConnection(config); }
+  catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
 }
 
 Deno.serve(async (req) => {
   try {
     const connection = await getConnection();
-    const [rows] = await connection.query('SELECT * FROM appeals ORDER BY date_added_unix DESC LIMIT 2');
+    const [rows] = await connection.query(`
+      SELECT a.*, s.fullname as supplier_name 
+      FROM call_open_appeals a 
+      LEFT JOIN suppliers s ON a.supplier_id = s.id 
+      ORDER BY a.date_added DESC LIMIT 2
+    `);
     await connection.end();
 
     return Response.json({

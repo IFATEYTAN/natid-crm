@@ -1,5 +1,5 @@
 /**
- * checkNatiFields — Direct MySQL: extract specific field values from first 5 records
+ * checkNatiFields — Direct MySQL: extract specific field values from call_open_appeals
  */
 import mysql from 'npm:mysql2@3.9.7/promise';
 
@@ -17,21 +17,20 @@ function getDbConfig() {
 
 async function getConnection() {
   const config = getDbConfig();
-  if (!config.host || !config.user || !config.password) {
-    throw new Error('Missing NATID_DB_* secrets');
-  }
-  try {
-    return await mysql.createConnection(config);
-  } catch (e) {
-    const { ssl, ...noSsl } = config;
-    return await mysql.createConnection(noSsl);
-  }
+  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
+  try { return await mysql.createConnection(config); }
+  catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
 }
 
 Deno.serve(async (req) => {
   try {
     const connection = await getConnection();
-    const [rows] = await connection.query('SELECT * FROM appeals ORDER BY date_added_unix DESC LIMIT 5');
+    const [rows] = await connection.query(`
+      SELECT a.*, s.fullname as supplier_name 
+      FROM call_open_appeals a 
+      LEFT JOIN suppliers s ON a.supplier_id = s.id 
+      ORDER BY a.date_added DESC LIMIT 5
+    `);
     await connection.end();
 
     if (rows.length === 0) {
@@ -39,14 +38,16 @@ Deno.serve(async (req) => {
     }
 
     const fieldsToCheck = [
-      'appeal_id', 'tel', 'tel1', 'tel2', 'intermediary_phone',
-      'supplier_name', 'supplier_phone', 'supplier_mobile', 'supplier_tel',
-      'city', 'grar_city', 'area', 'tow_area', 'pickup_area',
-      'from_location', 'to_location',
-      'client_name', 'client_email', 'client_id',
-      'car_num', 'car_code', 'kod_degem_name',
-      'mispar_shilda', 'car_pin', 'key_location',
-      'status', 'department', 'serve_type',
+      'id', 'tel', 'tel1', 'supplier_id', 'supplier_name',
+      'city', 'grar_city', 'area', 'address', 'grar_address',
+      'requester', 'client_id', 'passport',
+      'car_num', 'car_code', 'car_type', 'car_year', 'car_pin', 'key_location',
+      'status', 'department_id', 'serve_type', 'initial_serve_type',
+      'date_added', 'arrive_expected_time', 'arrive_actual_time',
+      'supplier_choice_time', 'finish_time', 'supplier_assigned_date',
+      'diagnose', 'q_notes', 'finish_note',
+      'inspected', 'inspector_id', 'inspector_approves',
+      'open_from_api', 'has_updated',
     ];
 
     const summary = rows.map(r => {
