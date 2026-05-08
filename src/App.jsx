@@ -103,6 +103,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Suspense fallback={<PageLoader />}>
+      <NavigationTracker />
       <Routes>
         <Route
           path="/"
@@ -132,7 +133,6 @@ function App() {
         <DemoBanner />
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ErrorBoundary>
-            <NavigationTracker />
             <AuthenticatedApp />
           </ErrorBoundary>
         </Router>
