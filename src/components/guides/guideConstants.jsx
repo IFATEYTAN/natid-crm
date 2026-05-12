@@ -27,7 +27,7 @@ export const callStatusFlow = [
     description: 'תואם שירות עתידי - מתוזמן לתאריך קרוב',
   },
   { key: 'awaiting_assignment', label: 'ממתין לשיבוץ', description: 'הקריאה מוכנה לשיבוץ ספק שטח' },
-  { key: 'assigning', label: 'בתהליך שיבוץ', description: 'ספק נבחר והמערכת מחכה לאישורו' },
+  { key: 'assigning', label: 'ספק שובץ', description: 'ספק נבחר והמערכת מחכה לאישורו' },
   {
     key: 'vendor_enroute',
     label: 'נותן השירות בדרך',
@@ -35,7 +35,7 @@ export const callStatusFlow = [
   },
   { key: 'vendor_arrived', label: 'נותן השירות הגיע', description: 'הספק הגיע לנקודת האיסוף' },
   { key: 'in_progress', label: 'בטיפול', description: 'הספק מבצע את העבודה בשטח' },
-  { key: 'completed', label: 'הושלם', description: 'הקריאה טופלה בהצלחה ונסגרה' },
+  { key: 'completed', label: 'סגור', description: 'הקריאה טופלה בהצלחה ונסגרה' },
   { key: 'cancelled', label: 'בוטל', description: 'הקריאה בוטלה (ע"י הלקוח, המוקד, או הספק)' },
 ];
 

@@ -35,7 +35,7 @@ const SERVICE_TYPE_LABELS = {
 const STATUS_LABELS = {
   waiting_treatment: 'ממתין לטיפול',
   awaiting_assignment: 'ממתין לשיוך',
-  assigning: 'בשיוך',
+  assigning: 'ספק שובץ',
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
   vendor_arrived: 'ספק הגיע',
@@ -44,7 +44,7 @@ const STATUS_LABELS = {
   in_storage: 'באחסנה',
   continued_treatment: 'המשך טיפול',
   awaiting_payment: 'ממתין לתשלום',
-  completed: 'הושלם',
+  completed: 'סגור',
   cancelled: 'בוטל',
 };
 
@@ -188,7 +188,7 @@ export default function CallsPage() {
           { label: 'סה"כ קריאות', value: stats.total, color: 'text-[#172B4D]' },
           { label: 'חדשות', value: stats.new, color: 'text-yellow-600' },
           { label: 'בטיפול', value: stats.inProgress, color: 'text-blue-600' },
-          { label: 'הושלמו', value: stats.completed, color: 'text-green-600' },
+          { label: 'נסגרו', value: stats.completed, color: 'text-green-600' },
         ].map(({ label, value, color }) => (
           <Card key={label} className="bg-white">
             <CardContent className="p-4">

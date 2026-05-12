@@ -13,7 +13,7 @@ const statusConfig = {
   // Call statuses - PRIMARY (Blue) for in-progress
   waiting_treatment: { label: 'ממתין לטיפול', variant: 'primary' },
   awaiting_assignment: { label: 'ממתין לשיוך', variant: 'primary' },
-  assigning: { label: 'בשיוך', variant: 'primary' },
+  assigning: { label: 'ספק שובץ', variant: 'primary' },
   vendor_enroute: { label: 'ספק בדרך', variant: 'primary' },
   in_progress: { label: 'בטיפול', variant: 'primary' },
   vendor_arrived: { label: 'נותן השירות הגיע', variant: 'dark' },
@@ -24,7 +24,7 @@ const statusConfig = {
   awaiting_payment: { label: 'המתנה לחיוב', variant: 'danger' },
 
   // DARK (Black) for completed/success
-  completed: { label: 'הושלם', variant: 'dark' },
+  completed: { label: 'סגור', variant: 'dark' },
 
   // DANGER (Red) for cancelled/errors
   cancelled: { label: 'בוטל', variant: 'danger' },

@@ -198,10 +198,10 @@ const callStatusOptions = [
   { value: 'all', label: 'הכל' },
   { value: 'waiting_treatment', label: 'ממתין לטיפול' },
   { value: 'awaiting_assignment', label: 'ממתין לשיבוץ' },
-  { value: 'assigning', label: 'בתהליך שיבוץ' },
+  { value: 'assigning', label: 'ספק שובץ' },
   { value: 'vendor_enroute', label: 'ספק בדרך' },
   { value: 'in_progress', label: 'בטיפול' },
-  { value: 'completed', label: 'הושלם' },
+  { value: 'completed', label: 'סגור' },
   { value: 'cancelled', label: 'בוטל' },
 ];
 

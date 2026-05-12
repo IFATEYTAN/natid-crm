@@ -226,7 +226,7 @@ export default function CallDetailsPage() {
     const statusMessages = {
       vendor_enroute: 'הספק יצא לדרך ובקרוב יגיע אליך',
       in_progress: 'הספק הגיע ומתחיל בטיפול',
-      completed: 'הטיפול הושלם בהצלחה!',
+      completed: 'הטיפול סגור בהצלחה!',
     };
 
     if (statusMessages[newStatus]) {

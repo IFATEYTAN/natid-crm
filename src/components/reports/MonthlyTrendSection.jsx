@@ -56,7 +56,7 @@ export default function MonthlyTrendSection({ cases }) {
   const exportData = withMom.map((m) => ({
     חודש: m.month,
     'סה"כ': m.total,
-    הושלמו: m.completed,
+    נסגרו: m.completed,
     'שינוי MoM%': m.mom ?? '—',
     'ממוצע נע 3M': m.ma3,
     הכנסות: m.revenue,
@@ -105,7 +105,7 @@ export default function MonthlyTrendSection({ cases }) {
                 {[
                   'חודש',
                   'סה"כ',
-                  'הושלמו',
+                  'נסגרו',
                   'MoM%',
                   'ממוצע נע 3M',
                   'הכנסות',

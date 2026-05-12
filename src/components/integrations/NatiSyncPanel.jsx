@@ -341,7 +341,7 @@ export default function NatiSyncPanel() {
         {runData && !runData.error && runData.success && (
           <div className="rounded-md border border-green-200 bg-green-50 p-4 space-y-3">
             <div className="flex items-center gap-2 text-green-900 font-semibold">
-              <CheckCircle className="w-4 h-4" /> הסנכרון הושלם בהצלחה
+              <CheckCircle className="w-4 h-4" /> הסנכרון סגור בהצלחה
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <ResultStat label="סה״כ ב-API" value={runData.total_from_nati} />

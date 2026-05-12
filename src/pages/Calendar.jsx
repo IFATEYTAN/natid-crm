@@ -54,10 +54,10 @@ const statusColors = {
 const statusLabels = {
   waiting_treatment: 'ממתין לטיפול',
   awaiting_assignment: 'ממתין לשיבוץ',
-  assigning: 'בתהליך שיבוץ',
+  assigning: 'ספק שובץ',
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
-  completed: 'הושלם',
+  completed: 'סגור',
   cancelled: 'בוטל',
 };
 
@@ -172,7 +172,7 @@ export default function CalendarPage() {
         <Card className="bg-white">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{monthStats.completed}</div>
-            <div className="text-sm text-[#6B778C]">הושלמו</div>
+            <div className="text-sm text-[#6B778C]">נסגרו</div>
           </CardContent>
         </Card>
         <Card className="bg-white">

@@ -50,7 +50,7 @@ export default function CompanyReport({ calls }) {
   const chartData = companyStats.slice(0, 10).map((s) => ({
     name: s.name.length > 12 ? s.name.slice(0, 12) + '...' : s.name,
     קריאות: s.total,
-    הושלמו: s.completed,
+    נסגרו: s.completed,
   }));
 
   return (
@@ -127,7 +127,7 @@ export default function CompanyReport({ calls }) {
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="קריאות" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="הושלמו" fill="#111827" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="נסגרו" fill="#111827" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

@@ -103,7 +103,7 @@ export const useCompleteQueueItem = () => {
       queueApi.completeQueueItem(queueId, timeToComplete),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
-      toast.success('פריט בתור הושלם');
+      toast.success('פריט בתור סגור');
     },
     onError: () => {
       toast.error('שגיאה בהשלמת פריט בתור');

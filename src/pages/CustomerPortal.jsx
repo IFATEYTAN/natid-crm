@@ -24,12 +24,12 @@ import { he } from 'date-fns/locale';
 const statusConfig = {
   waiting_treatment: { label: 'ממתין לטיפול', color: 'bg-yellow-100 text-yellow-800', step: 1 },
   awaiting_assignment: { label: 'ממתין לשיבוץ', color: 'bg-yellow-100 text-yellow-800', step: 1 },
-  assigning: { label: 'בתהליך שיבוץ', color: 'bg-blue-100 text-blue-800', step: 2 },
+  assigning: { label: 'ספק שובץ', color: 'bg-blue-100 text-blue-800', step: 2 },
   vendor_enroute: { label: 'נותן שירות בדרך', color: 'bg-blue-100 text-blue-800', step: 3 },
   in_progress: { label: 'בטיפול', color: 'bg-indigo-100 text-indigo-800', step: 4 },
   vendor_arrived: { label: 'נותן שירות הגיע', color: 'bg-indigo-100 text-indigo-800', step: 4 },
   future_service: { label: 'שירות עתידי', color: 'bg-purple-100 text-purple-800', step: 2 },
-  completed: { label: 'הושלם', color: 'bg-green-100 text-green-800', step: 5 },
+  completed: { label: 'סגור', color: 'bg-green-100 text-green-800', step: 5 },
   cancelled: { label: 'בוטל', color: 'bg-red-100 text-red-800', step: 0 },
 };
 
@@ -48,7 +48,7 @@ const STEPS = [
   { label: 'שובץ ספק', step: 2 },
   { label: 'ספק בדרך', step: 3 },
   { label: 'בטיפול', step: 4 },
-  { label: 'הושלם', step: 5 },
+  { label: 'סגור', step: 5 },
 ];
 
 export default function CustomerPortal() {
@@ -176,9 +176,7 @@ export default function CustomerPortal() {
             <Card className="bg-white shadow-md">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    קריאה {data.call.call_number}
-                  </CardTitle>
+                  <CardTitle className="text-lg">קריאה {data.call.call_number}</CardTitle>
                   <Badge className={statusConfig[data.call.status]?.color || 'bg-gray-100'}>
                     {statusConfig[data.call.status]?.label || data.call.status}
                   </Badge>
@@ -210,11 +208,7 @@ export default function CustomerPortal() {
                                   : 'bg-gray-200 text-gray-500'
                             }`}
                           >
-                            {currentStep >= s.step ? (
-                              <CheckCircle className="w-4 h-4" />
-                            ) : (
-                              s.step
-                            )}
+                            {currentStep >= s.step ? <CheckCircle className="w-4 h-4" /> : s.step}
                           </div>
                           {i < STEPS.length - 1 && (
                             <div
@@ -348,9 +342,7 @@ export default function CustomerPortal() {
         )}
 
         {/* Footer */}
-        <div className="text-center text-xs text-gray-400 pb-4">
-          נתי שירותי דרך — מעקב קריאות
-        </div>
+        <div className="text-center text-xs text-gray-400 pb-4">נתי שירותי דרך — מעקב קריאות</div>
       </div>
     </div>
   );

@@ -51,10 +51,10 @@ const statusOptions = [
   { value: 'all', label: 'כל הסטטוסים' },
   { value: 'waiting_treatment', label: 'ממתין לטיפול' },
   { value: 'awaiting_assignment', label: 'ממתין לשיוך' },
-  { value: 'assigning', label: 'בשיוך' },
+  { value: 'assigning', label: 'ספק שובץ' },
   { value: 'vendor_enroute', label: 'ספק בדרך' },
   { value: 'in_progress', label: 'בטיפול' },
-  { value: 'completed', label: 'הושלם' },
+  { value: 'completed', label: 'סגור' },
   { value: 'cancelled', label: 'בוטל' },
 ];
 

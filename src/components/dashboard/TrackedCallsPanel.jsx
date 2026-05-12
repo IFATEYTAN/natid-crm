@@ -40,7 +40,7 @@ const SERVICE_TYPE_LABELS = {
 const STATUS_LABELS = {
   waiting_treatment: 'ממתין לטיפול',
   awaiting_assignment: 'ממתין לשיוך',
-  assigning: 'בשיוך',
+  assigning: 'ספק שובץ',
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
   vendor_arrived: 'נותן השירות הגיע',

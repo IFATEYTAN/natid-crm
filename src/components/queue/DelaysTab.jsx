@@ -382,7 +382,7 @@ export default function DelaysTab({ queueItems, calls }) {
                       waiting_in_queue: { label: 'ממתין', color: 'bg-yellow-100 text-yellow-800' },
                       assigned_to_agent: { label: 'משובץ', color: 'bg-blue-100 text-blue-800' },
                       in_progress: { label: 'בטיפול', color: 'bg-indigo-100 text-indigo-800' },
-                      completed: { label: 'הושלם', color: 'bg-green-100 text-green-800' },
+                      completed: { label: 'סגור', color: 'bg-green-100 text-green-800' },
                     };
                     const statusConf = statusMap[item.queue_status] || {
                       label: item.queue_status,

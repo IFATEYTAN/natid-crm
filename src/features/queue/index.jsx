@@ -336,7 +336,7 @@ export default function MyQueue() {
           className="cursor-pointer hover:border-[#0288D1]"
         />
         <StatCard
-          title="הושלמו היום"
+          title="נסגרו היום"
           value={completed.length}
           subtitle="קריאות"
           icon={CheckCircle2}
@@ -359,7 +359,7 @@ export default function MyQueue() {
         <TabsList>
           <TabsTrigger value="my-queue">התור שלי ({myQueue.length})</TabsTrigger>
           <TabsTrigger value="in-progress">בטיפול ({inProgress.length})</TabsTrigger>
-          <TabsTrigger value="completed">הושלמו ({completed.length})</TabsTrigger>
+          <TabsTrigger value="completed">נסגרו ({completed.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-queue">

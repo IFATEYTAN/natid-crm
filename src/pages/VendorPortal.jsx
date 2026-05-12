@@ -805,7 +805,7 @@ export default function VendorPortalPage() {
                     <TabsList>
                       <TabsTrigger value="all">כל הקריאות</TabsTrigger>
                       <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
-                      <TabsTrigger value="completed">הושלמו ({completedCalls.length})</TabsTrigger>
+                      <TabsTrigger value="completed">נסגרו ({completedCalls.length})</TabsTrigger>
                     </TabsList>
                     <TabsContent value="all" className="mt-4">
                       <Suspense fallback={<Skeleton className="h-40" />}>
@@ -830,7 +830,7 @@ export default function VendorPortalPage() {
                         <DataTableLazy
                           columns={columns}
                           data={completedCalls}
-                          emptyMessage="אין קריאות שהושלמו"
+                          emptyMessage="אין קריאות שנסגרו"
                         />
                       </Suspense>
                     </TabsContent>

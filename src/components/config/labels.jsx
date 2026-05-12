@@ -17,7 +17,7 @@ export const statusColors = {
 export const statusLabels = {
   waiting_treatment: 'ממתין לטיפול',
   awaiting_assignment: 'ממתין לשיבוץ',
-  assigning: 'בתהליך שיבוץ',
+  assigning: 'ספק שובץ',
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
   vendor_arrived: 'ספק הגיע',
@@ -26,7 +26,7 @@ export const statusLabels = {
   in_storage: 'באחסון',
   continued_treatment: 'טיפול המשך',
   awaiting_payment: 'ממתין לתשלום',
-  completed: 'הושלם',
+  completed: 'סגור',
   cancelled: 'בוטל',
 };
 

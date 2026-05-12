@@ -148,7 +148,7 @@ function createMockFunctions(realFunctions) {
         case 'generateCallSummary':
           return Promise.resolve({
             success: true,
-            data: { summary: 'סיכום קריאה אוטומטי — טיפול הושלם בהצלחה' },
+            data: { summary: 'סיכום קריאה אוטומטי — טיפול סגור בהצלחה' },
           });
         case 'autoAssignVendor':
           return Promise.resolve({

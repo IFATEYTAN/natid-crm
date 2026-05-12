@@ -81,7 +81,7 @@ export const useNatiSyncRun = () => {
       }
       const created = (data?.calls?.created ?? 0) + (data?.cases?.created ?? 0);
       const updated = (data?.calls?.updated ?? 0) + (data?.cases?.updated ?? 0);
-      toast.success(`סנכרון הושלם: ${created} נוצרו, ${updated} עודכנו`);
+      toast.success(`סנכרון סגור: ${created} נוצרו, ${updated} עודכנו`);
       invalidateAfterSync(queryClient);
     },
   });

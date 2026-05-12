@@ -424,7 +424,7 @@ export default function UserGuidePage() {
                 },
                 {
                   step: 'סגירת קריאה',
-                  desc: 'בקרת איכות → סיכום אוטומטי עם AI → סגירה סופית. הקריאה עוברת לסטטוס "הושלם".',
+                  desc: 'בקרת איכות → סיכום אוטומטי עם AI → סגירה סופית. הקריאה עוברת לסטטוס "סגור".',
                   icon: CheckCircle,
                   color: 'bg-emerald-100 text-emerald-700',
                 },

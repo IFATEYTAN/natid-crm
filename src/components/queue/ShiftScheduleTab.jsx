@@ -52,7 +52,7 @@ const shiftTypeColors = {
 const statusLabels = {
   scheduled: 'מתוכנן',
   active: 'פעיל',
-  completed: 'הושלם',
+  completed: 'סגור',
   cancelled: 'בוטל',
   sick_leave: 'מחלה',
 };
@@ -598,7 +598,7 @@ export default function ShiftScheduleTab() {
                   <SelectContent>
                     <SelectItem value="scheduled">מתוכנן</SelectItem>
                     <SelectItem value="active">פעיל</SelectItem>
-                    <SelectItem value="completed">הושלם</SelectItem>
+                    <SelectItem value="completed">סגור</SelectItem>
                     <SelectItem value="cancelled">בוטל</SelectItem>
                     <SelectItem value="sick_leave">מחלה</SelectItem>
                   </SelectContent>

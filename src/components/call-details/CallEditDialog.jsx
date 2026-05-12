@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 const statusOptions = [
   { value: 'waiting_treatment', label: 'ממתין לטיפול' },
   { value: 'awaiting_assignment', label: 'ממתין לשיבוץ' },
-  { value: 'assigning', label: 'בתהליך שיבוץ' },
+  { value: 'assigning', label: 'ספק שובץ' },
   { value: 'vendor_enroute', label: 'ספק בדרך' },
   { value: 'in_progress', label: 'בטיפול' },
   { value: 'vendor_arrived', label: 'נותן השירות הגיע' },
@@ -37,7 +37,7 @@ const statusOptions = [
   { value: 'in_storage', label: 'באחסנה' },
   { value: 'continued_treatment', label: 'המשך טיפול' },
   { value: 'awaiting_payment', label: 'המתנה לחיוב' },
-  { value: 'completed', label: 'הושלם' },
+  { value: 'completed', label: 'סגור' },
   { value: 'cancelled', label: 'בוטל' },
 ];
 

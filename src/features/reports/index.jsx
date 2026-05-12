@@ -355,10 +355,10 @@ export default function Reports() {
                         <SelectItem value="all">כל הסטטוסים</SelectItem>
                         <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
                         <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
-                        <SelectItem value="assigning">בשיוך</SelectItem>
+                        <SelectItem value="assigning">ספק שובץ</SelectItem>
                         <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
                         <SelectItem value="in_progress">בטיפול</SelectItem>
-                        <SelectItem value="completed">הושלם</SelectItem>
+                        <SelectItem value="completed">סגור</SelectItem>
                         <SelectItem value="cancelled">בוטל</SelectItem>
                       </SelectContent>
                     </Select>
@@ -509,7 +509,7 @@ export default function Reports() {
                 columns={[
                   { header: 'שם ספק', accessor: 'vendor_name' },
                   { header: 'סה"כ קריאות', accessor: 'total_calls' },
-                  { header: 'קריאות שהושלמו', accessor: 'completed_calls' },
+                  { header: 'קריאות שנסגרו', accessor: 'completed_calls' },
                   { header: 'דירוג ממוצע', accessor: 'average_rating' },
                   { header: 'זמן תגובה ממוצע', accessor: 'average_response_time' },
                 ]}

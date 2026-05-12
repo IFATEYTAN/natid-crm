@@ -81,7 +81,7 @@ export default function Dashboard() {
       } else {
         const created = (data?.calls?.created ?? 0) + (data?.cases?.created ?? 0);
         const updated = (data?.calls?.updated ?? 0) + (data?.cases?.updated ?? 0);
-        toast.success(`סנכרון הושלם: ${created} נוצרו, ${updated} עודכנו`);
+        toast.success(`סנכרון סגור: ${created} נוצרו, ${updated} עודכנו`);
       }
       await queryClient.invalidateQueries();
     } catch (err) {
@@ -178,11 +178,11 @@ export default function Dashboard() {
   const statusLabelsMap = {
     waiting_treatment: 'ממתין לטיפול',
     awaiting_assignment: 'ממתין לשיוך',
-    assigning: 'בשיוך',
+    assigning: 'ספק שובץ',
     vendor_enroute: 'ספק בדרך',
     in_progress: 'בטיפול',
     vendor_arrived: 'ספק הגיע',
-    completed: 'הושלם',
+    completed: 'סגור',
     cancelled: 'בוטל',
   };
   const statusData = Object.entries(statusLabelsMap)
@@ -308,7 +308,7 @@ export default function Dashboard() {
             </Suspense>
             <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
-                title="הושלמו היום"
+                title="נסגרו היום"
                 value={completedToday.length}
                 subtitle="ביצוע יומי"
                 icon={CheckCircle2}

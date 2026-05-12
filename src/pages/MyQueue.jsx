@@ -211,7 +211,7 @@ export default function MyQueuePage() {
               </div>
               <div>
                 <div className="text-2xl font-bold text-[#172B4D]">{stats.completed}</div>
-                <div className="text-sm text-[#6B778C]">הושלמו</div>
+                <div className="text-sm text-[#6B778C]">נסגרו</div>
               </div>
             </div>
           </CardContent>
@@ -237,7 +237,7 @@ export default function MyQueuePage() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="active">פעילות ({activeCalls.length})</TabsTrigger>
-              <TabsTrigger value="completed">הושלמו ({completedCalls.length})</TabsTrigger>
+              <TabsTrigger value="completed">נסגרו ({completedCalls.length})</TabsTrigger>
               <TabsTrigger value="all">הכל ({myCalls.length})</TabsTrigger>
             </TabsList>
           </Tabs>
@@ -256,7 +256,7 @@ export default function MyQueuePage() {
               columns={columns}
               data={completedCalls}
               isLoading={isLoading}
-              emptyMessage="אין קריאות שהושלמו"
+              emptyMessage="אין קריאות שנסגרו"
             />
           )}
           {activeTab === 'all' && (

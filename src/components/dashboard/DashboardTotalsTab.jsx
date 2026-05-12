@@ -148,7 +148,7 @@ export default function DashboardTotalsTab({ calls, callsLoading }) {
             <div className="text-2xl font-bold text-green-600">
               {filteredTotalsCalls.filter((c) => c.call_status === 'completed').length}
             </div>
-            <div className="text-xs text-green-500">הושלמו</div>
+            <div className="text-xs text-green-500">נסגרו</div>
           </div>
           <div className="bg-red-50 p-4 rounded-lg text-center border border-red-100">
             <div className="text-2xl font-bold text-red-600">

@@ -74,7 +74,7 @@ export default function QueueStatsBar({ queueItems, onFilterByStatus, activeFilt
       color: 'text-indigo-600 bg-indigo-50 border-indigo-200',
     },
     {
-      label: 'הושלמו',
+      label: 'נסגרו',
       value: completed.length,
       icon: CheckCircle2,
       filterValue: 'completed',

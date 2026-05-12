@@ -8,8 +8,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  Camera, AlertCircle, ArrowRight, Loader2, FileText,
-  MessageSquare, Route, Sparkles,
+  Camera,
+  AlertCircle,
+  ArrowRight,
+  Loader2,
+  FileText,
+  MessageSquare,
+  Route,
+  Sparkles,
 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -147,7 +153,7 @@ export default function VendorCallManagementPage() {
     const statusMessages = {
       vendor_enroute: `הספק ${vendorProfile?.vendor_name || ''} יצא לדרך`,
       in_progress: 'הספק הגיע למקום ומתחיל בטיפול',
-      completed: 'הטיפול הושלם בהצלחה!',
+      completed: 'הטיפול סגור בהצלחה!',
     };
 
     if (newStatus === 'in_progress') {
@@ -182,7 +188,7 @@ export default function VendorCallManagementPage() {
       const arrayBuffer = await blob.arrayBuffer();
       const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const signatureHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      const signatureHash = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 
       await base44.entities.CallPhoto.create({
         call_id: selectedCallId,
@@ -282,8 +288,10 @@ export default function VendorCallManagementPage() {
           </TabsTrigger>
           <TabsTrigger value="photos" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
             <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-            <span className="hidden sm:inline">תמונות ({photos.filter(p => !p.is_deleted).length})</span>
-            <span className="sm:hidden">{photos.filter(p => !p.is_deleted).length}📷</span>
+            <span className="hidden sm:inline">
+              תמונות ({photos.filter((p) => !p.is_deleted).length})
+            </span>
+            <span className="sm:hidden">{photos.filter((p) => !p.is_deleted).length}📷</span>
           </TabsTrigger>
           <TabsTrigger value="ai" className="gap-1 text-xs sm:text-sm px-1 sm:px-3 py-2">
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />

@@ -110,7 +110,7 @@ export default function VendorMobileHomeTab({
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <div className="text-2xl font-bold text-gray-900">{todayCompleted.length}</div>
-            <div className="text-xs text-gray-500">הושלמו היום</div>
+            <div className="text-xs text-gray-500">נסגרו היום</div>
           </CardContent>
         </Card>
         <Card className="rounded-xl">
