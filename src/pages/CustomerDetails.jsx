@@ -3,7 +3,18 @@ import { useCustomer } from '@/features/customers/hooks/useCustomers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, Mail, AlertCircle, ArrowRight, Car, Calendar, Shield, CreditCard, AlertTriangle } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  Mail,
+  AlertCircle,
+  ArrowRight,
+  Car,
+  Calendar,
+  Shield,
+  CreditCard,
+  AlertTriangle,
+} from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
@@ -93,7 +104,11 @@ export default function CustomerDetails() {
             <div className="text-sm text-[#6b7280]">טלפון</div>
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-[#6b7280]" />
-              <a className="text-blue-600 hover:underline" href={`tel:${customer.phone || ''}`}>
+              <a
+                className="text-blue-600 hover:underline tabular-nums"
+                dir="ltr"
+                href={`tel:${customer.phone || ''}`}
+              >
                 {customer.phone || '-'}
               </a>
             </div>
@@ -129,12 +144,16 @@ export default function CustomerDetails() {
 
           <div className="space-y-1">
             <div className="text-sm text-[#6b7280]">SLA תגובה (דקות)</div>
-            <div className="font-medium">{customer.sla_response_minutes ?? '-'}</div>
+            <div className="font-medium text-right tabular-nums" dir="ltr">
+              {customer.sla_response_minutes ?? '-'}
+            </div>
           </div>
 
           <div className="space-y-1">
             <div className="text-sm text-[#6b7280]">SLA הגעה (דקות)</div>
-            <div className="font-medium">{customer.sla_arrival_minutes ?? '-'}</div>
+            <div className="font-medium text-right tabular-nums" dir="ltr">
+              {customer.sla_arrival_minutes ?? '-'}
+            </div>
           </div>
 
           <div className="space-y-1 md:col-span-2">
@@ -145,7 +164,9 @@ export default function CustomerDetails() {
       </Card>
 
       {/* Subscription Details */}
-      {(customer.subscription_status || customer.subscription_start_date || customer.subscription_end_date) && (
+      {(customer.subscription_status ||
+        customer.subscription_start_date ||
+        customer.subscription_end_date) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
@@ -156,36 +177,48 @@ export default function CustomerDetails() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <div className="text-sm text-[#6b7280]">מצב מנוי</div>
-              <Badge className="w-fit">{
-                customer.subscription_status === 'active' ? 'פעיל' :
-                customer.subscription_status === 'suspended' ? 'מושהה' :
-                customer.subscription_status === 'cancelled' ? 'מבוטל' :
-                customer.subscription_status === 'expired' ? 'פג תוקף' :
-                customer.subscription_status || '-'
-              }</Badge>
+              <Badge className="w-fit">
+                {customer.subscription_status === 'active'
+                  ? 'פעיל'
+                  : customer.subscription_status === 'suspended'
+                    ? 'מושהה'
+                    : customer.subscription_status === 'cancelled'
+                      ? 'מבוטל'
+                      : customer.subscription_status === 'expired'
+                        ? 'פג תוקף'
+                        : customer.subscription_status || '-'}
+              </Badge>
             </div>
             {customer.subscription_sequence && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">רצף מנויים</div>
-                <div className="font-medium">{customer.subscription_sequence}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.subscription_sequence}
+                </div>
               </div>
             )}
             {customer.subscription_start_date && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">תוקף מנוי מתאריך</div>
-                <div className="font-medium">{customer.subscription_start_date}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.subscription_start_date}
+                </div>
               </div>
             )}
             {customer.subscription_end_date && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">תוקף מנוי עד תאריך</div>
-                <div className="font-medium">{customer.subscription_end_date}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.subscription_end_date}
+                </div>
               </div>
             )}
             {customer.subscription_issue_date && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">תאריך הפקה</div>
-                <div className="font-medium">{customer.subscription_issue_date}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.subscription_issue_date}
+                </div>
               </div>
             )}
           </CardContent>
@@ -205,19 +238,25 @@ export default function CustomerDetails() {
             {customer.vehicle_number && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">מספר רכב</div>
-                <div className="font-medium">{customer.vehicle_number}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.vehicle_number}
+                </div>
               </div>
             )}
             {customer.vehicle_type && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">סוג רכב</div>
-                <div className="font-medium">{
-                  customer.vehicle_type === 'private' ? 'פרטי' :
-                  customer.vehicle_type === 'commercial_light' ? 'מסחרי קל' :
-                  customer.vehicle_type === 'commercial_heavy' ? 'מסחרי כבד' :
-                  customer.vehicle_type === 'motorcycle' ? 'אופנוע' :
-                  customer.vehicle_type
-                }</div>
+                <div className="font-medium">
+                  {customer.vehicle_type === 'private'
+                    ? 'פרטי'
+                    : customer.vehicle_type === 'commercial_light'
+                      ? 'מסחרי קל'
+                      : customer.vehicle_type === 'commercial_heavy'
+                        ? 'מסחרי כבד'
+                        : customer.vehicle_type === 'motorcycle'
+                          ? 'אופנוע'
+                          : customer.vehicle_type}
+                </div>
               </div>
             )}
             {customer.vehicle_model && (
@@ -235,13 +274,17 @@ export default function CustomerDetails() {
             {customer.vehicle_year && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">שנת ייצור</div>
-                <div className="font-medium">{customer.vehicle_year}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.vehicle_year}
+                </div>
               </div>
             )}
             {customer.vehicle_license_expiry && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">תוקף רישיון רכב</div>
-                <div className="font-medium">{customer.vehicle_license_expiry}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.vehicle_license_expiry}
+                </div>
               </div>
             )}
             {customer.vehicle_personal_import && (
@@ -293,19 +336,25 @@ export default function CustomerDetails() {
             {customer.payment_method && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">אופן תשלום</div>
-                <div className="font-medium">{
-                  customer.payment_method === 'credit_card' ? 'כרטיס אשראי' :
-                  customer.payment_method === 'bank_transfer' ? 'העברה בנקאית' :
-                  customer.payment_method === 'cash' ? 'מזומן' :
-                  customer.payment_method === 'check' ? 'שיק' :
-                  customer.payment_method
-                }</div>
+                <div className="font-medium">
+                  {customer.payment_method === 'credit_card'
+                    ? 'כרטיס אשראי'
+                    : customer.payment_method === 'bank_transfer'
+                      ? 'העברה בנקאית'
+                      : customer.payment_method === 'cash'
+                        ? 'מזומן'
+                        : customer.payment_method === 'check'
+                          ? 'שיק'
+                          : customer.payment_method}
+                </div>
               </div>
             )}
             {customer.payment_date && (
               <div className="space-y-1">
                 <div className="text-sm text-[#6b7280]">תאריך תשלום</div>
-                <div className="font-medium">{customer.payment_date}</div>
+                <div className="font-medium text-right tabular-nums" dir="ltr">
+                  {customer.payment_date}
+                </div>
               </div>
             )}
           </CardContent>

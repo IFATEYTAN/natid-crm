@@ -286,12 +286,28 @@ export default function QueueMonitor() {
       ),
     },
     {
-      header: 'לקוח',
+      header: 'שם מנוי',
       accessor: 'call.customer_name',
       cell: (item) => (
         <div>
-          <div className="font-medium">{item.call?.customer_name}</div>
-          <div className="text-xs text-gray-500">{item.call?.customer_phone}</div>
+          <div className="font-medium">{item.call?.customer_name || '—'}</div>
+          <div className="text-xs text-gray-500 tabular-nums" dir="ltr">
+            {item.call?.customer_phone || ''}
+          </div>
+        </div>
+      ),
+    },
+    {
+      header: "מס' רכב",
+      accessor: 'call.vehicle_plate',
+      cell: (item) => (
+        <div>
+          <div className="font-medium tabular-nums text-right" dir="ltr">
+            {item.call?.vehicle_plate || item.call?.vehicle_number || '—'}
+          </div>
+          {item.call?.vehicle_model && (
+            <div className="text-xs text-gray-500">{item.call.vehicle_model}</div>
+          )}
         </div>
       ),
     },

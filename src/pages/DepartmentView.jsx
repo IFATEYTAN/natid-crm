@@ -130,7 +130,9 @@ export default function DepartmentView() {
       <div className="flex items-center justify-end gap-4 text-right">
         <div className="flex-1">
           <h1 className="text-[32px] font-bold text-[#212121] text-right">תצוגת מחלקה</h1>
-          <p className="text-[#616161] text-sm text-right">ניהול מחלקתי — צפייה, חיפוש ומעקב לפי מחלקה</p>
+          <p className="text-[#616161] text-sm text-right">
+            ניהול מחלקתי — צפייה, חיפוש ומעקב לפי מחלקה
+          </p>
         </div>
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
           <ArrowRight className="w-5 h-5" />
@@ -138,39 +140,37 @@ export default function DepartmentView() {
       </div>
 
       {/* Department Tabs - Hidden, only showing towing */}
-       {/* Department header - towing only */}
-       <div className="text-right mb-6">
-         <h2 className="text-xl font-semibold text-[#212121] flex items-center gap-2 justify-end">
-           <Truck className="w-5 h-5" />
-           מחלקת גרירה
-         </h2>
-       </div>
+      {/* Department header - towing only */}
+      <div className="text-right mb-6">
+        <h2 className="text-xl font-semibold text-[#212121] flex items-center gap-2 justify-end">
+          <Truck className="w-5 h-5" />
+          מחלקת גרירה
+        </h2>
+      </div>
 
-       {/* Sub-navigation */}
-       <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
-         {SUB_VIEWS.map((sv) => {
-           const Icon = sv.icon;
-           return (
-             <Button
-               key={sv.key}
-               variant={subView === sv.key ? 'default' : 'outline'}
-               size="sm"
-               className="gap-2"
-               onClick={() => handleSubViewChange(sv.key)}
-             >
-               <Icon className="w-4 h-4" />
-               {sv.label}
-             </Button>
-           );
-         })}
-       </div>
+      {/* Sub-navigation */}
+      <div className="flex gap-2 flex-wrap mb-6 flex-row-reverse justify-end">
+        {SUB_VIEWS.map((sv) => {
+          const Icon = sv.icon;
+          return (
+            <Button
+              key={sv.key}
+              variant={subView === sv.key ? 'default' : 'outline'}
+              size="sm"
+              className="gap-2"
+              onClick={() => handleSubViewChange(sv.key)}
+            >
+              <Icon className="w-4 h-4" />
+              {sv.label}
+            </Button>
+          );
+        })}
+      </div>
 
-       {/* Sub-view content */}
-       {subView === 'search_subscriber' && (
-         <SubscriberSearch department="towing" />
-       )}
-       {subView === 'search_agent' && <AgentSearch department="towing" />}
-       {subView === 'cases_list' && <CasesList department="towing" />}
+      {/* Sub-view content */}
+      {subView === 'search_subscriber' && <SubscriberSearch department="towing" />}
+      {subView === 'search_agent' && <AgentSearch department="towing" />}
+      {subView === 'cases_list' && <CasesList department="towing" />}
     </div>
   );
 }
@@ -225,11 +225,7 @@ function SubscriberSearch({ department }) {
       header: 'VIP',
       accessor: 'is_vip',
       cell: (row) =>
-        row.is_vip ? (
-          <Badge className="bg-amber-100 text-amber-800">VIP</Badge>
-        ) : (
-          '—'
-        ),
+        row.is_vip ? <Badge className="bg-amber-100 text-amber-800">VIP</Badge> : '—',
     },
     { header: 'שם לקוח', accessor: 'name' },
     { header: 'כתובת', accessor: 'address', cell: (row) => row.address || '—' },
@@ -246,10 +242,7 @@ function SubscriberSearch({ department }) {
   // Cases for the selected customer filtered by department
   const customerCases = useMemo(() => {
     if (!selectedCustomer) return [];
-    return allCases.filter(
-      (c) =>
-        c.customer_name === selectedCustomer.name
-    );
+    return allCases.filter((c) => c.customer_name === selectedCustomer.name);
   }, [allCases, selectedCustomer, department]);
 
   if (selectedCustomer) {
@@ -276,7 +269,13 @@ function SubscriberSearch({ department }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="ps-9 text-right"
-                dir={searchField === 'phone' || searchField === 'id_number' || searchField === 'vehicle_number' ? 'ltr' : 'rtl'}
+                dir={
+                  searchField === 'phone' ||
+                  searchField === 'id_number' ||
+                  searchField === 'vehicle_number'
+                    ? 'ltr'
+                    : 'rtl'
+                }
               />
             </div>
             <Select value={searchField} onValueChange={setSearchField}>
@@ -328,15 +327,27 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       accessor: 'closed_date',
       cell: (row) => formatDate(row.closed_date),
     },
-    { header: 'מספר מנוי', accessor: 'subscriber_number', cell: (row) => row.subscriber_number || '—' },
-    { header: 'תיאור אירוע', accessor: 'problem_description', cell: (row) => row.problem_description || '—' },
+    {
+      header: 'מספר מנוי',
+      accessor: 'subscriber_number',
+      cell: (row) => row.subscriber_number || '—',
+    },
+    {
+      header: 'תיאור אירוע',
+      accessor: 'problem_description',
+      cell: (row) => row.problem_description || '—',
+    },
     { header: 'תשלום תביעה', accessor: 'claim_payment', cell: (row) => row.claim_payment || '—' },
     { header: 'מוקדן', accessor: 'operator_name', cell: (row) => row.operator_name || '—' },
   ];
 
   const vehicleHistoryColumns = [
     { header: 'תאריכים', accessor: 'created_date', cell: (row) => formatDate(row.created_date) },
-    { header: 'מספר מנוי', accessor: 'subscriber_number', cell: (row) => row.subscriber_number || '—' },
+    {
+      header: 'מספר מנוי',
+      accessor: 'subscriber_number',
+      cell: (row) => row.subscriber_number || '—',
+    },
     { header: 'בעל הרכב', accessor: 'customer_name', cell: (row) => row.customer_name || '—' },
     { header: 'סוג חבילה', accessor: 'package_name', cell: (row) => row.package_name || '—' },
     { header: 'פעולה', accessor: 'service_type', cell: (row) => row.service_type || '—' },
@@ -353,9 +364,7 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2 justify-end text-right">
-            {customer.is_vip && (
-              <Badge className="bg-amber-100 text-amber-800">VIP</Badge>
-            )}
+            {customer.is_vip && <Badge className="bg-amber-100 text-amber-800">VIP</Badge>}
             <span>— {customer.name} פרטי מנוי</span>
             <Users className="w-5 h-5 text-[#212121]" />
           </CardTitle>
@@ -407,26 +416,24 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       {/* Call History */}
       <Card>
         <CardHeader
-           className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
-           onClick={() => setShowHistory(!showHistory)}
-         >
-           <CardTitle className="text-base flex items-center justify-between text-right">
-             {showHistory ? (
-               <ChevronUp className="w-4 h-4 text-gray-500" />
-             ) : (
-               <ChevronDown className="w-4 h-4 text-gray-500" />
-             )}
-             <span>היסטוריית קריאות ({cases.length})</span>
-           </CardTitle>
-         </CardHeader>
+          className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => setShowHistory(!showHistory)}
+        >
+          <CardTitle className="text-base flex items-center justify-between text-right">
+            {showHistory ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+            <span>היסטוריית קריאות ({cases.length})</span>
+          </CardTitle>
+        </CardHeader>
         {showHistory && (
           <CardContent>
             <DataTable
               columns={callHistoryColumns}
               data={cases}
-              onRowClick={(row) =>
-                navigate(createPageUrl(`CallDetails?id=${row.id}`))
-              }
+              onRowClick={(row) => navigate(createPageUrl(`CallDetails?id=${row.id}`))}
               emptyMessage="אין קריאות במחלקה זו"
             />
           </CardContent>
@@ -436,18 +443,18 @@ function CustomerDetailView({ customer, cases, department, onBack }) {
       {/* Vehicle History */}
       <Card>
         <CardHeader
-           className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
-           onClick={() => setShowVehicleHistory(!showVehicleHistory)}
-         >
-           <CardTitle className="text-base flex items-center justify-between text-right">
-             {showVehicleHistory ? (
-               <ChevronUp className="w-4 h-4 text-gray-500" />
-             ) : (
-               <ChevronDown className="w-4 h-4 text-gray-500" />
-             )}
-             <span>היסטוריית רכב</span>
-           </CardTitle>
-         </CardHeader>
+          className="pb-3 cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => setShowVehicleHistory(!showVehicleHistory)}
+        >
+          <CardTitle className="text-base flex items-center justify-between text-right">
+            {showVehicleHistory ? (
+              <ChevronUp className="w-4 h-4 text-gray-500" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
+            <span>היסטוריית רכב</span>
+          </CardTitle>
+        </CardHeader>
         {showVehicleHistory && (
           <CardContent>
             <DataTable
@@ -564,9 +571,7 @@ function AgentSearch({ department }) {
             v.city?.toLowerCase().includes(q) ||
             (Array.isArray(v.coverage_areas) &&
               v.coverage_areas.some(
-                (a) =>
-                  a?.toLowerCase().includes(q) ||
-                  coverageLabels[a]?.toLowerCase().includes(q)
+                (a) => a?.toLowerCase().includes(q) || coverageLabels[a]?.toLowerCase().includes(q)
               ))
           );
         default:
@@ -618,9 +623,7 @@ function AgentSearch({ department }) {
   ];
 
   if (selectedVendor) {
-    return (
-      <VendorDetailView vendor={selectedVendor} onBack={() => setSelectedVendor(null)} />
-    );
+    return <VendorDetailView vendor={selectedVendor} onBack={() => setSelectedVendor(null)} />;
   }
 
   return (
@@ -692,7 +695,11 @@ function VendorDetailView({ vendor, onBack }) {
               <InfoRow label="סטטוס" value={vendor.availability_status} />
               <InfoRow label="ח.פ./ת.ז." value={vendor.company_id} />
               <InfoRow label="טלפון 1" value={vendor.phone} icon={<Phone className="w-3 h-3" />} />
-              <InfoRow label="טלפון 2" value={vendor.phone_2} icon={<Phone className="w-3 h-3" />} />
+              <InfoRow
+                label="טלפון 2"
+                value={vendor.phone_2}
+                icon={<Phone className="w-3 h-3" />}
+              />
               <InfoRow label="פקס" value={vendor.fax} />
               <InfoRow label="כתובת" value={vendor.address} icon={<MapPin className="w-3 h-3" />} />
               <InfoRow
@@ -725,13 +732,22 @@ function VendorDetailView({ vendor, onBack }) {
               <h4 className="text-sm font-semibold text-[#424242] border-b pb-1">
                 חוזים מול המחלקות
               </h4>
-              <InfoRow label="סוג שירות" value={
-                Array.isArray(vendor.service_type)
-                  ? vendor.service_type.join(', ')
-                  : vendor.service_type
-              } />
-              <InfoRow label="תעריף לקריאה" value={vendor.payment_rate_per_call ? `₪${vendor.payment_rate_per_call}` : null} />
-              <InfoRow label="תעריף בסיס" value={vendor.base_rate ? `₪${vendor.base_rate}` : null} />
+              <InfoRow
+                label="סוג שירות"
+                value={
+                  Array.isArray(vendor.service_type)
+                    ? vendor.service_type.join(', ')
+                    : vendor.service_type
+                }
+              />
+              <InfoRow
+                label="תעריף לקריאה"
+                value={vendor.payment_rate_per_call ? `₪${vendor.payment_rate_per_call}` : null}
+              />
+              <InfoRow
+                label="תעריף בסיס"
+                value={vendor.base_rate ? `₪${vendor.base_rate}` : null}
+              />
               <InfoRow
                 label="אזורי כיסוי"
                 value={
@@ -754,6 +770,8 @@ function VendorDetailView({ vendor, onBack }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 //  SUB-VIEW 3: CASES LIST
 // ═══════════════════════════════════════════════════════════════════════════════
+const CASES_CLOSED_STATUSES = ['completed', 'cancelled'];
+
 function CasesList({ department }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -763,6 +781,7 @@ function CasesList({ department }) {
   const [vipOnly, setVipOnly] = useState(false);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [openClosedTab, setOpenClosedTab] = useState('open');
 
   const { data: allCases = [], isLoading } = useQuery({
     queryKey: ['calls-all'],
@@ -786,10 +805,22 @@ function CasesList({ department }) {
         const matchesSearch =
           c.call_number?.toLowerCase().includes(q) ||
           c.customer_name?.toLowerCase().includes(q) ||
-          c.vehicle_plate?.includes(searchQuery) ||
-          c.customer_phone?.includes(searchQuery);
+          c.vehicle_plate?.toLowerCase().includes(q) ||
+          c.customer_phone?.includes(searchQuery) ||
+          c.assigned_vendor_name?.toLowerCase().includes(q) ||
+          c.insurance_agent_name?.toLowerCase().includes(q) ||
+          c.insurance_company_name?.toLowerCase().includes(q) ||
+          c.pickup_location_city?.toLowerCase().includes(q) ||
+          c.dropoff_location_city?.toLowerCase().includes(q) ||
+          c.customer_city?.toLowerCase().includes(q) ||
+          c.pickup_location_address?.toLowerCase().includes(q) ||
+          c.dropoff_location_address?.toLowerCase().includes(q);
         if (!matchesSearch) return false;
       }
+      // Open/Closed tab
+      const isClosed = CASES_CLOSED_STATUSES.includes(c.call_status);
+      if (openClosedTab === 'open' && isClosed) return false;
+      if (openClosedTab === 'closed' && !isClosed) return false;
       // Status
       if (statusFilter !== 'all' && c.call_status !== statusFilter) return false;
       // Vendor
@@ -811,11 +842,23 @@ function CasesList({ department }) {
       }
       return true;
     });
-  }, [departmentCases, searchQuery, statusFilter, vendorFilter, areaFilter, vipOnly, dateFrom, dateTo]);
+  }, [
+    departmentCases,
+    searchQuery,
+    statusFilter,
+    vendorFilter,
+    areaFilter,
+    vipOnly,
+    dateFrom,
+    dateTo,
+    openClosedTab,
+  ]);
 
   // Unique vendors from cases for filter dropdown
   const caseVendors = useMemo(() => {
-    const vendorIds = [...new Set(departmentCases.map((c) => c.assigned_vendor_id).filter(Boolean))];
+    const vendorIds = [
+      ...new Set(departmentCases.map((c) => c.assigned_vendor_id).filter(Boolean)),
+    ];
     return vendors.filter((v) => vendorIds.includes(v.id));
   }, [departmentCases, vendors]);
 
@@ -834,11 +877,7 @@ function CasesList({ department }) {
       header: 'אחר לביצוע',
       accessor: 'returned_to_agent',
       cell: (row) =>
-        row.returned_to_agent ? (
-          <Badge className="bg-orange-100 text-orange-700">כן</Badge>
-        ) : (
-          '—'
-        ),
+        row.returned_to_agent ? <Badge className="bg-orange-100 text-orange-700">כן</Badge> : '—',
     },
     {
       header: 'זמן המתנה',
@@ -864,11 +903,12 @@ function CasesList({ department }) {
       header: 'VIP',
       accessor: 'is_vip',
       cell: (row) =>
-        row.is_vip ? (
-          <Badge className="bg-amber-100 text-amber-800">VIP</Badge>
-        ) : (
-          '—'
-        ),
+        row.is_vip ? <Badge className="bg-amber-100 text-amber-800">VIP</Badge> : '—',
+    },
+    {
+      header: 'שם מנוי',
+      accessor: 'customer_name',
+      cell: (row) => row.customer_name || '—',
     },
     { header: "מס' רכב", accessor: 'vehicle_plate', cell: (row) => row.vehicle_plate || '—' },
     {
@@ -895,9 +935,7 @@ function CasesList({ department }) {
       header: 'תיאור תקלה',
       accessor: 'issue_description',
       cell: (row) => (
-        <span className="max-w-[200px] truncate block">
-          {row.issue_description || '—'}
-        </span>
+        <span className="max-w-[200px] truncate block">{row.issue_description || '—'}</span>
       ),
     },
   ];
@@ -906,8 +944,42 @@ function CasesList({ department }) {
     navigate(createPageUrl(`CallDetails?id=${row.id}`));
   };
 
+  const openCount = departmentCases.filter(
+    (c) => !CASES_CLOSED_STATUSES.includes(c.call_status)
+  ).length;
+  const closedCount = departmentCases.length - openCount;
+
   return (
     <div className="space-y-4 rtl-flip">
+      {/* Open/Closed Tabs */}
+      <div
+        className="flex gap-2 border-b border-gray-200"
+        role="tablist"
+        aria-label="סינון פתוחות וסגורות"
+      >
+        {[
+          { key: 'open', label: 'פתוחות', count: openCount },
+          { key: 'closed', label: 'סגורות', count: closedCount },
+          { key: 'all', label: 'הכל', count: departmentCases.length },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={openClosedTab === tab.key}
+            onClick={() => setOpenClosedTab(tab.key)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              openClosedTab === tab.key
+                ? 'border-[#FF0000] text-[#FF0000]'
+                : 'border-transparent text-[#6b7280] hover:text-[#111827]'
+            }`}
+          >
+            {tab.label}
+            <span className="ms-2 text-xs tabular-nums">({tab.count})</span>
+          </button>
+        ))}
+      </div>
+
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
@@ -943,7 +1015,7 @@ function CasesList({ department }) {
               <div className="relative flex-1">
                 <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="חיפוש לפי מספר קריאה, שם, רכב, טלפון..."
+                  placeholder="חיפוש: מס' קריאה, שם לקוח/סוכן/חברת ביטוח, רכב, ספק, עיר, טלפון..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="ps-9 text-right"
@@ -992,7 +1064,13 @@ function CasesList({ department }) {
                   className="w-[150px]"
                 />
               </div>
-              {(searchQuery || statusFilter !== 'all' || vendorFilter !== 'all' || areaFilter !== 'all' || vipOnly || dateFrom || dateTo) && (
+              {(searchQuery ||
+                statusFilter !== 'all' ||
+                vendorFilter !== 'all' ||
+                areaFilter !== 'all' ||
+                vipOnly ||
+                dateFrom ||
+                dateTo) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -1017,14 +1095,12 @@ function CasesList({ department }) {
       </Card>
 
       {/* Stats bar */}
-       <div className="flex gap-4 text-sm text-[#616161] justify-end flex-row-reverse text-right">
-         <span>
-           סה&quot;כ: <strong>{filtered.length}</strong> פניות
-         </span>
-         <span>
-           (מתוך {departmentCases.length} במחלקה)
-         </span>
-       </div>
+      <div className="flex gap-4 text-sm text-[#616161] justify-end flex-row-reverse text-right">
+        <span>
+          סה&quot;כ: <strong>{filtered.length}</strong> פניות
+        </span>
+        <span>(מתוך {departmentCases.length} במחלקה)</span>
+      </div>
 
       {/* Table */}
       <DataTable

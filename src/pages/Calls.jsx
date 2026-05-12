@@ -77,11 +77,14 @@ const PRIORITY_COLORS = {
   urgent: 'bg-red-100 text-red-700',
 };
 
+const CLOSED_STATUSES = ['completed', 'cancelled'];
+
 export default function CallsPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
+  const [openClosedTab, setOpenClosedTab] = useState('open');
 
   const {
     data: cases = [],
@@ -113,10 +116,16 @@ export default function CallsPage() {
         c.customer_phone?.includes(searchQuery) ||
         c.vehicle_plate?.includes(searchQuery);
       const matchesStatus = statusFilter === 'all' || c.call_status === statusFilter;
-      const matchesService = serviceTypeFilter === 'all' || c.service_category === serviceTypeFilter;
-      return matchesSearch && matchesStatus && matchesService;
+      const matchesService =
+        serviceTypeFilter === 'all' || c.service_category === serviceTypeFilter;
+      const isClosed = CLOSED_STATUSES.includes(c.call_status);
+      const matchesTab =
+        openClosedTab === 'all' ||
+        (openClosedTab === 'open' && !isClosed) ||
+        (openClosedTab === 'closed' && isClosed);
+      return matchesSearch && matchesStatus && matchesService && matchesTab;
     });
-  }, [cases, searchQuery, statusFilter, serviceTypeFilter]);
+  }, [cases, searchQuery, statusFilter, serviceTypeFilter, openClosedTab]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -133,7 +142,13 @@ export default function CallsPage() {
       total: cases.length,
       new: cases.filter((c) => c.call_status === 'waiting_treatment').length,
       inProgress: cases.filter((c) =>
-        ['awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress', 'vendor_arrived'].includes(c.call_status)
+        [
+          'awaiting_assignment',
+          'assigning',
+          'vendor_enroute',
+          'in_progress',
+          'vendor_arrived',
+        ].includes(c.call_status)
       ).length,
       completed: cases.filter((c) => c.call_status === 'completed').length,
     }),
@@ -141,7 +156,7 @@ export default function CallsPage() {
   );
 
   if (isError) {
-  return <QueryErrorState error={error} onRetry={refetch} entityName="Call" />;
+    return <QueryErrorState error={error} onRetry={refetch} entityName="Call" />;
   }
 
   return (
@@ -184,6 +199,47 @@ export default function CallsPage() {
         ))}
       </div>
 
+      {/* Open/Closed Tabs */}
+      <div
+        className="flex gap-2 border-b border-gray-200"
+        role="tablist"
+        aria-label="סינון פתוחות וסגורות"
+      >
+        {[
+          {
+            key: 'open',
+            label: 'פתוחות',
+            count: cases.filter((c) => !CLOSED_STATUSES.includes(c.call_status)).length,
+          },
+          {
+            key: 'closed',
+            label: 'סגורות',
+            count: cases.filter((c) => CLOSED_STATUSES.includes(c.call_status)).length,
+          },
+          { key: 'all', label: 'הכל', count: cases.length },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={openClosedTab === tab.key}
+            onClick={() => {
+              setOpenClosedTab(tab.key);
+              setPage(1);
+            }}
+            className={cn(
+              'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+              openClosedTab === tab.key
+                ? 'border-[#FF0000] text-[#FF0000]'
+                : 'border-transparent text-[#6b7280] hover:text-[#111827]'
+            )}
+          >
+            {tab.label}
+            <span className="ms-2 text-xs tabular-nums">({tab.count})</span>
+          </button>
+        ))}
+      </div>
+
       {/* Filters */}
       <Card className="bg-white">
         <CardContent className="p-4">
@@ -201,35 +257,35 @@ export default function CallsPage() {
               />
             </div>
             <div className="flex gap-3">
-            <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder="סטטוס" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הסטטוסים</SelectItem>
-                {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>
-                    {v}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={serviceTypeFilter}
-              onValueChange={handleFilterChange(setServiceTypeFilter)}
-            >
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder="סוג שירות" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הסוגים</SelectItem>
-                {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>
-                    {v}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
+                <SelectTrigger className="w-full sm:w-[160px]">
+                  <SelectValue placeholder="סטטוס" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הסטטוסים</SelectItem>
+                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={serviceTypeFilter}
+                onValueChange={handleFilterChange(setServiceTypeFilter)}
+              >
+                <SelectTrigger className="w-full sm:w-[160px]">
+                  <SelectValue placeholder="סוג שירות" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הסוגים</SelectItem>
+                  {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
@@ -265,16 +321,28 @@ export default function CallsPage() {
                         <div className="font-semibold text-sm text-[#172B4D] truncate">
                           {c.customer_name || 'ללא שם'}
                         </div>
-                        <div className="text-xs text-[#6B778C] mt-0.5">#{c.call_number || c.id.slice(0, 8)}</div>
+                        <div className="text-xs text-[#6B778C] mt-0.5">
+                          #{c.call_number || c.id.slice(0, 8)}
+                        </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 ms-2 flex-shrink-0">
                         {c.call_status && (
-                          <Badge className={cn('text-[10px] px-2 py-0.5', STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600')}>
+                          <Badge
+                            className={cn(
+                              'text-[10px] px-2 py-0.5',
+                              STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600'
+                            )}
+                          >
                             {STATUS_LABELS[c.call_status] || c.call_status}
                           </Badge>
                         )}
                         {c.call_priority && c.call_priority !== 'normal' && (
-                          <Badge className={cn('text-[10px] px-2 py-0.5', PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600')}>
+                          <Badge
+                            className={cn(
+                              'text-[10px] px-2 py-0.5',
+                              PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600'
+                            )}
+                          >
                             {PRIORITY_LABELS[c.call_priority] || c.call_priority}
                           </Badge>
                         )}
@@ -282,7 +350,10 @@ export default function CallsPage() {
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6B778C]">
                       {c.pickup_location_city && (
-                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{c.pickup_location_city}</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {c.pickup_location_city}
+                        </span>
                       )}
                       {c.service_category && (
                         <span>{SERVICE_TYPE_LABELS[c.service_category] || c.service_category}</span>
@@ -399,14 +470,14 @@ export default function CallsPage() {
                       <td className="px-4 py-3 text-[#6B778C]">
                         <div className="flex items-center gap-1">
                           {c.pickup_location_city && <MapPin className="w-3 h-3 shrink-0" />}
-                          <span className="truncate max-w-[120px]">{c.pickup_location_city || '-'}</span>
+                          <span className="truncate max-w-[120px]">
+                            {c.pickup_location_city || '-'}
+                          </span>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-[#6B778C] max-w-[150px]">
                         <span className="truncate block">
-                          {c.assigned_vendor_name || (
-                            <span className="text-gray-400">לא שובץ</span>
-                          )}
+                          {c.assigned_vendor_name || <span className="text-gray-400">לא שובץ</span>}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-[#6B778C] whitespace-nowrap text-xs">
