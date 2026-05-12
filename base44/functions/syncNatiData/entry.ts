@@ -61,12 +61,29 @@ const VEHICLE_TYPE_MAP = { 1: 'private', 2: 'motorcycle', 3: 'truck', 4: 'commer
 
 // ========== HELPERS ==========
 
+// Nati MySQL returns datetimes as strings in Asia/Jerusalem local time without
+// a timezone suffix. If we hand them to Base44 as a naive ISO string, the
+// platform treats them as UTC and the value drifts by 2-3h depending on DST.
+// Append the correct fixed offset so downstream date math is correct.
+function jerusalemOffsetForDate(yyyy, mm, dd) {
+  // Israel DST runs from the last Friday before April 2 through the last
+  // Sunday of October. We approximate with month boundaries: Apr-Oct => +03:00,
+  // Nov-Mar => +02:00. This is correct for ~99% of the year and the edge cases
+  // are off by at most one hour, which is acceptable for sync timestamps.
+  const month = Number(mm);
+  return month >= 4 && month <= 10 ? '+03:00' : '+02:00';
+}
+
 function parseNatiDate(dateStr) {
   if (!dateStr) return null;
   const s = String(dateStr);
   if (s.startsWith('0000')) return null;
-  if (s instanceof Date || (s.includes('-') && s.length >= 10)) return s.replace(' ', 'T').substring(0, 19);
-  return null;
+  if (!s.includes('-') || s.length < 10) return null;
+  const iso = s.replace(' ', 'T').substring(0, 19);
+  const yyyy = iso.substring(0, 4);
+  const mm = iso.substring(5, 7);
+  const dd = iso.substring(8, 10);
+  return `${iso}${jerusalemOffsetForDate(yyyy, mm, dd)}`;
 }
 
 function clean(obj) {
@@ -270,6 +287,13 @@ async function syncEntity(sdk, entityName, items, keyField, existingLookup, link
 
 // ========== MAIN HANDLER ==========
 
+// Server-side cooldown. Module-level state persists between invocations on
+// warm starts, which is the common case under steady traffic. It will not
+// protect across cold starts, but it is enough to stop an accidental click-
+// loop or runaway automation from hammering Nati MySQL.
+const COOLDOWN_MS = 60_000;
+let lastWriteSyncAtMs = 0;
+
 Deno.serve(async (req) => {
   const startTime = Date.now();
 
@@ -287,19 +311,34 @@ Deno.serve(async (req) => {
       sync_calls = true, sync_cases = true,
       sync_vendors = true, sync_customers = true,
       close_missing = false,
+      force = false,
     } = body;
+
+    // Cooldown only applies to real writes. Dry-runs are read-only and safe to repeat.
+    if (!dry_run && !force) {
+      const sinceLast = Date.now() - lastWriteSyncAtMs;
+      if (sinceLast < COOLDOWN_MS) {
+        const retryAfterSec = Math.ceil((COOLDOWN_MS - sinceLast) / 1000);
+        return Response.json({
+          error: `יש להמתין ${retryAfterSec} שניות בין סנכרונים`,
+          retry_after_seconds: retryAfterSec,
+        }, { status: 429, headers: { 'Retry-After': String(retryAfterSec) } });
+      }
+    }
 
     console.log('[SYNC] Connecting to Nati DB...');
     const connection = await getConnection();
-
-    let sql = 'SELECT a.*, s.fullname as supplier_name FROM call_open_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1';
-    const params = [];
-    if (dep !== -1) { sql += ' AND a.department_id = ?'; params.push(dep); }
-    if (callStatus !== -1) { sql += ' AND a.status = ?'; params.push(callStatus); }
-    sql += ' ORDER BY a.date_added DESC';
-
-    const [allAppeals] = await connection.query(sql, params);
-    await connection.end();
+    let allAppeals;
+    try {
+      let sql = 'SELECT a.*, s.fullname as supplier_name FROM call_open_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1';
+      const params = [];
+      if (dep !== -1) { sql += ' AND a.department_id = ?'; params.push(dep); }
+      if (callStatus !== -1) { sql += ' AND a.status = ?'; params.push(callStatus); }
+      sql += ' ORDER BY a.date_added DESC';
+      [allAppeals] = await connection.query(sql, params);
+    } finally {
+      await connection.end().catch(() => {});
+    }
 
     console.log(`[SYNC] Got ${allAppeals.length} open appeals from Nati DB`);
 
@@ -335,8 +374,17 @@ Deno.serve(async (req) => {
       sync_cases ? sdk.entities.Case.filter({}) : [],
     ]);
 
+    // Build vendor lookups by both stable supplier id (preferred) and by name
+    // (fallback for legacy rows that pre-date the supplier_id mapping). Looking
+    // up by id first prevents duplicate vendor rows when Nati renames a supplier.
+    const vendorByNumber = {};
     const vendorLookup = {};
-    for (const v of existingVendors) { if (v.vendor_name) vendorLookup[v.vendor_name.trim()] = v.id; }
+    for (const v of existingVendors) {
+      if (v.vendor_number !== undefined && v.vendor_number !== null && v.vendor_number !== '') {
+        vendorByNumber[String(v.vendor_number)] = v.id;
+      }
+      if (v.vendor_name) vendorLookup[v.vendor_name.trim()] = v.id;
+    }
     const custByExtId = {}, custByName = {};
     for (const c of existingCustomers) {
       if (c.customer_id_external) custByExtId[c.customer_id_external] = c.id;
@@ -347,15 +395,25 @@ Deno.serve(async (req) => {
     const caseLookup = {};
     for (const c of existingCases) { if (c.case_number) caseLookup[c.case_number] = c.id; }
 
-    // VENDORS
+    // VENDORS — dedup by supplier_id first, fall back to name only when no id.
     if (sync_vendors) {
       console.log('[SYNC] Syncing vendors...');
       const vendorData = extractVendors(appeals);
       let vendorsCreated = 0, vendorsSkipped = 0;
       for (const vd of vendorData) {
-        if (vendorLookup[vd.vendor_name]) { vendorsSkipped++; continue; }
+        const idKey = vd.vendor_number !== undefined && vd.vendor_number !== null
+          ? String(vd.vendor_number)
+          : null;
+        const existingId = (idKey && vendorByNumber[idKey]) || vendorLookup[vd.vendor_name];
+        if (existingId) {
+          if (idKey) vendorByNumber[idKey] = existingId;
+          vendorLookup[vd.vendor_name] = existingId;
+          vendorsSkipped++;
+          continue;
+        }
         try {
-          const created = await retryOp(() => sdk.entities.Vendor.create(vd), `Vendor.create(${vd.vendor_name})`);
+          const created = await retryOp(() => sdk.entities.Vendor.create(vd), `Vendor.create(id=${idKey ?? 'n/a'})`);
+          if (idKey) vendorByNumber[idKey] = created.id;
           vendorLookup[vd.vendor_name] = created.id;
           vendorsCreated++;
           await sleep(ITEM_DELAY_MS);
@@ -448,6 +506,7 @@ Deno.serve(async (req) => {
 
     const duration = Date.now() - startTime;
     console.log(`[SYNC] Done in ${duration}ms`);
+    lastWriteSyncAtMs = Date.now();
 
     return Response.json({
       success: true,

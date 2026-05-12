@@ -62,20 +62,37 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     let user = null;
     try { user = await base44.auth.me(); } catch (_) {}
-    if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));
-    const { limit = 30, dry_run = false } = body;
+    const { limit = 30, dry_run = false, force = false } = body;
 
     console.log('[CLOSE] Fetching open appeal IDs from Nati DB...');
     const connection = await getConnection();
-    const [natiRows] = await connection.query('SELECT id FROM call_open_appeals');
-    await connection.end();
+    let natiRows;
+    try {
+      [natiRows] = await connection.query('SELECT id FROM call_open_appeals');
+    } finally {
+      await connection.end().catch(() => {});
+    }
 
     const natiOpenIds = new Set(natiRows.map(r => String(r.id)));
     console.log(`[CLOSE] Nati has ${natiOpenIds.size} open appeals`);
+
+    // Safety: refuse to auto-close everything if Nati returned suspiciously few rows.
+    // A transient DB hiccup or schema change must not cascade into closing every open
+    // local call. Admin can override with { force: true }.
+    const MIN_NATI_OPEN_THRESHOLD = 10;
+    if (!force && natiOpenIds.size < MIN_NATI_OPEN_THRESHOLD) {
+      return Response.json({
+        error: 'מספר הקריאות הפתוחות מנתי נמוך באופן חשוד - הסגירה האוטומטית בוטלה',
+        nati_open_count: natiOpenIds.size,
+        threshold: MIN_NATI_OPEN_THRESHOLD,
+        hint: 'להפעיל מחדש עם force=true רק אם הספירה הנמוכה תקינה',
+      }, { status: 409 });
+    }
 
     const sdk = base44.asServiceRole;
     const [existingCalls, existingCases] = await Promise.all([

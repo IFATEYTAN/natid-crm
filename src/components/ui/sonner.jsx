@@ -8,6 +8,8 @@ const Toaster = ({ ...props }) => {
   return (
     <Sonner
       theme={theme}
+      dir="rtl"
+      position="bottom-left"
       className="toaster group"
       toastOptions={{
         classNames: {
