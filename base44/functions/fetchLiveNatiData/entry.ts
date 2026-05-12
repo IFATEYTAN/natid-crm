@@ -34,8 +34,11 @@ async function getConnection() {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
+    }
 
     const { action = 'appeals_list', appeal_id, dep = -1, callStatus = -1, include_closed = false } = await req.json();
     const connection = await getConnection();

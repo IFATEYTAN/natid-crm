@@ -13,12 +13,14 @@ export default function CallChat({ callId, currentUserRole, currentUserName }) {
   const scrollRef = useRef(null);
   const queryClient = useQueryClient();
 
-  // Fetch messages
+  // Fetch messages. 30s poll keeps the MySQL backend from being hammered when
+  // many call windows are open at once; chat is not a real-time medium, and
+  // the user can pull-to-refresh if needed.
   const { data: messages = [], isLoading } = useQuery({
     queryKey: queryKeys.callMessages.byCall(callId),
     queryFn: () => base44.entities.Message.filter({ call_id: callId }, 'created_date', 100),
-    refetchInterval: 5000, // Poll every 5 seconds
-    staleTime: 1000 * 3, // 3 seconds
+    refetchInterval: 30000,
+    staleTime: 15000,
   });
 
   // Send message mutation

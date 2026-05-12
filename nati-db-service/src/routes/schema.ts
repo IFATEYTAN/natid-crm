@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { RowDataPacket } from 'mysql2';
+import { config } from '../config.js';
 import { getPool } from '../db.js';
 
 export const schemaRouter = Router();
@@ -63,11 +64,14 @@ schemaRouter.get('/schema/tables', async (req: Request, res: Response) => {
 schemaRouter.get('/schema/:table', async (req: Request, res: Response) => {
   const pool = await getPool();
   const raw = req.params.table;
-  const limit = Math.min(Number(req.query.sample_limit ?? 5) || 5, 100);
+  const limit = Math.max(1, Math.min(100, Math.floor(Number(req.query.sample_limit ?? 5) || 5)));
 
   const parts = raw.split('.');
   if (parts.length > 2) throw new HttpError(400, 'Use db.table or table');
   parts.forEach((p) => assertIdent(p, 'identifier'));
+  if (parts.length === 2 && SYSTEM_DBS.has(parts[0])) {
+    throw new HttpError(403, 'Access to system databases is not permitted');
+  }
   const fq = parts.length === 2 ? `\`${parts[0]}\`.\`${parts[1]}\`` : `\`${parts[0]}\``;
 
   const [columns] = await pool.query<RowDataPacket[]>(`DESCRIBE ${fq}`);
@@ -88,5 +92,7 @@ schemaRouter.use((err: Error, _req: Request, res: Response, _next: import('expre
     res.status(err.status).json({ error: err.message });
     return;
   }
-  res.status(500).json({ error: 'Schema query failed', message: err.message });
+  const body: { error: string; message?: string } = { error: 'Schema query failed' };
+  if (config.env !== 'production') body.message = err.message;
+  res.status(500).json(body);
 });

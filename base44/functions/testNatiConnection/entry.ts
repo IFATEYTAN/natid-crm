@@ -1,10 +1,18 @@
 /**
  * testNatiConnection — Tests direct MySQL connection to Natid DB
- * No auth required — just a connectivity test.
+ * Admin only. Returns connection diagnostics + sample table list.
  */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
 
 Deno.serve(async (req) => {
+  const base44 = createClientFromRequest(req);
+  let user = null;
+  try { user = await base44.auth.me(); } catch (_) {}
+  if (!user || user.role !== 'admin') {
+    return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
+  }
+
   const results = {};
 
   // Test 1: MySQL direct with SSL

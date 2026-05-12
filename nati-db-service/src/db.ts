@@ -16,6 +16,8 @@ function buildPoolOptions(useSsl: boolean): PoolOptions {
     ssl: useSsl ? { rejectUnauthorized: false } : undefined,
     namedPlaceholders: true,
     dateStrings: true,
+    multipleStatements: false,
+    flags: ['-LOCAL_FILES'],
   };
 }
 
