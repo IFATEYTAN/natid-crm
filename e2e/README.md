@@ -65,3 +65,24 @@ E2E_VENDOR_EMAIL / E2E_VENDOR_PASSWORD
 ```
 
 Tests can then use `page.context().storageState()` to share auth between them.
+
+## Nati sync spec (`nati-sync.spec.js`)
+
+Covers the MySQL sync flow end-to-end:
+
+- Unauthenticated user is blocked from `/IntegrationSettings`
+- Admin sees the `NatiSyncPanel`
+- "תצוגה מקדימה" (dry-run) returns a result
+- A second sync inside 60s is rejected with the cooldown toast
+- Dashboard data refreshes after sync without a manual reload
+
+The first test always runs. The admin-flow tests are gated on
+`E2E_ADMIN_EMAIL` + `E2E_ADMIN_PASSWORD` and skip gracefully when not set.
+
+```bash
+# structural only
+npm run e2e
+
+# full admin flow
+E2E_ADMIN_EMAIL=admin@example.co.il E2E_ADMIN_PASSWORD=... npm run e2e
+```
