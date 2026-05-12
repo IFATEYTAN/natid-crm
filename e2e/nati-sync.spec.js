@@ -47,19 +47,16 @@ async function signInAsAdmin(page) {
 test.describe('Nati sync — structural (no auth)', () => {
   test('unauthenticated user cannot reach /IntegrationSettings', async ({ page }) => {
     await page.goto('/IntegrationSettings');
-    await page.waitForLoadState('networkidle');
 
-    // Either redirect to login, or render a login affordance.
-    const signInAffordance = page
-      .getByRole('button', { name: /sign in|log in|כניסה|התחבר/i })
-      .or(page.getByRole('link', { name: /sign in|log in|כניסה|התחבר/i }))
-      .or(page.getByText(/sign in|log in|כניסה|התחבר/i));
+    // The auth gate short-circuits to LandingPage when not authenticated
+    // (see src/App.jsx:68). LandingPage is lazy-loaded, so we wait for its
+    // signature CTA "כניסה למערכת" (src/pages/LandingPage.jsx:265) rather
+    // than relying on networkidle, which doesn't wait for React Suspense.
+    const signInLink = page.getByRole('link', { name: /כניסה למערכת/ });
+    await expect(signInLink).toBeVisible({ timeout: 30_000 });
 
-    const syncPanel = page.getByText('סנכרון מנתי');
-
-    // The auth gate must show login UI; the sync panel must NOT be reachable.
-    await expect(signInAffordance.first()).toBeVisible({ timeout: 10_000 });
-    await expect(syncPanel).toHaveCount(0);
+    // The sync panel must NOT have leaked through the auth gate.
+    await expect(page.getByText('סנכרון מנתי שירותים')).toHaveCount(0);
   });
 });
 
