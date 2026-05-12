@@ -8,6 +8,11 @@ const MAX_ROWS = 1000;
 
 // Read-only ad-hoc SELECT runner. Useful for discovery and debugging from the CRM.
 // Rejects anything that isn't a single SELECT/SHOW/DESCRIBE statement.
+// Patterns that can read/write the filesystem, exfiltrate, or DOS the server.
+// Even though the route is restricted to SELECT/SHOW/DESCRIBE, these keywords
+// can appear inside an otherwise-valid SELECT (e.g. `SELECT LOAD_FILE(...)`).
+const DENYLIST_RE = /\b(LOAD_FILE|INTO\s+OUTFILE|INTO\s+DUMPFILE|BENCHMARK|SLEEP|GET_LOCK|RELEASE_LOCK|INFORMATION_SCHEMA|MYSQL\.\w+|PERFORMANCE_SCHEMA)\b/i;
+
 queryRouter.post('/query', async (req: Request, res: Response) => {
   const sql = typeof req.body?.sql === 'string' ? req.body.sql.trim() : '';
   const params = Array.isArray(req.body?.params) ? req.body.params : [];
@@ -17,9 +22,8 @@ queryRouter.post('/query', async (req: Request, res: Response) => {
     return;
   }
 
-  if (sql.includes(';') && !sql.replace(/;\s*$/, '').match(/;/)) {
-    // Trailing semicolon is fine; multiple statements are not.
-  } else if ((sql.match(/;/g) || []).length > 1) {
+  // Trailing semicolon is fine; any other semicolon is multi-statement.
+  if (sql.replace(/;\s*$/, '').includes(';')) {
     res.status(400).json({ error: 'Multiple statements are not allowed' });
     return;
   }
@@ -29,6 +33,11 @@ queryRouter.post('/query', async (req: Request, res: Response) => {
     head.startsWith('SELECT') || head.startsWith('SHOW') || head.startsWith('DESCRIBE') || head.startsWith('DESC ');
   if (!isReadOnly) {
     res.status(400).json({ error: 'Only SELECT / SHOW / DESCRIBE statements are allowed' });
+    return;
+  }
+
+  if (DENYLIST_RE.test(sql)) {
+    res.status(400).json({ error: 'Query contains restricted keyword' });
     return;
   }
 

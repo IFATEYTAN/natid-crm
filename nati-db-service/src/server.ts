@@ -20,11 +20,22 @@ app.use(helmet());
 app.use(express.json({ limit: '64kb' }));
 app.use(pinoHttp({ logger }));
 
+// In production we require ALLOWED_ORIGINS to be set explicitly.
+// An empty allowlist outside of dev means the service is misconfigured.
+if (config.env === 'production' && config.allowedOrigins.length === 0) {
+  logger.fatal('ALLOWED_ORIGINS must be set in production - refusing to start');
+  process.exit(1);
+}
+
 app.use(
   cors({
     origin: (origin, cb) => {
+      // No Origin header (server-to-server, curl, healthcheck) is always allowed.
       if (!origin) return cb(null, true);
-      if (config.allowedOrigins.length === 0) return cb(null, true);
+      // In dev with an empty allowlist, accept any origin to keep DX simple.
+      if (config.env !== 'production' && config.allowedOrigins.length === 0) {
+        return cb(null, true);
+      }
       if (config.allowedOrigins.includes(origin)) return cb(null, true);
       cb(new Error(`Origin not allowed: ${origin}`));
     },

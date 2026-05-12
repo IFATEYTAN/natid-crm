@@ -3,6 +3,7 @@
  * Returns sample mapped Case/Call data without writing to Base44.
  * Uses call_open_appeals table with JOIN to suppliers for supplier name.
  */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
 
 function getDbConfig() {
@@ -66,6 +67,13 @@ function mapAppeal(a) {
 
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
+    }
+
     const connection = await getConnection();
     const [rows] = await connection.query(`
       SELECT a.*, s.fullname as supplier_name 

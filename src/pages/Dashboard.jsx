@@ -2,6 +2,7 @@ import { lazyRetry } from '@/lib/lazyRetry';
 import React, { useState, Suspense, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/components/utils';
 const StatCard = lazyRetry(() => import('@/components/ui/StatCard'));
@@ -73,10 +74,19 @@ export default function Dashboard() {
   const handleSyncFromNati = async () => {
     setIsSyncingNati(true);
     try {
-      await base44.functions.invoke('syncNatiAppeals', {});
+      const res = await base44.functions.invoke('syncNatiData', {});
+      const data = res?.data ?? res;
+      if (data?.error) {
+        toast.error(data.error);
+      } else {
+        const created = (data?.calls?.created ?? 0) + (data?.cases?.created ?? 0);
+        const updated = (data?.calls?.updated ?? 0) + (data?.cases?.updated ?? 0);
+        toast.success(`סנכרון הושלם: ${created} נוצרו, ${updated} עודכנו`);
+      }
       await queryClient.invalidateQueries();
     } catch (err) {
       console.error('Nati sync error:', err);
+      toast.error(err?.response?.data?.error || err?.message || 'שגיאה בסנכרון מנתי');
     }
     setIsSyncingNati(false);
   };
@@ -116,7 +126,10 @@ export default function Dashboard() {
     () => cases.filter((c) => c.call_status !== 'completed' && c.call_status !== 'cancelled'),
     [cases]
   );
-  const waitingCalls = useMemo(() => cases.filter((c) => c.call_status === 'waiting_treatment'), [cases]);
+  const waitingCalls = useMemo(
+    () => cases.filter((c) => c.call_status === 'waiting_treatment'),
+    [cases]
+  );
   const completedToday = useMemo(
     () =>
       cases.filter((c) => {
@@ -149,7 +162,8 @@ export default function Dashboard() {
       : '0.0';
   const avgEta = 0;
   const recentCompleted = cases.filter(
-    (c) => c.call_status === 'completed' && c.created_date && new Date(c.created_date) >= sevenDaysAgo
+    (c) =>
+      c.call_status === 'completed' && c.created_date && new Date(c.created_date) >= sevenDaysAgo
   );
   const fieldResolutionRate =
     recentCompleted.length > 0

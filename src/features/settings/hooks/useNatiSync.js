@@ -1,6 +1,31 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { queryKeys } from '@/lib/queryKeys';
 import * as settingsApi from '../api';
+
+// Page-level query keys that aren't centralized in queryKeys.js yet but
+// must be invalidated after a Nati sync — otherwise the dashboard/reports/
+// queue pages keep showing pre-sync data until a hard refresh.
+const PAGE_KEYS_AFFECTED_BY_SYNC = [
+  ['dashboard-cases'],
+  ['dashboard-vendors'],
+  ['queue-cases'],
+  ['calls-all'],
+  ['calls-list'],
+  ['reports-cases'],
+  ['service-providers-cases'],
+];
+
+function invalidateAfterSync(queryClient) {
+  queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() });
+  queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+  for (const key of PAGE_KEYS_AFFECTED_BY_SYNC) {
+    queryClient.invalidateQueries({ queryKey: key });
+  }
+}
 
 const unwrap = (response) => response?.data ?? response;
 
@@ -57,10 +82,7 @@ export const useNatiSyncRun = () => {
       const created = (data?.calls?.created ?? 0) + (data?.cases?.created ?? 0);
       const updated = (data?.calls?.updated ?? 0) + (data?.cases?.updated ?? 0);
       toast.success(`סנכרון הושלם: ${created} נוצרו, ${updated} עודכנו`);
-      queryClient.invalidateQueries({ queryKey: ['calls'] });
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
-      queryClient.invalidateQueries({ queryKey: ['vendors'] });
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      invalidateAfterSync(queryClient);
     },
   });
 };

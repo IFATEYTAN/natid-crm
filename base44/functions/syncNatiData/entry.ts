@@ -277,8 +277,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     let user = null;
     try { user = await base44.auth.me(); } catch (_) {}
-    if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));

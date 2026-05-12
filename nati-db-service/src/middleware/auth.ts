@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config.js';
 
@@ -21,11 +22,16 @@ export function requireApiKey(req: Request, res: Response, next: NextFunction): 
   next();
 }
 
+// Constant-time compare regardless of input length, so we don't leak the
+// secret's length via timing.
 function safeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) {
-    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) {
+    // Still run a constant-time compare against `aBuf` so the work done
+    // is the same regardless of length mismatch.
+    timingSafeEqual(aBuf, Buffer.alloc(aBuf.length));
+    return false;
   }
-  return mismatch === 0;
+  return timingSafeEqual(aBuf, bBuf);
 }

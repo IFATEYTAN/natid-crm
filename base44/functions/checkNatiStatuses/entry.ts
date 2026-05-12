@@ -2,6 +2,7 @@
  * checkNatiStatuses — Direct MySQL: analyze status distribution
  * Uses call_open_appeals + call_closed_appeals
  */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
 
 function getDbConfig() {
@@ -25,6 +26,13 @@ async function getConnection() {
 
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) {}
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
+    }
+
     const connection = await getConnection();
 
     // Open appeals status distribution

@@ -96,17 +96,25 @@ export default function AdminDataCleanup() {
     setSyncResult(null);
     addLog(dryRun ? '=== מריץ בדיקת סנכרון (Dry Run) ===' : '=== מריץ סנכרון מלא מנתיד ===');
     try {
-      const res = await base44.functions.invoke('syncNatiAppeals', { dryRun });
+      const res = await base44.functions.invoke('syncNatiData', { dry_run: dryRun });
       setSyncResult(res.data);
       if (dryRun) {
         addLog(`סה"כ מנתיד: ${res.data.total_from_nati} קריאות`, 'info');
-        addLog(`ספקים ייחודיים: ${res.data.unique_vendors}`, 'info');
-        addLog(`לקוחות ייחודיים: ${res.data.unique_customers}`, 'info');
+        addLog(`ספקים ייחודיים: ${res.data.vendors_found}`, 'info');
+        addLog(`לקוחות ייחודיים: ${res.data.customers_found}`, 'info');
       } else {
-        addLog(`ספקים: ${res.data.vendors?.created || 0} חדשים (${res.data.vendors?.existing || 0} קיימים)`, 'success');
-        addLog(`לקוחות: ${res.data.customers?.created || 0} חדשים (${res.data.customers?.existing || 0} קיימים)`, 'success');
-        addLog(`קריאות: ${res.data.cases?.created || 0} חדשות, ${res.data.cases?.updated || 0} עודכנו, ${res.data.cases?.errors || 0} שגיאות`, 
-          res.data.cases?.errors > 0 ? 'warn' : 'success');
+        addLog(
+          `ספקים: ${res.data.vendors?.created || 0} חדשים (${res.data.vendors?.existing || 0} קיימים)`,
+          'success'
+        );
+        addLog(
+          `לקוחות: ${res.data.customers?.created || 0} חדשים (${res.data.customers?.existing || 0} קיימים)`,
+          'success'
+        );
+        addLog(
+          `קריאות: ${res.data.cases?.created || 0} חדשות, ${res.data.cases?.updated || 0} עודכנו, ${res.data.cases?.errors || 0} שגיאות`,
+          res.data.cases?.errors > 0 ? 'warn' : 'success'
+        );
       }
       addLog('=== הסנכרון הסתיים ===', 'success');
     } catch (err) {
@@ -136,7 +144,11 @@ export default function AdminDataCleanup() {
               disabled={isSyncing}
               className="flex-1 h-12 text-base"
             >
-              {isSyncing ? <Loader2 className="w-5 h-5 me-2 animate-spin" /> : <Eye className="w-5 h-5 me-2" />}
+              {isSyncing ? (
+                <Loader2 className="w-5 h-5 me-2 animate-spin" />
+              ) : (
+                <Eye className="w-5 h-5 me-2" />
+              )}
               בדיקה (Dry Run)
             </Button>
             <Button
@@ -144,7 +156,11 @@ export default function AdminDataCleanup() {
               disabled={isSyncing}
               className="flex-1 h-12 text-base"
             >
-              {isSyncing ? <Loader2 className="w-5 h-5 me-2 animate-spin" /> : <RefreshCw className="w-5 h-5 me-2" />}
+              {isSyncing ? (
+                <Loader2 className="w-5 h-5 me-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-5 h-5 me-2" />
+              )}
               סנכרון מלא
             </Button>
           </div>
@@ -168,7 +184,8 @@ export default function AdminDataCleanup() {
         </CardHeader>
         <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
           <p className="text-red-600 font-medium text-sm sm:text-base leading-relaxed">
-            פעולה זו תמחק את כל הקריאות (Cases) ואת כל הלקוחות (Customers) מהמערכת. פעולה זו בלתי הפיכה!
+            פעולה זו תמחק את כל הקריאות (Cases) ואת כל הלקוחות (Customers) מהמערכת. פעולה זו בלתי
+            הפיכה!
           </p>
 
           {!confirmed ? (
@@ -202,7 +219,11 @@ export default function AdminDataCleanup() {
                 </Button>
               )}
               {!isDeleting && (
-                <Button variant="outline" onClick={() => setConfirmed(false)} className="h-12 text-base">
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmed(false)}
+                  className="h-12 text-base"
+                >
                   ביטול
                 </Button>
               )}
