@@ -57,7 +57,7 @@ export default function DashboardOperatorTab({
         </Suspense>
         <Suspense fallback={<Skeleton className="h-24" />}>
           <StatCard
-            title="הושלמו היום"
+            title="נסגרו היום"
             value={myCompletedToday.length}
             subtitle="ביצוע אישי"
             icon={CheckCircle2}

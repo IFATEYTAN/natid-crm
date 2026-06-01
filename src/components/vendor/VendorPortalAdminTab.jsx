@@ -38,7 +38,7 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
   const adminCallsQuery = useQuery({
     queryKey: queryKeys.adminCalls.all(),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
-    refetchInterval: 30000,
+    refetchInterval: 90000,
     staleTime: 1000 * 15, // 15 seconds
   });
 
@@ -169,7 +169,7 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
             <TabsList>
               <TabsTrigger value="all">כל הקריאות</TabsTrigger>
               <TabsTrigger value="active">פעילות ({adminActiveCalls.length})</TabsTrigger>
-              <TabsTrigger value="completed">הושלמו ({adminCompletedCalls.length})</TabsTrigger>
+              <TabsTrigger value="completed">נסגרו ({adminCompletedCalls.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
               <Suspense fallback={<Skeleton className="h-40" />}>
@@ -194,7 +194,7 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
                 <DataTableLazy
                   columns={adminColumns}
                   data={adminCompletedCalls}
-                  emptyMessage="אין קריאות שהושלמו"
+                  emptyMessage="אין קריאות שנסגרו"
                 />
               </Suspense>
             </TabsContent>

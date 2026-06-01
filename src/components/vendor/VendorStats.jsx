@@ -59,7 +59,7 @@ export default function VendorStats({ vendor, calls = [], onStatClick }) {
     },
     {
       id: 'completed',
-      title: 'סה"כ הושלמו',
+      title: 'סה"כ נסגרו',
       value: completedCalls.length,
       icon: CheckCircle,
       color: 'bg-green-100 text-green-600',

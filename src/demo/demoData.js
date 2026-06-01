@@ -4087,7 +4087,7 @@ const caseActivities = [
     id: 'demo_case_activity_2',
     case_id: 'demo_case_1',
     activity_type: 'status_change',
-    description: 'סטטוס שונה ל-closed. הטיפול הושלם.',
+    description: 'סטטוס שונה ל-closed. הטיפול סגור.',
     created_by: 'demo_user_operator_3',
     created_date: daysAgo(2),
   },
@@ -4332,7 +4332,7 @@ const callScripts = [
     script_type: 'closing',
     service_type: 'all',
     content:
-      'אני שמח לשמוע שהטיפול הושלם בהצלחה.\n\n1. האם הכל בסדר עכשיו?\n2. האם הספק היה מקצועי ואדיב?\n3. בקרוב תקבל SMS עם קישור למילוי משוב - נשמח אם תמלא\n4. אם תצטרך עזרה בעתיד - אנחנו כאן 24/7\n\nנסיעה טובה!',
+      'אני שמח לשמוע שהטיפול סגור בהצלחה.\n\n1. האם הכל בסדר עכשיו?\n2. האם הספק היה מקצועי ואדיב?\n3. בקרוב תקבל SMS עם קישור למילוי משוב - נשמח אם תמלא\n4. אם תצטרך עזרה בעתיד - אנחנו כאן 24/7\n\nנסיעה טובה!',
     notes: 'לוודא שהלקוח מרגיש מרוצה לפני סיום',
     created_date: daysAgo(95),
   },
@@ -4423,7 +4423,7 @@ const reminders = [
   {
     id: 'demo_reminder_6',
     title: 'מעקב תיקון - ניסאן קשקאי',
-    description: 'לוודא שהתיקון במוסך הושלם ושהלקוח מרוצה',
+    description: 'לוודא שהתיקון במוסך סגור ושהלקוח מרוצה',
     remind_at: hoursAgo(5),
     priority: 'medium',
     status: 'pending',

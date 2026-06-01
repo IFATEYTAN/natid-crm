@@ -90,7 +90,7 @@ export function VendorPerformanceChart({ data }) {
           <YAxis tick={{ fontSize: 12 }} />
           <Tooltip />
           <Bar dataKey="total" name='סה"כ' fill="#3b82f6" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="completed" name="הושלמו" fill="#111827" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="completed" name="נסגרו" fill="#111827" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

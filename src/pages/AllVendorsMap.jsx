@@ -76,7 +76,7 @@ export default function AllVendorsMapPage() {
   } = useQuery({
     queryKey: queryKeys.vendors.map(),
     queryFn: () => base44.entities.Vendor.list('-updated_date', 1000),
-    refetchInterval: 30000, // Auto refresh every 30 seconds
+    refetchInterval: 90000, // Auto refresh every 30 seconds
   });
 
   // Filter vendors with location data
@@ -272,7 +272,9 @@ export default function AllVendorsMapPage() {
                           {vendor.address && (
                             <div className="flex items-center gap-2 text-[#6b7280] text-xs">
                               <MapPin className="w-3 h-3" />
-                              <span className="truncate" title={vendor.address}>{vendor.address}</span>
+                              <span className="truncate" title={vendor.address}>
+                                {vendor.address}
+                              </span>
                             </div>
                           )}
                           {vendor.last_location_update && (

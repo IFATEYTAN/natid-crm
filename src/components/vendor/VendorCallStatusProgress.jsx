@@ -6,7 +6,7 @@ const statusSteps = [
   { key: 'assigned', label: 'שובץ', icon: CheckCircle },
   { key: 'vendor_enroute', label: 'בדרך', icon: Navigation },
   { key: 'in_progress', label: 'בטיפול', icon: Clock },
-  { key: 'completed', label: 'הושלם', icon: CheckCircle },
+  { key: 'completed', label: 'סגור', icon: CheckCircle },
 ];
 
 const statusToStepIndex = {

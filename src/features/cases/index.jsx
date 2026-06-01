@@ -169,7 +169,7 @@ export default function Cases() {
               <SelectItem value="en_route">בדרך</SelectItem>
               <SelectItem value="on_site">באתר</SelectItem>
               <SelectItem value="in_progress">בטיפול</SelectItem>
-              <SelectItem value="completed">הושלם</SelectItem>
+              <SelectItem value="completed">סגור</SelectItem>
               <SelectItem value="cancelled">בוטל</SelectItem>
             </SelectContent>
           </Select>

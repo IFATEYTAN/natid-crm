@@ -16,7 +16,7 @@ export default function VendorMapWidget() {
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: queryKeys.dashboardVendorLocations.all(),
     queryFn: () => base44.entities.Vendor.filter({ is_active: true }, '-updated_date', 1000),
-    refetchInterval: 30000,
+    refetchInterval: 90000,
   });
 
   const vendorsWithLocation = vendors.filter((v) => v.current_latitude && v.current_longitude);

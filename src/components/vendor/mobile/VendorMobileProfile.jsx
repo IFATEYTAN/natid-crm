@@ -22,7 +22,9 @@ export default function VendorMobileProfile({
         </div>
         <h2 className="text-xl font-bold text-gray-900">{vendorProfile.vendor_name}</h2>
         {vendorProfile.phone && (
-          <p className="text-gray-500 mt-1" dir="ltr">{vendorProfile.phone}</p>
+          <p className="text-gray-500 mt-1" dir="ltr">
+            {vendorProfile.phone}
+          </p>
         )}
       </div>
 
@@ -32,7 +34,7 @@ export default function VendorMobileProfile({
           <div className="flex items-center justify-between">
             <span className="text-gray-600 font-medium">דירוג</span>
             <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map(star => (
+              {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   className={cn(
@@ -84,7 +86,7 @@ export default function VendorMobileProfile({
             <span className="font-bold text-gray-900">{calls.length}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">הושלמו</span>
+            <span className="text-gray-500">נסגרו</span>
             <span className="font-bold text-green-600">{completedCalls.length}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
@@ -96,7 +98,10 @@ export default function VendorMobileProfile({
 
       {/* Link to full profile */}
       <Link to={createPageUrl('MyVendorProfile')}>
-        <Button variant="outline" className="w-full h-12 rounded-xl text-base font-medium gap-2 border-2">
+        <Button
+          variant="outline"
+          className="w-full h-12 rounded-xl text-base font-medium gap-2 border-2"
+        >
           <User className="w-5 h-5" />
           הפרופיל המלא
         </Button>

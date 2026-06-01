@@ -39,7 +39,7 @@ export const useVendorByEmail = (email) => {
 /**
  * Hook for fetching available vendors
  */
-export const useAvailableVendors = (refetchInterval = 30000) => {
+export const useAvailableVendors = (refetchInterval = 90000) => {
   return useQuery({
     queryKey: queryKeys.vendors.available(),
     queryFn: vendorsApi.getAvailableVendors,

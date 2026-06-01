@@ -56,10 +56,10 @@ export default function CallChatTab({ callId, call, currentUser, onSendStatusMes
               variant="outline"
               size="sm"
               className="w-full justify-start gap-2"
-              onClick={() => onSendStatusMessage(callId, 'הטיפול הושלם בהצלחה!')}
+              onClick={() => onSendStatusMessage(callId, 'הטיפול סגור בהצלחה!')}
             >
               <CheckCircle className="w-4 h-4 text-green-500" />
-              טיפול הושלם
+              טיפול סגור
             </Button>
           </CardContent>
         </Card>

@@ -109,7 +109,7 @@ export default function ProactiveRecommendationsWidget() {
               </div>
               <div className="bg-white rounded-lg p-2 border">
                 <div className="text-lg font-bold text-green-600">{result.stats.completed}</div>
-                <div className="text-[10px] text-gray-500">הושלמו</div>
+                <div className="text-[10px] text-gray-500">נסגרו</div>
               </div>
               <div className="bg-white rounded-lg p-2 border">
                 <div className="text-lg font-bold text-red-600">{result.stats.cancelled}</div>

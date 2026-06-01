@@ -58,7 +58,7 @@ export default function AIInsightsWidget() {
 
 נתונים:
 - סה"כ קריאות פתוחות: ${openCalls.length}
-- קריאות שהושלמו היום: ${completedToday.length}
+- קריאות שנסגרו היום: ${completedToday.length}
 - קריאות דחופות פתוחות: ${urgentOpen.length}
 - קריאות הממתינות מעל 30 דקות: ${waitingLong.length}
 - סה"כ קריאות במערכת: ${calls.length}

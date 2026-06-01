@@ -23,7 +23,7 @@ export default function AutomationSettings() {
     smsTemplates: {
       assigned: 'שלום {customer_name}, קריאתך {call_number} שובצה לטיפול. הספק בדרך אליך.',
       enroute: 'הספק בדרך למיקומך. זמן הגעה משוער: 20-30 דקות.',
-      completed: 'הטיפול בקריאתך הושלם. תודה שבחרת בנתי שירותי דרך!',
+      completed: 'הטיפול בקריאתך סגור. תודה שבחרת בנתי שירותי דרך!',
     },
 
     // Auto Assignment

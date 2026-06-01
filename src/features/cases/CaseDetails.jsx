@@ -50,7 +50,7 @@ const statusOptions = [
   { value: 'en_route', label: 'בדרך' },
   { value: 'on_site', label: 'באתר' },
   { value: 'in_progress', label: 'בטיפול' },
-  { value: 'completed', label: 'הושלם' },
+  { value: 'completed', label: 'סגור' },
   { value: 'cancelled', label: 'בוטל' },
 ];
 
@@ -98,7 +98,7 @@ export default function CaseDetails() {
       return locations[0];
     },
     enabled: !!caseData?.assigned_provider_id,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 90000, // Refresh every 30 seconds
   });
 
   // Calculate distance when vendor is assigned
@@ -193,7 +193,7 @@ export default function CaseDetails() {
         assigned: 'הקריאה שלך שובצה לטיפול. הספק בדרך אליך.',
         en_route: 'הספק בדרך למיקומך. זמן הגעה משוער: 20-30 דקות.',
         on_site: 'הספק הגיע למיקום.',
-        completed: 'הטיפול הושלם. תודה שבחרת בנתי שירותי דרך!',
+        completed: 'הטיפול סגור. תודה שבחרת בנתי שירותי דרך!',
       };
 
       if (smsMessages[newStatus] && caseData?.caller_phone) {

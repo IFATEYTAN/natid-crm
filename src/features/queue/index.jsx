@@ -25,7 +25,7 @@ export default function MyQueue() {
     queryKey: queryKeys.queue.my(user?.email),
     queryFn: () => base44.entities.WorkQueue.list('-priority_score'),
     enabled: !!user?.email,
-    refetchInterval: 15000, // Refresh every 15 seconds
+    refetchInterval: 45000, // Refresh every 15 seconds
     staleTime: 1000 * 10, // 10 seconds
   });
 
@@ -336,7 +336,7 @@ export default function MyQueue() {
           className="cursor-pointer hover:border-[#0288D1]"
         />
         <StatCard
-          title="הושלמו היום"
+          title="נסגרו היום"
           value={completed.length}
           subtitle="קריאות"
           icon={CheckCircle2}
@@ -359,7 +359,7 @@ export default function MyQueue() {
         <TabsList>
           <TabsTrigger value="my-queue">התור שלי ({myQueue.length})</TabsTrigger>
           <TabsTrigger value="in-progress">בטיפול ({inProgress.length})</TabsTrigger>
-          <TabsTrigger value="completed">הושלמו ({completed.length})</TabsTrigger>
+          <TabsTrigger value="completed">נסגרו ({completed.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-queue">

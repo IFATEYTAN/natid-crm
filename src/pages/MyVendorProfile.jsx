@@ -207,7 +207,7 @@ export default function MyVendorProfilePage() {
               <div className="text-2xl font-bold text-[#111827]">
                 {vendor.total_calls_completed || 0}
               </div>
-              <div className="text-xs text-[#6b7280]">קריאות הושלמו</div>
+              <div className="text-xs text-[#6b7280]">קריאות נסגרו</div>
             </AnimatedCard>
           </StaggeredItem>
           <StaggeredItem>

@@ -180,7 +180,7 @@ ${config.prompt}
     setResults((prev) => ({ ...prev, [photo.id]: result }));
     setProcessing((prev) => ({ ...prev, [photo.id]: false }));
     onDataExtracted?.(photo.id, result, summary);
-    showToast.success(`ניתוח ${config.label} הושלם`);
+    showToast.success(`ניתוח ${config.label} סגור`);
   };
 
   const extractAll = async () => {
@@ -282,7 +282,7 @@ ${config.prompt}
                         {config?.label || photo.category}
                       </div>
                       <div className="text-xs text-green-700 truncate">
-                        {photo.ai_extraction_summary || 'ניתוח הושלם'}
+                        {photo.ai_extraction_summary || 'ניתוח סגור'}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

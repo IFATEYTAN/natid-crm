@@ -3,8 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  CheckCircle, ChevronLeft, ChevronRight, User, Bell, MapPin, ToggleRight,
-  Phone, Navigation, Camera, Pencil, Star, BookOpen, Truck, Shield, Zap
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Bell,
+  MapPin,
+  ToggleRight,
+  Phone,
+  Navigation,
+  Camera,
+  Pencil,
+  Star,
+  BookOpen,
+  Truck,
+  Shield,
+  Zap,
 } from 'lucide-react';
 
 const STEPS = [
@@ -19,7 +33,7 @@ const STEPS = [
 
 export default function VendorOnboardingWizard({ vendorProfile, onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0);
-  
+
   const step = STEPS[currentStep];
   const isLast = currentStep === STEPS.length - 1;
   const isFirst = currentStep === 0;
@@ -28,12 +42,12 @@ export default function VendorOnboardingWizard({ vendorProfile, onComplete, onSk
     if (isLast) {
       onComplete();
     } else {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     }
   };
 
   const prev = () => {
-    if (!isFirst) setCurrentStep(prev => prev - 1);
+    if (!isFirst) setCurrentStep((prev) => prev - 1);
   };
 
   return (
@@ -159,7 +173,7 @@ function ProfileStep({ vendor }) {
     { label: 'שעות עבודה', done: !!vendor?.works_24_7 || !!vendor?.working_hours_start },
   ];
 
-  const completedCount = checks.filter(c => c.done).length;
+  const completedCount = checks.filter((c) => c.done).length;
   const pct = Math.round((completedCount / checks.length) * 100);
 
   return (
@@ -187,9 +201,11 @@ function ProfileStep({ vendor }) {
             />
           </div>
           <div className="space-y-2">
-            {checks.map(check => (
+            {checks.map((check) => (
               <div key={check.label} className="flex items-center gap-2">
-                <CheckCircle className={`w-4 h-4 ${check.done ? 'text-green-500' : 'text-gray-300'}`} />
+                <CheckCircle
+                  className={`w-4 h-4 ${check.done ? 'text-green-500' : 'text-gray-300'}`}
+                />
                 <span className={`text-sm ${check.done ? 'text-gray-700' : 'text-gray-400'}`}>
                   {check.label}
                 </span>
@@ -198,7 +214,7 @@ function ProfileStep({ vendor }) {
           </div>
         </CardContent>
       </Card>
-      
+
       <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-sm text-amber-800">
         <strong>💡 טיפ:</strong> ניתן לעדכן פרטים בכל שלב דרך עמוד "הפרופיל שלי"
       </div>
@@ -247,12 +263,18 @@ function PermissionsStep() {
 function PermissionCard({ icon: Icon, title, desc, color, action }) {
   const bgMap = { purple: 'bg-purple-50', blue: 'bg-blue-50', green: 'bg-green-50' };
   const iconBgMap = { purple: 'bg-purple-100', blue: 'bg-blue-100', green: 'bg-green-100' };
-  const iconColorMap = { purple: 'text-purple-600', blue: 'text-blue-600', green: 'text-green-600' };
+  const iconColorMap = {
+    purple: 'text-purple-600',
+    blue: 'text-blue-600',
+    green: 'text-green-600',
+  };
 
   return (
     <Card className={bgMap[color]}>
       <CardContent className="p-4 flex items-start gap-3">
-        <div className={`w-10 h-10 ${iconBgMap[color]} rounded-lg flex items-center justify-center shrink-0`}>
+        <div
+          className={`w-10 h-10 ${iconBgMap[color]} rounded-lg flex items-center justify-center shrink-0`}
+        >
           <Icon className={`w-5 h-5 ${iconColorMap[color]}`} />
         </div>
         <div>
@@ -313,12 +335,42 @@ function AvailabilityStep() {
 
 function CallFlowStep() {
   const steps = [
-    { icon: Bell, label: 'קריאה נכנסת', desc: 'קריאה חדשה משובצת אליך — יש לאשר תוך 5 דקות', color: 'bg-blue-500' },
-    { icon: Navigation, label: 'יצאתי לדרך', desc: 'לחץ "יצאתי לדרך" + נווט עם Waze ישירות מהאפליקציה', color: 'bg-purple-500' },
-    { icon: MapPin, label: 'הגעתי למקום', desc: 'לחץ "הגעתי" — המוקד רואה בזמן אמת', color: 'bg-orange-500' },
-    { icon: Camera, label: 'צלם ותעד', desc: 'צלם לפני ואחרי + הערות + צ\'אט עם המוקד', color: 'bg-green-500' },
-    { icon: Pencil, label: 'חתימת לקוח', desc: 'חובה! החתם את הלקוח דיגיטלית על גבי המסך', color: 'bg-red-500' },
-    { icon: CheckCircle, label: 'סיים קריאה', desc: 'לחץ "סיים קריאה" — הקריאה עוברת ל"הושלם"', color: 'bg-gray-800' },
+    {
+      icon: Bell,
+      label: 'קריאה נכנסת',
+      desc: 'קריאה חדשה משובצת אליך — יש לאשר תוך 5 דקות',
+      color: 'bg-blue-500',
+    },
+    {
+      icon: Navigation,
+      label: 'יצאתי לדרך',
+      desc: 'לחץ "יצאתי לדרך" + נווט עם Waze ישירות מהאפליקציה',
+      color: 'bg-purple-500',
+    },
+    {
+      icon: MapPin,
+      label: 'הגעתי למקום',
+      desc: 'לחץ "הגעתי" — המוקד רואה בזמן אמת',
+      color: 'bg-orange-500',
+    },
+    {
+      icon: Camera,
+      label: 'צלם ותעד',
+      desc: "צלם לפני ואחרי + הערות + צ'אט עם המוקד",
+      color: 'bg-green-500',
+    },
+    {
+      icon: Pencil,
+      label: 'חתימת לקוח',
+      desc: 'חובה! החתם את הלקוח דיגיטלית על גבי המסך',
+      color: 'bg-red-500',
+    },
+    {
+      icon: CheckCircle,
+      label: 'סיים קריאה',
+      desc: 'לחץ "סיים קריאה" — הקריאה עוברת ל"סגור"',
+      color: 'bg-gray-800',
+    },
   ];
 
   return (
@@ -343,7 +395,9 @@ function CallFlowStep() {
               className="flex items-start gap-3"
             >
               <div className="flex flex-col items-center">
-                <div className={`w-9 h-9 ${s.color} rounded-full flex items-center justify-center text-white`}>
+                <div
+                  className={`w-9 h-9 ${s.color} rounded-full flex items-center justify-center text-white`}
+                >
                   <Icon className="w-4 h-4" />
                 </div>
                 {idx < steps.length - 1 && <div className="w-0.5 h-6 bg-gray-200" />}
@@ -364,7 +418,7 @@ function TipsStep() {
   const tips = [
     { icon: Zap, text: 'הגב מהר לקריאות — זמן תגובה קצר = יותר שיבוצים' },
     { icon: Camera, text: 'תעד הכל בתמונות — זה מגן עליך ומשפר אמינות' },
-    { icon: Phone, text: 'עדכן את המוקד דרך הצ\'אט על כל שינוי' },
+    { icon: Phone, text: "עדכן את המוקד דרך הצ'אט על כל שינוי" },
     { icon: Star, text: 'שירות מקצועי = דירוג גבוה = יותר קריאות' },
     { icon: Shield, text: 'חתימת לקוח היא חובה — אל תשכח!' },
     { icon: BookOpen, text: 'תמיד אפשר לחזור למדריך הספקים לקבלת עזרה' },
@@ -419,9 +473,7 @@ function DoneStep({ vendor }) {
       </motion.div>
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">הכל מוכן!</h1>
-        <p className="text-lg text-gray-500">
-          {vendor?.vendor_name}, אתה מוכן להתחיל לקבל קריאות.
-        </p>
+        <p className="text-lg text-gray-500">{vendor?.vendor_name}, אתה מוכן להתחיל לקבל קריאות.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">

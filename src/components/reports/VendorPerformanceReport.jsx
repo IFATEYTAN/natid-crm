@@ -80,7 +80,7 @@ export default function VendorPerformanceReport({ vendors, calls, ratings }) {
       cell: (row) => (
         <div className="text-center">
           <div className="font-medium">{row.total_calls}</div>
-          <div className="text-xs text-[#616161]">{row.completed_calls} הושלמו</div>
+          <div className="text-xs text-[#616161]">{row.completed_calls} נסגרו</div>
         </div>
       ),
     },

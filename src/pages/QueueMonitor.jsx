@@ -73,7 +73,7 @@ const statusOptions = [
   { value: 'waiting_in_queue', label: 'ממתין בתור' },
   { value: 'assigned_to_agent', label: 'משובץ לנציג' },
   { value: 'in_progress', label: 'בטיפול' },
-  { value: 'completed', label: 'הושלם' },
+  { value: 'completed', label: 'סגור' },
   { value: 'transferred', label: 'הועבר' },
   { value: 'rejected', label: 'נדחה' },
 ];
@@ -81,10 +81,10 @@ const statusOptions = [
 const callStatusOptions = [
   { value: 'waiting_treatment', label: 'ממתין לטיפול' },
   { value: 'awaiting_assignment', label: 'ממתין לשיוך' },
-  { value: 'assigning', label: 'בתהליך שיוך' },
+  { value: 'assigning', label: 'ספק שובץ' },
   { value: 'vendor_enroute', label: 'ספק בדרך' },
   { value: 'in_progress', label: 'בטיפול' },
-  { value: 'completed', label: 'הושלם' },
+  { value: 'completed', label: 'סגור' },
   { value: 'cancelled', label: 'בוטל' },
 ];
 
@@ -319,7 +319,7 @@ export default function QueueMonitor() {
           waiting_in_queue: { label: 'ממתין בתור', color: 'bg-yellow-100 text-yellow-800' },
           assigned_to_agent: { label: 'משובץ לנציג', color: 'bg-blue-100 text-blue-800' },
           in_progress: { label: 'בטיפול', color: 'bg-indigo-100 text-indigo-800' },
-          completed: { label: 'הושלם', color: 'bg-green-100 text-green-800' },
+          completed: { label: 'סגור', color: 'bg-green-100 text-green-800' },
           transferred: { label: 'הועבר', color: 'bg-purple-100 text-purple-800' },
           rejected: { label: 'נדחה', color: 'bg-red-100 text-red-800' },
         };

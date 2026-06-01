@@ -6,7 +6,7 @@ import * as queueApi from '../api';
 /**
  * Hook for fetching all work queue items
  */
-export const useWorkQueue = (sort = '-priority_score', refetchInterval = 15000) => {
+export const useWorkQueue = (sort = '-priority_score', refetchInterval = 45000) => {
   return useQuery({
     queryKey: queryKeys.queue.all(),
     queryFn: () => queueApi.getWorkQueue(sort),
@@ -103,7 +103,7 @@ export const useCompleteQueueItem = () => {
       queueApi.completeQueueItem(queueId, timeToComplete),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
-      toast.success('פריט בתור הושלם');
+      toast.success('פריט בתור סגור');
     },
     onError: () => {
       toast.error('שגיאה בהשלמת פריט בתור');

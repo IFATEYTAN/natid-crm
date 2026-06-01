@@ -116,7 +116,7 @@ export default function CallDetailsPage() {
     queryKey: queryKeys.calls.single(callId),
     queryFn: () => base44.entities.Call.get(callId),
     enabled: !!callId,
-    refetchInterval: 15000,
+    refetchInterval: 45000,
   });
   const vendorsQuery = useVendors();
 
@@ -226,7 +226,7 @@ export default function CallDetailsPage() {
     const statusMessages = {
       vendor_enroute: 'הספק יצא לדרך ובקרוב יגיע אליך',
       in_progress: 'הספק הגיע ומתחיל בטיפול',
-      completed: 'הטיפול הושלם בהצלחה!',
+      completed: 'הטיפול סגור בהצלחה!',
     };
 
     if (statusMessages[newStatus]) {

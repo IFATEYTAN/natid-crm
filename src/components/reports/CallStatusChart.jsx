@@ -5,10 +5,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 const statusLabels = {
   waiting_treatment: 'ממתין לטיפול',
   awaiting_assignment: 'ממתין לשיוך',
-  assigning: 'בשיוך',
+  assigning: 'ספק שובץ',
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
-  completed: 'הושלם',
+  completed: 'סגור',
   cancelled: 'בוטל',
 };
 

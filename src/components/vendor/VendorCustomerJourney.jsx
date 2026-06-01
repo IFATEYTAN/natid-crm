@@ -65,7 +65,7 @@ const journeySteps = [
   },
   {
     key: 'completed',
-    label: 'הושלם',
+    label: 'סגור',
     description: 'הטיפול הסתיים בהצלחה',
     icon: CheckCircle2,
     statuses: ['completed'],
@@ -74,12 +74,42 @@ const journeySteps = [
 ];
 
 const colorMap = {
-  blue: { bg: 'bg-blue-100', text: 'text-blue-600', border: 'border-blue-400', line: 'bg-blue-400' },
-  indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', border: 'border-indigo-400', line: 'bg-indigo-400' },
-  purple: { bg: 'bg-purple-100', text: 'text-purple-600', border: 'border-purple-400', line: 'bg-purple-400' },
-  amber: { bg: 'bg-amber-100', text: 'text-amber-600', border: 'border-amber-400', line: 'bg-amber-400' },
-  orange: { bg: 'bg-orange-100', text: 'text-orange-600', border: 'border-orange-400', line: 'bg-orange-400' },
-  green: { bg: 'bg-green-100', text: 'text-green-600', border: 'border-green-400', line: 'bg-green-400' },
+  blue: {
+    bg: 'bg-blue-100',
+    text: 'text-blue-600',
+    border: 'border-blue-400',
+    line: 'bg-blue-400',
+  },
+  indigo: {
+    bg: 'bg-indigo-100',
+    text: 'text-indigo-600',
+    border: 'border-indigo-400',
+    line: 'bg-indigo-400',
+  },
+  purple: {
+    bg: 'bg-purple-100',
+    text: 'text-purple-600',
+    border: 'border-purple-400',
+    line: 'bg-purple-400',
+  },
+  amber: {
+    bg: 'bg-amber-100',
+    text: 'text-amber-600',
+    border: 'border-amber-400',
+    line: 'bg-amber-400',
+  },
+  orange: {
+    bg: 'bg-orange-100',
+    text: 'text-orange-600',
+    border: 'border-orange-400',
+    line: 'bg-orange-400',
+  },
+  green: {
+    bg: 'bg-green-100',
+    text: 'text-green-600',
+    border: 'border-green-400',
+    line: 'bg-green-400',
+  },
 };
 
 /**
@@ -112,8 +142,7 @@ export default function VendorCustomerJourney({ callId, call }) {
   // Fetch call history for this call
   const historyQuery = useQuery({
     queryKey: queryKeys.callHistory.byCall(callId),
-    queryFn: () =>
-      base44.entities.CallHistory.filter({ call_id: callId }, 'created_date', 1000),
+    queryFn: () => base44.entities.CallHistory.filter({ call_id: callId }, 'created_date', 1000),
     enabled: !!callId,
     staleTime: 1000 * 30,
   });
@@ -223,7 +252,8 @@ export default function VendorCustomerJourney({ callId, call }) {
             <div>
               <p className="text-sm font-medium text-red-700">הקריאה בוטלה</p>
               <p className="text-xs text-red-600">
-                {statusLabels[call?.call_status]} {call?.closed_at ? `• ${formatDateTime(call.closed_at)}` : ''}
+                {statusLabels[call?.call_status]}{' '}
+                {call?.closed_at ? `• ${formatDateTime(call.closed_at)}` : ''}
               </p>
             </div>
           </div>
@@ -267,9 +297,7 @@ export default function VendorCustomerJourney({ callId, call }) {
                     <div className="flex flex-col items-center flex-1 min-h-[24px]">
                       <div
                         className={`w-0.5 flex-1 ${
-                          isCompleted && nextCompleted?.isCompleted
-                            ? colors.line
-                            : 'bg-gray-200'
+                          isCompleted && nextCompleted?.isCompleted ? colors.line : 'bg-gray-200'
                         }`}
                       />
                       {stepDuration && (
@@ -283,9 +311,7 @@ export default function VendorCustomerJourney({ callId, call }) {
                       )}
                       <div
                         className={`w-0.5 flex-1 ${
-                          isCompleted && nextCompleted?.isCompleted
-                            ? colors.line
-                            : 'bg-gray-200'
+                          isCompleted && nextCompleted?.isCompleted ? colors.line : 'bg-gray-200'
                         }`}
                       />
                     </div>
@@ -318,9 +344,7 @@ export default function VendorCustomerJourney({ callId, call }) {
                     </p>
                   )}
                   {step.changedBy && (
-                    <p className="text-xs text-[#6B778C] mt-0.5">
-                      ע״י {step.changedBy}
-                    </p>
+                    <p className="text-xs text-[#6B778C] mt-0.5">ע״י {step.changedBy}</p>
                   )}
                   {step.notes && (
                     <p className="text-xs text-[#6B778C] mt-1 bg-gray-50 rounded px-2 py-1">

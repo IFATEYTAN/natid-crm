@@ -11,7 +11,7 @@
 export const statusLabels = {
   waiting_treatment: 'ממתין לטיפול',
   awaiting_assignment: 'ממתין לשיבוץ',
-  assigning: 'בתהליך שיבוץ',
+  assigning: 'ספק שובץ',
   vendor_enroute: 'ספק בדרך',
   in_progress: 'בטיפול',
   vendor_arrived: 'נותן השירות הגיע',
@@ -20,7 +20,7 @@ export const statusLabels = {
   in_storage: 'באחסנה',
   continued_treatment: 'המשך טיפול',
   awaiting_payment: 'המתנה לחיוב',
-  completed: 'הושלם',
+  completed: 'סגור',
   cancelled: 'בוטל',
 };
 
