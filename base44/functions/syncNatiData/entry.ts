@@ -299,13 +299,21 @@ Deno.serve(async (req) => {
 
   try {
     const base44 = createClientFromRequest(req);
-    let user = null;
-    try { user = await base44.auth.me(); } catch (_) {}
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
-    }
 
     const body = await req.json().catch(() => ({}));
+
+    // Auth: allow either an admin user OR a scheduled automation run. Scheduled runs
+    // have no logged-in user; the platform includes an "automation" object in the body.
+    // We also accept an explicit automation_key secret as a fallback for manual triggers.
+    const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
+    const isAutomation = (!!automationKey && body.automation_key === automationKey) || !!body.automation;
+    if (!isAutomation) {
+      let user = null;
+      try { user = await base44.auth.me(); } catch (_) {}
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
+      }
+    }
     const {
       dep = -1, callStatus = -1, dry_run = false,
       sync_calls = true, sync_cases = true,
