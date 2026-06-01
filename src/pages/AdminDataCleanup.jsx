@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trash2, AlertTriangle, Loader2, CheckCircle2, RefreshCw, Eye } from 'lucide-react';
@@ -10,6 +12,7 @@ const DELAY_BETWEEN_BATCHES = 1000; // 1 second between batches
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function AdminDataCleanup() {
+  const queryClient = useQueryClient();
   const [log, setLog] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -117,6 +120,20 @@ export default function AdminDataCleanup() {
         );
       }
       addLog('=== הסנכרון הסתיים ===', 'success');
+      // Invalidate dashboard/queue/calls caches so the new data appears immediately
+      if (!dryRun) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() }),
+          queryClient.invalidateQueries({ queryKey: ['dashboard-cases'] }),
+          queryClient.invalidateQueries({ queryKey: ['dashboard-vendors'] }),
+          queryClient.invalidateQueries({ queryKey: ['queue-cases'] }),
+          queryClient.invalidateQueries({ queryKey: ['calls-list'] }),
+        ]);
+      }
     } catch (err) {
       addLog(`שגיאת סנכרון: ${err.message}`, 'error');
     }
