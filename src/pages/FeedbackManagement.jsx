@@ -19,7 +19,7 @@ export default function FeedbackManagement() {
   } = useQuery({
     queryKey: queryKeys.feedbacks.all(),
     queryFn: () => base44.entities.CallFeedback.list('-created_at', 50),
-    refetchInterval: 30000,
+    refetchInterval: 90000,
   });
 
   if (isLoading) {

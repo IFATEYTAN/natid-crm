@@ -25,7 +25,7 @@ export default function MyQueue() {
     queryKey: queryKeys.queue.my(user?.email),
     queryFn: () => base44.entities.WorkQueue.list('-priority_score'),
     enabled: !!user?.email,
-    refetchInterval: 15000, // Refresh every 15 seconds
+    refetchInterval: 45000, // Refresh every 15 seconds
     staleTime: 1000 * 10, // 10 seconds
   });
 

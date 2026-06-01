@@ -12,7 +12,7 @@ export default function WorkQueueOverview({ calls = [], isLoading }) {
   const { data: queueItems = [] } = useQuery({
     queryKey: queryKeys.queue.dashboard(),
     queryFn: () => base44.entities.WorkQueue.list(),
-    refetchInterval: 15000,
+    refetchInterval: 45000,
     staleTime: 1000 * 10, // 10 seconds
   });
 

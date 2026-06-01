@@ -16,6 +16,7 @@ export const queryClientInstance = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
+      refetchIntervalInBackground: false,
       retry: (failureCount, error) => {
         // Never retry on 404 (entity doesn't exist) or 403 (no access)
         if (error?.status === 404 || error?.status === 403) return false;

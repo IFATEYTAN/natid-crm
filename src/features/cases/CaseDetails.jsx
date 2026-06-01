@@ -98,7 +98,7 @@ export default function CaseDetails() {
       return locations[0];
     },
     enabled: !!caseData?.assigned_provider_id,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 90000, // Refresh every 30 seconds
   });
 
   // Calculate distance when vendor is assigned

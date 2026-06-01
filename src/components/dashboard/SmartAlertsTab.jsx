@@ -38,7 +38,7 @@ export default function SmartAlertsTab({ currentUser }) {
       );
     },
     enabled: !!currentUser?.id,
-    refetchInterval: 30000, // Refresh every 30s
+    refetchInterval: 90000, // Refresh every 30s
   });
 
   const markAsReadMutation = useMutation({

@@ -59,7 +59,7 @@ function LayoutContent({ children, currentPageName }) {
       return base44.entities.Notification.filter({ user_id: currentUser.id }, '-created_at', 20);
     },
     enabled: !!currentUser?.id && !isLoadingAuth,
-    refetchInterval: 30000,
+    refetchInterval: 90000,
   });
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
@@ -276,7 +276,8 @@ function LayoutContent({ children, currentPageName }) {
     },
   ];
 
-  const navigationGroups = effectiveRoleName === 'vendor' ? vendorNavigationGroups : fullNavigationGroups;
+  const navigationGroups =
+    effectiveRoleName === 'vendor' ? vendorNavigationGroups : fullNavigationGroups;
 
   const handleLogout = async () => {
     await base44.auth.logout();
@@ -618,8 +619,6 @@ function LayoutContent({ children, currentPageName }) {
         >
           {children}
         </main>
-
-
 
         {/* PWA Components */}
         <Suspense fallback={null}>

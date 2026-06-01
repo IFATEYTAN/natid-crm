@@ -38,7 +38,7 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
   const adminCallsQuery = useQuery({
     queryKey: queryKeys.adminCalls.all(),
     queryFn: () => base44.entities.Call.list('-created_date', 500),
-    refetchInterval: 30000,
+    refetchInterval: 90000,
     staleTime: 1000 * 15, // 15 seconds
   });
 

@@ -84,7 +84,7 @@ export const useNotifications = (userId, sort = '-created_at', limit = 20) => {
     queryKey: queryKeys.notifications.byUser(userId),
     queryFn: () => settingsApi.getNotifications(userId, sort, limit),
     enabled: !!userId,
-    refetchInterval: 30000,
+    refetchInterval: 90000,
   });
 };
 

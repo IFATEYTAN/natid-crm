@@ -44,7 +44,7 @@ export default function VendorLiveMap({
       return vendors[0] || null;
     },
     enabled: !!vendorId,
-    refetchInterval: autoRefresh ? 10000 : false,
+    refetchInterval: autoRefresh ? 30000 : false,
   });
 
   // Fetch location history for this call
@@ -55,7 +55,7 @@ export default function VendorLiveMap({
       return await base44.entities.VendorLocation.filter({ call_id: callId }, 'created_date', 500);
     },
     enabled: !!callId && showHistory,
-    refetchInterval: autoRefresh ? 15000 : false,
+    refetchInterval: autoRefresh ? 45000 : false,
   });
 
   // Calculate map center and bounds

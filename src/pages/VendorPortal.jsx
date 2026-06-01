@@ -151,7 +151,7 @@ export default function VendorPortalPage() {
       );
     },
     enabled: !!vendorProfile?.id,
-    refetchInterval: 30000,
+    refetchInterval: 90000,
   });
 
   // Contract
@@ -197,7 +197,7 @@ export default function VendorPortalPage() {
       );
     },
     enabled: !!vendorProfile?.id && isAvailable,
-    refetchInterval: 10000,
+    refetchInterval: 90000,
   });
 
   useEffect(() => {

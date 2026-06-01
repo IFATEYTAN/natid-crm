@@ -146,14 +146,14 @@ export default function AllVendorsMap() {
   const { data: vendors = [], refetch: refetchVendors } = useQuery({
     queryKey: queryKeys.vendors.allList(),
     queryFn: () => base44.entities.Vendor.list(),
-    refetchInterval: 30000,
+    refetchInterval: 90000,
   });
 
   // Fetch vendor locations
   const { data: vendorLocations = [], refetch: refetchLocations } = useQuery({
     queryKey: queryKeys.vendors.allLocations(),
     queryFn: () => base44.entities.VendorLocation.list('-created_date', 500),
-    refetchInterval: 15000, // Refresh every 15 seconds
+    refetchInterval: 45000, // Refresh every 15 seconds
   });
 
   // Fetch all active calls
@@ -171,7 +171,7 @@ export default function AllVendorsMap() {
           ],
         },
       }),
-    refetchInterval: 30000,
+    refetchInterval: 90000,
   });
 
   const activeCalls = allCalls.filter((c) => c.pickup_location_lat && c.pickup_location_lon);

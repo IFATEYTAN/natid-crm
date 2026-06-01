@@ -116,7 +116,7 @@ export default function CallDetailsPage() {
     queryKey: queryKeys.calls.single(callId),
     queryFn: () => base44.entities.Call.get(callId),
     enabled: !!callId,
-    refetchInterval: 15000,
+    refetchInterval: 45000,
   });
   const vendorsQuery = useVendors();
 

@@ -19,7 +19,7 @@ export default function CallChat({ callId, currentUserRole, currentUserName }) {
   const { data: messages = [], isLoading } = useQuery({
     queryKey: queryKeys.callMessages.byCall(callId),
     queryFn: () => base44.entities.Message.filter({ call_id: callId }, 'created_date', 100),
-    refetchInterval: 30000,
+    refetchInterval: 90000,
     staleTime: 15000,
   });
 
