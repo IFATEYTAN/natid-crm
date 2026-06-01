@@ -1,8 +1,18 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, AlertTriangle, Loader2, CheckCircle2, RefreshCw, Eye } from 'lucide-react';
+import {
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  CheckCircle2,
+  RefreshCw,
+  Eye,
+  Archive,
+} from 'lucide-react';
 
 const BATCH_SIZE = 10;
 const DELAY_BETWEEN_BATCHES = 1000; // 1 second between batches
@@ -10,12 +20,15 @@ const DELAY_BETWEEN_BATCHES = 1000; // 1 second between batches
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function AdminDataCleanup() {
+  const queryClient = useQueryClient();
   const [log, setLog] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const abortRef = useRef(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
+  const [isClosingStale, setIsClosingStale] = useState(false);
+  const [closeStaleResult, setCloseStaleResult] = useState(null);
 
   const addLog = (msg, type = 'info') => {
     setLog((prev) => [...prev, { msg, type, time: new Date().toLocaleTimeString() }]);
@@ -117,10 +130,55 @@ export default function AdminDataCleanup() {
         );
       }
       addLog('=== הסנכרון הסתיים ===', 'success');
+      // Invalidate dashboard/queue/calls caches so the new data appears immediately
+      if (!dryRun) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.vendors.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.customers.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() }),
+          queryClient.invalidateQueries({ queryKey: ['dashboard-cases'] }),
+          queryClient.invalidateQueries({ queryKey: ['dashboard-vendors'] }),
+          queryClient.invalidateQueries({ queryKey: ['queue-cases'] }),
+          queryClient.invalidateQueries({ queryKey: ['calls-list'] }),
+        ]);
+      }
     } catch (err) {
       addLog(`שגיאת סנכרון: ${err.message}`, 'error');
     }
     setIsSyncing(false);
+  };
+
+  const handleCloseStale = async (dryRun = false) => {
+    setIsClosingStale(true);
+    setCloseStaleResult(null);
+    addLog(dryRun ? '=== בדיקת קריאות רפאים (Dry Run) ===' : '=== סוגר קריאות רפאים ===');
+    try {
+      const res = await base44.functions.invoke('closeStaleNatiCalls', { dry_run: dryRun });
+      setCloseStaleResult(res.data);
+      if (dryRun) {
+        addLog(`פתוחות בנתי: ${res.data.nati_open_count}`, 'info');
+        addLog(`קריאות רפאים: ${res.data.stale_calls}`, 'warn');
+        addLog(`Cases רפאים: ${res.data.stale_cases}`, 'warn');
+      } else {
+        addLog(`נסגרו ${res.data.calls_closed} קריאות, ${res.data.cases_closed} cases`, 'success');
+        if (res.data.errors > 0) addLog(`שגיאות: ${res.data.errors}`, 'error');
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.cases.all() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() }),
+          queryClient.invalidateQueries({ queryKey: ['dashboard-cases'] }),
+          queryClient.invalidateQueries({ queryKey: ['queue-cases'] }),
+          queryClient.invalidateQueries({ queryKey: ['calls-list'] }),
+        ]);
+      }
+      addLog('=== סיום ===', 'success');
+    } catch (err) {
+      const errMsg = err.response?.data?.error || err.message;
+      addLog(`שגיאה: ${errMsg}`, 'error');
+    }
+    setIsClosingStale(false);
   };
 
   return (
@@ -169,6 +227,57 @@ export default function AdminDataCleanup() {
               <div className="font-medium">תוצאות אחרונות:</div>
               <pre className="text-xs text-gray-600 overflow-auto max-h-40 whitespace-pre-wrap">
                 {JSON.stringify(syncResult, null, 2)}
+              </pre>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Close Stale Calls Section */}
+      <Card className="border-amber-200 bg-amber-50">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-amber-700 text-base sm:text-lg">
+            <Archive className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+            סגירת קריאות רפאים
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+          <p className="text-amber-700 text-sm leading-relaxed">
+            מסמן כ&quot;סגור&quot; קריאות שמופיעות אצלנו כפתוחות אבל כבר לא מופיעות ברשימת הפתוחות
+            של נתי. רץ בbatches של 20 עם הגנה (לא סוגר אם נתי מחזיר פחות מ-10 פתוחות בטעות).
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="outline"
+              onClick={() => handleCloseStale(true)}
+              disabled={isClosingStale}
+              className="flex-1 h-12 text-base"
+            >
+              {isClosingStale ? (
+                <Loader2 className="w-5 h-5 me-2 animate-spin" />
+              ) : (
+                <Eye className="w-5 h-5 me-2" />
+              )}
+              בדיקה (Dry Run)
+            </Button>
+            <Button
+              onClick={() => handleCloseStale(false)}
+              disabled={isClosingStale}
+              className="flex-1 h-12 text-base bg-amber-600 hover:bg-amber-700"
+            >
+              {isClosingStale ? (
+                <Loader2 className="w-5 h-5 me-2 animate-spin" />
+              ) : (
+                <Archive className="w-5 h-5 me-2" />
+              )}
+              סגור קריאות רפאים
+            </Button>
+          </div>
+          {closeStaleResult && (
+            <div className="bg-white rounded-lg p-3 border text-sm space-y-1">
+              <div className="font-medium">תוצאות אחרונות:</div>
+              <pre className="text-xs text-gray-600 overflow-auto max-h-40 whitespace-pre-wrap">
+                {JSON.stringify(closeStaleResult, null, 2)}
               </pre>
             </div>
           )}
