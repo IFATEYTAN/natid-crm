@@ -1,0 +1,51 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user receiving the notification"
+    },
+    "title": {
+      "type": "string",
+      "description": "Notification title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification body"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "info",
+        "success",
+        "warning",
+        "error",
+        "smart_alert"
+      ],
+      "default": "info",
+      "description": "Type of notification"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the notification has been read"
+    },
+    "link": {
+      "type": "string",
+      "description": "Link to relevant page"
+    },
+    "related_entity_id": {
+      "type": "string",
+      "description": "ID of the related entity (e.g. call_id)"
+    },
+    "related_entity_type": {
+      "type": "string",
+      "description": "Type of the related entity (e.g. case, customer)"
+    }
+  },
+  "required": [
+    "title",
+    "message"
+  ]
+}

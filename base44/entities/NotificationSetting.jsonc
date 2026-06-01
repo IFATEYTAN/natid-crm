@@ -1,0 +1,52 @@
+{
+  "name": "NotificationSetting",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the setting"
+    },
+    "event": {
+      "type": "string",
+      "enum": [
+        "call_status_change",
+        "call_assigned",
+        "sla_near_breach",
+        "new_interaction",
+        "call_unassigned",
+        "low_rating",
+        "call_cancelled",
+        "vendor_delayed"
+      ],
+      "description": "Event trigger"
+    },
+    "conditions": {
+      "type": "object",
+      "description": "JSON object with conditions"
+    },
+    "channels": {
+      "type": "object",
+      "description": "JSON object with enabled channels (sms, email, inApp)"
+    },
+    "message_template": {
+      "type": "object",
+      "description": "JSON object with title and body template"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Is this setting enabled"
+    },
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of roles or emails to notify"
+    }
+  },
+  "required": [
+    "name",
+    "event"
+  ]
+}

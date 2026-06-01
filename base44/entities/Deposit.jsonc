@@ -1,0 +1,101 @@
+{
+  "name": "Deposit",
+  "type": "object",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "call_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05dc\u05e7\u05d5\u05d7"
+    },
+    "customer_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05dc\u05e7\u05d5\u05d7"
+    },
+    "amount": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05e2\u05d9\u05e8\u05d1\u05d5\u05df"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "cash",
+        "bank_transfer",
+        "check"
+      ],
+      "description": "\u05d0\u05de\u05e6\u05e2\u05d9 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "charged",
+        "refunded",
+        "cancelled",
+        "expired"
+      ],
+      "default": "active",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05e2\u05d9\u05e8\u05d1\u05d5\u05df"
+    },
+    "deposit_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05dc\u05e7\u05d9\u05d7\u05ea \u05e2\u05d9\u05e8\u05d1\u05d5\u05df"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05e4\u05d5\u05d2\u05d4 (21 \u05d9\u05d5\u05dd)"
+    },
+    "charged_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d7\u05d9\u05d5\u05d1"
+    },
+    "charged_amount": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05e9\u05d7\u05d5\u05d9\u05d1 \u05d1\u05e4\u05d5\u05e2\u05dc"
+    },
+    "charge_reason": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05d1\u05ea \u05d7\u05d9\u05d5\u05d1"
+    },
+    "refund_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05d7\u05d6\u05e8\u05d4"
+    },
+    "refund_reason": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05d1\u05ea \u05d4\u05d7\u05d6\u05e8\u05d4"
+    },
+    "credit_card_last4": {
+      "type": "string",
+      "description": "4 \u05e1\u05e4\u05e8\u05d5\u05ea \u05d0\u05d7\u05e8\u05d5\u05e0\u05d5\u05ea \u05db\u05e8\u05d8\u05d9\u05e1 \u05d0\u05e9\u05e8\u05d0\u05d9"
+    },
+    "receipt_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e7\u05d1\u05dc\u05d4"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "\u05e0\u05dc\u05e7\u05d7 \u05e2\u05dc \u05d9\u05d3\u05d9"
+    }
+  },
+  "required": [
+    "call_id",
+    "amount",
+    "payment_method"
+  ]
+}

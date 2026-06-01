@@ -1,0 +1,135 @@
+{
+  "name": "SupplierDistancePrice",
+  "type": "object",
+  "properties": {
+    "supplier_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7 (MySQL)"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7 \u05d1-Base44"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05e4\u05e7"
+    },
+    "default_distance_km": {
+      "type": "number",
+      "description": "\u05de\u05e8\u05d7\u05e7 \u05d1\u05e8\u05d9\u05e8\u05ea \u05de\u05d7\u05d3\u05dc (\u05e7\u05de)"
+    },
+    "default_distance_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05de\u05e8\u05d7\u05e7 \u05d1\u05e8\u05d9\u05e8\u05ea \u05de\u05d7\u05d3\u05dc"
+    },
+    "double_distance_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05d3\u05d0\u05d1\u05dc \u05d2'\u05e0\u05d8"
+    },
+    "default_distance_km2": {
+      "type": "number",
+      "description": "\u05de\u05e8\u05d7\u05e7 \u05d1\u05e8\u05d9\u05e8\u05ea \u05de\u05d7\u05d3\u05dc 2"
+    },
+    "default_distance_price2": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05de\u05e8\u05d7\u05e7 \u05d1\u05e8\u05d9\u05e8\u05ea \u05de\u05d7\u05d3\u05dc 2"
+    },
+    "double_distance_price2": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05d3\u05d0\u05d1\u05dc \u05d2'\u05e0\u05d8 2"
+    },
+    "extra_km_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05dc\u05db\u05dc \u05e7\"\u05de \u05e0\u05d5\u05e1\u05e3"
+    },
+    "double_extra_km_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05e7\"\u05de \u05e0\u05d5\u05e1\u05e3 \u05d3\u05d0\u05d1\u05dc"
+    },
+    "futile_km_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05e1\u05e8\u05e7 \u05dc\u05e7\"\u05de"
+    },
+    "double_futile_km_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05e1\u05e8\u05e7 \u05d3\u05d0\u05d1\u05dc"
+    },
+    "regular_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05e8\u05d2\u05d9\u05dc\u05d4 (%)"
+    },
+    "commercial_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05de\u05e1\u05d7\u05e8\u05d9 (%)"
+    },
+    "evening_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05e2\u05e8\u05d1 (%)"
+    },
+    "commercial_evening_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05de\u05e1\u05d7\u05e8\u05d9 \u05e2\u05e8\u05d1 (%)"
+    },
+    "night_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05dc\u05d9\u05dc\u05d4 (%)"
+    },
+    "commercial_night_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05de\u05e1\u05d7\u05e8\u05d9 \u05dc\u05d9\u05dc\u05d4 (%)"
+    },
+    "holiday_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05e9\u05d1\u05ea\u05d5\u05ea \u05d7\u05d2\u05d9\u05dd (%)"
+    },
+    "commercial_holiday_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05de\u05e1\u05d7\u05e8\u05d9 \u05d7\u05d2\u05d9\u05dd (%)"
+    },
+    "truck_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05de\u05e9\u05d0\u05d9\u05ea (%)"
+    },
+    "palestina_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05e9\u05d8\u05d7\u05d9\u05dd (%)"
+    },
+    "commercial_palestina_extra_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05de\u05e1\u05d7\u05e8\u05d9 \u05e9\u05d8\u05d7\u05d9\u05dd (%)"
+    },
+    "road6_price": {
+      "type": "number",
+      "description": "\u05db\u05d1\u05d9\u05e9 6 (\u20aa)"
+    },
+    "from_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05d1\u05ea\u05d5\u05e7\u05e3 \u05de\u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "to_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05d1\u05ea\u05d5\u05e7\u05e3 \u05e2\u05d3 \u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "morning_hours": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05d5\u05ea \u05d1\u05d5\u05e7\u05e8"
+    },
+    "evening_hours": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05d5\u05ea \u05e2\u05e8\u05d1"
+    },
+    "night_hours": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05d5\u05ea \u05dc\u05d9\u05dc\u05d4"
+    },
+    "weekend_hours": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05d5\u05ea \u05e1\u05d5\u05e3 \u05e9\u05d1\u05d5\u05e2"
+    }
+  },
+  "required": [
+    "supplier_id"
+  ]
+}

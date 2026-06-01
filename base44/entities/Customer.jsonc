@@ -1,0 +1,205 @@
+{
+  "name": "Customer",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05dc\u05e7\u05d5\u05d7/\u05d7\u05d1\u05e8\u05d4"
+    },
+    "customer_type": {
+      "type": "string",
+      "enum": [
+        "insurance_company",
+        "fleet",
+        "individual",
+        "garage",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "contact_person": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05e9 \u05e7\u05e9\u05e8 \u05e8\u05d0\u05e9\u05d9"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u05d3\u05d5\"\u05dc"
+    },
+    "address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea"
+    },
+    "city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8"
+    },
+    "contract_type": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "yearly",
+        "per_case",
+        "none"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d7\u05d5\u05d6\u05d4"
+    },
+    "sla_response_minutes": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05ea\u05d2\u05d5\u05d1\u05d4 SLA \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "sla_arrival_minutes": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05d4\u05d2\u05e2\u05d4 SLA \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "total_cases": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e1\u05d4\"\u05db \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea"
+    },
+    "monthly_budget": {
+      "type": "number",
+      "description": "\u05ea\u05e7\u05e6\u05d9\u05d1 \u05d7\u05d5\u05d3\u05e9\u05d9"
+    },
+    "insurance_company": {
+      "type": "string",
+      "description": "\u05d7\u05d1\u05e8\u05ea \u05d1\u05d9\u05d8\u05d5\u05d7"
+    },
+    "package_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d7\u05d1\u05d9\u05dc\u05d4"
+    },
+    "is_vip": {
+      "type": "boolean",
+      "description": "VIP"
+    },
+    "is_special_customer": {
+      "type": "boolean",
+      "description": "\u05dc\u05e7\u05d5\u05d7 \u05de\u05d9\u05d5\u05d7\u05d3"
+    },
+    "area": {
+      "type": "string",
+      "description": "\u05d0\u05d6\u05d5\u05e8"
+    },
+    "last_case_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e7\u05e8\u05d9\u05d0\u05d4 \u05d0\u05d7\u05e8\u05d5\u05df"
+    },
+    "customer_id_external": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05dc\u05e7\u05d5\u05d7 \u05d7\u05d9\u05e6\u05d5\u05e0\u05d9"
+    },
+    "subscription_sequence": {
+      "type": "number",
+      "description": "\u05e8\u05e6\u05e3 \u05de\u05e0\u05d5\u05d9\u05d9\u05dd"
+    },
+    "subscription_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d5\u05e7\u05e3 \u05de\u05e0\u05d5\u05d9 \u05de\u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "subscription_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d5\u05e7\u05e3 \u05de\u05e0\u05d5\u05d9 \u05e2\u05d3 \u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "subscription_issue_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05e4\u05e7\u05d4"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "cancelled",
+        "expired"
+      ],
+      "description": "\u05de\u05e6\u05d1 \u05de\u05e0\u05d5\u05d9"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "bank_transfer",
+        "cash",
+        "check"
+      ],
+      "description": "\u05d0\u05d5\u05e4\u05df \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "alerts": {
+      "type": "string",
+      "description": "\u05d4\u05ea\u05e8\u05d0\u05d5\u05ea"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "private",
+        "commercial_light",
+        "commercial_heavy",
+        "motorcycle"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e8\u05db\u05d1"
+    },
+    "vehicle_model": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05d2 \u05d3\u05d2\u05dd"
+    },
+    "vehicle_year": {
+      "type": "number",
+      "description": "\u05e9\u05e0\u05ea \u05d9\u05d9\u05e6\u05d5\u05e8"
+    },
+    "vehicle_model_code": {
+      "type": "string",
+      "description": "\u05e7\u05d5\u05d3 \u05d3\u05d2\u05dd"
+    },
+    "vehicle_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e8\u05db\u05d1"
+    },
+    "vehicle_personal_import": {
+      "type": "boolean",
+      "description": "\u05e8\u05db\u05d1 \u05d9\u05d1\u05d5\u05d0 \u05d0\u05d9\u05e9\u05d9"
+    },
+    "vehicle_license_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d5\u05e7\u05e3 \u05e8\u05d9\u05e9\u05d9\u05d5\u05df \u05e8\u05db\u05d1"
+    },
+    "agent_contract": {
+      "type": "string",
+      "description": "\u05d7\u05d5\u05d6\u05d4 \u05e1\u05d5\u05db\u05df"
+    },
+    "coverage_details": {
+      "type": "string",
+      "description": "\u05e4\u05d9\u05e8\u05d5\u05d8 \u05db\u05d9\u05e1\u05d5\u05d9"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

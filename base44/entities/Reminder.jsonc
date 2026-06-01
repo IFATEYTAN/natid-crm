@@ -1,0 +1,80 @@
+{
+  "name": "Reminder",
+  "type": "object",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "call_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "reminder_type": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "auto_followup",
+        "auto_deposit_expiry",
+        "auto_future_service"
+      ],
+      "default": "manual",
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05d6\u05db\u05d5\u05e8\u05ea"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8"
+    },
+    "remind_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05de\u05ea\u05d9 \u05dc\u05d4\u05d6\u05db\u05d9\u05e8"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc \u05d4\u05e0\u05de\u05e2\u05df"
+    },
+    "assigned_to_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e0\u05de\u05e2\u05df"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "done",
+        "dismissed",
+        "overdue"
+      ],
+      "default": "pending",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d1\u05d9\u05e6\u05d5\u05e2"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    }
+  },
+  "required": [
+    "title",
+    "remind_at"
+  ]
+}

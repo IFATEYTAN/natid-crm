@@ -1,0 +1,51 @@
+{
+  "name": "CustomerInteraction",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "The ID of the customer"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "note",
+        "call",
+        "email",
+        "sms",
+        "meeting"
+      ],
+      "description": "Type of interaction"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ],
+      "description": "Direction of communication"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short summary or subject"
+    },
+    "details": {
+      "type": "string",
+      "description": "Detailed content or notes"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "User who performed the interaction"
+    },
+    "interaction_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the interaction happened"
+    }
+  },
+  "required": [
+    "customer_id",
+    "type",
+    "details"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "name": "AgentShift",
+  "type": "object",
+  "properties": {
+    "agent_email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc \u05d4\u05e0\u05e6\u05d9\u05d2"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e0\u05e6\u05d9\u05d2"
+    },
+    "shift_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05de\u05e9\u05de\u05e8\u05ea"
+    },
+    "shift_type": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "afternoon",
+        "night",
+        "full_day"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05de\u05e9\u05de\u05e8\u05ea"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05d4\u05ea\u05d7\u05dc\u05d4 (HH:MM)"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05e1\u05d9\u05d5\u05dd (HH:MM)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "active",
+        "completed",
+        "cancelled",
+        "sick_leave"
+      ],
+      "default": "scheduled",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05de\u05e9\u05de\u05e8\u05ea"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    }
+  },
+  "required": [
+    "agent_name",
+    "shift_date",
+    "shift_type",
+    "start_time",
+    "end_time"
+  ]
+}

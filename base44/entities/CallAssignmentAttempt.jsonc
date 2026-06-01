@@ -1,0 +1,52 @@
+{
+  "name": "CallAssignmentAttempt",
+  "type": "object",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "description": "The call being assigned"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "The vendor being proposed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined",
+        "expired",
+        "overridden"
+      ],
+      "default": "pending",
+      "description": "Status of the assignment attempt"
+    },
+    "decline_reason": {
+      "type": "string",
+      "description": "Reason for declining if declined"
+    },
+    "score": {
+      "type": "number",
+      "description": "Calculated suitability score"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Distance to pickup at time of assignment"
+    },
+    "response_time_seconds": {
+      "type": "number",
+      "description": "Time taken to respond"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this offer expires"
+    }
+  },
+  "required": [
+    "call_id",
+    "vendor_id",
+    "status"
+  ]
+}

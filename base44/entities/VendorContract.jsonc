@@ -1,0 +1,192 @@
+{
+  "name": "VendorContract",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05e4\u05e7"
+    },
+    "contract_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d7\u05d5\u05d6\u05d4"
+    },
+    "contract_type": {
+      "type": "string",
+      "enum": [
+        "per_call",
+        "monthly",
+        "yearly",
+        "hourly"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d7\u05d5\u05d6\u05d4"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_approval",
+        "active",
+        "expired",
+        "suspended",
+        "terminated"
+      ],
+      "default": "draft",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05d7\u05d5\u05d6\u05d4"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05ea\u05d7\u05dc\u05d4"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e1\u05d9\u05d5\u05dd"
+    },
+    "auto_renew": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d7\u05d9\u05d3\u05d5\u05e9 \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9"
+    },
+    "renewal_period_months": {
+      "type": "number",
+      "description": "\u05ea\u05e7\u05d5\u05e4\u05ea \u05d7\u05d9\u05d3\u05d5\u05e9 \u05d1\u05d7\u05d5\u05d3\u05e9\u05d9\u05dd"
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "net_0",
+        "net_15",
+        "net_30",
+        "net_45",
+        "net_60"
+      ],
+      "default": "net_30",
+      "description": "\u05ea\u05e0\u05d0\u05d9 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "rate_per_call": {
+      "type": "number",
+      "description": "\u05ea\u05e2\u05e8\u05d9\u05e3 \u05dc\u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "monthly_fee": {
+      "type": "number",
+      "description": "\u05d3\u05de\u05d9 \u05d7\u05d5\u05d3\u05e9"
+    },
+    "hourly_rate": {
+      "type": "number",
+      "description": "\u05ea\u05e2\u05e8\u05d9\u05e3 \u05e9\u05e2\u05ea\u05d9"
+    },
+    "minimum_calls": {
+      "type": "number",
+      "description": "\u05de\u05d9\u05e0\u05d9\u05de\u05d5\u05dd \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea"
+    },
+    "maximum_calls": {
+      "type": "number",
+      "description": "\u05de\u05e7\u05e1\u05d9\u05de\u05d5\u05dd \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea"
+    },
+    "bonus_threshold": {
+      "type": "number",
+      "description": "\u05e1\u05e3 \u05dc\u05d1\u05d5\u05e0\u05d5\u05e1"
+    },
+    "bonus_rate": {
+      "type": "number",
+      "description": "\u05d0\u05d7\u05d5\u05d6 \u05d1\u05d5\u05e0\u05d5\u05e1"
+    },
+    "penalty_late_arrival": {
+      "type": "number",
+      "description": "\u05e7\u05e0\u05e1 \u05d0\u05d9\u05d7\u05d5\u05e8 \u05d1\u05d4\u05d2\u05e2\u05d4"
+    },
+    "penalty_cancellation": {
+      "type": "number",
+      "description": "\u05e7\u05e0\u05e1 \u05d1\u05d9\u05d8\u05d5\u05dc"
+    },
+    "coverage_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05d0\u05d6\u05d5\u05e8\u05d9 \u05db\u05d9\u05e1\u05d5\u05d9 \u05d1\u05d7\u05d5\u05d6\u05d4"
+    },
+    "service_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e1\u05d5\u05d2\u05d9 \u05e9\u05d9\u05e8\u05d5\u05ea \u05d1\u05d7\u05d5\u05d6\u05d4"
+    },
+    "sla_response_minutes": {
+      "type": "number",
+      "description": "SLA \u05d6\u05de\u05df \u05ea\u05d2\u05d5\u05d1\u05d4 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "sla_arrival_minutes": {
+      "type": "number",
+      "description": "SLA \u05d6\u05de\u05df \u05d4\u05d2\u05e2\u05d4 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "insurance_required": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05e0\u05d3\u05e8\u05e9 \u05d1\u05d9\u05d8\u05d5\u05d7"
+    },
+    "insurance_minimum_amount": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05d1\u05d9\u05d8\u05d5\u05d7 \u05de\u05d9\u05e0\u05d9\u05de\u05dc\u05d9"
+    },
+    "special_terms": {
+      "type": "string",
+      "description": "\u05ea\u05e0\u05d0\u05d9\u05dd \u05de\u05d9\u05d5\u05d7\u05d3\u05d9\u05dd"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "document_url": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05dc\u05de\u05e1\u05de\u05da \u05d7\u05d5\u05d6\u05d4"
+    },
+    "signed_by_vendor": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05e0\u05d7\u05ea\u05dd \u05e2\u05f4\u05d9 \u05e1\u05e4\u05e7"
+    },
+    "signed_by_vendor_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d7\u05ea\u05d9\u05de\u05ea \u05e1\u05e4\u05e7"
+    },
+    "signed_by_company": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05e0\u05d7\u05ea\u05dd \u05e2\u05f4\u05d9 \u05d4\u05d7\u05d1\u05e8\u05d4"
+    },
+    "signed_by_company_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d7\u05ea\u05d9\u05de\u05ea \u05d4\u05d7\u05d1\u05e8\u05d4"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "\u05d0\u05d5\u05e9\u05e8 \u05e2\u05f4\u05d9"
+    },
+    "expiry_reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05e0\u05e9\u05dc\u05d7\u05d4 \u05ea\u05d6\u05db\u05d5\u05e8\u05ea \u05e4\u05e7\u05d9\u05e2\u05d4"
+    },
+    "expiry_reminder_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e9\u05dc\u05d9\u05d7\u05ea \u05ea\u05d6\u05db\u05d5\u05e8\u05ea"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "vendor_name",
+    "contract_type",
+    "start_date",
+    "end_date"
+  ]
+}

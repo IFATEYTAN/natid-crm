@@ -1,0 +1,23 @@
+{
+  "name": "Dispatcher",
+  "type": "object",
+  "properties": {
+    "dispatcher_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05d5\u05e7\u05d3\u05df"
+    },
+    "total_cases_handled": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e1\u05d4\"\u05db \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea \u05e9\u05d8\u05d5\u05e4\u05dc\u05d5"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05e4\u05e2\u05d9\u05dc"
+    }
+  },
+  "required": [
+    "dispatcher_name"
+  ]
+}

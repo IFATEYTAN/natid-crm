@@ -1,0 +1,373 @@
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "vendor_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e1\u05e4\u05e7"
+    },
+    "vendor_number": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e1\u05e4\u05e7 (\u05de\u05d6\u05d4\u05d4 \u05e4\u05e0\u05d9\u05de\u05d9)"
+    },
+    "contact_person": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05e9 \u05e7\u05e9\u05e8"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05e8\u05d0\u05e9\u05d9"
+    },
+    "phone_2": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05de\u05e9\u05e0\u05d9"
+    },
+    "fax": {
+      "type": "string",
+      "description": "\u05e4\u05e7\u05e1"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc"
+    },
+    "address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea"
+    },
+    "city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "\u05d7.\u05e4./\u05ea.\u05d6."
+    },
+    "insurance_agency": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05db\u05e0\u05d5\u05ea \u05d1\u05d9\u05d8\u05d5\u05d7"
+    },
+    "inspector_name": {
+      "type": "string",
+      "description": "\u05de\u05e4\u05e7\u05d7\u05d4"
+    },
+    "inspector_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05de\u05e4\u05e7\u05d7\u05d4"
+    },
+    "inspector_fax": {
+      "type": "string",
+      "description": "\u05e4\u05e7\u05e1 \u05de\u05e4\u05e7\u05d7\u05d4"
+    },
+    "handler_name": {
+      "type": "string",
+      "description": "\u05de\u05d8\u05e4\u05dc"
+    },
+    "handler_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05de\u05d8\u05e4\u05dc"
+    },
+    "handler_fax": {
+      "type": "string",
+      "description": "\u05e4\u05e7\u05e1 \u05de\u05d8\u05e4\u05dc"
+    },
+    "status_text": {
+      "type": "string",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05e1\u05d5\u05db\u05df"
+    },
+    "department_contracts": {
+      "type": "string",
+      "description": "\u05d7\u05d5\u05d6\u05d9\u05dd \u05de\u05d5\u05dc \u05d4\u05de\u05d7\u05dc\u05e7\u05d5\u05ea"
+    },
+    "service_type": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e1\u05d5\u05d2\u05d9 \u05e9\u05d9\u05e8\u05d5\u05ea: \u05d2\u05e8\u05d9\u05e8\u05d4, \u05e0\u05d9\u05d9\u05d3\u05ea, \u05e9\u05de\u05e9\u05d5\u05ea, \u05e8\u05db\u05d1 \u05d7\u05dc\u05d9\u05e4\u05d9, \u05e8\u05d3\u05d9\u05d5 \u05d3\u05d9\u05e1\u05e7"
+    },
+    "vehicle_types_supported": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e1\u05d5\u05d2\u05d9 \u05e8\u05db\u05d1\u05d9\u05dd \u05e0\u05ea\u05de\u05db\u05d9\u05dd"
+    },
+    "coverage_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05d0\u05d6\u05d5\u05e8\u05d9 \u05db\u05d9\u05e1\u05d5\u05d9"
+    },
+    "coverage_cities": {
+      "type": "string",
+      "description": "\u05e8\u05e9\u05d9\u05de\u05ea \u05e2\u05e8\u05d9\u05dd"
+    },
+    "service_rates": {
+      "type": "object",
+      "description": "\u05ea\u05e2\u05e8\u05d9\u05e4\u05d9\u05dd \u05dc\u05e4\u05d9 \u05e1\u05d5\u05d2 \u05e9\u05d9\u05e8\u05d5\u05ea"
+    },
+    "base_rate": {
+      "type": "number",
+      "description": "\u05ea\u05e2\u05e8\u05d9\u05e3 \u05d1\u05e1\u05d9\u05e1 \u05db\u05dc\u05dc\u05d9"
+    },
+    "rate_per_km": {
+      "type": "number",
+      "description": "\u05ea\u05e2\u05e8\u05d9\u05e3 \u05dc\u05e7\"\u05de"
+    },
+    "rate_per_km_regular": {
+      "type": "number",
+      "description": "\u05e7\"\u05de \u05e8\u05d2\u05d9\u05dc (\u20aa)"
+    },
+    "rate_per_km_double": {
+      "type": "number",
+      "description": "\u05e7\"\u05de \u05d3\u05d0\u05d1\u05dc \u05d2'\u05e0\u05d8 (\u20aa)"
+    },
+    "rate_per_km_tow": {
+      "type": "number",
+      "description": "\u05e7\"\u05de \u05d2\u05e8\u05d5\u05e8 (\u20aa)"
+    },
+    "rate_flat_km": {
+      "type": "number",
+      "description": "\u05db\u05dc \u05e7\"\u05de \u05e0\u05d5\u05e1\u05e3 (\u20aa)"
+    },
+    "rate_empty_km": {
+      "type": "number",
+      "description": "\u05e1\u05e8\u05e7 \u05db\u05dc \u05e7\"\u05de \u05e0\u05d5\u05e1\u05e3 (\u20aa)"
+    },
+    "rate_road_toll": {
+      "type": "number",
+      "description": "\u05db\u05d1\u05d9\u05e9 \u05d0\u05d2\u05e8\u05d4 (\u20aa)"
+    },
+    "surcharge_morning_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05d1\u05d5\u05e7\u05e8 (%) - 06:00-18:00"
+    },
+    "surcharge_morning_type": {
+      "type": "string",
+      "enum": [
+        "commercial",
+        "none"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05d5\u05e1\u05e4\u05ea \u05d1\u05d5\u05e7\u05e8"
+    },
+    "surcharge_evening_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05e2\u05e8\u05d1 (%) - 18:00-24:00"
+    },
+    "surcharge_evening_type": {
+      "type": "string",
+      "enum": [
+        "commercial",
+        "none"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05d5\u05e1\u05e4\u05ea \u05e2\u05e8\u05d1"
+    },
+    "surcharge_night_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05dc\u05d9\u05dc\u05d4 (%) - 24:00-06:00"
+    },
+    "surcharge_night_type": {
+      "type": "string",
+      "enum": [
+        "commercial",
+        "none"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05d5\u05e1\u05e4\u05ea \u05dc\u05d9\u05dc\u05d4"
+    },
+    "surcharge_holiday_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05e9\u05d1\u05ea\u05d5\u05ea \u05d7\u05d2\u05d9\u05dd (%)"
+    },
+    "surcharge_holiday_type": {
+      "type": "string",
+      "enum": [
+        "commercial",
+        "none"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05d5\u05e1\u05e4\u05ea \u05d7\u05d2\u05d9\u05dd"
+    },
+    "surcharge_holiday_note": {
+      "type": "string",
+      "description": "\u05e4\u05d9\u05e8\u05d5\u05d8 \u05ea\u05d5\u05e1\u05e4\u05ea \u05d7\u05d2\u05d9\u05dd (\u05de\u05d9\u05d5\u05dd \u05d5/\u05e2\u05e8\u05d1 \u05d7\u05d2 \u05d5\u05e2\u05d3...)"
+    },
+    "surcharge_territory_pct": {
+      "type": "number",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05ea \u05e9\u05d8\u05d7\u05d9\u05dd (%)"
+    },
+    "surcharge_territory_type": {
+      "type": "string",
+      "enum": [
+        "commercial",
+        "none"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05d5\u05e1\u05e4\u05ea \u05e9\u05d8\u05d7\u05d9\u05dd"
+    },
+    "contract_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05d7\u05d5\u05d6\u05d4 \u05e1\u05d7\u05d5\u05e8\u05d4 \u05d1\u05ea\u05d5\u05e7\u05e3 \u05de\u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "contract_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05d7\u05d5\u05d6\u05d4 \u05e1\u05d7\u05d5\u05e8\u05d4 \u05d1\u05ea\u05d5\u05e7\u05e3 \u05e2\u05d3 \u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "contract_receipt_start": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d5\u05e7\u05e3 \u05d7\u05d6\u05d5\u05df \u05e7\u05d1\u05dc\u05d4 \u05de\u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "contract_receipt_end": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d5\u05e7\u05e3 \u05d7\u05d6\u05d5\u05df \u05e7\u05d1\u05dc\u05d4 \u05e2\u05d3 \u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "deposit_required": {
+      "type": "boolean",
+      "description": "\u05de\u05e9\u05d0\u05d9\u05e8\u05d9\u05dd"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05e4\u05e2\u05d9\u05dc \u05d1\u05de\u05e2\u05e8\u05db\u05ea"
+    },
+    "is_available_now": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d6\u05de\u05d9\u05df \u05db\u05e8\u05d2\u05e2"
+    },
+    "is_location_sharing_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05e9\u05d9\u05ea\u05d5\u05e3 \u05de\u05d9\u05e7\u05d5\u05dd \u05e4\u05e2\u05d9\u05dc"
+    },
+    "availability_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "busy",
+        "offline",
+        "on_break"
+      ],
+      "default": "available",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05d6\u05de\u05d9\u05e0\u05d5\u05ea \u05de\u05e4\u05d5\u05e8\u05d8"
+    },
+    "last_location_update": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05e2\u05d3\u05db\u05d5\u05df \u05de\u05d9\u05e7\u05d5\u05dd \u05d0\u05d7\u05e8\u05d5\u05df"
+    },
+    "current_latitude": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05e8\u05d5\u05d7\u05d1 \u05e0\u05d5\u05db\u05d7\u05d9"
+    },
+    "current_longitude": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05d0\u05d5\u05e8\u05da \u05e0\u05d5\u05db\u05d7\u05d9"
+    },
+    "working_hours_start": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05ea\u05d7\u05d9\u05dc\u05ea \u05e2\u05d1\u05d5\u05d3\u05d4"
+    },
+    "working_hours_end": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05e1\u05d9\u05d5\u05dd \u05e2\u05d1\u05d5\u05d3\u05d4"
+    },
+    "works_24_7": {
+      "type": "boolean",
+      "description": "\u05e2\u05d5\u05d1\u05d3 24/7"
+    },
+    "total_calls_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e1\u05d4\"\u05db \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea \u05e9\u05d4\u05d5\u05e9\u05dc\u05de\u05d5"
+    },
+    "total_calls_assigned": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e1\u05d4\"\u05db \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea \u05e9\u05d4\u05d5\u05e7\u05e6\u05d5"
+    },
+    "average_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05de\u05de\u05d5\u05e6\u05e2"
+    },
+    "total_ratings": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d3\u05d9\u05e8\u05d5\u05d2\u05d9\u05dd"
+    },
+    "average_response_time": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05ea\u05d2\u05d5\u05d1\u05d4 \u05de\u05de\u05d5\u05e6\u05e2 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "average_completion_time": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05d4\u05e9\u05dc\u05de\u05d4 \u05de\u05de\u05d5\u05e6\u05e2 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "completion_rate": {
+      "type": "number",
+      "description": "\u05d0\u05d7\u05d5\u05d6 \u05d4\u05e9\u05dc\u05de\u05ea \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea"
+    },
+    "last_call_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e7\u05e8\u05d9\u05d0\u05d4 \u05d0\u05d7\u05e8\u05d5\u05e0\u05d4"
+    },
+    "payment_rate_per_call": {
+      "type": "number",
+      "description": "\u05ea\u05e9\u05dc\u05d5\u05dd \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "total_revenue": {
+      "type": "number",
+      "description": "\u05e1\u05d4\"\u05db \u05d4\u05db\u05e0\u05e1\u05d5\u05ea"
+    },
+    "pending_payments": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05ea\u05e9\u05dc\u05d5\u05de\u05d9\u05dd \u05de\u05de\u05ea\u05d9\u05e0\u05d9\u05dd"
+    },
+    "contract_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d7\u05d5\u05d6\u05d4 \u05e4\u05e2\u05d9\u05dc"
+    },
+    "contract_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "pending",
+        "none"
+      ],
+      "default": "none",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05d7\u05d5\u05d6\u05d4"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05e4\u05e0\u05d9\u05de\u05d9\u05d5\u05ea"
+    },
+    "special_equipment": {
+      "type": "string",
+      "description": "\u05e6\u05d9\u05d5\u05d3 \u05de\u05d9\u05d5\u05d7\u05d3"
+    },
+    "total_revenue_actual": {
+      "type": "number",
+      "description": "\u05d4\u05db\u05e0\u05e1\u05d4 \u05db\u05d5\u05dc\u05dc\u05ea \u05d1\u05e4\u05d5\u05e2\u05dc"
+    },
+    "avg_cost_per_km": {
+      "type": "number",
+      "description": "\u05e2\u05dc\u05d5\u05ea \u05de\u05de\u05d5\u05e6\u05e2\u05ea \u05dc\u05e7\"\u05de"
+    },
+    "area_distribution": {
+      "type": "string",
+      "description": "\u05e4\u05d9\u05dc\u05d5\u05d7 \u05d0\u05d6\u05d5\u05e8\u05d9"
+    },
+    "insurance_distribution": {
+      "type": "string",
+      "description": "\u05e4\u05d9\u05dc\u05d5\u05d7 \u05dc\u05e4\u05d9 \u05d7\u05d1\u05e8\u05d5\u05ea \u05d1\u05d9\u05d8\u05d5\u05d7"
+    }
+  },
+  "required": [
+    "vendor_name"
+  ]
+}

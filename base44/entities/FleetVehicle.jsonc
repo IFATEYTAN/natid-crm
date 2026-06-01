@@ -1,0 +1,89 @@
+{
+  "name": "FleetVehicle",
+  "type": "object",
+  "properties": {
+    "vehicle_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e8\u05db\u05d1"
+    },
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05db\u05dc\u05d9 \u05d4\u05e8\u05db\u05d1"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "tow_truck",
+        "mobile_unit"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e8\u05db\u05d1: \u05d2\u05e8\u05e8 \u05d0\u05d5 \u05e0\u05d9\u05d9\u05d3\u05ea"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1"
+    },
+    "service_area": {
+      "type": "string",
+      "description": "\u05d0\u05d6\u05d5\u05e8 \u05e9\u05d9\u05e8\u05d5\u05ea \u05e8\u05d0\u05e9\u05d9"
+    },
+    "coverage_areas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05d0\u05d6\u05d5\u05e8\u05d9 \u05db\u05d9\u05e1\u05d5\u05d9"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e0\u05d4\u05d2"
+    },
+    "driver_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05e0\u05d4\u05d2"
+    },
+    "total_calls": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e1\u05d4\"\u05db \u05e7\u05e8\u05d9\u05d0\u05d5\u05ea"
+    },
+    "monthly_avg_calls": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05de\u05de\u05d5\u05e6\u05e2 \u05d7\u05d5\u05d3\u05e9\u05d9"
+    },
+    "total_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e2\u05dc\u05d5\u05ea \u05db\u05d5\u05dc\u05dc\u05ea (\u20aa)"
+    },
+    "avg_cost_per_call": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e2\u05dc\u05d5\u05ea \u05de\u05de\u05d5\u05e6\u05e2\u05ea \u05dc\u05e7\u05e8\u05d9\u05d0\u05d4 (\u20aa)"
+    },
+    "avg_distance_km": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e7\"\u05de \u05de\u05de\u05d5\u05e6\u05e2"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "is_internal": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05e8\u05db\u05d1 \u05e4\u05e0\u05d9\u05de\u05d9"
+    }
+  },
+  "required": [
+    "vehicle_number",
+    "name",
+    "type"
+  ]
+}

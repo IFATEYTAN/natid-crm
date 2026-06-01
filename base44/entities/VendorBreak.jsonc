@@ -1,0 +1,45 @@
+{
+  "name": "VendorBreak",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05e4\u05e7"
+    },
+    "break_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d7\u05d9\u05dc\u05ea \u05d4\u05e4\u05e1\u05e7\u05d4"
+    },
+    "break_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05e1\u05d9\u05d5\u05dd \u05d4\u05e4\u05e1\u05e7\u05d4"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "\u05de\u05e9\u05da \u05d4\u05d4\u05e4\u05e1\u05e7\u05d4 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "planned_duration_minutes": {
+      "type": "number",
+      "description": "\u05de\u05e9\u05da \u05d4\u05e4\u05e1\u05e7\u05d4 \u05de\u05ea\u05d5\u05db\u05e0\u05df \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "end_reason": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "timeout",
+        "shift_end"
+      ],
+      "description": "\u05e1\u05d9\u05d1\u05ea \u05e1\u05d9\u05d5\u05dd"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "break_start"
+  ]
+}

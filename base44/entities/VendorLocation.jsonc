@@ -1,0 +1,56 @@
+{
+  "name": "VendorLocation",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05e4\u05e7"
+    },
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4 \u05e4\u05e2\u05d9\u05dc\u05d4"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05e8\u05d5\u05d7\u05d1"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05d0\u05d5\u05e8\u05da"
+    },
+    "accuracy": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05d5\u05e7 \u05d1\u05de\u05d8\u05e8\u05d9\u05dd"
+    },
+    "speed": {
+      "type": "number",
+      "description": "\u05de\u05d4\u05d9\u05e8\u05d5\u05ea \u05d1\u05e7\u05de\"\u05e9"
+    },
+    "heading": {
+      "type": "number",
+      "description": "\u05db\u05d9\u05d5\u05d5\u05df \u05ea\u05e0\u05d5\u05e2\u05d4"
+    },
+    "address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05de\u05e9\u05d5\u05e2\u05e8\u05ea"
+    },
+    "is_available": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05d6\u05de\u05d9\u05df"
+    },
+    "battery_level": {
+      "type": "number",
+      "description": "\u05e8\u05de\u05ea \u05e1\u05d5\u05dc\u05dc\u05d4"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "latitude",
+    "longitude"
+  ]
+}

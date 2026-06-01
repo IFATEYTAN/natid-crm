@@ -1,0 +1,508 @@
+{
+  "name": "Call",
+  "type": "object",
+  "properties": {
+    "call_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e7\u05e8\u05d9\u05d0\u05d4 \u05d9\u05d9\u05d7\u05d5\u05d3\u05d9"
+    },
+    "call_status": {
+      "type": "string",
+      "enum": [
+        "waiting_treatment",
+        "awaiting_assignment",
+        "assigning",
+        "vendor_enroute",
+        "in_progress",
+        "vendor_arrived",
+        "future_service",
+        "in_followup",
+        "in_storage",
+        "continued_treatment",
+        "awaiting_payment",
+        "completed",
+        "cancelled"
+      ],
+      "default": "waiting_treatment",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "created_by_source": {
+      "type": "string",
+      "enum": [
+        "bot",
+        "operator",
+        "customer_app",
+        "vendor_interface"
+      ],
+      "description": "\u05de\u05e7\u05d5\u05e8 \u05d4\u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "call_priority": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "urgent",
+        "critical"
+      ],
+      "default": "normal",
+      "description": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea"
+    },
+    "is_vip": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05dc\u05e7\u05d5\u05d7 VIP"
+    },
+    "service_category": {
+      "type": "string",
+      "enum": [
+        "towing",
+        "mobile_unit",
+        "towing_storage",
+        "towing_mobile",
+        "storage_only",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e9\u05d9\u05e8\u05d5\u05ea (\u05d2, \u05e0, \u05d0+\u05d2, \u05d2+\u05e0, \u05d0, \u05d0\u05d7\u05e8)"
+    },
+    "provider_type": {
+      "type": "string",
+      "enum": [
+        "fleet",
+        "external"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e1\u05e4\u05e7: \u05e6\u05d9 \u05e4\u05e0\u05d9\u05de\u05d9 \u05d0\u05d5 \u05e1\u05e4\u05e7 \u05d7\u05d9\u05e6\u05d5\u05e0\u05d9"
+    },
+    "fleet_vehicle_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05db\u05dc\u05d9 \u05e8\u05db\u05d1 \u05e6\u05d9 (\u05d0\u05dd \u05e4\u05e0\u05d9\u05de\u05d9)"
+    },
+    "fleet_vehicle_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05db\u05dc\u05d9 \u05e8\u05db\u05d1 \u05e6\u05d9"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05dc\u05d0"
+    },
+    "customer_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05e8\u05d0\u05e9\u05d9"
+    },
+    "customer_phone_2": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05de\u05e9\u05e0\u05d9"
+    },
+    "customer_id_number": {
+      "type": "string",
+      "description": "\u05ea\u05e2\u05d5\u05d3\u05ea \u05d6\u05d4\u05d5\u05ea"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc"
+    },
+    "customer_address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05de\u05d2\u05d5\u05e8\u05d9\u05dd"
+    },
+    "insurance_company": {
+      "type": "string",
+      "description": "\u05d7\u05d1\u05e8\u05ea \u05d1\u05d9\u05d8\u05d5\u05d7"
+    },
+    "insurance_agent": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05db\u05df \u05d1\u05d9\u05d8\u05d5\u05d7"
+    },
+    "membership_package": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05d7\u05d1\u05d9\u05dc\u05d4"
+    },
+    "membership_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05de\u05e0\u05d5\u05d9"
+    },
+    "coverage_details": {
+      "type": "string",
+      "description": "\u05e4\u05d9\u05e8\u05d5\u05d8 \u05db\u05d9\u05e1\u05d5\u05d9 \u05d1\u05d9\u05d8\u05d5\u05d7\u05d9"
+    },
+    "vehicle_plate": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e8\u05db\u05d1"
+    },
+    "vehicle_model": {
+      "type": "string",
+      "description": "\u05d3\u05d2\u05dd \u05de\u05dc\u05d0 \u05db\u05d5\u05dc\u05dc \u05e9\u05e0\u05d4"
+    },
+    "vehicle_year": {
+      "type": "number",
+      "description": "\u05e9\u05e0\u05ea \u05d9\u05d9\u05e6\u05d5\u05e8"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "private",
+        "commercial_light",
+        "truck",
+        "motorcycle"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e8\u05db\u05d1"
+    },
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "gasoline",
+        "diesel",
+        "hybrid",
+        "electric"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d3\u05dc\u05e7"
+    },
+    "vehicle_code": {
+      "type": "string",
+      "description": "\u05e7\u05d5\u05d3\u05df \u05dc\u05e8\u05db\u05d1 (\u05db\u05df/\u05dc\u05d0)"
+    },
+    "issue_type": {
+      "type": "string",
+      "enum": [
+        "mechanical",
+        "stopped_driving",
+        "flat_tire",
+        "stuck_wheel",
+        "accident",
+        "no_fuel",
+        "dead_battery",
+        "locked_keys",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05e7\u05dc\u05d4"
+    },
+    "issue_description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d7\u05d5\u05e4\u05e9\u05d9"
+    },
+    "issue_detail": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05ea\u05e7\u05dc\u05d4 \u05de\u05e4\u05d5\u05e8\u05d8 (\u05db\u05e4\u05d9 \u05e9\u05de\u05d5\u05e4\u05d9\u05e2 \u05d1\u05d3\u05d5\u05d7\u05d5\u05ea)"
+    },
+    "operation_instructions": {
+      "type": "string",
+      "description": "\u05d4\u05d5\u05e8\u05d0\u05d5\u05ea \u05ea\u05e4\u05e2\u05d5\u05dc \u05dc\u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "pickup_location_address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05de\u05d3\u05d5\u05d9\u05e7\u05ea \u05e9\u05dc \u05d4\u05e8\u05db\u05d1"
+    },
+    "pickup_location_city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8"
+    },
+    "pickup_location_area": {
+      "type": "string",
+      "enum": [
+        "center",
+        "sharon",
+        "north",
+        "south",
+        "jerusalem",
+        "lowlands",
+        "north_haifa",
+        "north_jezreel",
+        "north_galilee_west",
+        "north_galilee_upper",
+        "north_golan",
+        "territories",
+        "all_country",
+        "undefined"
+      ],
+      "description": "\u05d0\u05d6\u05d5\u05e8 \u05d2\u05e8\u05d9\u05e8\u05d4"
+    },
+    "pickup_location_lat": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05e8\u05d5\u05d7\u05d1"
+    },
+    "pickup_location_lon": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05d0\u05d5\u05e8\u05da"
+    },
+    "dropoff_location_address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05d9\u05e2\u05d3"
+    },
+    "dropoff_location_city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8 \u05d9\u05e2\u05d3"
+    },
+    "dropoff_location_area": {
+      "type": "string",
+      "enum": [
+        "center",
+        "sharon",
+        "north",
+        "south",
+        "jerusalem",
+        "lowlands",
+        "north_haifa",
+        "north_jezreel",
+        "north_galilee_west",
+        "north_galilee_upper",
+        "north_golan",
+        "territories",
+        "all_country",
+        "undefined"
+      ],
+      "description": "\u05d0\u05d6\u05d5\u05e8 \u05d9\u05e2\u05d3"
+    },
+    "dropoff_garage_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05d5\u05e1\u05da"
+    },
+    "dropoff_garage_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05de\u05d5\u05e1\u05da"
+    },
+    "storage_location_address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05d0\u05d7\u05e1\u05e0\u05d4"
+    },
+    "storage_location_city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8 \u05d0\u05d7\u05e1\u05e0\u05d4"
+    },
+    "storage_location_area": {
+      "type": "string",
+      "enum": [
+        "center",
+        "sharon",
+        "north",
+        "south",
+        "jerusalem",
+        "lowlands"
+      ],
+      "description": "\u05d0\u05d6\u05d5\u05e8 \u05d0\u05d7\u05e1\u05e0\u05d4"
+    },
+    "is_road_accessible": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d9\u05e9 \u05d2\u05d9\u05e9\u05d4 \u05dc\u05de\u05e9\u05d0\u05d9\u05ea \u05d2\u05e8\u05e8"
+    },
+    "is_underground_parking": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d7\u05e0\u05d9\u05d5\u05df \u05ea\u05ea \u05e7\u05e8\u05e7\u05e2\u05d9"
+    },
+    "is_gear_neutral": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d9\u05d3\u05d9\u05ea \u05d4\u05d4\u05d9\u05dc\u05d5\u05db\u05d9\u05dd \u05e2\u05dc N"
+    },
+    "is_steering_locked": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05d4\u05d2\u05d4 \u05e0\u05e2\u05d5\u05dc"
+    },
+    "is_handbrake_released": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05e9\u05d5\u05d7\u05e8\u05e8 \u05d1\u05dc\u05dd \u05d9\u05d3"
+    },
+    "is_toll_road": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05e2\u05dc \u05db\u05d1\u05d9\u05e9 \u05d0\u05d2\u05e8\u05d4"
+    },
+    "is_customer_with_vehicle": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05dc\u05e7\u05d5\u05d7 \u05dc\u05d9\u05d3 \u05d4\u05e8\u05db\u05d1"
+    },
+    "has_key": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d9\u05e9 \u05de\u05e4\u05ea\u05d7"
+    },
+    "key_location": {
+      "type": "string",
+      "description": "\u05de\u05d9\u05e7\u05d5\u05dd \u05de\u05e4\u05ea\u05d7"
+    },
+    "customer_response_code": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e7\u05d5\u05d3 \u05dc\u05d6\u05d9\u05d4\u05d5\u05d9"
+    },
+    "early_notification_minutes": {
+      "type": "number",
+      "default": 30,
+      "description": "\u05d4\u05d5\u05d3\u05e2\u05d4 \u05de\u05d5\u05e7\u05d3\u05de\u05ea - \u05d3\u05e7\u05d5\u05ea \u05dc\u05e4\u05e0\u05d9 \u05d4\u05d2\u05e2\u05d4"
+    },
+    "assigned_vendor_id": {
+      "type": "string",
+      "description": "\u05e1\u05e4\u05e7 \u05de\u05e9\u05d5\u05d1\u05e5"
+    },
+    "assigned_vendor_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05e4\u05e7 \u05de\u05e9\u05d5\u05d1\u05e5"
+    },
+    "assigned_vendor_area": {
+      "type": "string",
+      "description": "\u05d0\u05d6\u05d5\u05e8 \u05e0\u05d5\u05ea\u05df \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05de\u05ea\u05d9 \u05e9\u05d5\u05d1\u05e5"
+    },
+    "vendor_arrival_time_estimated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05d4\u05d2\u05e2\u05d4 \u05de\u05e9\u05d5\u05e2\u05e8"
+    },
+    "vendor_arrival_time_actual": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05d4\u05d2\u05e2\u05d4 \u05d1\u05e4\u05d5\u05e2\u05dc"
+    },
+    "service_end_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05e9\u05e2\u05ea \u05e1\u05d9\u05d5\u05dd \u05d8\u05d9\u05e4\u05d5\u05dc"
+    },
+    "estimated_distance_km": {
+      "type": "number",
+      "description": "\u05de\u05e8\u05d7\u05e7 \u05de\u05d5\u05e2\u05e8\u05da \u05d1\u05e7\u05d9\u05dc\u05d5\u05de\u05d8\u05e8\u05d9\u05dd"
+    },
+    "actual_distance_km": {
+      "type": "number",
+      "description": "\u05de\u05e8\u05d7\u05e7 \u05d1\u05e4\u05d5\u05e2\u05dc \u05d1\u05e7\u05d9\u05dc\u05d5\u05de\u05d8\u05e8\u05d9\u05dd"
+    },
+    "estimated_arrival_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05d4\u05d2\u05e2\u05d4 \u05de\u05e9\u05d5\u05e2\u05e8 \u05de\u05d7\u05e9\u05d5\u05d1"
+    },
+    "vendor_notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05de\u05d4\u05e1\u05e4\u05e7"
+    },
+    "operator_notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05de\u05d5\u05e7\u05d3\u05df"
+    },
+    "time_waiting": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05d4\u05de\u05ea\u05e0\u05d4 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "time_to_vendor_assignment": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05e2\u05d3 \u05e9\u05d9\u05d5\u05da \u05e1\u05e4\u05e7"
+    },
+    "time_to_completion": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05db\u05d5\u05dc\u05dc \u05de\u05e4\u05ea\u05d9\u05d7\u05d4 \u05dc\u05e1\u05d2\u05d9\u05e8\u05d4"
+    },
+    "sla_target": {
+      "type": "number",
+      "default": 30,
+      "description": "\u05d9\u05e2\u05d3 SLA \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "sla_status": {
+      "type": "string",
+      "enum": [
+        "on_track",
+        "near_breach",
+        "breached"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 SLA"
+    },
+    "payment_required": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05dc\u05e7\u05d5\u05d7 \u05de\u05e9\u05dc\u05dd"
+    },
+    "payment_reason": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05d1\u05ea \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "payment_amount_customer": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05de\u05d4\u05dc\u05e7\u05d5\u05d7"
+    },
+    "payment_type": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "cash",
+        "bank_transfer",
+        "none"
+      ],
+      "description": "\u05d0\u05de\u05e6\u05e2\u05d9 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "cost_to_vendor": {
+      "type": "number",
+      "description": "\u05e2\u05dc\u05d5\u05ea \u05dc\u05e1\u05e4\u05e7"
+    },
+    "total_cost": {
+      "type": "number",
+      "description": "\u05e2\u05dc\u05d5\u05ea \u05db\u05d5\u05dc\u05dc\u05ea \u05e9\u05dc \u05d4\u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "passed_quality_control": {
+      "type": "boolean",
+      "description": "\u05e2\u05d1\u05e8 \u05d1\u05e7\u05e8\u05ea \u05d0\u05d9\u05db\u05d5\u05ea"
+    },
+    "quality_controller_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d1\u05e7\u05e8"
+    },
+    "returned_to_agent": {
+      "type": "boolean",
+      "description": "\u05d7\u05d6\u05e8 \u05dc\u05de\u05d5\u05e7\u05d3\u05df"
+    },
+    "future_service_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e9\u05d9\u05e8\u05d5\u05ea \u05e2\u05ea\u05d9\u05d3\u05d9"
+    },
+    "future_service_time_range": {
+      "type": "string",
+      "description": "\u05d8\u05d5\u05d5\u05d7 \u05e9\u05e2\u05d5\u05ea \u05dc\u05e9\u05d9\u05e8\u05d5\u05ea \u05e2\u05ea\u05d9\u05d3\u05d9"
+    },
+    "storage_days": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d9\u05de\u05d9 \u05d0\u05d7\u05e1\u05e0\u05d4"
+    },
+    "closed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e1\u05d2\u05d9\u05e8\u05d4"
+    },
+    "closed_by": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05d5\u05d2\u05e8 \u05d4\u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "customer_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05e9\u05d1\u05d9\u05e2\u05d5\u05ea \u05e8\u05e6\u05d5\u05df"
+    },
+    "customer_feedback": {
+      "type": "string",
+      "description": "\u05de\u05e9\u05d5\u05d1 \u05d7\u05d5\u05e4\u05e9\u05d9"
+    },
+    "summary_draft": {
+      "type": "string",
+      "description": "\u05d8\u05d9\u05d5\u05d8\u05ea \u05e1\u05d9\u05db\u05d5\u05dd \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "summary_final": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05db\u05d5\u05dd \u05e7\u05e8\u05d9\u05d0\u05d4 \u05e1\u05d5\u05e4\u05d9"
+    },
+    "questionnaire_answers": {
+      "type": "object",
+      "description": "\u05ea\u05e9\u05d5\u05d1\u05d5\u05ea \u05e9\u05d0\u05dc\u05d5\u05df \u05d8\u05db\u05e0\u05d9 \u05de\u05d4\u05d1\u05d5\u05d8"
+    },
+    "day_of_week": {
+      "type": "string",
+      "description": "\u05d9\u05d5\u05dd \u05d1\u05e9\u05d1\u05d5\u05e2 \u05e9\u05dc \u05d4\u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "hour_of_day": {
+      "type": "number",
+      "description": "\u05e9\u05e2\u05d4 \u05d1\u05d9\u05d5\u05dd (0-23)"
+    }
+  },
+  "required": [
+    "customer_name",
+    "customer_phone",
+    "pickup_location_address"
+  ]
+}

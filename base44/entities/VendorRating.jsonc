@@ -1,0 +1,70 @@
+{
+  "name": "VendorRating",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05e4\u05e7"
+    },
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "call_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "rating_source": {
+      "type": "string",
+      "enum": [
+        "customer",
+        "operator",
+        "system",
+        "manager"
+      ],
+      "description": "\u05de\u05e7\u05d5\u05e8 \u05d3\u05d9\u05e8\u05d5\u05d2"
+    },
+    "overall_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05db\u05dc\u05dc\u05d9 1-5"
+    },
+    "response_time_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05d6\u05de\u05df \u05ea\u05d2\u05d5\u05d1\u05d4 1-5"
+    },
+    "service_quality_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05d0\u05d9\u05db\u05d5\u05ea \u05e9\u05d9\u05e8\u05d5\u05ea 1-5"
+    },
+    "professionalism_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05de\u05e7\u05e6\u05d5\u05e2\u05d9\u05d5\u05ea 1-5"
+    },
+    "communication_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05ea\u05e7\u05e9\u05d5\u05e8\u05ea 1-5"
+    },
+    "feedback": {
+      "type": "string",
+      "description": "\u05de\u05e9\u05d5\u05d1 \u05d8\u05e7\u05e1\u05d8\u05d5\u05d0\u05dc\u05d9"
+    },
+    "completed_on_time": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05d5\u05e9\u05dc\u05dd \u05d1\u05d6\u05de\u05df"
+    },
+    "would_recommend": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05de\u05de\u05dc\u05d9\u05e5"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "call_id",
+    "overall_rating",
+    "rating_source"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "name": "SubscriptionCollective",
+  "type": "object",
+  "properties": {
+    "mysql_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 MySQL \u05de\u05e7\u05d5\u05e8\u05d9"
+    },
+    "collective_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e7\u05d5\u05dc\u05e7\u05d8\u05d9\u05d1"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05d5\u05db\u05df"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8"
+    },
+    "paid": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05e9\u05e9\u05d5\u05dc\u05dd"
+    },
+    "pay_method": {
+      "type": "string",
+      "description": "\u05d0\u05de\u05e6\u05e2\u05d9 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "paid_status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "pending",
+        "unpaid"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "cancelled"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1"
+    }
+  },
+  "required": [
+    "collective_name"
+  ]
+}

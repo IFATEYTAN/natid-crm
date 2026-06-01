@@ -1,0 +1,78 @@
+{
+  "name": "CallDistance",
+  "type": "object",
+  "properties": {
+    "appeal_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4 (MySQL)"
+    },
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4 \u05d1-Base44"
+    },
+    "supplier_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7 (MySQL)"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7 \u05d1-Base44"
+    },
+    "rate_plan": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05db\u05e0\u05d9\u05ea \u05ea\u05e2\u05e8\u05d9\u05e3"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "\u05de\u05e8\u05d7\u05e7 \u05d1\u05e7\u05d9\u05dc\u05d5\u05de\u05d8\u05e8\u05d9\u05dd"
+    },
+    "is_accurate_distance": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05de\u05e8\u05d7\u05e7 \u05de\u05d3\u05d5\u05d9\u05e7"
+    },
+    "extra_pay": {
+      "type": "number",
+      "description": "\u05ea\u05e9\u05dc\u05d5\u05dd \u05e0\u05d5\u05e1\u05e3"
+    },
+    "extra_explain": {
+      "type": "string",
+      "description": "\u05d4\u05e1\u05d1\u05e8 \u05ea\u05e9\u05dc\u05d5\u05dd \u05e0\u05d5\u05e1\u05e3"
+    },
+    "extra_confirm": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05e9\u05d5\u05e8 \u05ea\u05e9\u05dc\u05d5\u05dd \u05e0\u05d5\u05e1\u05e3"
+    },
+    "extra_cost": {
+      "type": "number",
+      "description": "\u05e2\u05dc\u05d5\u05d9\u05d5\u05ea \u05e0\u05d5\u05e1\u05e4\u05d5\u05ea \u05de\u05d9\u05d5\u05d7\u05d3\u05d5\u05ea"
+    },
+    "futile_amount": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05e1\u05e8\u05e7"
+    },
+    "futile_confirm": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05e9\u05d5\u05e8 \u05e1\u05e8\u05e7"
+    },
+    "client_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05dc\u05dc\u05e7\u05d5\u05d7"
+    },
+    "sum_before_tax": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05dc\u05e4\u05e0\u05d9 \u05de\u05e2\"\u05de"
+    },
+    "sum_inc_tax": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05db\u05d5\u05dc\u05dc \u05de\u05e2\"\u05de"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05de\u05e9\u05ea\u05de\u05e9 \u05e9\u05d4\u05d6\u05d9\u05df"
+    }
+  },
+  "required": [
+    "appeal_id",
+    "distance_km"
+  ]
+}

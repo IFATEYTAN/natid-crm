@@ -1,0 +1,438 @@
+{
+  "name": "Case",
+  "type": "object",
+  "properties": {
+    "case_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e7\u05e8\u05d9\u05d0\u05d4"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05dc\u05e7\u05d5\u05d7"
+    },
+    "caller_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05de\u05ea\u05e7\u05e9\u05e8"
+    },
+    "caller_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05d4\u05de\u05ea\u05e7\u05e9\u05e8"
+    },
+    "vehicle_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e8\u05db\u05d1"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "car",
+        "motorcycle",
+        "truck",
+        "bus",
+        "van",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e8\u05db\u05d1"
+    },
+    "vehicle_model": {
+      "type": "string",
+      "description": "\u05d3\u05d2\u05dd \u05e8\u05db\u05d1"
+    },
+    "vehicle_year": {
+      "type": "number",
+      "description": "\u05e9\u05e0\u05ea \u05d9\u05d9\u05e6\u05d5\u05e8"
+    },
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "gasoline",
+        "diesel",
+        "electric",
+        "hybrid",
+        "gas"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d3\u05dc\u05e7"
+    },
+    "vehicle_model_code": {
+      "type": "string",
+      "description": "\u05e7\u05d5\u05d3 \u05d3\u05d2\u05dd"
+    },
+    "coverage_details": {
+      "type": "string",
+      "description": "\u05e4\u05d9\u05e8\u05d5\u05d8 \u05db\u05d9\u05e1\u05d5\u05d9"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "towing",
+        "flat_tire",
+        "battery",
+        "lockout",
+        "fuel",
+        "accident",
+        "mechanical",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e9\u05d9\u05e8\u05d5\u05ea"
+    },
+    "location_address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05de\u05d9\u05e7\u05d5\u05dd"
+    },
+    "location_city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8"
+    },
+    "location_lat": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05e8\u05d5\u05d7\u05d1"
+    },
+    "location_lng": {
+      "type": "number",
+      "description": "\u05e7\u05d5 \u05d0\u05d5\u05e8\u05da"
+    },
+    "destination_address": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea \u05d9\u05e2\u05d3"
+    },
+    "destination_city": {
+      "type": "string",
+      "description": "\u05e2\u05d9\u05e8 \u05d9\u05e2\u05d3"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "assigned",
+        "en_route",
+        "on_site",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "new",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal",
+      "description": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea"
+    },
+    "assigned_provider_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e0\u05d5\u05ea\u05df \u05e9\u05d9\u05e8\u05d5\u05ea"
+    },
+    "assigned_provider_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e0\u05d5\u05ea\u05df \u05e9\u05d9\u05e8\u05d5\u05ea"
+    },
+    "sla_response_deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d3\u05d3\u05dc\u05d9\u05d9\u05df \u05ea\u05d2\u05d5\u05d1\u05d4 SLA"
+    },
+    "sla_arrival_deadline": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d3\u05d3\u05dc\u05d9\u05d9\u05df \u05d4\u05d2\u05e2\u05d4 SLA"
+    },
+    "sla_response_met": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05e2\u05de\u05d3 \u05d1-SLA \u05ea\u05d2\u05d5\u05d1\u05d4"
+    },
+    "sla_arrival_met": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05e2\u05de\u05d3 \u05d1-SLA \u05d4\u05d2\u05e2\u05d4"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05e9\u05d9\u05d1\u05d5\u05e5"
+    },
+    "arrived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05d4\u05d2\u05e2\u05d4"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05e1\u05d9\u05d5\u05dd"
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "\u05de\u05e8\u05d7\u05e7 \u05d1\u05e7\"\u05de"
+    },
+    "price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8"
+    },
+    "cost": {
+      "type": "number",
+      "description": "\u05e2\u05dc\u05d5\u05ea \u05dc\u05e1\u05e4\u05e7"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "invoiced",
+        "paid",
+        "disputed"
+      ],
+      "default": "pending",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "problem_description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05ea\u05e7\u05dc\u05d4"
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05d8\u05d9\u05e4\u05d5\u05dc"
+    },
+    "internal_notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05e4\u05e0\u05d9\u05de\u05d9\u05d5\u05ea"
+    },
+    "customer_rating": {
+      "type": "number",
+      "description": "\u05d3\u05d9\u05e8\u05d5\u05d2 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05ea\u05de\u05d5\u05e0\u05d5\u05ea"
+    },
+    "insurance_company": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05db\u05df \u05d1\u05d9\u05d8\u05d5\u05d7/\u05d7\u05d1\u05e8\u05ea \u05d1\u05d9\u05d8\u05d5\u05d7"
+    },
+    "package_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d7\u05d1\u05d9\u05dc\u05d4"
+    },
+    "department": {
+      "type": "string",
+      "enum": [
+        "\u05d2\u05e8\u05d9\u05e8\u05d4",
+        "\u05e0\u05d9\u05d9\u05d3 \u05e9\u05d9\u05e8\u05d5\u05ea",
+        "\u05e9\u05de\u05e9\u05d5\u05ea",
+        "\u05e8\u05db\u05d1 \u05d7\u05dc\u05d9\u05e4\u05d9",
+        "\u05e8\u05d3\u05d9\u05d5 \u05d3\u05d9\u05e1\u05e7",
+        "\u05d0\u05d7\u05e8"
+      ],
+      "description": "\u05de\u05d7\u05dc\u05e7\u05d4"
+    },
+    "towing_area": {
+      "type": "string",
+      "description": "\u05d0\u05d6\u05d5\u05e8 \u05d2\u05e8\u05d9\u05e8\u05d4"
+    },
+    "dispatcher_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05de\u05d5\u05e7\u05d3\u05df"
+    },
+    "inspector_name": {
+      "type": "string",
+      "description": "\u05d1\u05e7\u05e8"
+    },
+    "source_status": {
+      "type": "string",
+      "enum": [
+        "closed",
+        "open"
+      ],
+      "description": "\u05de\u05e7\u05d5\u05e8"
+    },
+    "passed_qa": {
+      "type": "boolean",
+      "description": "\u05e2\u05d1\u05e8 \u05d1\u05e7\u05e8\u05d4"
+    },
+    "returned_to_agent": {
+      "type": "boolean",
+      "description": "\u05d7\u05d6\u05e8 \u05dc\u05e0\u05e6\u05d9\u05d2"
+    },
+    "opening_source": {
+      "type": "string",
+      "enum": [
+        "bot",
+        "call_center",
+        "app",
+        "other"
+      ],
+      "description": "\u05de\u05e7\u05d5\u05e8 \u05e4\u05ea\u05d9\u05d7\u05d4"
+    },
+    "is_vip": {
+      "type": "boolean",
+      "description": "VIP"
+    },
+    "is_special_customer": {
+      "type": "boolean",
+      "description": "\u05dc\u05e7\u05d5\u05d7 \u05de\u05d9\u05d5\u05d7\u05d3"
+    },
+    "early_alert_sent": {
+      "type": "boolean",
+      "description": "\u05d4\u05ea\u05e8\u05d0\u05d4 \u05de\u05d5\u05e7\u05d3\u05de\u05ea \u05dc\u05dc\u05e7\u05d5\u05d7"
+    },
+    "remaining_days": {
+      "type": "number",
+      "description": "\u05d9\u05de\u05d9\u05dd \u05e9\u05e0\u05d5\u05ea\u05e8\u05d5"
+    },
+    "cost_per_km": {
+      "type": "number",
+      "description": "\u05e2\u05dc\u05d5\u05ea \u05de\u05de\u05d5\u05e6\u05e2\u05ea \u05dc\u05e7\"\u05de"
+    },
+    "vendor_arrival_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05e0\u05d5\u05ea\u05df \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea"
+    },
+    "case_reference_code": {
+      "type": "string",
+      "description": "\u05e7\u05d5\u05d3 \u05e4\u05e0\u05d9\u05d4"
+    },
+    "changes_log": {
+      "type": "string",
+      "description": "\u05e9\u05d9\u05e0\u05d5\u05d9\u05d9\u05dd"
+    },
+    "waiting_time_minutes": {
+      "type": "number",
+      "description": "\u05d6\u05de\u05df \u05d4\u05de\u05ea\u05e0\u05d4 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "future_service_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05e9\u05d9\u05e8\u05d5\u05ea \u05e2\u05ea\u05d9\u05d3\u05d9"
+    },
+    "is_in_parking": {
+      "type": "boolean",
+      "description": "\u05e8\u05db\u05d1 \u05d1\u05d7\u05e0\u05d9\u05d5\u05df?"
+    },
+    "is_at_garage": {
+      "type": "boolean",
+      "description": "\u05e8\u05db\u05d1 \u05d1\u05de\u05d5\u05e1\u05da?"
+    },
+    "was_towed_before": {
+      "type": "boolean",
+      "description": "\u05e0\u05d2\u05e8\u05e8 \u05d1\u05e2\u05d1\u05e8?"
+    },
+    "is_toll_road": {
+      "type": "boolean",
+      "description": "\u05db\u05d1\u05d9\u05e9 \u05d0\u05d2\u05e8\u05d4?"
+    },
+    "is_dirt_road": {
+      "type": "boolean",
+      "description": "\u05db\u05d1\u05d9\u05e9 \u05e2\u05e4\u05e8?"
+    },
+    "questionnaire_engine_starts": {
+      "type": "boolean",
+      "description": "\u05e8\u05db\u05d1 \u05de\u05e0\u05d9\u05e2?"
+    },
+    "questionnaire_starter_sound": {
+      "type": "boolean",
+      "description": "\u05e6\u05dc\u05d9\u05dc \u05e1\u05d8\u05e8\u05d8\u05e8?"
+    },
+    "questionnaire_automatic_neutral": {
+      "type": "boolean",
+      "description": "\u05d0\u05d5\u05d8\u05d5\u05de\u05d8 \u05e0\u05d9\u05d5\u05d8\u05e8\u05dc?"
+    },
+    "questionnaire_steering_free": {
+      "type": "boolean",
+      "description": "\u05d4\u05d2\u05d4 \u05de\u05e9\u05d5\u05d7\u05e8\u05e8?"
+    },
+    "questionnaire_handbrake_electric": {
+      "type": "boolean",
+      "description": "\u05e0\u05d3\u05d1\u05e8\u05d9\u05e7\u05e1 \u05d7\u05e9\u05de\u05dc\u05d9?"
+    },
+    "questionnaire_gearbox_ok": {
+      "type": "boolean",
+      "description": "\u05d4\u05d9\u05dc\u05d5\u05db\u05d9\u05dd \u05d5\u05e0\u05d3\u05d1\u05e8\u05d9\u05e7\u05e1 \u05de\u05e9\u05d5\u05d7\u05e8\u05e8\u05d9\u05dd?"
+    },
+    "questionnaire_truck_access": {
+      "type": "boolean",
+      "description": "\u05d2\u05d9\u05e9\u05d4 \u05dc\u05de\u05e9\u05d0\u05d9\u05ea \u05d2\u05e8\u05e8?"
+    },
+    "deposit_type": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05d2 \u05e2\u05e8\u05d1\u05d5\u05df"
+    },
+    "deposit_amount": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05e2\u05e8\u05d1\u05d5\u05df"
+    },
+    "deposit_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e2\u05e8\u05d1\u05d5\u05df"
+    },
+    "deposit_reason": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05d1\u05ea \u05e2\u05e8\u05d1\u05d5\u05df"
+    },
+    "deposit_agent": {
+      "type": "string",
+      "description": "\u05e0\u05e6\u05d9\u05d2 \u05e2\u05e8\u05d1\u05d5\u05df"
+    },
+    "deposit_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "collected",
+        "returned",
+        "cancelled"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05e2\u05e8\u05d1\u05d5\u05df"
+    },
+    "payment_type": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "payment_amount": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "payment_total": {
+      "type": "number",
+      "description": "\u05e1\u05d4\"\u05db"
+    },
+    "payment_installments": {
+      "type": "number",
+      "description": "\u05ea\u05e9\u05dc\u05d5\u05de\u05d9\u05dd"
+    },
+    "payment_delivered_to": {
+      "type": "string",
+      "description": "\u05e0\u05de\u05e1\u05e8 \u05dc"
+    },
+    "payment_agent": {
+      "type": "string",
+      "description": "\u05e0\u05e6\u05d9\u05d2"
+    },
+    "payment_paid_for": {
+      "type": "string",
+      "description": "\u05e9\u05d5\u05dc\u05dd \u05e2\u05d1\u05d5\u05e8"
+    },
+    "early_alert_minutes": {
+      "type": "number",
+      "description": "\u05d3\u05e7\u05d5\u05ea \u05dc\u05d4\u05d5\u05d3\u05e2\u05d4 \u05de\u05d5\u05e7\u05d3\u05de\u05ea"
+    }
+  },
+  "required": [
+    "service_type"
+  ]
+}

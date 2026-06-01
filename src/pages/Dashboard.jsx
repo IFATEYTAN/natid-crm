@@ -103,13 +103,15 @@ export default function Dashboard() {
   // Read from Call entity (real data)
   const { data: cases = [], isLoading: casesLoading } = useQuery({
     queryKey: ['dashboard-cases'],
-    queryFn: () => base44.entities.Call.list('-created_date', 10000),
+    queryFn: () => base44.entities.Call.list('-created_date', 1000),
+    staleTime: 5 * 60 * 1000,
   });
 
   // Read from Vendor entity (real data)
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['dashboard-vendors'],
     queryFn: () => base44.entities.Vendor.list('-updated_date', 500),
+    staleTime: 5 * 60 * 1000,
   });
 
   const isLoading = casesLoading || vendorsLoading;

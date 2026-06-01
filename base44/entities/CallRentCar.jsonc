@@ -1,0 +1,85 @@
+{
+  "name": "CallRentCar",
+  "type": "object",
+  "properties": {
+    "appeal_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4 (MySQL)"
+    },
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4 \u05d1-Base44"
+    },
+    "supplier_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05e4\u05e7 \u05e8\u05db\u05d1 \u05d7\u05dc\u05d9\u05e4\u05d9"
+    },
+    "order_num": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d4\u05d6\u05de\u05e0\u05d4"
+    },
+    "car_rent_num": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e8\u05db\u05d1 \u05e9\u05db\u05d5\u05e8"
+    },
+    "delivery_type": {
+      "type": "string",
+      "enum": [
+        "client_comes",
+        "paid_transport",
+        "free_transport"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05de\u05e1\u05d9\u05e8\u05d4 (\u05dc\u05e7\u05d5\u05d7 \u05de\u05d2\u05d9\u05e2/\u05e9\u05d9\u05e0\u05d5\u05e2 \u05d1\u05ea\u05e9\u05dc\u05d5\u05dd/\u05dc\u05dc\u05d0 \u05d7\u05d9\u05d5\u05d1)"
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": [
+        "theft",
+        "accident",
+        "total_loss"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05ea\u05d1\u05d9\u05e2\u05d4 (\u05d2\u05e0\u05d9\u05d1\u05d4/\u05ea\u05d0\u05d5\u05e0\u05d4/\u05d8\u05d5\u05d8\u05d0\u05dc\u05d5\u05e1)"
+    },
+    "send_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e9\u05dc\u05d9\u05d7\u05d4"
+    },
+    "return_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05d7\u05d6\u05e8\u05d4"
+    },
+    "branch": {
+      "type": "string",
+      "description": "\u05e1\u05e0\u05d9\u05e3"
+    },
+    "engine_type": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05d2 \u05de\u05e0\u05d5\u05e2"
+    },
+    "client_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05dc\u05dc\u05e7\u05d5\u05d7"
+    },
+    "sum_before_tax": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05dc\u05e4\u05e0\u05d9 \u05de\u05e2\"\u05de"
+    },
+    "sum_inc_tax": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05db\u05d5\u05dc\u05dc \u05de\u05e2\"\u05de"
+    },
+    "extra_pay": {
+      "type": "number",
+      "description": "\u05ea\u05e9\u05dc\u05d5\u05dd \u05e0\u05d5\u05e1\u05e3"
+    },
+    "extra_explain": {
+      "type": "string",
+      "description": "\u05d4\u05e1\u05d1\u05e8 \u05ea\u05e9\u05dc\u05d5\u05dd \u05e0\u05d5\u05e1\u05e3"
+    }
+  },
+  "required": [
+    "appeal_id"
+  ]
+}

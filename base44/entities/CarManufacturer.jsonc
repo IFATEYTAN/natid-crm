@@ -1,0 +1,17 @@
+{
+  "name": "CarManufacturer",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "number",
+      "description": "\u05e7\u05d5\u05d3 \u05d9\u05e6\u05e8\u05df"
+    },
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d9\u05e6\u05e8\u05df"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

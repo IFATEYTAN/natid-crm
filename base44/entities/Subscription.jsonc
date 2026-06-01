@@ -1,0 +1,190 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "mysql_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 MySQL \u05de\u05e7\u05d5\u05e8\u05d9"
+    },
+    "collective_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05d5\u05dc\u05e7\u05d8\u05d9\u05d1"
+    },
+    "sub_num": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05de\u05e0\u05d5\u05d9"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05dc\u05e7\u05d5\u05d7"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05dc\u05e7\u05d5\u05d7"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05d5\u05db\u05df"
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e1\u05d5\u05db\u05df"
+    },
+    "parent_agent_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05d5\u05db\u05df \u05d0\u05d1"
+    },
+    "package_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d7\u05d1\u05d9\u05dc\u05d4"
+    },
+    "package_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d7\u05d1\u05d9\u05dc\u05d4"
+    },
+    "package_version": {
+      "type": "number",
+      "description": "\u05d2\u05e8\u05e1\u05ea \u05d7\u05d1\u05d9\u05dc\u05d4"
+    },
+    "car_code": {
+      "type": "number",
+      "description": "\u05e7\u05d5\u05d3 \u05e8\u05db\u05d1"
+    },
+    "car_type": {
+      "type": "string",
+      "enum": [
+        "private",
+        "commercial_light",
+        "truck",
+        "motorcycle",
+        "bus",
+        "other"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05e8\u05db\u05d1"
+    },
+    "car_number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e8\u05db\u05d1"
+    },
+    "car_year": {
+      "type": "number",
+      "description": "\u05e9\u05e0\u05ea \u05d9\u05d9\u05e6\u05d5\u05e8"
+    },
+    "insurance_type": {
+      "type": "string",
+      "enum": [
+        "hova",
+        "makif",
+        "tsad_g",
+        "none"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d1\u05d9\u05d8\u05d5\u05d7 (\u05d7\u05d5\u05d1\u05d4/\u05de\u05e7\u05d9\u05e3/\u05e6\u05d3 \u05d2/\u05d0\u05d9\u05df)"
+    },
+    "insurance_company_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d7\u05d1\u05e8\u05ea \u05d1\u05d9\u05d8\u05d5\u05d7"
+    },
+    "region_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d0\u05d6\u05d5\u05e8"
+    },
+    "extras": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05e1\u05e4\u05d5\u05ea"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05ea\u05d7\u05dc\u05d4"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e1\u05d9\u05d5\u05dd"
+    },
+    "price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8"
+    },
+    "paid": {
+      "type": "number",
+      "description": "\u05e9\u05d5\u05dc\u05dd"
+    },
+    "ref_price": {
+      "type": "number",
+      "description": "\u05de\u05d7\u05d9\u05e8 \u05d9\u05d9\u05d7\u05d5\u05e1"
+    },
+    "pay_method": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "bank_transfer",
+        "cash",
+        "check",
+        "standing_order"
+      ],
+      "description": "\u05d0\u05de\u05e6\u05e2\u05d9 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "sub_type": {
+      "type": "string",
+      "enum": [
+        "private",
+        "business",
+        "no_status"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05de\u05e0\u05d5\u05d9 (\u05e4\u05e8\u05d8\u05d9/\u05e2\u05e1\u05e7\u05d9)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "frozen",
+        "cancelled",
+        "other",
+        "archive",
+        "cancel_request_revoked"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05de\u05e0\u05d5\u05d9"
+    },
+    "status_explain": {
+      "type": "string",
+      "description": "\u05d4\u05e1\u05d1\u05e8 \u05e1\u05d8\u05d8\u05d5\u05e1"
+    },
+    "paid_status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "pending",
+        "unpaid"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "new",
+        "car_change_no_charge",
+        "car_change_with_charge",
+        "package_change",
+        "other",
+        "cancel_request",
+        "cancel",
+        "freeze",
+        "period_change",
+        "details_update"
+      ],
+      "description": "\u05e4\u05e2\u05d5\u05dc\u05d4 \u05d0\u05d7\u05e8\u05d5\u05e0\u05d4"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "is_imported": {
+      "type": "boolean",
+      "description": "\u05d4\u05d0\u05dd \u05e0\u05e7\u05dc\u05d8 \u05de\u05e7\u05d5\u05d1\u05e5"
+    }
+  },
+  "required": [
+    "sub_num"
+  ]
+}

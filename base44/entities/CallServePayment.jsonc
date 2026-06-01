@@ -1,0 +1,140 @@
+{
+  "name": "CallServePayment",
+  "type": "object",
+  "properties": {
+    "mysql_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 MySQL \u05de\u05e7\u05d5\u05e8\u05d9"
+    },
+    "appeal_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4 (MySQL)"
+    },
+    "call_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e7\u05e8\u05d9\u05d0\u05d4 \u05d1-Base44"
+    },
+    "pay_method": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "check",
+        "credit_card",
+        "bank_transfer",
+        "standing_order"
+      ],
+      "description": "\u05d0\u05de\u05e6\u05e2\u05d9 \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "is_collateral": {
+      "type": "boolean",
+      "description": "\u05e2\u05e8\u05d1\u05d5\u05df"
+    },
+    "bank": {
+      "type": "string",
+      "description": "\u05d1\u05e0\u05e7"
+    },
+    "branch": {
+      "type": "string",
+      "description": "\u05e1\u05e0\u05d9\u05e3"
+    },
+    "number": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05db\u05e8\u05d8\u05d9\u05e1/\u05e9\u05d9\u05e7"
+    },
+    "card_expire_date": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05e7\u05e3 \u05db\u05e8\u05d8\u05d9\u05e1"
+    },
+    "num_of_payments": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05ea\u05e9\u05dc\u05d5\u05de\u05d9\u05dd"
+    },
+    "card_owner_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d1\u05e2\u05dc \u05db\u05e8\u05d8\u05d9\u05e1"
+    },
+    "card_owner_id": {
+      "type": "string",
+      "description": "\u05ea.\u05d6. \u05d1\u05e2\u05dc \u05db\u05e8\u05d8\u05d9\u05e1"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05e9\u05dc\u05d5\u05dd"
+    },
+    "approval_code": {
+      "type": "string",
+      "description": "\u05e7\u05d5\u05d3 \u05d0\u05d9\u05e9\u05d5\u05e8"
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e2\u05e1\u05e7\u05d4"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "cancelled",
+        "pending"
+      ],
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 (\u05e9\u05d5\u05dc\u05dd/\u05d1\u05d5\u05d8\u05dc/\u05dc\u05ea\u05e9\u05dc\u05d5\u05dd)"
+    },
+    "sum": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd"
+    },
+    "reason_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05e1\u05d9\u05d1\u05d4"
+    },
+    "desc_reason": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05e1\u05d9\u05d1\u05d4"
+    },
+    "delivered_to": {
+      "type": "string",
+      "enum": [
+        "contractor",
+        "company"
+      ],
+      "description": "\u05e0\u05de\u05e1\u05e8 \u05dc"
+    },
+    "purpose": {
+      "type": "string",
+      "description": "\u05de\u05d8\u05e8\u05d4"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05de\u05e9\u05ea\u05de\u05e9 \u05e9\u05d4\u05d6\u05d9\u05df"
+    },
+    "approve_user_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05de\u05d0\u05e9\u05e8"
+    },
+    "date_paid": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05e9\u05dc\u05d5\u05dd \u05d1\u05e4\u05d5\u05e2\u05dc"
+    },
+    "client_email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc \u05dc\u05e7\u05d5\u05d7"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05dc\u05e7\u05d5\u05d7"
+    },
+    "insurance_firm_id": {
+      "type": "number",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d7\u05d1\u05e8\u05ea \u05d1\u05d9\u05d8\u05d5\u05d7"
+    }
+  },
+  "required": [
+    "appeal_id",
+    "sum"
+  ]
+}

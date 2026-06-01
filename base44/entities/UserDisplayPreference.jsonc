@@ -1,0 +1,47 @@
+{
+  "name": "UserDisplayPreference",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user"
+    },
+    "page_name": {
+      "type": "string",
+      "description": "Target page name for these preferences"
+    },
+    "cards": {
+      "type": "array",
+      "description": "Cards configuration for the page",
+      "items": {
+        "type": "object",
+        "properties": {
+          "card_key": {
+            "type": "string",
+            "description": "Unique key of the card (e.g., onlyBot, onlyManual, both, none)"
+          },
+          "label": {
+            "type": "string",
+            "description": "Display label for the card"
+          },
+          "visible": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the card is visible"
+          },
+          "order": {
+            "type": "number",
+            "description": "Order index (ascending)"
+          }
+        },
+        "required": [
+          "card_key"
+        ]
+      }
+    }
+  },
+  "required": [
+    "user_id",
+    "page_name"
+  ]
+}
