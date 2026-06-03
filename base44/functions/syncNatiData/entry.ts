@@ -23,8 +23,10 @@ function getDbConfig() {
 async function getConnection() {
   const config = getDbConfig();
   if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
-  try { return await mysql.createConnection(config); }
-  catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
+  // Single connection attempt only. The previous SSL->no-SSL fallback doubled the
+  // failed-connection count on the Nati MySQL server, which trips max_connect_errors
+  // and gets our IP blocked ("Host is blocked because of many connection errors").
+  return await mysql.createConnection(config);
 }
 
 // ========== RATE LIMIT HELPERS ==========

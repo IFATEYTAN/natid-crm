@@ -21,8 +21,9 @@ function getDbConfig() {
 async function getConnection() {
   const config = getDbConfig();
   if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
-  try { return await mysql.createConnection(config); }
-  catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
+  // Single connection attempt only (no SSL fallback) to avoid doubling failed
+  // connection counts on Nati MySQL, which causes IP blocking.
+  return await mysql.createConnection(config);
 }
 
 // Department ID → name

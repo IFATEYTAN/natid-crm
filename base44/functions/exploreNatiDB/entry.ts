@@ -45,27 +45,22 @@ Deno.serve(async (req) => {
     const dbConfig = getDbConfig();
     console.log(`[DB] Connecting to ${dbConfig.host}:${dbConfig.port} as ${dbConfig.user}, db=${dbConfig.database || 'none'}`);
 
+    // Single connection attempt only (no SSL fallback). Each failed attempt
+    // increments Nati MySQL's connection-error counter and contributes to the
+    // "Host is blocked because of many connection errors" issue.
     let connection;
     try {
       connection = await mysql.createConnection(dbConfig);
-      console.log('[DB] Connected successfully with SSL');
+      console.log('[DB] Connected successfully');
     } catch (e) {
-      console.error('[DB] SSL connection failed:', e.message);
-      // Try without SSL
-      try {
-        const { ssl, ...configNoSsl } = dbConfig;
-        connection = await mysql.createConnection(configNoSsl);
-        console.log('[DB] Connected without SSL');
-      } catch (e2) {
-        return Response.json({ 
-          error: 'Failed to connect to database',
-          details: e2.message,
-          ssl_error: e.message,
-          host: dbConfig.host,
-          port: dbConfig.port,
-          database: dbConfig.database,
-        }, { status: 502 });
-      }
+      console.error('[DB] connection failed:', e.message);
+      return Response.json({
+        error: 'Failed to connect to database',
+        details: e.message,
+        host: dbConfig.host,
+        port: dbConfig.port,
+        database: dbConfig.database,
+      }, { status: 502 });
     }
 
     try {
