@@ -1,0 +1,117 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Nightly full-E2E run at 03:00 UTC (~06:00 Asia/Jerusalem) on main
+    - cron: '0 3 * * *'
+  workflow_dispatch: # manual trigger
+
+# Avoid two PRs from the same branch racing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ─── Always runs: fast feedback on every PR & push ────────────────────────
+  quick-tests:
+    name: Lint + Unit + Structural E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests (Vitest)
+        run: npm test
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Structural E2E (no auth, against local Vite)
+        # Auth-gated tests skip automatically when E2E_ADMIN_EMAIL is unset
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-quick
+          path: playwright-report/
+          retention-days: 7
+
+  # ─── Conditional: full E2E against Base44 with real auth ──────────────────
+  # Runs on main pushes, nightly, or manual dispatch — and only if secrets exist.
+  full-e2e:
+    name: Full E2E (Base44 + auth)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: quick-tests
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Check required secrets are configured
+        id: check_secrets
+        env:
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: |
+          if [ -z "$E2E_BASE_URL" ] || [ -z "$E2E_ADMIN_EMAIL" ] || [ -z "$E2E_ADMIN_PASSWORD" ]; then
+            echo "::warning::Skipping full E2E — required secrets are not set. See docs/E2E_SETUP.md."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Full E2E (Base44 + auth)
+        if: steps.check_secrets.outputs.skip != 'true'
+        env:
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+          E2E_OPERATOR_EMAIL: ${{ secrets.E2E_OPERATOR_EMAIL }}
+          E2E_OPERATOR_PASSWORD: ${{ secrets.E2E_OPERATOR_PASSWORD }}
+          E2E_VENDOR_EMAIL: ${{ secrets.E2E_VENDOR_EMAIL }}
+          E2E_VENDOR_PASSWORD: ${{ secrets.E2E_VENDOR_PASSWORD }}
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: always() && steps.check_secrets.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-full
+          path: playwright-report/
+          retention-days: 14

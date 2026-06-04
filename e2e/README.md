@@ -2,6 +2,10 @@
 
 End-to-end tests that drive a real browser through the NatID CRM UI.
 
+**→ Setup the CI pipeline first?** Read [`docs/E2E_SETUP.md`](../docs/E2E_SETUP.md) — explains creating test users, configuring GitHub Secrets, and how the two-job CI works (`quick-tests` on every PR, `full-e2e` on main + nightly).
+
+**→ See what's automated vs manual?** Status table at the top of [`docs/E2E_TEST_CHECKLIST.md`](../docs/E2E_TEST_CHECKLIST.md).
+
 ## Quick start
 
 ```bash
