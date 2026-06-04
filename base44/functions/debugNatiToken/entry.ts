@@ -24,8 +24,7 @@ Deno.serve(async (req) => {
         user: Deno.env.get('NATID_DB_USER'),
         password: Deno.env.get('NATID_DB_PASSWORD'),
         database: Deno.env.get('NATID_DB_NAME'),
-        connectTimeout: 15000,
-        ssl: { rejectUnauthorized: false },
+        connectTimeout: 5000,
       };
 
       results.db_config = {
@@ -34,9 +33,7 @@ Deno.serve(async (req) => {
         has_password: !!dbConfig.password,
       };
 
-      let connection;
-      try { connection = await mysql.createConnection(dbConfig); }
-      catch (e) { const { ssl, ...noSsl } = dbConfig; connection = await mysql.createConnection(noSsl); }
+      const connection = await mysql.createConnection(dbConfig);
 
       const [rows] = await connection.query('SELECT 1 as test');
       const [openCount] = await connection.query('SELECT COUNT(*) as cnt FROM call_open_appeals');

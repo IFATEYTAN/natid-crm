@@ -23,10 +23,9 @@ function getDbConfig() {
     user,
     password,
     database: database || undefined,
-    connectTimeout: 15000,
+    connectTimeout: 5000,
     waitForConnections: true,
     connectionLimit: 5,
-    ssl: { rejectUnauthorized: false },
   };
 }
 

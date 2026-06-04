@@ -20,16 +20,14 @@ function getDbConfig() {
     user: Deno.env.get('NATID_DB_USER'),
     password: Deno.env.get('NATID_DB_PASSWORD'),
     database: Deno.env.get('NATID_DB_NAME'),
-    connectTimeout: 15000,
-    ssl: { rejectUnauthorized: false },
+    connectTimeout: 5000,
   };
 }
 
 async function getConnection() {
   const config = getDbConfig();
-  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
-  try { return await mysql.createConnection(config); }
-  catch (e) { const { ssl, ...noSsl } = config; return await mysql.createConnection(noSsl); }
+  if (!config.host || !config.user || !config.password) throw new Error("Missing NATID_DB_* secrets");
+  return await mysql.createConnection(config);
 }
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
