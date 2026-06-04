@@ -23,8 +23,7 @@ Deno.serve(async (req) => {
       user: Deno.env.get('NATID_DB_USER'),
       password: Deno.env.get('NATID_DB_PASSWORD'),
       database: Deno.env.get('NATID_DB_NAME'),
-      connectTimeout: 15000,
-      ssl: { rejectUnauthorized: false },
+      connectTimeout: 5000,
     };
 
     results.config = {
@@ -50,15 +49,13 @@ Deno.serve(async (req) => {
   // Test 3: List tables if connected
   if (results.test1_ssl?.status === 'OK') {
     try {
-      const useSsl = results.test1_ssl?.status === 'OK';
       const config = {
         host: Deno.env.get('NATID_DB_HOST'),
         port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
         user: Deno.env.get('NATID_DB_USER'),
         password: Deno.env.get('NATID_DB_PASSWORD'),
         database: Deno.env.get('NATID_DB_NAME'),
-        connectTimeout: 15000,
-        ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+        connectTimeout: 5000,
       };
 
       const connection = await mysql.createConnection(config);

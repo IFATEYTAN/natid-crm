@@ -15,8 +15,7 @@ function getDbConfig() {
     user: Deno.env.get('NATID_DB_USER'),
     password: Deno.env.get('NATID_DB_PASSWORD'),
     database: Deno.env.get('NATID_DB_NAME'),
-    connectTimeout: 15000,
-    ssl: { rejectUnauthorized: false },
+    connectTimeout: 5000,
   };
 }
 
