@@ -7,6 +7,41 @@
 
 ---
 
+## 📊 סטטוס אוטומציה
+
+| 🟢 = יש Playwright spec רץ | 🟡 = ידני בצ'קליסט הזה | 🔴 = לא קיים |
+|---|---|---|
+
+| Flow | סטטוס | spec |
+|---|---|---|
+| Unauthenticated user blocked from `/IntegrationSettings` | 🟢 | `e2e/nati-sync.spec.js` |
+| App loads & renders RTL Hebrew | 🟢 | `e2e/smoke.spec.js` |
+| Login form renders correctly | 🟢 | `e2e/login-form.spec.js` |
+| Admin sees NatiSyncPanel | 🟢 (gated) | `e2e/nati-sync.spec.js` |
+| Dry-run sync returns result | 🟢 (gated) | `e2e/nati-sync.spec.js` |
+| Cooldown blocks 2nd sync within 60s | 🟢 (gated) | `e2e/nati-sync.spec.js` |
+| Dashboard refreshes after sync | 🟢 (gated) | `e2e/nati-sync.spec.js` |
+| Admin login → Dashboard loads | 🟡 | manual checklist below |
+| Operator creates new call | 🟡 | manual checklist below |
+| Operator assigns vendor | 🟡 | manual checklist below |
+| Vendor portal: sees assigned call | 🟡 | manual checklist below |
+| Vendor updates status (en_route → arrived → completed) | 🟡 | manual checklist below |
+| Customer feedback token submission | 🟡 | manual checklist below |
+| GPS tracking updates | 🟡 | manual (needs real mobile) |
+| Photo upload + AI extraction | 🟡 | manual (needs real device) |
+| SMS notifications | 🟡 | manual (needs Twilio + real phone) |
+| Permissions: operator can't access AdminDataCleanup | 🔴 | TODO — add to `e2e/permissions.spec.js` |
+| Permissions: vendor only sees own calls | 🔴 | TODO |
+| Call lifecycle full E2E (operator → vendor → close) | 🔴 | TODO — top priority |
+| Close stale calls flow | 🔴 | TODO |
+| Customer portal: phone+call# → status | 🔴 | TODO |
+
+**(gated)** = רץ רק אם `E2E_ADMIN_EMAIL` + `E2E_ADMIN_PASSWORD` מוגדרים. ראו `docs/E2E_SETUP.md`.
+
+ה-CI מריץ אוטומטית: `quick-tests` על כל PR, `full-e2e` על main + nightly. ראו `.github/workflows/test.yml`.
+
+---
+
 ## שלב 0: הכנות (פעם אחת)
 
 ### חשבונות בדיקה
