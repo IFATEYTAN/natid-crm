@@ -22,21 +22,21 @@
 | Cooldown blocks 2nd sync within 60s | 🟢 (gated) | `e2e/nati-sync.spec.js` |
 | Dashboard refreshes after sync | 🟢 (gated) | `e2e/nati-sync.spec.js` |
 | Admin login → Dashboard loads | 🟡 | manual checklist below |
-| Operator creates new call | 🟡 | manual checklist below |
-| Operator assigns vendor | 🟡 | manual checklist below |
-| Vendor portal: sees assigned call | 🟡 | manual checklist below |
-| Vendor updates status (en_route → arrived → completed) | 🟡 | manual checklist below |
+| Operator creates new call | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
+| Operator assigns vendor | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
+| Vendor portal: sees assigned call | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
+| Vendor updates status (en_route → arrived → completed) | 🟢 (gated) | `e2e/call-lifecycle.spec.js` (operator-driven) |
 | Customer feedback token submission | 🟡 | manual checklist below |
 | GPS tracking updates | 🟡 | manual (needs real mobile) |
 | Photo upload + AI extraction | 🟡 | manual (needs real device) |
 | SMS notifications | 🟡 | manual (needs Twilio + real phone) |
 | Permissions: operator can't access AdminDataCleanup | 🔴 | TODO — add to `e2e/permissions.spec.js` |
 | Permissions: vendor only sees own calls | 🔴 | TODO |
-| Call lifecycle full E2E (operator → vendor → close) | 🔴 | TODO — top priority |
+| Call lifecycle full E2E (intake → assign → status → close) | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
 | Close stale calls flow | 🔴 | TODO |
 | Customer portal: phone+call# → status | 🔴 | TODO |
 
-**(gated)** = רץ רק אם `E2E_ADMIN_EMAIL` + `E2E_ADMIN_PASSWORD` מוגדרים. ראו `docs/E2E_SETUP.md`.
+**(gated)** = רץ רק כשמוגדרים credentials של בדיקה: `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` (צד מוקדן — אין משתמש operator ייעודי, אדמין מבצע את שלבי המוקדן) ו-`E2E_VENDOR_EMAIL`/`E2E_VENDOR_PASSWORD` (פורטל הספקים). מדלג בחן כשחסר. ראו `docs/E2E_SETUP.md`.
 
 ה-CI מריץ אוטומטית: `quick-tests` על כל PR, `full-e2e` על main + nightly. ראו `.github/workflows/test.yml`.
 
