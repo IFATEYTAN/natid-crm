@@ -37,6 +37,7 @@
 | Close stale calls: admin sees cleanup card | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
 | Close stale calls: Dry Run completes + renders result | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
 | GPS tracking: anonymous can't see location tracker | 🟢 | `e2e/gps-tracking.spec.js` |
+| GPS tracking: tracker renders for signed-in vendor | 🟢 (gated) | `e2e/gps-tracking.spec.js` |
 | GPS tracking: vendor shares location → fix posted to `updateVendorLocation` | 🟢 (gated) | `e2e/gps-tracking.spec.js` (faked geolocation) |
 | GPS tracking: movement pushes updated coordinates | 🟢 (gated) | `e2e/gps-tracking.spec.js` (faked geolocation) |
 | Maps: admin `/AllVendorsMap` Leaflet map mounts | 🟢 (gated) | `e2e/gps-tracking.spec.js` |

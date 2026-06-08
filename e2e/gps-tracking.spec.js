@@ -32,7 +32,7 @@ const JERUSALEM = { latitude: 31.7683, longitude: 35.2137 };
 /** Best-effort JSON parse of a request body. */
 function bodyJson(request) {
   try {
-    return JSON.parse(request.postData() || '');
+    return request.postDataJSON();
   } catch {
     return null;
   }
