@@ -1,28 +1,11 @@
 /**
  * fetchNatiAppeals — Direct MySQL query to Natid database
  * Admin-only. Supports filters: dep, callStatus, from_date, to_date, q, source (open/closed/all)
+ *
+ * Connection handling + circuit breaker live in ./_shared/natiDb.ts.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import mysql from 'npm:mysql2@3.9.7/promise';
-
-function getDbConfig() {
-  return {
-    host: Deno.env.get('NATID_DB_HOST'),
-    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
-    user: Deno.env.get('NATID_DB_USER'),
-    password: Deno.env.get('NATID_DB_PASSWORD'),
-    database: Deno.env.get('NATID_DB_NAME'),
-    connectTimeout: 5000,
-  };
-}
-
-async function getConnection() {
-  const config = getDbConfig();
-  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
-  // Single connection attempt only (no SSL fallback) to avoid doubling failed
-  // connection counts on Nati MySQL, which causes IP blocking.
-  return await mysql.createConnection(config);
-}
+import { withNatiConnection, natiErrorResponse } from './_shared/natiDb.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -35,9 +18,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { dep = -1, callStatus = -1, dir = 'DESC', from_date, to_date, q, source = 'open' } = body;
 
-    const connection = await getConnection();
-
-    try {
+    const allRows = await withNatiConnection(async (connection) => {
       const table = source === 'closed' ? 'call_closed_appeals' : 'call_open_appeals';
       let sql = `SELECT a.*, s.fullname as supplier_name FROM ${table} a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1`;
       const params = [];
@@ -56,11 +37,9 @@ Deno.serve(async (req) => {
 
       const [rows] = await connection.query(sql, params);
 
-      // If source is 'all', also query the other table
-      let allRows = rows;
+      // If source is 'all', also query the closed table on the same connection.
       if (source === 'all') {
-        const otherTable = 'call_closed_appeals';
-        let sql2 = `SELECT a.*, s.fullname as supplier_name FROM ${otherTable} a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1`;
+        let sql2 = `SELECT a.*, s.fullname as supplier_name FROM call_closed_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1`;
         const params2 = [];
         if (dep !== -1) { sql2 += ' AND a.department_id = ?'; params2.push(dep); }
         if (callStatus !== -1) { sql2 += ' AND a.status = ?'; params2.push(callStatus); }
@@ -73,16 +52,14 @@ Deno.serve(async (req) => {
         }
         sql2 += ` ORDER BY a.date_added ${dir === 'ASC' ? 'ASC' : 'DESC'} LIMIT 5000`;
         const [closedRows] = await connection.query(sql2, params2);
-        allRows = [...rows, ...closedRows];
+        return [...rows, ...closedRows];
       }
+      return rows;
+    });
 
-      await connection.end();
-      return Response.json({ success: true, total: allRows.length, data: allRows });
-    } catch (dbErr) {
-      try { await connection.end(); } catch (_) {}
-      return Response.json({ error: 'DB query failed', details: dbErr.message }, { status: 500 });
-    }
+    return Response.json({ success: true, total: allRows.length, data: allRows });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('fetchNatiAppeals error:', error);
+    return natiErrorResponse(error);
   }
 });

@@ -176,6 +176,15 @@
 
 ---
 
+### [2026-06-08] Bug: חסימות חוזרות של ה-IP מול ה-MySQL של נתי (max_connect_errors)
+
+**בעיה:** ה-RDS של נתי חוסם את ה-IP שלנו (`209.38.223.238`) עם `Host is blocked because of many connection errors` — חוזר שוב ושוב, גם כשאף אחד לא עובד במערכת. נתי לא מוכנים להעלות את `max_connect_errors` (ברירת מחדל 100), אז כל הנטל עלינו. שתי דליפות שצברו שגיאות: (1) `connectTimeout` של 5 שניות — האטה רגעית של RDS נספרה ככשל; (2) אין back-off — ברגע שנחסמנו, סנכרון רקע המשיך לדפוק, וכל ניסיון בזמן חסימה מוסיף עוד שגיאה, כך שה-FLUSH HOSTS הידני של נתי התאפס תוך דקות.
+**פתרון:** מודול משותף `base44/functions/_shared/natiDb.ts` עם: (א) `connectTimeout` שהוארך ל-20 שניות; (ב) circuit breaker מבוסס Deno KV (משותף לכל הפונקציות ועמיד בין הרצות) — ברגע שמזהים כשל חיבור / "Host is blocked" עוצרים את כל הניסיונות ל-cooldown (10 דק' לחסימה, 2 דק' אחרי 3 כשלים) במקום להוסיף עוד שגיאות; (ג) הודעות שגיאה ברורות בעברית במקום 500 מוצפן. כל 5 פונקציות הנתי עברו להשתמש בו.
+**לקח:** כשמגבלת `max_connect_errors` בצד הספק לא ניתנת לשינוי, חובה circuit breaker עמיד (לא in-memory בלבד) — אחרת שחרור ידני של החסימה לא מחזיק, כי כל ניסיון בזמן חסימה בונה מחדש את המונה. גם: timeout אגרסיבי הוא מקור נסתר לכשלי-חיבור.
+**קבצים:** `base44/functions/_shared/natiDb/entry.ts`, `base44/functions/{syncNatiData,closeStaleNatiCalls,fetchNatiAppeals,fetchLiveNatiData,testNatiConnection}/entry.ts`
+
+---
+
 <!-- הוסף רשומות חדשות מעל שורה זו -->
 
 ## סטטיסטיקות
