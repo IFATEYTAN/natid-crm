@@ -127,7 +127,13 @@ export default function AdminDataCleanup() {
 
   const fetchSyncStatus = useCallback(async () => {
     try {
-      const res = await base44.functions.invoke('getNatiSyncStatus', {});
+      // status_only returns the last-run/circuit state without hitting the Nati DB.
+      // dry_run:true is a safety net so an older deployed function (that doesn't
+      // know status_only) would do a harmless read instead of a real sync.
+      const res = await base44.functions.invoke('syncNatiData', {
+        status_only: true,
+        dry_run: true,
+      });
       setSyncStatus(res?.data ?? res);
     } catch {
       setSyncStatus(null);
