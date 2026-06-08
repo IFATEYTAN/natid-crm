@@ -4,7 +4,7 @@
  * Rate-limit protection: 150ms between items, batches of 20, exponential backoff retry.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { withNatiConnection, natiErrorResponse, recordSyncRun } from './_shared/natiDb.ts';
+import { withNatiConnection, natiErrorResponse, recordSyncRun, getNatiStatus } from './_shared/natiDb.ts';
 
 // ========== RATE LIMIT HELPERS ==========
 
@@ -297,6 +297,15 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
       }
     }
+
+    // Lightweight status check for the admin "last sync" indicator. Returns the
+    // persisted last-run + circuit-breaker state WITHOUT touching the Nati DB.
+    // Folded into this (already-deployed) function so the UI needs no new function.
+    if (body.status_only) {
+      const status = await getNatiStatus();
+      return Response.json({ success: true, ...status });
+    }
+
     const {
       dep = -1, callStatus = -1, dry_run = false,
       sync_calls = true, sync_cases = true,
