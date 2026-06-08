@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
@@ -12,12 +12,105 @@ import {
   RefreshCw,
   Eye,
   Archive,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 
 const BATCH_SIZE = 10;
 const DELAY_BETWEEN_BATCHES = 1000; // 1 second between batches
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Hebrew "X ago" relative time, or null if no/invalid value. */
+function formatRelative(isoString) {
+  if (!isoString) return null;
+  const then = new Date(isoString).getTime();
+  if (isNaN(then)) return null;
+  const diffSec = Math.floor((Date.now() - then) / 1000);
+  if (diffSec < 60) return 'לפני פחות מדקה';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `לפני ${diffMin} דקות`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `לפני ${diffH} שעות`;
+  const diffD = Math.floor(diffH / 24);
+  return `לפני ${diffD} ימים`;
+}
+
+/** Compact "last sync" + circuit-breaker status indicator for the sync card. */
+function NatiSyncStatusBanner({ status, loading, onRefresh }) {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500 bg-white/70 rounded-md p-2.5 border border-blue-100">
+        <Loader2 className="w-4 h-4 animate-spin" /> טוען מצב סנכרון...
+      </div>
+    );
+  }
+
+  const lastRun = status?.lastRun;
+  const circuit = status?.circuit;
+
+  return (
+    <div className="space-y-2">
+      {circuit?.blocked && (
+        <div className="flex items-start gap-2 text-sm bg-amber-50 text-amber-800 rounded-md p-2.5 border border-amber-200">
+          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>
+            החיבור לנתי מושהה זמנית להגנה
+            {circuit.reason === 'host_blocked'
+              ? ' — נתי חסמו את הכתובת שלנו, צריך FLUSH HOSTS בצידם'
+              : ''}
+            . ננסה שוב בעוד כ-{Math.max(1, Math.round(circuit.retryAfterSec / 60))} דקות.
+          </span>
+        </div>
+      )}
+
+      <div
+        className={`flex items-center justify-between gap-2 text-sm rounded-md p-2.5 border ${
+          !lastRun
+            ? 'bg-white/70 text-gray-500 border-blue-100'
+            : lastRun.ok
+              ? 'bg-green-50 text-green-800 border-green-200'
+              : 'bg-red-50 text-red-800 border-red-200'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          {!lastRun ? (
+            <>
+              <Clock className="w-4 h-4 shrink-0" /> עדיין לא רץ סנכרון
+            </>
+          ) : lastRun.ok ? (
+            <>
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>
+                סנכרון אחרון הצליח {formatRelative(lastRun.at)}
+                {lastRun.trigger === 'automation' ? ' (אוטומטי)' : ''} — {lastRun.created ?? 0}{' '}
+                נוצרו, {lastRun.updated ?? 0} עודכנו
+                {lastRun.errors ? `, ${lastRun.errors} שגיאות` : ''}
+              </span>
+            </>
+          ) : (
+            <>
+              <XCircle className="w-4 h-4 shrink-0" />
+              <span>
+                סנכרון אחרון נכשל {formatRelative(lastRun.at)}
+                {lastRun.trigger === 'automation' ? ' (אוטומטי)' : ''}
+                {lastRun.error ? ` — ${lastRun.error}` : ''}
+              </span>
+            </>
+          )}
+        </span>
+        <button
+          type="button"
+          onClick={onRefresh}
+          className="text-gray-400 hover:text-gray-600 shrink-0"
+          title="רענן מצב"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminDataCleanup() {
   const queryClient = useQueryClient();
@@ -29,6 +122,23 @@ export default function AdminDataCleanup() {
   const [syncResult, setSyncResult] = useState(null);
   const [isClosingStale, setIsClosingStale] = useState(false);
   const [closeStaleResult, setCloseStaleResult] = useState(null);
+  const [syncStatus, setSyncStatus] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(true);
+
+  const fetchSyncStatus = useCallback(async () => {
+    try {
+      const res = await base44.functions.invoke('getNatiSyncStatus', {});
+      setSyncStatus(res?.data ?? res);
+    } catch {
+      setSyncStatus(null);
+    } finally {
+      setStatusLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSyncStatus();
+  }, [fetchSyncStatus]);
 
   const addLog = (msg, type = 'info') => {
     setLog((prev) => [...prev, { msg, type, time: new Date().toLocaleTimeString() }]);
@@ -147,6 +257,7 @@ export default function AdminDataCleanup() {
     } catch (err) {
       addLog(`שגיאת סנכרון: ${err.message}`, 'error');
     }
+    fetchSyncStatus();
     setIsSyncing(false);
   };
 
@@ -195,6 +306,11 @@ export default function AdminDataCleanup() {
           <p className="text-blue-700 text-sm leading-relaxed">
             סנכרון יעדכן קריאות, ייצור ספקים ולקוחות חדשים, ויקשר ביניהם אוטומטית.
           </p>
+          <NatiSyncStatusBanner
+            status={syncStatus}
+            loading={statusLoading}
+            onRefresh={fetchSyncStatus}
+          />
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
