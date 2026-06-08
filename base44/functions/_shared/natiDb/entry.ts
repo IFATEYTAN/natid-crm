@@ -156,6 +156,54 @@ export async function withNatiConnection<T>(
   }
 }
 
+// ========== SYNC STATUS (for the admin "last run" indicator) ==========
+
+const LAST_RUN_KEY = ['nati_db', 'last_sync_run'];
+
+export interface SyncRunStatus {
+  at: string; // ISO timestamp
+  ok: boolean;
+  trigger: string; // 'automation' | 'manual'
+  total_from_nati?: number;
+  processed?: number;
+  created?: number;
+  updated?: number;
+  errors?: number;
+  error?: string | null;
+}
+
+/** Persist the outcome of a real (non-dry-run) sync. Never throws. */
+export async function recordSyncRun(run: SyncRunStatus): Promise<void> {
+  try {
+    const kv = await Deno.openKv();
+    await kv.set(LAST_RUN_KEY, run);
+  } catch (_) {
+    // Status recording must never break a sync.
+  }
+}
+
+/** Read the last sync outcome + current circuit-breaker state for the UI. */
+export async function getNatiStatus(): Promise<{
+  lastRun: SyncRunStatus | null;
+  circuit: { blocked: boolean; blockedUntil: number; reason: string; retryAfterSec: number };
+}> {
+  const kv = await Deno.openKv();
+  const runEntry = await kv.get<SyncRunStatus>(LAST_RUN_KEY);
+  const circuitEntry = await kv.get<CircuitState>(CIRCUIT_KEY);
+  const c = circuitEntry.value ?? EMPTY_CIRCUIT;
+  const now = Date.now();
+  const blocked = c.blockedUntil > now;
+  return {
+    lastRun: runEntry.value ?? null,
+    circuit: {
+      blocked,
+      blockedUntil: c.blockedUntil,
+      reason: c.reason,
+      retryAfterSec: blocked ? Math.ceil((c.blockedUntil - now) / 1000) : 0,
+    },
+  };
+}
+
 /** Map any Nati DB error to a clear Hebrew HTTP response. */
 export function natiErrorResponse(err: unknown): Response {
   if (err instanceof NatiBlockedError) {

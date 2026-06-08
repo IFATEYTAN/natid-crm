@@ -4,7 +4,7 @@
  * Rate-limit protection: 150ms between items, batches of 20, exponential backoff retry.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { withNatiConnection, natiErrorResponse } from './_shared/natiDb.ts';
+import { withNatiConnection, natiErrorResponse, recordSyncRun } from './_shared/natiDb.ts';
 
 // ========== RATE LIMIT HELPERS ==========
 
@@ -275,6 +275,9 @@ let lastWriteSyncAtMs = 0;
 
 Deno.serve(async (req) => {
   const startTime = Date.now();
+  // Hoisted so the catch block can record run status with the right context.
+  let isAutomationRun = false;
+  let isDryRun = false;
 
   try {
     const base44 = createClientFromRequest(req);
@@ -286,6 +289,7 @@ Deno.serve(async (req) => {
     // We also accept an explicit automation_key secret as a fallback for manual triggers.
     const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
     const isAutomation = (!!automationKey && body.automation_key === automationKey) || !!body.automation;
+    isAutomationRun = isAutomation;
     if (!isAutomation) {
       let user = null;
       try { user = await base44.auth.me(); } catch (_) {}
@@ -300,6 +304,7 @@ Deno.serve(async (req) => {
       close_missing = false,
       force = false,
     } = body;
+    isDryRun = dry_run;
 
     // Cooldown only applies to real writes. Dry-runs are read-only and safe to repeat.
     if (!dry_run && !force) {
@@ -492,6 +497,18 @@ Deno.serve(async (req) => {
     console.log(`[SYNC] Done in ${duration}ms`);
     lastWriteSyncAtMs = Date.now();
 
+    await recordSyncRun({
+      at: new Date().toISOString(),
+      ok: true,
+      trigger: isAutomationRun ? 'automation' : 'manual',
+      total_from_nati: allAppeals.length,
+      processed: appeals.length,
+      created: (results.calls?.created || 0) + (results.cases?.created || 0),
+      updated: (results.calls?.updated || 0) + (results.cases?.updated || 0),
+      errors: (results.calls?.errors || 0) + (results.cases?.errors || 0),
+      error: null,
+    });
+
     return Response.json({
       success: true,
       total_from_nati: allAppeals.length,
@@ -501,6 +518,15 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('[SYNC] Fatal error:', error);
+    // Record real-sync failures only (a failed dry-run preview isn't a "last sync").
+    if (!isDryRun) {
+      await recordSyncRun({
+        at: new Date().toISOString(),
+        ok: false,
+        trigger: isAutomationRun ? 'automation' : 'manual',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
     return natiErrorResponse(error);
   }
 });
