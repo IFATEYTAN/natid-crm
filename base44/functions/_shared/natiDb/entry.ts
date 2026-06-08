@@ -11,6 +11,11 @@
  *      attempt while blocked adds ANOTHER error, so Nati's manual FLUSH HOSTS
  *      relief evaporated within minutes.
  *
+ * The single biggest source of failed connects turned out to be TLS: RDS
+ * presents an Amazon-RDS-CA certificate that the Deno runtime doesn't trust, so
+ * connections failed with "invalid peer certificate: UnknownIssuer" — each one
+ * counting toward the block. See getDbConfig() for the ssl handling that fixes it.
+ *
  * This module centralises connection handling and adds a Deno-KV-backed circuit
  * breaker shared across ALL Nati functions and warm/cold starts. When a connect
  * fails (and especially when Nati reports "Host is blocked"), we stop attempting
@@ -18,8 +23,6 @@
  */
 import mysql from 'npm:mysql2@3.9.7/promise';
 
-// Single connection attempt, no SSL negotiation (RDS accepts plain on this
-// host). mysql2 does not use TLS unless `ssl` is set, so we simply never set it.
 const CONNECT_TIMEOUT_MS = 20_000;
 
 // Circuit-breaker tuning.
@@ -48,6 +51,14 @@ export class NatiBlockedError extends Error {
   }
 }
 
+// AWS RDS presents a TLS certificate signed by the Amazon RDS CA, which is NOT in
+// the Deno runtime's default trust store. An otherwise-unconfigured connection
+// that negotiates TLS therefore fails with "invalid peer certificate:
+// UnknownIssuer" — and every such failure counts toward Nati's max_connect_errors
+// block. This was the hidden, recurring root cause. We connect over TLS but skip
+// CA verification: the channel is still encrypted, and access is already locked
+// down by RDS IP allow-listing. (To pin the cert instead, set ssl.ca to the RDS
+// CA bundle and rejectUnauthorized: true.)
 function getDbConfig() {
   return {
     host: Deno.env.get('NATID_DB_HOST'),
@@ -56,6 +67,7 @@ function getDbConfig() {
     password: Deno.env.get('NATID_DB_PASSWORD'),
     database: Deno.env.get('NATID_DB_NAME'),
     connectTimeout: CONNECT_TIMEOUT_MS,
+    ssl: { rejectUnauthorized: false },
   };
 }
 
