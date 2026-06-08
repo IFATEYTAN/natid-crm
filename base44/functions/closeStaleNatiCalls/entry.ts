@@ -4,7 +4,7 @@
  * Rate-limit protection: 150ms between items, batches of 20, exponential backoff retry.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import mysql from 'npm:mysql2@3.9.7/promise';
+import { withNatiConnection, natiErrorResponse } from './_shared/natiDb.ts';
 
 const OPEN_CALL_STATUSES = [
   'waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute',
@@ -12,25 +12,6 @@ const OPEN_CALL_STATUSES = [
   'in_storage', 'continued_treatment', 'awaiting_payment'
 ];
 const OPEN_CASE_STATUSES = ['new', 'assigned', 'en_route', 'on_site', 'in_progress'];
-
-function getDbConfig() {
-  return {
-    host: Deno.env.get('NATID_DB_HOST'),
-    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
-    user: Deno.env.get('NATID_DB_USER'),
-    password: Deno.env.get('NATID_DB_PASSWORD'),
-    database: Deno.env.get('NATID_DB_NAME'),
-    connectTimeout: 5000,
-  };
-}
-
-async function getConnection() {
-  const config = getDbConfig();
-  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
-  // Single connection attempt only (no SSL fallback) to avoid doubling failed
-  // connection counts on Nati MySQL, which causes IP blocking.
-  return await mysql.createConnection(config);
-}
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -70,13 +51,10 @@ Deno.serve(async (req) => {
     const { limit = 30, dry_run = false, force = false } = body;
 
     console.log('[CLOSE] Fetching open appeal IDs from Nati DB...');
-    const connection = await getConnection();
-    let natiRows;
-    try {
-      [natiRows] = await connection.query('SELECT id FROM call_open_appeals');
-    } finally {
-      await connection.end().catch(() => {});
-    }
+    const natiRows = await withNatiConnection(async (connection) => {
+      const [rows] = await connection.query('SELECT id FROM call_open_appeals');
+      return rows;
+    }, { force });
 
     const natiOpenIds = new Set(natiRows.map(r => String(r.id)));
     console.log(`[CLOSE] Nati has ${natiOpenIds.size} open appeals`);
@@ -180,6 +158,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('[CLOSE] Fatal error:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return natiErrorResponse(error);
   }
 });
