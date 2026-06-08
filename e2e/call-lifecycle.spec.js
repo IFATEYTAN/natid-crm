@@ -96,7 +96,12 @@ test.describe('Call lifecycle — full happy path', () => {
     // Open the manual vendor select (placeholder "בחר ספק") and pick a vendor.
     await page.getByText('בחר ספק').click();
     const firstVendor = page.getByRole('option').first();
-    const hasVendor = await firstVendor.isVisible().catch(() => false);
+    // Wait briefly for the options to load/animate before deciding to skip —
+    // a bare isVisible() can return false before the popover has populated.
+    const hasVendor = await firstVendor
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
     test.skip(!hasVendor, 'No available vendors to assign — seed a vendor to run the full flow');
     await firstVendor.click();
 
