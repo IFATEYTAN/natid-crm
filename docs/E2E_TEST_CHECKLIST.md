@@ -21,22 +21,30 @@
 | Dry-run sync returns result | 🟢 (gated) | `e2e/nati-sync.spec.js` |
 | Cooldown blocks 2nd sync within 60s | 🟢 (gated) | `e2e/nati-sync.spec.js` |
 | Dashboard refreshes after sync | 🟢 (gated) | `e2e/nati-sync.spec.js` |
+| Permissions: anonymous blocked from admin + operator pages | 🟢 | `e2e/permissions.spec.js` |
+| Permissions: operator blocked from admin pages | 🟢 (gated) | `e2e/permissions.spec.js` |
+| Permissions: vendor blocked from admin + operator pages | 🟢 (gated) | `e2e/permissions.spec.js` |
+| Permissions: admin positive sanity (reaches admin pages) | 🟢 (gated) | `e2e/permissions.spec.js` |
+| Call lifecycle: anonymous blocked from `/NewCase` | 🟢 | `e2e/call-lifecycle.spec.js` |
+| Call lifecycle: full happy path (intake → assign → ספק בדרך → הגיע → במקום → סגור) | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
+| Vendor portal: renders for signed-in vendor | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
+| Customer portal: route reachable | 🟢 | `e2e/customer-portal.spec.js` |
+| Customer portal: form renders + validation + error path | 🟢 (E2E_BASE_URL) | `e2e/customer-portal.spec.js` |
+| Close stale calls: anonymous blocked | 🟢 | `e2e/close-stale-calls.spec.js` |
+| Close stale calls: admin sees cleanup card | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
+| Close stale calls: Dry Run completes + renders result | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
 | Admin login → Dashboard loads | 🟡 | manual checklist below |
-| Operator creates new call | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Operator assigns vendor | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Vendor portal: sees assigned call | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Vendor updates status (en_route → arrived → completed) | 🟢 (gated) | `e2e/call-lifecycle.spec.js` (operator-driven) |
+| Operator assigns vendor (full assignment deep-check) | 🟡 | manual checklist below |
 | Customer feedback token submission | 🟡 | manual checklist below |
 | GPS tracking updates | 🟡 | manual (needs real mobile) |
 | Photo upload + AI extraction | 🟡 | manual (needs real device) |
 | SMS notifications | 🟡 | manual (needs Twilio + real phone) |
 | Permissions: operator can't access AdminDataCleanup | 🔴 | TODO — add to `e2e/permissions.spec.js` |
 | Permissions: vendor only sees own calls | 🔴 | TODO |
-| Call lifecycle full E2E (intake → assign → status → close) | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Close stale calls flow | 🔴 | TODO |
 | Customer portal: phone+call# → status | 🔴 | TODO |
 
 **(gated)** = רץ רק כשמוגדרים credentials של בדיקה: `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` (צד מוקדן — אין משתמש operator ייעודי, אדמין מבצע את שלבי המוקדן) ו-`E2E_VENDOR_EMAIL`/`E2E_VENDOR_PASSWORD` (פורטל הספקים). מדלג בחן כשחסר. ראו `docs/E2E_SETUP.md`.
+**(E2E_BASE_URL)** = רץ רק כשמכוונים ל-Base44 אמיתי (לא ב-CI ברירת מחדל).
 
 ה-CI מריץ אוטומטית: `quick-tests` על כל PR, `full-e2e` על main + nightly. ראו `.github/workflows/test.yml`.
 
