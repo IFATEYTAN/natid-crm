@@ -9,7 +9,33 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || user.role !== 'admin') {
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Authorize: platform admin OR app-level admin (via UserPermission).
+    let isAdmin = user.role === 'admin';
+    if (!isAdmin) {
+      const adminRoleNames = ['admin', 'מנהל', 'מנהל מערכת'];
+      const roles = await base44.asServiceRole.entities.Role.list();
+      let perms = await base44.asServiceRole.entities.UserPermission.filter({ user_id: user.id });
+      if (!perms.length && user.email) {
+        perms = await base44.asServiceRole.entities.UserPermission.filter({ user_email: user.email });
+      }
+      const perm = perms[0];
+      if (perm) {
+        const role = roles.find(
+          (r) =>
+            r.id === perm.role_id ||
+            r.display_name === perm.role_name ||
+            r.name === perm.role_name
+        );
+        const names = [perm.role_name, role?.name, role?.display_name].filter(Boolean);
+        isAdmin = names.some((n) => adminRoleNames.includes(n));
+      }
+    }
+
+    if (!isAdmin) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
