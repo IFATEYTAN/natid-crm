@@ -342,6 +342,10 @@ export default function RoleManagement() {
                         <td className="p-3">
                           {userPerm?.role_name ? (
                             <Badge variant="outline">{userPerm.role_name}</Badge>
+                          ) : user.role === 'admin' ? (
+                            <Badge variant="outline" className="text-blue-700 border-blue-300">
+                              מנהל (גישה מלאה)
+                            </Badge>
                           ) : (
                             <span className="text-gray-400">ברירת מחדל</span>
                           )}
