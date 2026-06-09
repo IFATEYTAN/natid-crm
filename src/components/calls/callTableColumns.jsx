@@ -52,11 +52,19 @@ function getQueueStatus(call) {
   return queueStatusMap.waiting_in_queue;
 }
 
+function formatMinutes(totalMins) {
+  if (totalMins == null || isNaN(totalMins) || totalMins < 0) return null;
+  const mins = Math.floor(totalMins);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0) return `${h} שע׳ ${m} דק׳`;
+  return `${m} דק׳`;
+}
+
 function timeInQueue(fromDate) {
   if (!fromDate) return null;
-  const mins = Math.round((Date.now() - new Date(fromDate).getTime()) / 60000);
-  if (isNaN(mins)) return null;
-  return mins < 60 ? `${mins} דק׳` : `${Math.floor(mins / 60)} שע׳ ${mins % 60} דק׳`;
+  const totalMins = Math.round((Date.now() - new Date(fromDate).getTime()) / 60000);
+  return formatMinutes(totalMins);
 }
 
 /**
@@ -178,9 +186,16 @@ export function buildCallColumns({ getCall, getCallId, renderActions }) {
       cell: (item) => {
         const call = getCall(item);
         const from = item.added_to_queue_at || call?.created_date;
-        const display = timeInQueue(from);
-        if (!display) return '—';
-        const mins = Math.round((Date.now() - new Date(from).getTime()) / 60000);
+        let mins;
+        let display;
+        if (typeof item.time_in_queue === 'number' && item.time_in_queue >= 0) {
+          mins = item.time_in_queue;
+          display = formatMinutes(mins);
+        } else if (from) {
+          mins = Math.round((Date.now() - new Date(from).getTime()) / 60000);
+          display = timeInQueue(from);
+        }
+        if (!display) return <span className="text-gray-400 text-sm">—</span>;
         return (
           <div className={`text-sm font-medium ${mins > 30 ? 'text-red-600' : ''}`}>{display}</div>
         );
