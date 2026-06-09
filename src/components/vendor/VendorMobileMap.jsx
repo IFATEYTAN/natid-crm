@@ -15,7 +15,8 @@ L.Icon.Default.mergeOptions({
 });
 
 const vendorIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -24,7 +25,8 @@ const vendorIcon = new L.Icon({
 });
 
 const callIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -74,16 +76,13 @@ export default function VendorMobileMap({ vendorProfile, activeCalls }) {
       id: c.id,
       lat: c.pickup_location_lat,
       lng: c.pickup_location_lon,
-      label: c.call_number,
+      label: c.vehicle_plate || c.call_number,
       address: c.pickup_location_address,
       customer: c.customer_name,
       status: c.call_status,
     }));
 
-  const allPositions = [
-    [vendorLat, vendorLng],
-    ...callMarkers.map((m) => [m.lat, m.lng]),
-  ];
+  const allPositions = [[vendorLat, vendorLng], ...callMarkers.map((m) => [m.lat, m.lng])];
 
   return (
     <div className="space-y-3">
@@ -96,12 +95,19 @@ export default function VendorMobileMap({ vendorProfile, activeCalls }) {
           disabled={isLocating}
           className="gap-1 rounded-xl"
         >
-          {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+          {isLocating ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Navigation className="w-4 h-4" />
+          )}
           מיקום שלי
         </Button>
       </div>
 
-      <div className="rounded-xl overflow-hidden border border-gray-200" style={{ height: 'calc(100vh - 12rem)' }}>
+      <div
+        className="rounded-xl overflow-hidden border border-gray-200"
+        style={{ height: 'calc(100vh - 12rem)' }}
+      >
         <MapContainer
           center={[vendorLat, vendorLng]}
           zoom={12}
@@ -117,7 +123,9 @@ export default function VendorMobileMap({ vendorProfile, activeCalls }) {
           {/* Vendor location */}
           <Marker position={[vendorLat, vendorLng]} icon={vendorIcon}>
             <Popup>
-              <div className="text-center font-medium">{vendorProfile?.vendor_name || 'המיקום שלי'}</div>
+              <div className="text-center font-medium">
+                {vendorProfile?.vendor_name || 'המיקום שלי'}
+              </div>
             </Popup>
           </Marker>
 

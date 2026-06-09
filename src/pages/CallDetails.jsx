@@ -56,6 +56,7 @@ import {
   Navigation,
   Ban,
   CalendarClock,
+  Car,
 } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { toast } from 'sonner';
@@ -358,14 +359,20 @@ export default function CallDetailsPage() {
             </Button>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-2xl font-bold text-[#172B4D]">
-                  קריאה {call?.call_number || `#${callId?.slice(-6)}`}
+                <h1 className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-[#172B4D]">
+                  <Car className="w-5 h-5 sm:w-6 sm:h-6 text-[#6B778C] shrink-0" />
+                  <span dir="ltr" className="tabular-nums">
+                    {call?.vehicle_plate || 'ללא מספר רכב'}
+                  </span>
                 </h1>
                 <Badge className={cn('text-sm', statusColors[call?.call_status])}>
                   {statusLabels[call?.call_status]}
                 </Badge>
               </div>
-              <p className="text-[#6B778C] text-sm">נפתחה ב-{formatDateTime(call?.created_date)}</p>
+              <p className="text-[#6B778C] text-sm">
+                קריאה {call?.call_number || `#${callId?.slice(-6)}`} · נפתחה ב-
+                {formatDateTime(call?.created_date)}
+              </p>
             </div>
           </div>
 

@@ -27,13 +27,89 @@ export default function AICategorization({
     setLoading(true);
     setApplied(false);
     try {
-      const response = await base44.functions.invoke('categorizeCall', {
-        problem_description: problemDescription,
-        location_address: locationAddress,
-        location_city: locationCity,
-        vehicle_type: vehicleType,
+      // Call the LLM integration directly from the client (same pattern used by
+      // AIInsightsWidget / VendorPhotoAIExtractor). This avoids depending on the
+      // `categorizeCall` serverless function, which returned 404 when not deployed.
+      const prompt = `אתה מערכת מיון חכמה לקריאות שירות דרך בישראל.
+בהינתן תיאור תקלה מלקוח, סווג את הקריאה.
+
+תיאור התקלה: "${problemDescription}"
+מיקום: ${locationAddress || 'לא צוין'}${locationCity ? ', ' + locationCity : ''}
+סוג רכב: ${vehicleType || 'לא צוין'}
+
+סוגי תקלות אפשריים:
+- mechanical: תקלה מכנית
+- stopped_driving: רכב לא נוסע
+- flat_tire: פנצ'ר
+- stuck_wheel: גלגל תקוע
+- accident: תאונה
+- no_fuel: אין דלק
+- dead_battery: מצבר ריק
+- locked_keys: מפתחות נעולים
+- other: אחר
+
+סוגי שירות אפשריים:
+- towing: גרירה
+- flat_tire: פנצ'ר
+- battery: מצבר
+- lockout: פתיחת רכב
+- fuel: דלק
+- accident: תאונה
+- mechanical: תקלה מכנית
+- other: אחר
+
+רמות עדיפות:
+- low: נמוכה
+- normal: רגילה
+- high: גבוהה
+- urgent: דחופה
+
+קבע את סוג התקלה, סוג השירות הנדרש, רמת העדיפות, וכתוב הסבר קצר.
+שים לב: תאונות, רכב באמצע כביש מהיר, ילדים/תינוקות ברכב = עדיפות דחופה.`;
+
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            issue_type: {
+              type: 'string',
+              enum: [
+                'mechanical',
+                'stopped_driving',
+                'flat_tire',
+                'stuck_wheel',
+                'accident',
+                'no_fuel',
+                'dead_battery',
+                'locked_keys',
+                'other',
+              ],
+            },
+            service_type: {
+              type: 'string',
+              enum: [
+                'towing',
+                'flat_tire',
+                'battery',
+                'lockout',
+                'fuel',
+                'accident',
+                'mechanical',
+                'other',
+              ],
+            },
+            priority: {
+              type: 'string',
+              enum: ['low', 'normal', 'high', 'urgent'],
+            },
+            confidence: { type: 'number', description: 'Confidence score 0-100' },
+            reasoning: { type: 'string', description: 'Short explanation in Hebrew' },
+          },
+          required: ['issue_type', 'service_type', 'priority', 'confidence', 'reasoning'],
+        },
       });
-      setResult(response?.data || null);
+      setResult(response || null);
     } catch (error) {
       // Don't leave the button stuck in "loading" if the LLM call throws.
       showToast.error(`סיווג ה-AI נכשל: ${error?.message || 'שגיאה לא ידועה'}`);

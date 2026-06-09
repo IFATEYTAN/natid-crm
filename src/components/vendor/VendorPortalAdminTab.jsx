@@ -56,6 +56,15 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
 
   const adminColumns = [
     {
+      header: 'מספר רכב',
+      accessor: 'vehicle_plate',
+      cell: (call) => (
+        <span className="font-bold text-[#172B4D] tabular-nums" dir="ltr">
+          {call.vehicle_plate || '-'}
+        </span>
+      ),
+    },
+    {
       header: 'מספר קריאה',
       accessor: 'call_number',
       cell: (call) => (

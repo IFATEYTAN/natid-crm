@@ -2,7 +2,7 @@ import { lazyRetry } from '@/lib/lazyRetry';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Phone, Truck, MapPin, Eye } from 'lucide-react';
+import { Phone, Truck, MapPin, Eye, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -12,6 +12,22 @@ import { getCoverageLabel } from '@/config/coverageConstants';
 const StatusBadge = lazyRetry(() => import('@/components/ui/StatusBadge'));
 
 export const getCallColumns = () => [
+  {
+    header: 'מספר רכב',
+    accessor: 'vehicle_plate',
+    cell: (row) =>
+      row.vehicle_plate ? (
+        <span
+          className="inline-flex items-center gap-1 font-bold text-gray-900 tabular-nums"
+          dir="ltr"
+        >
+          <Car className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          {row.vehicle_plate}
+        </span>
+      ) : (
+        <span className="text-gray-400">-</span>
+      ),
+  },
   {
     header: 'מספר קריאה',
     accessor: 'call_number',
@@ -70,6 +86,22 @@ export const getCallColumns = () => [
 ];
 
 export const getOperatorCallColumns = () => [
+  {
+    header: 'מספר רכב',
+    accessor: 'vehicle_plate',
+    cell: (row) =>
+      row.vehicle_plate ? (
+        <span
+          className="inline-flex items-center gap-1 font-bold text-gray-900 tabular-nums"
+          dir="ltr"
+        >
+          <Car className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          {row.vehicle_plate}
+        </span>
+      ) : (
+        <span className="text-gray-400">-</span>
+      ),
+  },
   {
     header: 'קריאה',
     accessor: 'call_number',

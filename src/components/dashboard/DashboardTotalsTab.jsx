@@ -63,8 +63,15 @@ export default function DashboardTotalsTab({ calls, callsLoading }) {
   );
 
   const handleExportTotals = () => {
-    const headers = ['call_number', 'customer_name', 'call_status', 'created_date'];
+    const headers = [
+      'vehicle_plate',
+      'call_number',
+      'customer_name',
+      'call_status',
+      'created_date',
+    ];
     const rows = filteredTotalsCalls.map((c) => [
+      c.vehicle_plate || '',
       c.call_number || `#${c.id?.slice(-6)}`,
       c.customer_name || '',
       c.call_status || '',
