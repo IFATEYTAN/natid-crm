@@ -57,6 +57,8 @@ import {
   Ban,
   CalendarClock,
   Car,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { toast } from 'sonner';
@@ -100,6 +102,8 @@ export default function CallDetailsPage() {
   const [showSignature, setShowSignature] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState('');
+  const [autoAssigning, setAutoAssigning] = useState(false);
+  const [autoAssignInfo, setAutoAssignInfo] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -249,6 +253,39 @@ export default function CallDetailsPage() {
     }
   };
 
+  // Location-based automatic assignment. Runs the server-side scoring engine
+  // (autoAssignVendor: distance via Haversine, service match, rating, ETA via
+  // OSRM) and pre-selects the top vendor so the operator can confirm.
+  const handleAutoAssign = async () => {
+    if (!canAssign) return;
+    setAutoAssigning(true);
+    setAutoAssignInfo(null);
+    try {
+      const res = await base44.functions.invoke('autoAssignVendor', { call_id: callId });
+      const data = res?.data || res;
+      if (!data?.success || !data?.recommendation) {
+        toast.error(data?.error === 'No available vendors' ? 'אין ספקים זמינים כרגע' : 'לא נמצא ספק מתאים לשיבוץ אוטומטי');
+        return;
+      }
+      const rec = data.recommendation;
+      setSelectedVendor(rec.vendor_id);
+      setAutoAssignInfo({
+        vendor_name: rec.vendor_name,
+        distance_km: rec.details?.distance_km ?? rec.details?.route_distance_km ?? null,
+        eta: rec.estimated_arrival_minutes ?? null,
+        score: rec.score ?? null,
+      });
+      const distTxt = rec.details?.distance_km != null ? `, ${rec.details.distance_km} ק"מ` : '';
+      const etaTxt = rec.estimated_arrival_minutes != null ? `, הגעה ~${rec.estimated_arrival_minutes} דק'` : '';
+      toast.success(`הומלץ אוטומטית: ${rec.vendor_name}${distTxt}${etaTxt}. לחצי "שבץ" לאישור.`);
+    } catch (error) {
+      // 404 here means the autoAssignVendor function isn't deployed on Base44.
+      toast.error(`שיבוץ אוטומטי נכשל: ${error?.message || 'שגיאה לא ידועה'}`);
+    } finally {
+      setAutoAssigning(false);
+    }
+  };
+
   const handleAssignVendor = async () => {
     if (!selectedVendor || !canAssign) return;
     // Re-fetch the call right before assigning to detect a concurrent
@@ -310,6 +347,7 @@ export default function CallDetailsPage() {
     });
 
     setShowAssignDialog(false);
+    setAutoAssignInfo(null);
     toast.success(`הקריאה שובצה ל-${vendor?.vendor_name}`);
   };
 
@@ -394,6 +432,33 @@ export default function CallDetailsPage() {
                         <DialogDescription>בחר ספק זמין לטיפול בקריאה</DialogDescription>
                       </DialogHeader>
                       <div className="py-4 space-y-4">
+                        <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-3 space-y-2">
+                          <Button
+                            onClick={handleAutoAssign}
+                            disabled={autoAssigning}
+                            className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700"
+                          >
+                            {autoAssigning ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-4 h-4" />
+                            )}
+                            {autoAssigning ? 'מחשב מיקום ומרחק...' : 'שיבוץ אוטומטי לפי מיקום'}
+                          </Button>
+                          {autoAssignInfo && (
+                            <p className="text-xs text-indigo-800">
+                              מומלץ: <span className="font-semibold">{autoAssignInfo.vendor_name}</span>
+                              {autoAssignInfo.distance_km != null && ` · ${autoAssignInfo.distance_km} ק"מ`}
+                              {autoAssignInfo.eta != null && ` · הגעה ~${autoAssignInfo.eta} דק'`}
+                              {autoAssignInfo.score != null && ` · ציון ${autoAssignInfo.score}`}
+                            </p>
+                          )}
+                          {!call?.pickup_location_lat && (
+                            <p className="text-xs text-amber-700">
+                              לקריאה זו אין מיקום מדויק (קואורדינטות), לכן השיבוץ יתבסס על אזור הכיסוי בלבד.
+                            </p>
+                          )}
+                        </div>
                         <Suspense
                           fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}
                         >

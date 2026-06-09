@@ -47,6 +47,7 @@ import AICategorization from '@/components/ai/AICategorization';
 import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 import { coverageAreas } from '@/config/coverageConstants';
 import { sortedIsraelCities } from '@/config/israelCities';
+import { geocodeIsraeliAddress } from '@/lib/geocode';
 
 // ===== CityAutocomplete Component =====
 // רכיב חיפוש חי לבחירת עיר מתוך רשימה מלאה של ערים בישראל (לפי דרישת דורית נתי גרופ)
@@ -298,6 +299,15 @@ export default function NewCase() {
       const slaResponseDeadline = new Date(now.getTime() + slaResponseMinutes * 60000);
       const slaArrivalDeadline = new Date(now.getTime() + slaArrivalMinutes * 60000);
 
+      // Geocode the pickup address (city + street) so the call carries real
+      // coordinates. These power the distance-based vendor auto-assignment and
+      // the live-ETA logic. Non-blocking: if geocoding fails the call is still
+      // created, just without coords (previous behaviour).
+      const pickupGeo = await geocodeIsraeliAddress({
+        city: data.location_city,
+        address: data.location_address,
+      });
+
       // Map form data (Case-shaped) → Call entity. The vendor portal, GPS,
       // assignment, photo upload, customer portal, etc. all consume Call —
       // creating a Case here meant new openings never reached the vendor side.
@@ -326,6 +336,8 @@ export default function NewCase() {
         // Locations (form uses location_*/destination_*, Call uses pickup_*/dropoff_*)
         pickup_location_address: data.location_address,
         pickup_location_city: data.location_city,
+        pickup_location_lat: pickupGeo?.lat,
+        pickup_location_lon: pickupGeo?.lon,
         dropoff_location_address: data.destination_address,
         dropoff_location_city: data.destination_city,
         // Notes + answers
