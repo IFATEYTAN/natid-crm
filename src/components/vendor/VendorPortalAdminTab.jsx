@@ -69,7 +69,7 @@ export default function VendorPortalAdminTab({ onSelectVendor }) {
       accessor: 'call_number',
       cell: (call) => (
         <Link
-          to={createPageUrl(`VendorCallManagement?id=${call.id}`)}
+          to={createPageUrl(`CallDetails?id=${call.id}`)}
           className="font-medium text-blue-600 hover:underline"
         >
           {call.call_number}
