@@ -41,7 +41,12 @@ export default function AdminDisplaySettings() {
   const { data: users = [] } = useQuery({
     queryKey: queryKeys.users.all(),
     enabled: !!user && user.role === 'admin',
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      // Admin-gated server function (service role) instead of a direct
+      // client-side User.list(), which the platform blocks with 403.
+      const result = await base44.functions.invoke('getUsersList', {});
+      return result.data?.users || [];
+    },
     initialData: [],
   });
 

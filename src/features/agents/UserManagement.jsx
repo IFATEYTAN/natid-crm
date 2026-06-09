@@ -54,7 +54,12 @@ export default function UserManagement() {
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: queryKeys.users.all(),
-    queryFn: () => base44.entities.User.list('-created_date'),
+    queryFn: async () => {
+      // Admin-gated server function (service role) instead of a direct
+      // client-side User.list(), which the platform blocks with 403.
+      const result = await base44.functions.invoke('getUsersList', {});
+      return result.data?.users || [];
+    },
   });
 
   const { currentUser } = usePermissions();

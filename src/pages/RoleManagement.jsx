@@ -108,12 +108,20 @@ export default function RoleManagement() {
 
   const { data: userPermissions = [] } = useQuery({
     queryKey: queryKeys.users.allPermissions(),
-    queryFn: () => base44.entities.UserPermission.list(),
+    queryFn: async () => {
+      const result = await base44.functions.invoke('getUsersList', {});
+      return result.data?.permissions || [];
+    },
   });
 
   const { data: users = [] } = useQuery({
     queryKey: queryKeys.users.all(),
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      // Admin-gated server function (service role) instead of a direct
+      // client-side User.list(), which the platform blocks with 403.
+      const result = await base44.functions.invoke('getUsersList', {});
+      return result.data?.users || [];
+    },
   });
 
   const saveRoleMutation = useMutation({

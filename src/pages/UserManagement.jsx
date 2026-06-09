@@ -64,7 +64,7 @@ export default function UserManagementPage() {
   const { logCreate, logUpdate } = useAuditLog();
 
   const {
-    data: usersData = { users: [], permissions: [] },
+    data: users = [],
     isLoading: isLoadingUsers,
     isError,
     error,
@@ -74,15 +74,17 @@ export default function UserManagementPage() {
       // Use the admin-gated server function (service role) instead of a direct
       // client-side User.list(), which the platform blocks with 403.
       const result = await base44.functions.invoke('getUsersList', {});
-      return {
-        users: result.data?.users || [],
-        permissions: result.data?.permissions || [],
-      };
+      return result.data?.users || [];
     },
   });
 
-  const users = usersData.users;
-  const userPermissions = usersData.permissions;
+  const { data: userPermissions = [] } = useQuery({
+    queryKey: queryKeys.users.permissions(),
+    queryFn: async () => {
+      const result = await base44.functions.invoke('getUsersList', {});
+      return result.data?.permissions || [];
+    },
+  });
 
   // Map user permissions by email for quick lookup
   const permByEmail = {};
