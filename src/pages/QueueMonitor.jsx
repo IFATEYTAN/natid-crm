@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
+import { buildCallColumns } from '@/components/calls/callTableColumns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -103,13 +104,12 @@ export default function QueueMonitor() {
 
   const workQueueQuery = useWorkQueue();
 
-  // Read active cases directly from Case entity
+  // Read active calls directly from Call entity (shares cache with useCalls via queryKeys.calls.all())
   const casesQuery = useQuery({
-    queryKey: ['queue-cases'],
-    queryFn: () =>
-      base44.entities.Case.filter({ status: 'new' }, '-created_date', 500).catch(() =>
-        base44.entities.Case.list('-created_date', 500)
-      ),
+    queryKey: queryKeys.calls.all(),
+    queryFn: () => base44.entities.Call.list('-created_date', 300),
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false,
   });
 
   const queueItems = workQueueQuery.data || [];
@@ -128,16 +128,11 @@ export default function QueueMonitor() {
           id: c.id,
           call_id: c.id,
           queue_status: 'waiting_in_queue',
-          priority_score: c.priority === 'urgent' ? 90 : c.priority === 'high' ? 70 : 50,
+          priority_score:
+            c.call_priority === 'critical' ? 90 : c.call_priority === 'urgent' ? 70 : 50,
           added_to_queue_at: c.created_date,
           assigned_to_agent: null,
-          call: {
-            call_number: c.case_number,
-            customer_name: c.customer_name,
-            customer_phone: c.caller_phone,
-            pickup_location_address: c.location_address || c.location_city,
-            call_status: c.status,
-          },
+          call: c,
         }));
 
   const filteredItems = enrichedItems.filter((item) => {
@@ -272,122 +267,7 @@ export default function QueueMonitor() {
     }
   };
 
-  const columns = [
-    {
-      header: 'קריאה',
-      accessor: 'call.call_number',
-      cell: (item) => (
-        <Link
-          to={createPageUrl(`CaseDetails?id=${item.call_id}`)}
-          className="font-medium text-blue-600 hover:underline"
-        >
-          {item.call?.call_number || `#${item.call_id?.slice(-6)}`}
-        </Link>
-      ),
-    },
-    {
-      header: 'שם מנוי',
-      accessor: 'call.customer_name',
-      cell: (item) => (
-        <div>
-          <div className="font-medium">{item.call?.customer_name || '—'}</div>
-          <div className="text-xs text-gray-500 tabular-nums" dir="ltr">
-            {item.call?.customer_phone || ''}
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: "מס' רכב",
-      accessor: 'call.vehicle_plate',
-      cell: (item) => (
-        <div>
-          <div className="font-medium tabular-nums text-right" dir="ltr">
-            {item.call?.vehicle_plate || item.call?.vehicle_number || '—'}
-          </div>
-          {item.call?.vehicle_model && (
-            <div className="text-xs text-gray-500">{item.call.vehicle_model}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      header: 'סטטוס בתור',
-      accessor: 'queue_status',
-      cell: (item) => {
-        const statusMap = {
-          waiting_in_queue: { label: 'ממתין בתור', color: 'bg-yellow-100 text-yellow-800' },
-          assigned_to_agent: { label: 'משובץ לנציג', color: 'bg-blue-100 text-blue-800' },
-          in_progress: { label: 'בטיפול', color: 'bg-indigo-100 text-indigo-800' },
-          completed: { label: 'סגור', color: 'bg-green-100 text-green-800' },
-          transferred: { label: 'הועבר', color: 'bg-purple-100 text-purple-800' },
-          rejected: { label: 'נדחה', color: 'bg-red-100 text-red-800' },
-        };
-        const conf = statusMap[item.queue_status] || {
-          label: item.queue_status,
-          color: 'bg-gray-100 text-gray-800',
-        };
-        return (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${conf.color}`}>
-            {conf.label}
-          </span>
-        );
-      },
-    },
-    {
-      header: 'עדיפות',
-      accessor: 'priority_score',
-      cell: (item) => (
-        <Badge
-          variant={
-            item.priority_score > 80
-              ? 'destructive'
-              : item.priority_score > 60
-                ? 'default'
-                : 'secondary'
-          }
-        >
-          {item.priority_score}
-        </Badge>
-      ),
-    },
-    {
-      header: 'נציג מטפל',
-      accessor: 'assigned_to_agent',
-      cell: (item) =>
-        item.assigned_to_agent ? (
-          <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-[10px] font-bold">
-              {item.assigned_to_agent.charAt(0).toUpperCase()}
-            </div>
-            <span className="text-sm">{item.assigned_to_agent}</span>
-          </div>
-        ) : (
-          <span className="text-gray-400 text-sm">לא משובץ</span>
-        ),
-    },
-    {
-      header: 'זמן בתור',
-      accessor: 'added_to_queue_at',
-      cell: (item) => {
-        if (!item.added_to_queue_at) return '-';
-        const mins = Math.round((Date.now() - new Date(item.added_to_queue_at).getTime()) / 60000);
-        const display = mins < 60 ? `${mins} דק׳` : `${Math.floor(mins / 60)} שע׳ ${mins % 60} דק׳`;
-        return (
-          <div>
-            <div className={`text-sm font-medium ${mins > 30 ? 'text-red-600' : ''}`}>
-              {display}
-            </div>
-            <div className="text-[10px] text-gray-400">
-              {formatDateTime(item.added_to_queue_at)}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      header: 'פעולות',
-      cell: (item) => (
+  const renderActions = (item) => (
         <div className="flex items-center gap-1">
           {/* Admin: always allow assignment/reassignment */}
           {isAdmin && item.queue_status !== 'completed' && !item.assigned_to_agent && (
@@ -486,9 +366,13 @@ export default function QueueMonitor() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      ),
-    },
-  ];
+      );
+
+  const columns = buildCallColumns({
+    getCall: (item) => item.call,
+    getCallId: (item) => item.call_id,
+    renderActions,
+  });
 
   if (workQueueQuery.isError || casesQuery.isError) {
     return (

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
+import { buildCallColumns } from '@/components/calls/callTableColumns';
 import { Phone, MapPin, Clock, AlertTriangle, RefreshCw, User, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -56,101 +57,10 @@ export default function MyQueuePage() {
     [myCalls, activeCalls, completedCalls]
   );
 
-  const columns = [
-    {
-      header: 'מספר קריאה',
-      accessor: 'call_number',
-      cell: (call) => (
-        <Link
-          to={createPageUrl(`CallDetails?id=${call.id}`)}
-          className="font-medium text-blue-600 hover:underline"
-        >
-          {call.call_number || call.id.slice(0, 8)}
-        </Link>
-      ),
-    },
-    {
-      header: 'עדיפות',
-      accessor: 'call_priority',
-      cell: (call) => (
-        <Badge
-          className={cn('text-xs', priorityColors[call.call_priority] || priorityColors.normal)}
-        >
-          {call.call_priority === 'urgent'
-            ? 'דחוף'
-            : call.call_priority === 'critical'
-              ? 'קריטי'
-              : 'רגיל'}
-        </Badge>
-      ),
-    },
-    {
-      header: 'לקוח',
-      accessor: 'customer_name',
-      cell: (call) => (
-        <div>
-          <div className="font-medium">{call.customer_name}</div>
-          <div className="text-xs text-[#6B778C]" dir="ltr">
-            {call.customer_phone}
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'סוג תקלה',
-      accessor: 'issue_type',
-      cell: (call) => issueTypeLabels[call.issue_type] || call.issue_type || '-',
-    },
-    {
-      header: 'מיקום',
-      accessor: 'pickup_location_address',
-      cell: (call) => (
-        <div className="flex items-center gap-1 text-sm max-w-[180px]">
-          <MapPin className="w-3 h-3 text-[#6B778C] shrink-0" />
-          <span className="truncate">
-            {call.pickup_location_city || call.pickup_location_address || '-'}
-          </span>
-        </div>
-      ),
-    },
-    {
-      header: 'ספק',
-      accessor: 'assigned_vendor_name',
-      cell: (call) => call.assigned_vendor_name || <span className="text-[#6B778C]">לא שובץ</span>,
-    },
-    {
-      header: 'סטטוס',
-      accessor: 'call_status',
-      cell: (call) => <StatusBadge status={call.call_status} />,
-    },
-    {
-      header: 'נוצר',
-      accessor: 'created_date',
-      cell: (call) => {
-        if (!call.created_date) return <span className="text-sm">-</span>;
-        const d = new Date(call.created_date);
-        if (isNaN(d.getTime())) return <span className="text-sm">-</span>;
-        return (
-          <div className="text-sm">
-            <div>{format(d, 'dd/MM HH:mm')}</div>
-            <div className="text-xs text-[#6B778C]">
-              {formatDistanceToNow(d, { addSuffix: true, locale: he })}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      header: 'פעולות',
-      cell: (call) => (
-        <Link to={createPageUrl(`CallDetails?id=${call.id}`)}>
-          <Button size="sm" variant="outline">
-            צפה
-          </Button>
-        </Link>
-      ),
-    },
-  ];
+  const columns = buildCallColumns({
+    getCall: (call) => call,
+    getCallId: (call) => call.id,
+  });
 
   if (isError) {
     return (
