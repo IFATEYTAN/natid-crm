@@ -21,7 +21,7 @@ export default function VendorEmailLinker({ vendors = [] }) {
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const queryClient = useQueryClient();
 
-  const selectedVendor = vendors.find(v => v.id === selectedVendorId);
+  const selectedVendor = vendors.find((v) => v.id === selectedVendorId);
 
   const handleSubmit = () => {
     setSubmitAttempted(true);
@@ -33,11 +33,18 @@ export default function VendorEmailLinker({ vendors = [] }) {
     mutationFn: async () => {
       return base44.functions.invoke('linkVendorEmail', {
         vendor_id: selectedVendorId,
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
       });
     },
-    onSuccess: () => {
-      showToast.success(`האימייל ${email} קושר בהצלחה לספק ${selectedVendor?.vendor_name}`);
+    onSuccess: (res) => {
+      const warning = res?.data?.warning;
+      if (warning) {
+        showToast.warning(warning);
+      } else {
+        showToast.success(
+          `האימייל ${email.trim().toLowerCase()} קושר בהצלחה לספק ${selectedVendor?.vendor_name} והוגדר כ-vendor`
+        );
+      }
       setEmail('');
       setSelectedVendorId('');
       setSubmitAttempted(false);
@@ -48,8 +55,8 @@ export default function VendorEmailLinker({ vendors = [] }) {
     },
   });
 
-  const vendorsWithEmail = vendors.filter(v => v.email);
-  const vendorsWithoutEmail = vendors.filter(v => !v.email);
+  const vendorsWithEmail = vendors.filter((v) => v.email);
+  const vendorsWithoutEmail = vendors.filter((v) => !v.email);
 
   return (
     <Card>
@@ -79,19 +86,26 @@ export default function VendorEmailLinker({ vendors = [] }) {
         <div className="space-y-3">
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-1 block">בחר ספק</label>
-            <Select value={selectedVendorId} onValueChange={(val) => {
-              setSelectedVendorId(val);
-              setSubmitAttempted(false);
-              const v = vendors.find(x => x.id === val);
-              if (v?.email) setEmail(v.email);
-            }}>
-              <SelectTrigger className={!selectedVendorId && submitAttempted ? 'border-red-400' : ''}>
+            <Select
+              value={selectedVendorId}
+              onValueChange={(val) => {
+                setSelectedVendorId(val);
+                setSubmitAttempted(false);
+                const v = vendors.find((x) => x.id === val);
+                if (v?.email) setEmail(v.email);
+              }}
+            >
+              <SelectTrigger
+                className={!selectedVendorId && submitAttempted ? 'border-red-400' : ''}
+              >
                 <SelectValue placeholder="בחר ספק..." />
               </SelectTrigger>
               <SelectContent>
                 {vendorsWithoutEmail.length > 0 && (
                   <>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-amber-600">ללא אימייל</div>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-amber-600">
+                      ללא אימייל
+                    </div>
                     {vendorsWithoutEmail.map((v) => (
                       <SelectItem key={v.id} value={v.id}>
                         ⚠️ {v.vendor_name}
@@ -116,7 +130,9 @@ export default function VendorEmailLinker({ vendors = [] }) {
             )}
           </div>
           <div>
-            <label className="text-sm font-medium text-muted-foreground mb-1 block">כתובת אימייל</label>
+            <label className="text-sm font-medium text-muted-foreground mb-1 block">
+              כתובת אימייל
+            </label>
             <Input
               type="email"
               dir="ltr"
@@ -129,11 +145,7 @@ export default function VendorEmailLinker({ vendors = [] }) {
               <p className="text-xs text-red-500 mt-1">יש להזין כתובת אימייל</p>
             )}
           </div>
-          <Button
-            onClick={handleSubmit}
-            isLoading={linkMutation.isPending}
-            className="w-full"
-          >
+          <Button onClick={handleSubmit} isLoading={linkMutation.isPending} className="w-full">
             <Mail className="w-4 h-4" />
             קשר אימייל
           </Button>
@@ -145,7 +157,9 @@ export default function VendorEmailLinker({ vendors = [] }) {
             {vendorsWithEmail.map((v) => (
               <div key={v.id} className="flex items-center justify-between px-3 py-2 text-sm">
                 <span className="font-medium">{v.vendor_name}</span>
-                <span className="text-muted-foreground" dir="ltr">{v.email}</span>
+                <span className="text-muted-foreground" dir="ltr">
+                  {v.email}
+                </span>
               </div>
             ))}
           </div>

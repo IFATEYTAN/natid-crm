@@ -25,27 +25,41 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
+    // Normalize email to lowercase so the user lookup matches regardless of the
+    // casing the admin typed (user emails are stored lowercase).
+    const normalizedEmail = user_email.trim().toLowerCase();
+
     // Update vendor email
-    await base44.asServiceRole.entities.Vendor.update(vendor_id, { 
-      email: user_email 
+    await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+      email: normalizedEmail,
     });
 
     // Try to set user role to vendor if they exist
-    const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
+    const users = await base44.asServiceRole.entities.User.filter({ email: normalizedEmail });
     if (users.length > 0) {
       const targetUser = users[0];
       if (targetUser.role !== 'vendor' && targetUser.role !== 'ספק') {
-        await base44.asServiceRole.entities.User.update(targetUser.id, { 
+        await base44.asServiceRole.entities.User.update(targetUser.id, {
           role: 'vendor',
-          vendor_id: vendor_id 
+          vendor_id: vendor_id,
         });
       }
+      return Response.json({
+        success: true,
+        vendor_name: vendors[0].vendor_name,
+        linked_email: normalizedEmail,
+        role_updated: true,
+      });
     }
 
+    // No registered user with this email — report it instead of a silent success
+    // that hides the fact the role was never flipped to 'vendor'.
     return Response.json({
       success: true,
       vendor_name: vendors[0].vendor_name,
-      linked_email: user_email,
+      linked_email: normalizedEmail,
+      role_updated: false,
+      warning: 'הספק קושר, אך לא נמצא משתמש רשום עם כתובת זו. לאחר שהספק יירשם, יש לקשר שוב כדי להפוך אותו ל-vendor.',
     });
   } catch (error) {
     console.error('linkVendorToUser error:', error);
