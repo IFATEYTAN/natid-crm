@@ -150,7 +150,7 @@ test.describe('Maps — vendors map renders', () => {
     await signInAs(page, 'admin');
   });
 
-  test('admin opens /AllVendorsMap and the Leaflet map mounts', async ({ page }) => {
+  test('admin opens /AllVendorsMap and the page renders the map (or empty state)', async ({ page }) => {
     test.setTimeout(60_000);
 
     await page.goto('/AllVendorsMap');
@@ -159,8 +159,12 @@ test.describe('Maps — vendors map renders', () => {
     // Not bounced to login / access-denied.
     await expect(page).not.toHaveURL(/login|access-denied/i);
 
-    // react-leaflet renders a container with the standard `.leaflet-container`
-    // class once the map mounts — its presence proves the map rendered.
-    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
+    // The Leaflet map (react-leaflet adds `.leaflet-container`) only mounts when
+    // at least one vendor has shared a location; otherwise the page shows an
+    // "אין ספקים עם מיקום" empty state. Either outcome proves the route rendered
+    // for an admin without crashing or an auth bounce.
+    const mapContainer = page.locator('.leaflet-container').first();
+    const emptyState = page.getByText('אין ספקים עם מיקום');
+    await expect(mapContainer.or(emptyState)).toBeVisible({ timeout: 20_000 });
   });
 });
