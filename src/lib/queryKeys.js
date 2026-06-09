@@ -111,6 +111,11 @@ export const queryKeys = {
     all: () => ['vendorContracts'],
   },
 
+  // Vendor Pricing (read-only mirror from Nati)
+  vendorPricing: {
+    all: () => ['vendorPricing'],
+  },
+
   // Assignment Requests
   assignmentRequests: {
     byVendor: (vendorId) => ['pendingAssignments', vendorId],
