@@ -103,10 +103,12 @@ export default function QueueMonitor() {
 
   const workQueueQuery = useWorkQueue();
 
-  // Read active calls directly from Call entity
+  // Read active calls directly from Call entity (shares cache with useCalls via queryKeys.calls.all())
   const casesQuery = useQuery({
-    queryKey: ['queue-cases'],
-    queryFn: () => base44.entities.Call.list('-created_date', 500),
+    queryKey: queryKeys.calls.all(),
+    queryFn: () => base44.entities.Call.list('-created_date', 300),
+    staleTime: 1000 * 60 * 2,
+    refetchOnWindowFocus: false,
   });
 
   const queueItems = workQueueQuery.data || [];
