@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, RefreshCw, MapPin, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Plus, Search, RefreshCw, MapPin, ChevronRight, ChevronLeft, User } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { format } from 'date-fns';
 
@@ -321,8 +321,8 @@ export default function CallsPage() {
                         <div className="font-semibold text-sm text-[#172B4D] truncate">
                           {c.customer_name || 'ללא שם'}
                         </div>
-                        <div className="text-xs text-[#6B778C] mt-0.5">
-                          #{c.call_number || c.id.slice(0, 8)}
+                        <div className="text-xs text-[#6B778C] mt-0.5 tabular-nums" dir="ltr">
+                          {c.vehicle_plate || c.vehicle_number || `#${c.call_number || c.id.slice(0, 8)}`}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 ms-2 flex-shrink-0">
@@ -349,17 +349,17 @@ export default function CallsPage() {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6B778C]">
-                      {c.pickup_location_city && (
+                      {c.insurance_company && (
+                        <span className="truncate max-w-[140px]">🛡️ {c.insurance_company}</span>
+                      )}
+                      {c.assigned_to_agent && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {c.pickup_location_city}
+                          <User className="w-3 h-3" />
+                          {c.assigned_to_agent}
                         </span>
                       )}
-                      {c.service_category && (
-                        <span>{SERVICE_TYPE_LABELS[c.service_category] || c.service_category}</span>
-                      )}
                       {c.assigned_vendor_name && (
-                        <span className="truncate max-w-[120px]">{c.assigned_vendor_name}</span>
+                        <span className="truncate max-w-[120px]">🚚 {c.assigned_vendor_name}</span>
                       )}
                       {c.created_date && (
                         <span>{format(new Date(c.created_date), 'dd/MM HH:mm')}</span>
@@ -376,16 +376,15 @@ export default function CallsPage() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   {[
-                    'מספר קריאה',
-                    'שם לקוח',
-                    'טלפון',
-                    'סוג שירות',
+                    'פעולות',
+                    "מס' רכב",
+                    'שם מנוי',
                     'סטטוס',
+                    'חברת ביטוח / סוכן',
                     'עדיפות',
-                    'עיר',
+                    'נציג מטפל',
                     'ספק',
-                    'תאריך',
-                    '',
+                    'זמן פתיחת קריאה',
                   ].map((h) => (
                     <th
                       key={h}
@@ -416,29 +415,31 @@ export default function CallsPage() {
                 ) : (
                   paginated.map((c) => (
                     <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-blue-600">
-                        <Link
-                          to={createPageUrl(`CallDetails?id=${c.id}`)}
-                          className="hover:underline"
-                        >
-                          {c.call_number || c.id.slice(0, 8)}
+                      {/* פעולות */}
+                      <td className="px-4 py-3">
+                        <Link to={createPageUrl(`CallDetails?id=${c.id}`)}>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                            צפה
+                          </Button>
                         </Link>
                       </td>
-                      <td className="px-4 py-3 font-medium text-[#172B4D] whitespace-nowrap">
-                        {c.customer_name || '-'}
+                      {/* מס' רכב */}
+                      <td className="px-4 py-3 font-medium tabular-nums whitespace-nowrap" dir="ltr">
+                        {c.vehicle_plate || c.vehicle_number || '—'}
                       </td>
-                      <td className="px-4 py-3 text-[#6B778C]" dir="ltr">
-                        {c.customer_phone || '-'}
-                      </td>
+                      {/* שם מנוי */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {c.service_category ? (
-                          <Badge variant="outline" className="text-xs">
-                            {SERVICE_TYPE_LABELS[c.service_category] || c.service_category}
-                          </Badge>
-                        ) : (
-                          '-'
-                        )}
+                        <Link
+                          to={createPageUrl(`CallDetails?id=${c.id}`)}
+                          className="font-medium text-blue-600 hover:underline"
+                        >
+                          {c.customer_name || '—'}
+                        </Link>
+                        <div className="text-xs text-[#6B778C] tabular-nums" dir="ltr">
+                          {c.customer_phone || ''}
+                        </div>
                       </td>
+                      {/* סטטוס */}
                       <td className="px-4 py-3">
                         {c.call_status ? (
                           <Badge
@@ -450,9 +451,25 @@ export default function CallsPage() {
                             {STATUS_LABELS[c.call_status] || c.call_status}
                           </Badge>
                         ) : (
-                          '-'
+                          '—'
                         )}
                       </td>
+                      {/* חברת ביטוח / סוכן */}
+                      <td className="px-4 py-3 text-[#6B778C]">
+                        {c.insurance_company || c.insurance_agent ? (
+                          <div>
+                            <div className="font-medium text-[#172B4D]">
+                              {c.insurance_company || '—'}
+                            </div>
+                            {c.insurance_agent && (
+                              <div className="text-xs">{c.insurance_agent}</div>
+                            )}
+                          </div>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      {/* עדיפות */}
                       <td className="px-4 py-3">
                         {c.call_priority ? (
                           <Badge
@@ -464,31 +481,22 @@ export default function CallsPage() {
                             {PRIORITY_LABELS[c.call_priority] || c.call_priority}
                           </Badge>
                         ) : (
-                          '-'
+                          '—'
                         )}
                       </td>
+                      {/* נציג מטפל */}
                       <td className="px-4 py-3 text-[#6B778C]">
-                        <div className="flex items-center gap-1">
-                          {c.pickup_location_city && <MapPin className="w-3 h-3 shrink-0" />}
-                          <span className="truncate max-w-[120px]">
-                            {c.pickup_location_city || '-'}
-                          </span>
-                        </div>
+                        {c.assigned_to_agent || <span className="text-gray-400">לא משובץ</span>}
                       </td>
+                      {/* ספק */}
                       <td className="px-4 py-3 text-[#6B778C] max-w-[150px]">
                         <span className="truncate block">
                           {c.assigned_vendor_name || <span className="text-gray-400">לא שובץ</span>}
                         </span>
                       </td>
+                      {/* זמן פתיחת קריאה */}
                       <td className="px-4 py-3 text-[#6B778C] whitespace-nowrap text-xs">
-                        {c.created_date ? format(new Date(c.created_date), 'dd/MM/yy HH:mm') : '-'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link to={createPageUrl(`CallDetails?id=${c.id}`)}>
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
-                            צפה
-                          </Button>
-                        </Link>
+                        {c.created_date ? format(new Date(c.created_date), 'dd/MM/yy HH:mm') : '—'}
                       </td>
                     </tr>
                   ))

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import CollapsibleCard from '@/components/dashboard/CollapsibleCard';
-import { Eye, ChevronLeft, PhoneCall } from 'lucide-react';
+import { Eye, ChevronLeft, PhoneCall, Car } from 'lucide-react';
 
 const ACTIVE_STATUSES = [
   'waiting_treatment',
@@ -133,6 +133,7 @@ export default function TrackedCallsPanel({ calls = [], isLoading, onCallClick }
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50/80">
+                <TableHead className="text-end font-semibold text-gray-600">מספר רכב</TableHead>
                 <TableHead className="text-end font-semibold text-gray-600">מספר קריאה</TableHead>
                 <TableHead className="text-end font-semibold text-gray-600">לקוח</TableHead>
                 <TableHead className="text-end font-semibold text-gray-600">סוג שירות</TableHead>
@@ -150,6 +151,16 @@ export default function TrackedCallsPanel({ calls = [], isLoading, onCallClick }
 
                 return (
                   <TableRow key={call.id} className={`${slaClass} transition-colors`}>
+                    <TableCell className="font-bold text-gray-900">
+                      {call.vehicle_plate ? (
+                        <span className="inline-flex items-center gap-1 tabular-nums" dir="ltr">
+                          <Car className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          {call.vehicle_plate}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium text-gray-900">
                       {call.call_number || '-'}
                     </TableCell>

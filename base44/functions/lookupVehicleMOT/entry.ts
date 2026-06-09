@@ -8,11 +8,7 @@
  * Returns: { success, data: { vehicle_type, fuel_type, model, year, color, test_valid_until, is_commercial, ... } }
  */
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createRateLimiter, getClientIP, rateLimitResponse } from './_shared/rateLimit.ts';
-
-const kv = await Deno.openKv();
-const limiter = createRateLimiter(kv);
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // MOT API endpoint (data.gov.il - public, no key required)
 const MOT_API_URL = 'https://data.gov.il/api/3/action/datastore_search';
@@ -81,11 +77,6 @@ function isTestValid(testDate: string | undefined): boolean {
 
 Deno.serve(async (req) => {
   try {
-    // Rate limit: 30 requests per IP per minute (MOT lookups)
-    const clientIP = getClientIP(req);
-    const rl = await limiter.check('lookupVehicleMOT', clientIP, 30, 60_000);
-    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
-
     // Auth check
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

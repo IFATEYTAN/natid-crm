@@ -250,6 +250,15 @@ export default function MyQueue() {
 
   const inProgressColumns = [
     {
+      header: 'מספר רכב',
+      accessor: 'call.vehicle_plate',
+      cell: (row) => (
+        <span className="font-bold text-[#172B4D] tabular-nums" dir="ltr">
+          {row.call?.vehicle_plate || '-'}
+        </span>
+      ),
+    },
+    {
       header: 'מספר קריאה',
       accessor: 'call.call_number',
       cell: (row) => (

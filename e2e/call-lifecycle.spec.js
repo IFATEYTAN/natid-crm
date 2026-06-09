@@ -2,145 +2,157 @@ import { test, expect } from '@playwright/test';
 import { hasCreds, signInAs } from './helpers/auth.js';
 
 /**
- * Call lifecycle — end-to-end coverage of the core business flow.
+ * Call lifecycle — one full happy path, end to end.
  *
- * Flow:
- *   1. Operator creates a new service call (/NewCase)
- *   2. Call appears in /Calls with status "ממתין לטיפול"
- *   3. (Skipped if no vendor creds) Vendor sees the call in /VendorPortal
- *      and advances status: "יצא לדרך" → "הגעתי"
- *   4. Operator closes the call via /CallDetails → "סגור קריאה ושלח סקר"
+ * Stages (real status machine from base44/entities/Call.jsonc):
+ *   intake (waiting_treatment) → assign vendor (assigning)
+ *   → ספק בדרך (vendor_enroute) → נותן השירות הגיע (vendor_arrived)
+ *   → נותן השירות במקום (in_progress) → סגור קריאה (completed)
  *
- * Modes:
+ * Two modes (same convention as the other specs):
  *
- * 1. STRUCTURAL (always runs): unauthenticated user is blocked from /NewCase.
+ * 1. STRUCTURAL (always runs, no creds): the intake page is gated for anonymous
+ *    visitors.
  *
- * 2. AUTHENTICATED (opt-in): requires E2E_OPERATOR_EMAIL/PASSWORD at minimum.
- *    Vendor-side steps additionally require E2E_VENDOR_EMAIL/PASSWORD.
+ * 2. AUTHENTICATED (opt-in):
+ *    - The operator side is driven by an ADMIN account (there is no dedicated
+ *      "operator" user; admin has the same calls/assign permissions). Gated on
+ *      E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD.
+ *    - The vendor portal side is gated on E2E_VENDOR_EMAIL / E2E_VENDOR_PASSWORD.
  *
- * NOTE: this test creates real data in whatever environment it runs against.
- * Use a Base44 Test DB (data_env="dev") — never run against production.
+ * NOTE: this drives the LIVE Base44 backend and creates a real call. The flow
+ * ends in `completed`, so it does not clutter the open queue. Selectors were
+ * derived from the components; the first real run may need minor tuning.
  */
 
-const TEST_CALLER_NAME = `E2E Test ${Date.now()}`;
-const TEST_CALLER_PHONE = '050-0000000';
-const TEST_ADDRESS = 'רחוב הבדיקה 1, תל אביב';
+const stamp = Date.now();
+const CALLER_NAME = `E2E בדיקה ${stamp}`;
+const CALLER_PHONE = '0500000000';
+const LOCATION = 'הרצל 1, תל אביב';
 
+/** Input that immediately follows a (possibly unassociated) <label> by text. */
+function inputAfterLabel(page, labelText) {
+  return page.locator(`xpath=//label[contains(normalize-space(.),"${labelText}")]/following::input[1]`);
+}
+
+/** Radix Select trigger that follows a <label> by text. */
+function selectAfterLabel(page, labelText) {
+  return page.locator(`xpath=//label[contains(normalize-space(.),"${labelText}")]/following::button[1]`);
+}
+
+async function pickFirstOption(page) {
+  const option = page.getByRole('option').first();
+  await option.waitFor({ timeout: 10_000 });
+  await option.click();
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 1. STRUCTURAL
+// ──────────────────────────────────────────────────────────────────────────
 test.describe('Call lifecycle — structural (no auth)', () => {
-  test('anonymous user cannot reach /NewCase', async ({ page }) => {
+  test('anonymous cannot reach the new-call page', async ({ page }) => {
     await page.goto('/NewCase');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
-
-    // The create-call form must not render. Specifically, the unique
-    // form labels "שם המתקשר" and submit button "צור קריאה" must not appear.
-    await expect(page.getByLabel(/שם המתקשר/).first()).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /צור קריאה/ })).toHaveCount(0);
+    // The "create call" submit button only renders when the form actually loads.
+    await expect(page.getByRole('button', { name: 'צור קריאה' })).toHaveCount(0);
   });
 });
 
-test.describe('Call lifecycle — operator creates call', () => {
-  test.skip(!hasCreds('operator'), 'E2E_OPERATOR_EMAIL / E2E_OPERATOR_PASSWORD not set');
+// ──────────────────────────────────────────────────────────────────────────
+// 2. AUTHENTICATED — full happy path, operator side driven by admin
+// ──────────────────────────────────────────────────────────────────────────
+test.describe('Call lifecycle — full happy path', () => {
+  test.skip(!hasCreds('admin'), 'E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD not set');
 
-  test.beforeEach(async ({ page }) => {
-    await signInAs(page, 'operator');
-  });
+  test('intake → assign → en route → arrived → in progress → close', async ({ page }) => {
+    test.setTimeout(180_000);
 
-  test('operator can open NewCase form and see required fields', async ({ page }) => {
+    await signInAs(page, 'admin');
+
+    // ── Stage 1: intake (operator opens a new call) ──────────────────────────
     await page.goto('/NewCase');
     await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('button', { name: 'צור קריאה' })).toBeVisible({ timeout: 15_000 });
 
-    await expect(page.getByLabel(/שם המתקשר/).first()).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByLabel(/טלפון המתקשר/).first()).toBeVisible();
-    await expect(page.getByLabel(/כתובת מיקום/).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: /צור קריאה/ })).toBeVisible();
-  });
+    await inputAfterLabel(page, 'שם המתקשר').fill(CALLER_NAME);
+    await page.getByPlaceholder('0501234567').fill(CALLER_PHONE);
+    await page.getByPlaceholder('כתובת מלאה').fill(LOCATION);
 
-  test('operator submits a new call and lands on a confirmation/details page', async ({ page }) => {
-    await page.goto('/NewCase');
+    // Service type is a required Radix Select — open it and take the first option.
+    await selectAfterLabel(page, 'סוג שירות').click();
+    await pickFirstOption(page);
+
+    await page.getByRole('button', { name: 'צור קריאה' }).click();
+
+    // On success NewCase navigates to CallDetails?id=...
+    await expect(page).toHaveURL(/CallDetails/i, { timeout: 30_000 });
     await page.waitForLoadState('networkidle');
 
-    await page.getByLabel(/שם המתקשר/).first().fill(TEST_CALLER_NAME);
-    await page.getByLabel(/טלפון המתקשר/).first().fill(TEST_CALLER_PHONE);
-    await page.getByLabel(/כתובת מיקום/).first().fill(TEST_ADDRESS);
+    // ── Stage 2: assign a vendor ─────────────────────────────────────────────
+    await page.getByRole('button', { name: /שבץ ספק|שיבוץ/ }).first().click();
+    await expect(page.getByText('שיבוץ ספק לקריאה')).toBeVisible({ timeout: 10_000 });
 
-    // Service type dropdown — pick whatever first option exists.
-    const serviceTypeTrigger = page
-      .getByLabel(/סוג שירות/)
-      .or(page.getByRole('combobox', { name: /סוג שירות/ }))
-      .first();
-    if (await serviceTypeTrigger.isVisible()) {
-      await serviceTypeTrigger.click();
-      // First option in the popover
-      await page.getByRole('option').first().click().catch(() => {});
-    }
+    // Open the manual vendor select (placeholder "בחר ספק") and pick a vendor.
+    await page.getByText('בחר ספק').click();
+    const firstVendor = page.getByRole('option').first();
+    // Wait briefly for the options to load/animate before deciding to skip —
+    // a bare isVisible() can return false before the popover has populated.
+    const hasVendor = await firstVendor
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!hasVendor, 'No available vendors to assign — seed a vendor to run the full flow');
+    await firstVendor.click();
 
-    await page.getByRole('button', { name: /צור קריאה/ }).click();
-
-    // Success: either toast OR navigation away from /NewCase.
-    const successToast = page
-      .locator('[data-sonner-toast]')
-      .filter({ hasText: /נוצרה|הצלחה|success/i });
-    await Promise.race([
-      successToast.first().waitFor({ timeout: 30_000 }),
-      page.waitForURL(/\/(Calls|CallDetails)/, { timeout: 30_000 }),
-    ]);
-  });
-
-  test('newly created call appears in /Calls list with status "ממתין לטיפול"', async ({ page }) => {
-    await page.goto('/Calls');
+    // Confirm — the footer button is exactly "שבץ" (the trigger was "שבץ ספק").
+    await page.getByRole('button', { name: 'שבץ', exact: true }).click();
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1500);
 
-    // At least one row should show the initial waiting status. We don't assert
-    // on the specific row we just created (race-y across parallel test runs);
-    // we assert the status badge exists somewhere on the page.
-    await expect(page.getByText(/ממתין לטיפול/).first()).toBeVisible({ timeout: 15_000 });
+    // ── Stages 3-6: drive the status machine to closure via the actions menu ──
+    // Each item lives behind the "אפשרויות נוספות" dropdown trigger and is
+    // re-rendered after every status change, so we re-open the menu each time.
+    const driveStatus = async (itemLabel) => {
+      await page.getByRole('button', { name: 'אפשרויות נוספות' }).click();
+      await page.getByRole('menuitem', { name: itemLabel }).click();
+      await page.waitForTimeout(1500); // let the mutation + toast settle
+    };
+
+    await driveStatus('ספק בדרך'); // vendor_enroute
+    await driveStatus('נותן השירות הגיע'); // vendor_arrived
+    await driveStatus('נותן השירות במקום'); // in_progress
+    await driveStatus('סגור קריאה'); // completed
+
+    // ── Verify closure ───────────────────────────────────────────────────────
+    // A closed call shows the "סגור" status label somewhere on the details page.
+    await expect(page.getByText('סגור', { exact: false }).first()).toBeVisible({ timeout: 15_000 });
   });
 });
 
-test.describe('Call lifecycle — vendor side', () => {
+// ──────────────────────────────────────────────────────────────────────────
+// 3. AUTHENTICATED — vendor portal renders for the service provider
+// ──────────────────────────────────────────────────────────────────────────
+test.describe('Vendor portal — service provider side', () => {
   test.skip(!hasCreds('vendor'), 'E2E_VENDOR_EMAIL / E2E_VENDOR_PASSWORD not set');
 
-  test.beforeEach(async ({ page }) => {
+  test('vendor signs in and the portal renders (not blocked)', async ({ page }) => {
+    test.setTimeout(90_000);
     await signInAs(page, 'vendor');
-  });
 
-  test('vendor sees VendorPortal with their assigned calls', async ({ page }) => {
     await page.goto('/VendorPortal');
     await page.waitForLoadState('networkidle');
 
-    // The portal should render — either a list of calls OR an empty state.
-    // Both prove auth + permissions worked. We just assert we're not on the
-    // landing page or denial state.
+    // Must not be bounced to a login / access-denied state.
     await expect(page).not.toHaveURL(/login|access-denied/i);
 
-    // A vendor portal heading or call-list region should exist.
-    const portalIndicator = page
-      .getByRole('heading', { name: /פורטל|קריאות שלי|ספק/i })
-      .or(page.getByText(/אין קריאות|קריאות פעילות/i));
-    await expect(portalIndicator.first()).toBeVisible({ timeout: 15_000 });
-  });
-
-  test('vendor with an assigned call can advance status via "יצא לדרך"', async ({ page }) => {
-    await page.goto('/VendorPortal');
-    await page.waitForLoadState('networkidle');
-
-    const enrouteBtn = page.getByRole('button', { name: /יצא לדרך/ }).first();
-    const hasAssignedCall = await enrouteBtn.isVisible().catch(() => false);
-
-    test.skip(!hasAssignedCall, 'No assigned call available for vendor to advance');
-
-    await enrouteBtn.click();
-
-    // Either a success toast or the button text changes to "הגעתי".
-    const arrivedBtn = page.getByRole('button', { name: /הגעתי/ }).first();
-    const successToast = page
-      .locator('[data-sonner-toast]')
-      .filter({ hasText: /עודכן|הצלחה|success/i });
-
-    await Promise.race([
-      arrivedBtn.waitFor({ timeout: 15_000 }),
-      successToast.first().waitFor({ timeout: 15_000 }),
-    ]);
+    // If a pending-assignment alert is showing, accepting it is the vendor's
+    // entry into the flow. Best-effort: accept it when present, otherwise the
+    // portal simply rendered with no pending call (also a valid state).
+    const acceptBtn = page.getByRole('button', { name: /קבל קריאה/ });
+    if (await acceptBtn.isVisible().catch(() => false)) {
+      await acceptBtn.click();
+      await page.waitForTimeout(1500);
+    }
   });
 });

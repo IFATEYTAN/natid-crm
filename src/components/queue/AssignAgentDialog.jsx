@@ -33,20 +33,38 @@ export default function AssignAgentDialog({ open, onOpenChange, queueItem, mode 
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const user = users.find((u) => u.email === selectedAgent);
-      await base44.entities.WorkQueue.update(queueItem.id, {
+      const payload = {
         assigned_to_agent: selectedAgent,
         queue_status: 'assigned_to_agent',
         assigned_at: new Date().toISOString(),
-      });
+      };
+
+      // Check if a real WorkQueue record exists for this call
+      const existing = queueItem.call_id
+        ? await base44.entities.WorkQueue.filter({ call_id: queueItem.call_id })
+        : [];
+
+      if (existing && existing.length > 0) {
+        await base44.entities.WorkQueue.update(existing[0].id, payload);
+      } else {
+        // Pseudo-queue item (built from Call) — create a real WorkQueue record
+        await base44.entities.WorkQueue.create({
+          call_id: queueItem.call_id,
+          priority_score: queueItem.priority_score || 50,
+          added_to_queue_at: queueItem.added_to_queue_at || new Date().toISOString(),
+          ...payload,
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
       onOpenChange(false);
       setSelectedAgent('');
       setNotes('');
+      toast.success('הנציג שובץ בהצלחה');
     },
-    onError: () => {
+    onError: (err) => {
+      console.error('Assign agent error:', err);
       toast.error('שגיאה בשיבוץ נציג');
     },
   });

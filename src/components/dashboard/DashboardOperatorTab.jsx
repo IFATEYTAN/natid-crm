@@ -175,9 +175,10 @@ export default function DashboardOperatorTab({
                     <div className="flex items-center gap-2 mb-1">
                       <Link
                         to={createPageUrl('CallDetails') + '?id=' + call.id}
-                        className="font-bold text-gray-900 hover:text-blue-600 hover:underline"
+                        className="font-bold text-gray-900 hover:text-blue-600 hover:underline tabular-nums"
+                        dir="ltr"
                       >
-                        {call.call_number || `#${call.id?.slice(-6)}`}
+                        {call.vehicle_plate || call.call_number || `#${call.id?.slice(-6)}`}
                       </Link>
                       <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full">
                         דחוף
@@ -187,6 +188,8 @@ export default function DashboardOperatorTab({
                       <span className="font-medium">{call.customer_name}</span>
                       <span>•</span>
                       <span>{call.pickup_location_city}</span>
+                      <span>•</span>
+                      <span>קריאה {call.call_number}</span>
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

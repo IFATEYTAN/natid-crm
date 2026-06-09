@@ -93,7 +93,9 @@ export default function VendorMobileCalls({
                   {/* Top row */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-900">{call.call_number}</span>
+                      <span className="font-bold text-gray-900 tabular-nums" dir="ltr">
+                        {call.vehicle_plate || 'ללא מספר רכב'}
+                      </span>
                       <StatusBadge status={call.call_status} />
                     </div>
                     <span className="text-xs text-gray-400">
@@ -107,6 +109,7 @@ export default function VendorMobileCalls({
                     <div className="text-sm text-gray-500">
                       {issueTypeLabels[call.issue_type] || call.issue_type}
                     </div>
+                    <div className="text-xs text-gray-400 mt-0.5">קריאה {call.call_number}</div>
                   </div>
 
                   {/* Address */}

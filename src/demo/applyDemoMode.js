@@ -98,6 +98,11 @@ function createMockEntity(entityName) {
       return Promise.resolve(result);
     },
 
+    get: (id) => {
+      const item = store[storeKey].find((entry) => entry.id === id);
+      return Promise.resolve(item ? { ...item } : null);
+    },
+
     create: (data) => {
       const created = {
         ...data,
@@ -107,6 +112,19 @@ function createMockEntity(entityName) {
       store[storeKey].push(created);
       return Promise.resolve(created);
     },
+
+    bulkCreate: (items = []) => {
+      const created = items.map((data) => ({
+        ...data,
+        id: generateDemoId(),
+        created_date: new Date().toISOString(),
+      }));
+      store[storeKey].push(...created);
+      return Promise.resolve(created);
+    },
+
+    // Real-time subscriptions are a no-op in demo mode; return an unsubscribe fn.
+    subscribe: () => () => {},
 
     update: (id, updateData) => {
       const idx = store[storeKey].findIndex((item) => item.id === id);
@@ -226,30 +244,51 @@ function createMockFunctions(realFunctions) {
 }
 
 /**
- * Create mock auth object.
+ * Create a demo-aware auth wrapper.
+ *
+ * Only a handful of methods need demo behavior (me/logout/redirectToLogin/
+ * updateMe). Everything else — loginWithProvider, loginViaEmailPassword,
+ * register, resetPasswordRequest, etc. — MUST keep working for real login, so
+ * we proxy unknown props straight through to the real auth object instead of
+ * replacing it. (Returning a bare object here previously deleted all the real
+ * login methods and broke the login screen even when demo mode was off.)
  */
 function createMockAuth(realAuth) {
-  return {
+  const overrides = {
     me: () => {
       if (!isDemoMode()) return realAuth.me();
       return Promise.resolve({ ...demoUser });
+    },
+    updateMe: (data) => {
+      if (!isDemoMode()) return realAuth.updateMe(data);
+      return Promise.resolve({ ...demoUser, ...data });
     },
     logout: (...args) => {
       if (isDemoMode()) {
         localStorage.removeItem('natid_demo_mode');
         window.location.href = window.location.origin;
-        return;
+        return undefined;
       }
       return realAuth.logout(...args);
     },
     redirectToLogin: (...args) => {
       if (isDemoMode()) {
         window.location.href = window.location.origin;
-        return;
+        return undefined;
       }
       return realAuth.redirectToLogin(...args);
     },
   };
+
+  return new Proxy(realAuth, {
+    get(target, prop, receiver) {
+      if (Object.prototype.hasOwnProperty.call(overrides, prop)) {
+        return overrides[prop];
+      }
+      const value = Reflect.get(target, prop, receiver);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
 }
 
 /**
