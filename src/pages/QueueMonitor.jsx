@@ -52,6 +52,8 @@ import {
 import StatusBadge from '@/components/ui/StatusBadge';
 import DataTable from '@/components/ui/DataTable';
 import { buildCallColumns } from '@/components/calls/callTableColumns';
+import ColumnSelector from '@/components/calls/ColumnSelector';
+import { useColumnVisibility } from '@/components/calls/useColumnVisibility';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -368,11 +370,17 @@ export default function QueueMonitor() {
         </div>
       );
 
-  const columns = buildCallColumns({
+  const allColumns = buildCallColumns({
     getCall: (item) => item.call,
     getCallId: (item) => item.call_id,
     renderActions,
   });
+  const columnHeaders = allColumns.map((c) => c.header);
+  const { isHidden, toggleColumn, resetColumns } = useColumnVisibility({
+    pageName: 'QueueMonitor',
+    allColumns: columnHeaders,
+  });
+  const columns = allColumns.filter((c) => !isHidden(c.header));
 
   if (workQueueQuery.isError || casesQuery.isError) {
     return (
@@ -475,6 +483,12 @@ export default function QueueMonitor() {
                     ))}
                   </SelectContent>
                 </Select>
+                <ColumnSelector
+                  allColumns={columnHeaders}
+                  isHidden={isHidden}
+                  onToggle={toggleColumn}
+                  onReset={resetColumns}
+                />
               </div>
 
               <DataTable
