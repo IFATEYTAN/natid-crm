@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
+import { fetchUsersList } from '@/lib/usersListApi';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +42,9 @@ export default function AdminDisplaySettings() {
   const { data: users = [] } = useQuery({
     queryKey: queryKeys.users.all(),
     enabled: !!user && user.role === 'admin',
-    queryFn: () => base44.entities.User.list(),
+    // Admin-gated server function (service role) instead of a direct
+    // client-side User.list(), which the platform blocks with 403.
+    queryFn: async () => (await fetchUsersList()).users,
     initialData: [],
   });
 
