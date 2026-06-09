@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { createPageUrl, safeParseISO } from '@/components/utils';
 import { Clock, Timer, Eye, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { openStatuses } from '@/components/dashboard/dashboardConstants';
-import { differenceInMinutes, parseISO } from 'date-fns';
+import { differenceInMinutes } from 'date-fns';
 
 /**
  * Calculates delay info for a call
@@ -27,8 +27,8 @@ function getCallDelayInfo(call) {
     call.call_status !== 'completed'
   ) {
     // Check against estimated_arrival_time
-    if (call.estimated_arrival_time) {
-      const estimatedArrival = parseISO(call.estimated_arrival_time);
+    const estimatedArrival = safeParseISO(call.estimated_arrival_time);
+    if (estimatedArrival) {
       if (now > estimatedArrival) {
         const minutes = differenceInMinutes(now, estimatedArrival);
         if (minutes > 0) {
@@ -40,8 +40,8 @@ function getCallDelayInfo(call) {
     }
 
     // Check against vendor_arrival_time_estimated
-    if (!result.isDelayed && call.vendor_arrival_time_estimated) {
-      const vendorEta = parseISO(call.vendor_arrival_time_estimated);
+    const vendorEta = safeParseISO(call.vendor_arrival_time_estimated);
+    if (!result.isDelayed && vendorEta) {
       if (now > vendorEta) {
         const minutes = differenceInMinutes(now, vendorEta);
         if (minutes > 0) {
@@ -54,8 +54,8 @@ function getCallDelayInfo(call) {
   }
 
   // Check 2: SLA breach - time since creation vs SLA target
-  if (call.assigned_at && call.sla_target) {
-    const assignedTime = parseISO(call.assigned_at);
+  const assignedTime = safeParseISO(call.assigned_at);
+  if (assignedTime && call.sla_target) {
     const minutesSinceAssignment = differenceInMinutes(now, assignedTime);
     if (
       minutesSinceAssignment > call.sla_target &&
@@ -77,8 +77,8 @@ function getCallDelayInfo(call) {
     call.created_date &&
     (call.call_status === 'waiting_treatment' || call.call_status === 'awaiting_assignment')
   ) {
-    const createdTime = parseISO(call.created_date);
-    const waitMinutes = differenceInMinutes(now, createdTime);
+    const createdTime = safeParseISO(call.created_date);
+    const waitMinutes = createdTime ? differenceInMinutes(now, createdTime) : 0;
     if (waitMinutes > 15) {
       result.isDelayed = true;
       result.delayMinutes = waitMinutes;

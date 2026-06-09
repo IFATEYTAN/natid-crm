@@ -26,27 +26,25 @@
 | Permissions: vendor blocked from admin + operator pages | 🟢 (gated) | `e2e/permissions.spec.js` |
 | Permissions: admin positive sanity (reaches admin pages) | 🟢 (gated) | `e2e/permissions.spec.js` |
 | Call lifecycle: anonymous blocked from `/NewCase` | 🟢 | `e2e/call-lifecycle.spec.js` |
-| Call lifecycle: operator opens NewCase form | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Call lifecycle: operator submits a new call | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Call lifecycle: new call appears in /Calls list | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Call lifecycle: vendor sees VendorPortal | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
-| Call lifecycle: vendor advances status via "יצא לדרך" | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
+| Call lifecycle: full happy path (intake → assign → ספק בדרך → הגיע → במקום → סגור) | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
+| Vendor portal: renders for signed-in vendor | 🟢 (gated) | `e2e/call-lifecycle.spec.js` |
 | Customer portal: route reachable | 🟢 | `e2e/customer-portal.spec.js` |
 | Customer portal: form renders + validation + error path | 🟢 (E2E_BASE_URL) | `e2e/customer-portal.spec.js` |
 | Close stale calls: anonymous blocked | 🟢 | `e2e/close-stale-calls.spec.js` |
 | Close stale calls: admin sees cleanup card | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
 | Close stale calls: Dry Run completes + renders result | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
 | Admin login → Dashboard loads | 🟡 | manual checklist below |
-| Operator assigns vendor (full assignment flow) | 🟡 | manual checklist below |
+| Operator assigns vendor (full assignment deep-check) | 🟡 | manual checklist below |
 | Customer feedback token submission | 🟡 | manual checklist below |
 | GPS tracking updates | 🟡 | manual (needs real mobile) |
 | Photo upload + AI extraction | 🟡 | manual (needs real device) |
 | SMS notifications | 🟡 | manual (needs Twilio + real phone) |
+| Permissions: operator can't access AdminDataCleanup | 🔴 | TODO — add to `e2e/permissions.spec.js` |
+| Permissions: vendor only sees own calls | 🔴 | TODO |
+| Customer portal: phone+call# → status | 🔴 | TODO |
 
-**(gated)** = רץ רק אם משתני הסביבה של ה-role המתאים מוגדרים. ראו `docs/E2E_SETUP.md`.
+**(gated)** = רץ רק כשמוגדרים credentials של בדיקה: `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` (צד מוקדן — אין משתמש operator ייעודי, אדמין מבצע את שלבי המוקדן) ו-`E2E_VENDOR_EMAIL`/`E2E_VENDOR_PASSWORD` (פורטל הספקים). מדלג בחן כשחסר. ראו `docs/E2E_SETUP.md`.
 **(E2E_BASE_URL)** = רץ רק כשמכוונים ל-Base44 אמיתי (לא ב-CI ברירת מחדל).
-
-**סיכום**: 50 טסטים אוטומטיים — 20 structural (רצים על כל PR) + 30 gated (רצים על main + nightly עם secrets).
 
 ה-CI מריץ אוטומטית: `quick-tests` על כל PR, `full-e2e` על main + nightly. ראו `.github/workflows/test.yml`.
 

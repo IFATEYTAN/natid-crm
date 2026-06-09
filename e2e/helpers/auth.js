@@ -37,11 +37,16 @@ export async function signInAs(page, role) {
 
   const emailField = page
     .getByLabel(/email|דוא"ל|מייל|כתובת/i)
-    .or(page.getByPlaceholder(/email|מייל/i))
+    .or(page.getByPlaceholder(/email|מייל|אימייל/i))
     .first();
   await emailField.fill(creds.email);
 
-  const passwordField = page.getByLabel(/password|סיסמה|סיסמא/i).first();
+  // LoginForm uses placeholder-only inputs (no associated <label>), so match by
+  // placeholder as well as label.
+  const passwordField = page
+    .getByLabel(/password|סיסמה|סיסמא/i)
+    .or(page.getByPlaceholder(/password|סיסמה|סיסמא/i))
+    .first();
   await passwordField.fill(creds.password);
 
   await page

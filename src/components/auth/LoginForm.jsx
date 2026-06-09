@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Mail, Lock, Eye, EyeOff, User, Loader2, ChevronRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, Loader2, ChevronRight, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const MODES = {
@@ -26,6 +26,12 @@ export default function LoginForm({ onSuccess }) {
 
   const handleSocialLogin = () => {
     base44.auth.redirectToLogin(returnTo);
+  };
+
+  // Enter demo mode: activates mock-data mode and lands on the dashboard.
+  // No backend or credentials required — used for product walkthroughs.
+  const handleDemoLogin = () => {
+    window.location.href = '/Dashboard?demo=true';
   };
 
   const handleEmailLogin = async (e) => {
@@ -156,6 +162,26 @@ export default function LoginForm({ onSuccess }) {
                 אין לך חשבון? <span className="font-semibold underline">הרשמה</span>
               </button>
             </div>
+
+            <div className="relative py-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-xs text-gray-400">או</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleDemoLogin}
+              className="w-full flex items-center justify-center gap-2 h-12 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors font-medium text-blue-700"
+            >
+              <PlayCircle className="w-5 h-5" />
+              כניסה למצב הדגמה
+            </button>
+            <p className="text-center text-xs text-gray-400">
+              סיור במערכת עם נתונים לדוגמה — ללא צורך בהתחברות
+            </p>
           </motion.div>
         )}
 
