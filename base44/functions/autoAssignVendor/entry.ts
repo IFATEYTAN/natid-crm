@@ -241,7 +241,7 @@ Deno.serve(async (req) => {
     }
 
     // Create assignment attempt record
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10-minute acceptance window
     
     const attempt = await base44.asServiceRole.entities.CallAssignmentAttempt.create({
       call_id,
