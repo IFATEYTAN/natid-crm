@@ -30,7 +30,7 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
   // Step 1: Invite user
   const inviteMutation = useMutation({
     mutationFn: async () => {
-      await base44.users.inviteUser(email.trim(), 'vendor');
+      await base44.users.inviteUser(email.trim().toLowerCase(), 'vendor');
     },
     onSuccess: () => {
       setInviteStatus('success');
@@ -55,11 +55,18 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
     mutationFn: async () => {
       return base44.functions.invoke('linkVendorToUser', {
         vendor_id: selectedVendorId,
-        user_email: email.trim(),
+        user_email: email.trim().toLowerCase(),
       });
     },
-    onSuccess: () => {
-      showToast.success(`הספק ${selectedVendor?.vendor_name} קושר בהצלחה ל-${email}`);
+    onSuccess: (res) => {
+      const warning = res?.data?.warning;
+      if (warning) {
+        showToast.warning(warning);
+      } else {
+        showToast.success(
+          `הספק ${selectedVendor?.vendor_name} קושר בהצלחה ל-${email.trim().toLowerCase()} והוגדר כ-vendor`
+        );
+      }
       setSelectedVendorId('');
       setEmail('');
       setStep(1);
