@@ -5,6 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Navigation, Battery, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
+import {
+  isNativeTrackingAvailable,
+  startBackgroundLocation,
+  stopBackgroundLocation,
+} from '@/services/backgroundLocation';
 
 const MIN_SEND_INTERVAL_MS = 30000;
 const GPS_VERSION = 'v7-clean';
@@ -221,6 +226,14 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       return;
     }
 
+    // On native (Capacitor) the OS background-location plugin handles tracking
+    // — including with the screen locked — via the effect below, so skip the
+    // browser geolocation watch here to avoid duplicate streams.
+    if (isNativeTrackingAvailable()) {
+      setIsTracking(true);
+      return;
+    }
+
     if (!navigator.geolocation) {
       setLocationError('GPS לא נתמך בדפדפן זה');
       return;
@@ -263,6 +276,21 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       cleanupGeo();
     };
   }, [sharingEnabled]);
+
+  // Native (Capacitor) background tracking — runs only on a native build and is
+  // a no-op on the web. Streams location to the same updateVendorLocation
+  // endpoint even while the app is backgrounded / the screen is locked.
+  useEffect(() => {
+    if (!isNativeTrackingAvailable()) return undefined;
+    if (sharingEnabled && vendorId) {
+      startBackgroundLocation(vendorId);
+    } else {
+      stopBackgroundLocation();
+    }
+    return () => {
+      stopBackgroundLocation();
+    };
+  }, [sharingEnabled, vendorId]);
 
   // Toggle handler — local state + persist to server
   const handleToggle = async (enabled) => {

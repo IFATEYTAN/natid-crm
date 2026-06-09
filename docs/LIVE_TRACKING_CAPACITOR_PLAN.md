@@ -13,6 +13,21 @@ Capacitor עוטף את אפליקציית ה-React/Vite הקיימת כאפלי
 **בלי לכתוב מחדש** — אותו קוד, אותו פורטל. נוסיף plugin שמספק מעקב מיקום נייטיב
 אמיתי (גם מסך נעול, מבוסס-תנועה, חסכוני בסוללה, עם buffering אופליין).
 
+## מה כבר מוטמע בריפו (scaffold — בוצע)
+החלק שנכנס לקוד **כבר קיים בברנצ'**, וה-web build נשאר ירוק (הכל מאחורי guard נייטיב):
+- ✅ חבילות: `@capacitor/core,cli,ios,android` + `@capacitor-community/background-geolocation` (חינמי) ב-`package.json`.
+- ✅ `capacitor.config.ts` (appId `co.natid.crm`, `webDir: dist`).
+- ✅ `src/services/backgroundLocation.js` — מאזין מיקומי-רקע (דרך `registerPlugin`) שמזין את **`updateVendorLocation` הקיימת**.
+- ✅ חיווט ב-`VendorGPSTracker.jsx` — בנייטיב מפעיל מעקב-רקע ומדלג על ה-watch של הדפדפן; ב-web no-op מוחלט.
+- ✅ npm scripts: `cap:sync`, `cap:ios`, `cap:android`.
+
+**מה שנשאר (רץ מקומית על מחשב מפתח):**
+1. `npx cap add ios && npx cap add android` (יוצר את תיקיות הנייטיב).
+2. הוספת ההרשאות (סעיף "הרשאות" למטה).
+3. build והרצה על מכשיר + הפצה.
+
+> הערה: ה-scaffold משתמש ב-plugin הקהילתי החינמי. לשדרוג production (מבוסס-תנועה, חסכוני יותר) אפשר להחליף ל-`@transistorsoft/capacitor-background-geolocation` — אותו מבנה, API דומה.
+
 ## דרישות מקדימות
 - חשבון Apple Developer (להפצת iOS) + חשבון Google Play (Android), או הפצה פנימית (MDM / TestFlight / APK).
 - macOS + Xcode ל-build של iOS; Android Studio ל-Android.
