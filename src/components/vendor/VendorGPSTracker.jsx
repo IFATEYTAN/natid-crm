@@ -37,6 +37,7 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
   const vendorIdRef = useRef(vendorId);
   const batteryRef = useRef(batteryLevel);
   const userToggledRef = useRef(false);
+  const wakeLockRef = useRef(null);
 
   useEffect(() => {
     vendorIdRef.current = vendorId;
@@ -62,6 +63,59 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
       if (bat) bat.removeEventListener('levelchange', onChange);
     };
   }, []);
+
+  // Keep the screen awake while actively tracking. Mobile browsers suspend
+  // geolocation once the screen locks, so holding a screen wake lock keeps GPS
+  // streaming during a job (as long as the app stays in the foreground). Wake
+  // locks auto-release when the tab is hidden, so we re-acquire on visibility.
+  useEffect(() => {
+    let cancelled = false;
+
+    const requestWakeLock = async () => {
+      if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+      try {
+        const lock = await navigator.wakeLock.request('screen');
+        if (cancelled) {
+          lock.release().catch(() => {});
+          return;
+        }
+        wakeLockRef.current = lock;
+        lock.addEventListener('release', () => {
+          if (wakeLockRef.current === lock) wakeLockRef.current = null;
+        });
+      } catch {
+        // Non-fatal: denied or not allowed while backgrounded.
+      }
+    };
+
+    const releaseWakeLock = async () => {
+      if (wakeLockRef.current) {
+        try {
+          await wakeLockRef.current.release();
+        } catch {
+          // ignore
+        }
+        wakeLockRef.current = null;
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && isTracking) requestWakeLock();
+    };
+
+    if (isTracking) {
+      requestWakeLock();
+      document.addEventListener('visibilitychange', onVisibility);
+    } else {
+      releaseWakeLock();
+    }
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibility);
+      releaseWakeLock();
+    };
+  }, [isTracking]);
 
   // Send location — uses refs only, no state deps
   const sendLocation = async (position) => {
