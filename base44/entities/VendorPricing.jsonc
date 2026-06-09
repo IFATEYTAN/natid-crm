@@ -1,0 +1,127 @@
+{
+  "name": "VendorPricing",
+  "type": "object",
+  "description": "תעריפון מרחק per-ספק, ממורר (read-only) ממערכת נתי (supplier_distance_price_list). מקור האמת הוא נתי; אין לערוך ידנית — ערכים יידרסו בסנכרון הבא.",
+  "properties": {
+    "vendor_id": {
+      "type": "string",
+      "description": "מזהה ספק במערכת נתי"
+    },
+    "vendor_name": {
+      "type": "string",
+      "description": "שם ספק"
+    },
+    "supplier_type": {
+      "type": "string",
+      "description": "סוג ספק (ערך גולמי מנתי)"
+    },
+    "service_category": {
+      "type": "string",
+      "enum": ["towing", "mobile_unit", "other"],
+      "default": "towing",
+      "description": "קטגוריית שירות"
+    },
+    "base_distance_km": {
+      "type": "number",
+      "description": "ק\"מ בסיס הכלולים במחיר הבסיס"
+    },
+    "base_price": {
+      "type": "number",
+      "description": "מחיר בסיס (₪)"
+    },
+    "double_base_price": {
+      "type": "number",
+      "description": "מחיר בסיס - דאבל ג'נט (₪)"
+    },
+    "extra_km_price": {
+      "type": "number",
+      "description": "מחיר ק\"מ נוסף (₪)"
+    },
+    "double_extra_km_price": {
+      "type": "number",
+      "description": "מחיר ק\"מ נוסף - דאבל ג'נט (₪)"
+    },
+    "futile_km_price": {
+      "type": "number",
+      "description": "מחיר ק\"מ סרק (₪)"
+    },
+    "double_futile_km_price": {
+      "type": "number",
+      "description": "מחיר ק\"מ סרק - דאבל ג'נט (₪)"
+    },
+    "regular_extra_pct": {
+      "type": "number",
+      "description": "תוספת רגילה (%)"
+    },
+    "commercial_extra_pct": {
+      "type": "number",
+      "description": "תוספת מסחרי (%)"
+    },
+    "evening_extra_pct": {
+      "type": "number",
+      "description": "תוספת ערב (%)"
+    },
+    "commercial_evening_extra_pct": {
+      "type": "number",
+      "description": "תוספת ערב - מסחרי (%)"
+    },
+    "night_extra_pct": {
+      "type": "number",
+      "description": "תוספת לילה (%)"
+    },
+    "commercial_night_extra_pct": {
+      "type": "number",
+      "description": "תוספת לילה - מסחרי (%)"
+    },
+    "holiday_extra_pct": {
+      "type": "number",
+      "description": "תוספת חג (%)"
+    },
+    "commercial_holiday_extra_pct": {
+      "type": "number",
+      "description": "תוספת חג - מסחרי (%)"
+    },
+    "truck_extra_pct": {
+      "type": "number",
+      "description": "תוספת משאית (%)"
+    },
+    "territories_extra_pct": {
+      "type": "number",
+      "description": "תוספת שטחים (%)"
+    },
+    "commercial_territories_extra_pct": {
+      "type": "number",
+      "description": "תוספת שטחים - מסחרי (%)"
+    },
+    "road6_price": {
+      "type": "number",
+      "description": "תוספת כביש 6 (₪)"
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date",
+      "description": "תוקף מתאריך"
+    },
+    "valid_to": {
+      "type": "string",
+      "format": "date",
+      "description": "תוקף עד תאריך"
+    },
+    "source": {
+      "type": "string",
+      "default": "nati",
+      "description": "מקור הנתון"
+    },
+    "is_managed_externally": {
+      "type": "boolean",
+      "default": true,
+      "description": "מנוהל חיצונית (נתי) - קריאה בלבד"
+    },
+    "last_synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "סונכרן לאחרונה"
+    }
+  },
+  "required": ["vendor_id"]
+}

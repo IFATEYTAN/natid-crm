@@ -1,8 +1,9 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, DollarSign } from 'lucide-react';
+import { FileText, DollarSign, Truck } from 'lucide-react';
 import GeneralContractsTab from '@/components/contracts/GeneralContractsTab.jsx';
 import PricingAgreementsTab from '@/components/contracts/PricingAgreementsTab.jsx';
+import VendorPricingTab from '@/components/contracts/VendorPricingTab.jsx';
 
 export default function VendorContractsPage() {
   return (
@@ -14,7 +15,7 @@ export default function VendorContractsPage() {
       </div>
 
       <Tabs defaultValue="general" className="w-full" dir="rtl">
-        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
             חוזי ספקים
@@ -23,12 +24,19 @@ export default function VendorContractsPage() {
             <DollarSign className="w-4 h-4" />
             הסכמי תמחור
           </TabsTrigger>
+          <TabsTrigger value="vendor_pricing" className="flex items-center gap-2">
+            <Truck className="w-4 h-4" />
+            תעריפי ספקים (נתי)
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="general" className="mt-0">
           <GeneralContractsTab />
         </TabsContent>
         <TabsContent value="pricing" className="mt-0">
           <PricingAgreementsTab />
+        </TabsContent>
+        <TabsContent value="vendor_pricing" className="mt-0">
+          <VendorPricingTab />
         </TabsContent>
       </Tabs>
     </div>
