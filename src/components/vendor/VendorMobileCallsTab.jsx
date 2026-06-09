@@ -7,9 +7,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { issueTypeLabels } from '@/config/labels';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import {
-  Phone, MapPin, Navigation, RefreshCw,
-} from 'lucide-react';
+import { Phone, MapPin, Navigation, RefreshCw } from 'lucide-react';
 
 export default function VendorMobileCallsTab({
   activeCalls,
@@ -24,7 +22,11 @@ export default function VendorMobileCallsTab({
     switch (call.call_status) {
       case 'assigned':
       case 'assigning':
-        return { label: 'יצא לדרך', status: 'vendor_enroute', color: 'bg-blue-600 hover:bg-blue-700' };
+        return {
+          label: 'יצא לדרך',
+          status: 'vendor_enroute',
+          color: 'bg-blue-600 hover:bg-blue-700',
+        };
       case 'vendor_enroute':
         return { label: 'הגעתי', status: 'in_progress', color: 'bg-green-600 hover:bg-green-700' };
       case 'in_progress':
@@ -80,14 +82,16 @@ export default function VendorMobileCallsTab({
             </p>
           </div>
         ) : (
-          displayedCalls.map(call => {
+          displayedCalls.map((call) => {
             const action = getStatusAction(call);
             return (
               <Card key={call.id} className="rounded-xl shadow-sm overflow-hidden">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-900">{call.call_number}</span>
+                      <span className="font-bold text-gray-900 tabular-nums" dir="ltr">
+                        {call.vehicle_plate || 'ללא מספר רכב'}
+                      </span>
                       <StatusBadge status={call.call_status} />
                     </div>
                     <span className="text-xs text-gray-400">
@@ -97,7 +101,10 @@ export default function VendorMobileCallsTab({
 
                   <div>
                     <div className="font-medium text-gray-800">{call.customer_name}</div>
-                    <div className="text-sm text-gray-500">{issueTypeLabels[call.issue_type] || call.issue_type}</div>
+                    <div className="text-sm text-gray-500">
+                      {issueTypeLabels[call.issue_type] || call.issue_type}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">קריאה {call.call_number}</div>
                   </div>
 
                   {call.pickup_location_address && (
@@ -115,7 +122,10 @@ export default function VendorMobileCallsTab({
                         rel="noopener noreferrer"
                         className="flex-1"
                       >
-                        <Button variant="outline" className="w-full h-11 rounded-xl gap-2 text-sm font-medium">
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 rounded-xl gap-2 text-sm font-medium"
+                        >
                           <Navigation className="w-4 h-4 text-blue-600" />
                           נווט
                         </Button>
@@ -123,7 +133,10 @@ export default function VendorMobileCallsTab({
                     )}
                     {call.customer_phone && (
                       <a href={`tel:${call.customer_phone}`} className="flex-1">
-                        <Button variant="outline" className="w-full h-11 rounded-xl gap-2 text-sm font-medium">
+                        <Button
+                          variant="outline"
+                          className="w-full h-11 rounded-xl gap-2 text-sm font-medium"
+                        >
                           <Phone className="w-4 h-4 text-green-600" />
                           חייג
                         </Button>
@@ -131,14 +144,20 @@ export default function VendorMobileCallsTab({
                     )}
                     {action && (
                       <Button
-                        className={cn('flex-1 h-11 rounded-xl text-sm font-bold text-white', action.color)}
+                        className={cn(
+                          'flex-1 h-11 rounded-xl text-sm font-bold text-white',
+                          action.color
+                        )}
                         onClick={() => onUpdateCallStatus(call.id, action.status)}
                       >
                         {action.label}
                       </Button>
                     )}
                     {call.call_status === 'in_progress' && (
-                      <Link to={createPageUrl(`VendorCallManagement?id=${call.id}`)} className="flex-1">
+                      <Link
+                        to={createPageUrl(`VendorCallManagement?id=${call.id}`)}
+                        className="flex-1"
+                      >
                         <Button className="w-full h-11 rounded-xl text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white">
                           סיים וחתם
                         </Button>

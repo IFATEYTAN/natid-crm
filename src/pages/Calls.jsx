@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, RefreshCw, MapPin, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Plus, Search, RefreshCw, MapPin, ChevronRight, ChevronLeft, Car } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { format } from 'date-fns';
 
@@ -318,7 +318,13 @@ export default function CallsPage() {
                   <div className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all active:bg-gray-50">
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-sm text-[#172B4D] truncate">
+                        <div className="flex items-center gap-1.5 font-bold text-sm text-[#172B4D]">
+                          <Car className="w-4 h-4 text-[#6B778C] shrink-0" />
+                          <span dir="ltr" className="tabular-nums">
+                            {c.vehicle_plate || 'ללא מספר רכב'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-[#172B4D] mt-0.5 truncate">
                           {c.customer_name || 'ללא שם'}
                         </div>
                         <div className="text-xs text-[#6B778C] mt-0.5">
@@ -376,6 +382,7 @@ export default function CallsPage() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   {[
+                    'מספר רכב',
                     'מספר קריאה',
                     'שם לקוח',
                     'טלפון',
@@ -400,7 +407,7 @@ export default function CallsPage() {
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
                     <tr key={i}>
-                      {Array.from({ length: 9 }).map((_, j) => (
+                      {Array.from({ length: 10 }).map((_, j) => (
                         <td key={j} className="px-4 py-3">
                           <div className="h-4 bg-gray-100 rounded animate-pulse w-20" />
                         </td>
@@ -409,13 +416,26 @@ export default function CallsPage() {
                   ))
                 ) : paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-12 text-center text-[#6B778C]">
+                    <td colSpan={10} className="px-4 py-12 text-center text-[#6B778C]">
                       אין קריאות להצגה
                     </td>
                   </tr>
                 ) : (
                   paginated.map((c) => (
                     <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {c.vehicle_plate ? (
+                          <span
+                            className="inline-flex items-center gap-1 font-bold text-[#172B4D] tabular-nums"
+                            dir="ltr"
+                          >
+                            <Car className="w-3.5 h-3.5 text-[#6B778C] shrink-0" />
+                            {c.vehicle_plate}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 font-medium text-blue-600">
                         <Link
                           to={createPageUrl(`CallDetails?id=${c.id}`)}

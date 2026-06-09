@@ -46,12 +46,22 @@ import { showToast } from '@/components/ui/FeedbackToast';
 import AICategorization from '@/components/ai/AICategorization';
 import { serviceTypeLabels, vehicleTypeLabels } from '@/config/labels';
 import { coverageAreas } from '@/config/coverageConstants';
+import { sortedIsraelCities } from '@/config/israelCities';
 
 // ===== CityAutocomplete Component =====
-// רכיב חיפוש חי לבחירת עיר מתוך רשימת הערים (לפי דרישת דורית נתי גרופ)
-const ALL_CITIES = coverageAreas.flatMap((area) =>
-  area.cities.map((city) => ({ city, area: area.label }))
-);
+// רכיב חיפוש חי לבחירת עיר מתוך רשימה מלאה של ערים בישראל (לפי דרישת דורית נתי גרופ)
+// כל עיר ממופה לאזור הכיסוי שלה (אם קיים) כדי להציג אותו לצד שם העיר.
+const CITY_TO_AREA = coverageAreas.reduce((acc, area) => {
+  area.cities.forEach((city) => {
+    acc[city] = area.label;
+  });
+  return acc;
+}, {});
+
+const ALL_CITIES = sortedIsraelCities.map((city) => ({
+  city,
+  area: CITY_TO_AREA[city] || '',
+}));
 
 function CityAutocomplete({ value, onChange, placeholder = 'הקלד שם עיר...', id }) {
   const [cityQuery, setCityQuery] = useState('');

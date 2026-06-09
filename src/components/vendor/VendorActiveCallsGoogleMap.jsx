@@ -140,7 +140,7 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
             scaledSize: new maps.Size(36, 48),
             anchor: new maps.Point(18, 48),
           },
-          title: call.call_number || `קריאה ${i + 1}`,
+          title: call.vehicle_plate || call.call_number || `קריאה ${i + 1}`,
           zIndex: 50,
         });
 
@@ -149,8 +149,8 @@ export default function VendorActiveCallsGoogleMap({ vendorProfile, activeCalls 
           const iw = infoWindowRef.current;
           iw.setContent(`
             <div dir="rtl" style="min-width:200px;font-family:Heebo,sans-serif;">
-              <strong>${call.call_number || ''}</strong><br/>
-              <span style="color:#6b7280">${call.customer_name || ''}</span><br/>
+              <strong>${call.vehicle_plate ? `🚗 ${call.vehicle_plate}` : ''}</strong><br/>
+              <span style="color:#6b7280">קריאה ${call.call_number || ''} · ${call.customer_name || ''}</span><br/>
               <span style="font-size:12px">${call.pickup_location_address || ''}</span><br/>
               ${newRouteInfos[call.id] ? `<span style="color:#2563eb;font-size:12px">🚗 ${newRouteInfos[call.id].duration} | ${newRouteInfos[call.id].distance}</span><br/>` : ''}
               <div style="margin-top:6px;display:flex;gap:6px">
