@@ -138,8 +138,9 @@ export default function CallDetailsInfoTab({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <InfoField label="מספר קריאה" value={call?.call_number} />
-            <div>
+             <InfoField label="מספר הרכב" value={call?.vehicle_plate} dir="ltr" />
+             <InfoField label="מספר קריאה" value={call?.call_number} />
+             <div>
               <Label className="text-xs text-[#6B778C]">עדיפות</Label>
               <div className="mt-0.5">
                 <Badge className={priorityColors[call?.call_priority] || priorityColors.normal}>
