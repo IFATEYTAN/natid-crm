@@ -24,8 +24,8 @@ export default function LoginForm({ onSuccess }) {
 
   const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/Dashboard';
 
-  const handleSocialLogin = (provider) => {
-    base44.auth.loginWithProvider(provider, returnTo);
+  const handleSocialLogin = () => {
+    base44.auth.redirectToLogin(returnTo);
   };
 
   const handleEmailLogin = async (e) => {
@@ -116,7 +116,7 @@ export default function LoginForm({ onSuccess }) {
             className="space-y-3"
           >
             <button
-              onClick={() => handleSocialLogin('google')}
+              onClick={() => handleSocialLogin()}
               className="w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors font-medium text-gray-700"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
