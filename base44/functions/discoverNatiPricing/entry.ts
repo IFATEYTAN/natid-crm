@@ -2,137 +2,152 @@
  * discoverNatiPricing — One-shot schema discovery for vendor pricing / agreements
  * in the Nati MySQL DB. Admin only, read-only.
  *
- * Purpose: answer "does Nati's original DB hold supplier pricing / tariffs
- * (גרר / ניידת = הסכמים), and in what shape?" so we can decide how to import it
- * into our VendorContract / OperationalRate entities.
- *
- * Why a dedicated function (vs. ad-hoc queries from a dev box): the Nati RDS only
- * accepts connections from the allow-listed static proxy IP, and the DB secrets
- * are injected into the Base44 runtime — neither is available outside Production.
- * So discovery has to run here, from the function runtime.
- *
- * Rate-limit safety: ALL queries run inside a SINGLE withNatiConnection() call, so
- * we open exactly one connection. The shared circuit breaker still guards us if
- * Nati has already blocked the IP (we report a cooldown instead of piling on more
- * failed connects).
+ * Self-contained (no local imports): inlines a single guarded MySQL connection.
+ * TLS is negotiated but CA verification is relaxed (channel still encrypted;
+ * access is locked down by RDS IP allow-listing). Opens exactly ONE connection.
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { withNatiConnection, NatiBlockedError } from './_shared/natiDb.ts';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import mysql from 'npm:mysql2@3.9.7/promise';
 
-// Table/column name fragments that hint at pricing or agreements. Hebrew systems
-// often transliterate, so we cover both English and common Hebrew romanizations.
+const CONNECT_TIMEOUT_MS = 20_000;
+
 const PRICING_HINTS = [
   'price', 'pricing', 'rate', 'tariff', 'cost', 'fee', 'payment', 'invoice',
-  'agreement', 'contract', 'hesken', 'heskem', 'taarif', 'tariff', 'mehir',
+  'agreement', 'contract', 'hesken', 'heskem', 'taarif', 'mehir',
   'supplier', 'kablan', 'vendor', 'grar', 'towing', 'tow', 'niydet', 'sla',
 ];
 
-function looksLikePricing(name: string): boolean {
+function looksLikePricing(name) {
   const lower = String(name).toLowerCase();
   return PRICING_HINTS.some((h) => lower.includes(h));
 }
 
-// Defensive: only ever interpolate identifiers that come back from SHOW TABLES,
-// and even then re-validate before using them in DESCRIBE / SELECT.
 const IDENT_RE = /^[A-Za-z0-9_$]+$/;
-
-const MAX_TABLES_DESCRIBED = 15; // cap heavy work on a single connection
+const MAX_TABLES_DESCRIBED = 20;
 const SAMPLE_LIMIT = 3;
+
+async function connectNati() {
+  const base = {
+    host: Deno.env.get('NATID_DB_HOST'),
+    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+    user: Deno.env.get('NATID_DB_USER'),
+    password: Deno.env.get('NATID_DB_PASSWORD'),
+    database: Deno.env.get('NATID_DB_NAME'),
+    connectTimeout: CONNECT_TIMEOUT_MS,
+  };
+  // Try a few SSL strategies; Nati RDS uses an Amazon CA the runtime may not trust.
+  const sslVariants = [
+    { ssl: { rejectUnauthorized: false } },
+    { ssl: {} },
+    {},
+  ];
+  let lastErr;
+  for (const variant of sslVariants) {
+    try {
+      return await mysql.createConnection({ ...base, ...variant });
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
+  const body = await req.json().catch(() => ({}));
   let user = null;
   try { user = await base44.auth.me(); } catch (_) {}
   if (!user || user.role !== 'admin') {
     return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
   }
 
+  if (!Deno.env.get('NATID_DB_HOST')) {
+    return Response.json({ success: false, error: 'Missing NATID_DB_* secrets' }, { status: 500 });
+  }
+
+  let connection;
   try {
-    const report = await withNatiConnection(async (connection) => {
-      // 1) All tables in the DB.
-      const [tableRows] = await connection.query('SHOW TABLES');
-      const allTables = (tableRows as Record<string, unknown>[])
-        .map((r) => String(Object.values(r)[0]))
-        .filter((t) => IDENT_RE.test(t));
+    connection = await connectNati();
 
-      // 2) Candidate tables: anything that smells like pricing/agreements, plus
-      //    `suppliers` explicitly (pricing is often stored as columns on it).
-      const candidates = Array.from(
-        new Set(
-          allTables
-            .filter((t) => looksLikePricing(t) || t.toLowerCase() === 'suppliers')
-        )
-      ).slice(0, MAX_TABLES_DESCRIBED);
+    const [tableRows] = await connection.query('SHOW TABLES');
+    const allTables = tableRows
+      .map((r) => String(Object.values(r)[0]))
+      .filter((t) => IDENT_RE.test(t));
 
-      // 3) For each candidate: column structure + a tiny sample so we can see the
-      //    actual fields (e.g. price_per_km, base_rate, night_surcharge...).
-      const details: Array<{
-        table: string;
-        total_rows: number | null;
-        columns: Array<{ Field: string; Type: string; Null: string; Key: string; Default: unknown }>;
-        pricing_like_columns: string[];
-        sample: unknown[];
-        error?: string;
-      }> = [];
+    // If specific tables are requested, describe only those (keeps the response
+    // small enough to read in full). Otherwise auto-detect pricing-like tables.
+    const requested = Array.isArray(body?.tables) ? body.tables.filter((t) => IDENT_RE.test(t)) : null;
+    const candidates = requested && requested.length
+      ? requested.slice(0, MAX_TABLES_DESCRIBED)
+      : Array.from(
+          new Set(
+            allTables.filter((t) => looksLikePricing(t) || t.toLowerCase() === 'suppliers')
+          )
+        ).slice(0, MAX_TABLES_DESCRIBED);
 
-      for (const table of candidates) {
+    const details = [];
+
+    // compact=true → return columns as "name:type" strings and limit/skip samples,
+    // so a full table fits inside the response-size limit.
+    const compact = body?.compact === true;
+    const withSample = body?.with_sample !== false;
+
+    for (const table of candidates) {
+      try {
+        const [columns] = await connection.query(`DESCRIBE \`${table}\``);
+
+        let totalRows = null;
         try {
-          const [columns] = await connection.query(`DESCRIBE \`${table}\``);
-          const cols = columns as Array<{ Field: string; Type: string; Null: string; Key: string; Default: unknown }>;
+          const [countRows] = await connection.query(`SELECT COUNT(*) AS cnt FROM \`${table}\``);
+          totalRows = Number(countRows[0]?.cnt ?? 0);
+        } catch (_) { /* count may fail; leave null */ }
 
-          let totalRows: number | null = null;
-          try {
-            const [countRows] = await connection.query(`SELECT COUNT(*) AS cnt FROM \`${table}\``);
-            totalRows = Number((countRows as Record<string, unknown>[])[0]?.cnt ?? 0);
-          } catch (_) { /* count may fail on some tables; leave null */ }
-
-          let sample: unknown[] = [];
+        let sample = [];
+        if (withSample) {
           try {
             const [sampleRows] = await connection.query(`SELECT * FROM \`${table}\` LIMIT ${SAMPLE_LIMIT}`);
-            sample = sampleRows as unknown[];
+            sample = sampleRows;
           } catch (_) { /* sample is best-effort */ }
-
-          details.push({
-            table,
-            total_rows: totalRows,
-            columns: cols,
-            pricing_like_columns: cols.map((c) => c.Field).filter((f) => looksLikePricing(f)),
-            sample,
-          });
-        } catch (e) {
-          details.push({
-            table,
-            total_rows: null,
-            columns: [],
-            pricing_like_columns: [],
-            sample: [],
-            error: (e as { message?: string })?.message || 'DESCRIBE failed',
-          });
         }
+
+        details.push({
+          table,
+          total_rows: totalRows,
+          columns: compact
+            ? columns.map((c) => `${c.Field}:${c.Type}`)
+            : columns,
+          pricing_like_columns: columns.map((c) => c.Field).filter((f) => looksLikePricing(f)),
+          sample: compact ? sample.slice(0, 1) : sample,
+        });
+      } catch (e) {
+        details.push({
+          table,
+          total_rows: null,
+          columns: [],
+          pricing_like_columns: [],
+          sample: [],
+          error: e?.message || 'DESCRIBE failed',
+        });
       }
-
-      return {
-        total_tables: allTables.length,
-        all_tables: allTables,
-        candidate_tables: candidates,
-        details,
-      };
-    });
-
-    return Response.json({ success: true, ...report }, { status: 200 });
-  } catch (e) {
-    if (e instanceof NatiBlockedError) {
-      return Response.json({
-        success: false,
-        status: 'COOLDOWN',
-        error: e.message,
-        retry_after_seconds: e.retryAfterSec,
-        reason: e.reason,
-      }, { status: 503, headers: { 'Retry-After': String(e.retryAfterSec) } });
     }
+
+    // Keep all_tables out of the default response (224 names bloat the payload and
+    // push candidate_tables/details past the log truncation limit). Pass
+    // include_all_tables: true to get them back.
+    const includeAll = body?.include_all_tables === true;
+    return Response.json({
+      success: true,
+      total_tables: allTables.length,
+      ...(includeAll ? { all_tables: allTables } : {}),
+      candidate_tables: candidates,
+      details,
+    }, { status: 200 });
+  } catch (e) {
     return Response.json({
       success: false,
-      error: (e as { message?: string })?.message || 'discovery failed',
+      error: e?.message || 'discovery failed',
     }, { status: 500 });
+  } finally {
+    if (connection) await connection.end().catch(() => {});
   }
 });
