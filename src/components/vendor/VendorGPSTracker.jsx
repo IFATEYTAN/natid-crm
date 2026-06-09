@@ -267,18 +267,24 @@ export default function VendorGPSTracker({ vendorId, initialSharingEnabled }) {
               עדכון אחרון: {lastUpdate.toLocaleTimeString('he-IL')}
             </p>
           )}
+          {/* Until a location is actually obtained, show an explicit permission button.
+              Mobile browsers (iOS Safari / Chrome) block silent geolocation requests that
+              don't originate from a user gesture, so the on-mount auto-request often shows
+              no prompt at all. A user-initiated tap is the reliable way to trigger the
+              browser's location permission dialog. */}
+          {!currentLocation && (
+            <button
+              onClick={requestPermission}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              <MapPin className="w-4 h-4" />
+              אשר גישה למיקום
+            </button>
+          )}
           {locationError && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
-                <AlertCircle className="w-4 h-4" />
-                {locationError}
-              </div>
-              <button
-                onClick={requestPermission}
-                className="text-sm text-blue-600 underline hover:text-blue-800"
-              >
-                לחץ כאן לאשר גישה למיקום
-              </button>
+            <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-2 rounded-md">
+              <AlertCircle className="w-4 h-4" />
+              {locationError}
             </div>
           )}
         </div>
