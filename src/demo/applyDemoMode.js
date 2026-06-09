@@ -98,6 +98,11 @@ function createMockEntity(entityName) {
       return Promise.resolve(result);
     },
 
+    get: (id) => {
+      const item = store[storeKey].find((entry) => entry.id === id);
+      return Promise.resolve(item ? { ...item } : null);
+    },
+
     create: (data) => {
       const created = {
         ...data,
@@ -107,6 +112,19 @@ function createMockEntity(entityName) {
       store[storeKey].push(created);
       return Promise.resolve(created);
     },
+
+    bulkCreate: (items = []) => {
+      const created = items.map((data) => ({
+        ...data,
+        id: generateDemoId(),
+        created_date: new Date().toISOString(),
+      }));
+      store[storeKey].push(...created);
+      return Promise.resolve(created);
+    },
+
+    // Real-time subscriptions are a no-op in demo mode; return an unsubscribe fn.
+    subscribe: () => () => {},
 
     update: (id, updateData) => {
       const idx = store[storeKey].findIndex((item) => item.id === id);
