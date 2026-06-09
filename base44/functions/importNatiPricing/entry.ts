@@ -1,39 +1,36 @@
 /**
- * importNatiPricing — Import vendor pricing / agreements (גרר / ניידת = הסכמים)
- * from the Nati MySQL DB into our Base44 entities, so they show up in the
- * existing "ניהול חוזים והסכמי תמחור" screen (src/pages/VendorContracts.jsx):
- *   - VendorContract  → tab "חוזי ספקים"      (per-vendor agreement: rates, SLA…)
- *   - OperationalRate → tab "הסכמי תמחור"     (global tariff rules: night/area…)
+ * importNatiPricing — Import vendor towing pricing from the Nati MySQL DB into
+ * our VendorContract entity, so rates show up in "ניהול חוזים והסכמי תמחור"
+ * (src/pages/VendorContracts.jsx, tab "חוזי ספקים").
  *
- * STATUS: SKELETON. The connection, auth, batching, dedup, dry-run and write
- * paths are complete. The only thing left is the SOURCE→target field MAPPING,
- * which we can only finish once `discoverNatiPricing` tells us the real table
- * and column names. Everything marked `TODO(discovery)` is the part to fill in.
+ * Source: supplier_distance_price_list (per supplier_id) JOIN suppliers (name/type).
  *
- * Until SOURCE_TABLE is set, the function refuses to query (returns a clear
- * message) so deploying the skeleton can never run a broken/destructive query.
+ * Self-contained (no local imports): inlines a single guarded MySQL connection,
+ * mirroring discoverNatiPricing. TLS negotiated, CA verification relaxed (channel
+ * still encrypted; access locked down by RDS IP allow-listing). ONE connection.
  *
- * Rate-limit safety mirrors syncNatiData: ONE withNatiConnection() call, 150ms
- * between writes, batches of 20, exponential backoff on 429s, guarded by the
- * shared circuit breaker.
+ * dry_run defaults to TRUE — first run is always a safe preview.
+ * Auth: admin user OR scheduled automation (SYNC_AUTOMATION_KEY).
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { withNatiConnection, natiErrorResponse } from './_shared/natiDb.ts';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import mysql from 'npm:mysql2@3.9.7/promise';
 
-// ========== RATE-LIMIT HELPERS (same shape as syncNatiData) ==========
+const CONNECT_TIMEOUT_MS = 20_000;
+const BATCH_SIZE = 20;
+const ITEM_DELAY_MS = 150;
+const BATCH_DELAY_MS = 1000;
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function retryOp<T>(fn: () => Promise<T>, label: string): Promise<T> {
+async function retryOp(fn, label) {
   const delays = [500, 1500, 4000];
   for (let attempt = 0; attempt <= delays.length; attempt++) {
     try {
       return await fn();
     } catch (e) {
-      const msg = (e as { message?: string; status?: number })?.message || '';
-      const isRateLimit = msg.includes('Rate limit') || msg.includes('429') || (e as { status?: number })?.status === 429;
+      const msg = e?.message || '';
+      const isRateLimit = msg.includes('Rate limit') || msg.includes('429') || e?.status === 429;
       if (isRateLimit && attempt < delays.length) {
-        console.log(`[IMPORT] retry ${label} #${attempt + 1}, wait ${delays[attempt]}ms`);
         await sleep(delays[attempt]);
       } else {
         throw e;
@@ -43,78 +40,124 @@ async function retryOp<T>(fn: () => Promise<T>, label: string): Promise<T> {
   throw new Error(`unreachable: ${label}`);
 }
 
-const BATCH_SIZE = 20;
-const ITEM_DELAY_MS = 150;
-const BATCH_DELAY_MS = 1000;
-
-function clean<T extends Record<string, unknown>>(obj: T): Partial<T> {
-  const out: Record<string, unknown> = {};
+function clean(obj) {
+  const out = {};
   for (const [k, v] of Object.entries(obj)) {
     if (v !== undefined && v !== null && v !== '') out[k] = v;
   }
-  return out as Partial<T>;
+  return out;
 }
 
-// ========== SOURCE CONFIG — fill after discoverNatiPricing ==========
-//
-// TODO(discovery): set the real Nati table + the SELECT once we see the schema.
-// Examples of what we expect to learn:
-//   - Are pricing columns ON `suppliers` (e.g. s.price_per_km), or a separate
-//     table (e.g. supplier_agreements / supplier_prices)?
-//   - How are towing (department 3) vs. mobile-unit (department 4) rates split?
-//
-// Leave SOURCE_TABLE empty to keep the skeleton inert until we know.
-const SOURCE_TABLE = ''; // e.g. 'supplier_agreements' or 'suppliers'
-const SOURCE_SELECT = ''; // e.g. 'SELECT * FROM supplier_agreements'
-
-// ========== MAPPERS — fill after discoverNatiPricing ==========
-//
-// Map one Nati source row → a VendorContract record (tab "חוזי ספקים").
-// Field names on the RIGHT are placeholders; replace with real Nati columns.
-// VendorContract required fields: vendor_id, vendor_name, contract_type,
-// start_date, end_date. contract_type ∈ per_call|monthly|yearly|hourly.
-function mapToVendorContract(row: Record<string, unknown>): Record<string, unknown> {
-  return clean({
-    vendor_id: row.supplier_id != null ? String(row.supplier_id) : '', // TODO(discovery)
-    vendor_name: (row.supplier_name as string) || '', // TODO(discovery)
-    contract_number: row.agreement_id != null ? String(row.agreement_id) : '', // TODO(discovery)
-    contract_type: 'per_call', // TODO(discovery): derive from source
-    status: 'active', // TODO(discovery)
-    // start_date / end_date are REQUIRED by the entity — must be filled from source:
-    start_date: undefined, // TODO(discovery): parseNatiDate(row.start_date)?.slice(0,10)
-    end_date: undefined, // TODO(discovery)
-    rate_per_call: typeof row.rate_per_call === 'number' ? row.rate_per_call : undefined, // TODO(discovery)
-    hourly_rate: typeof row.hourly_rate === 'number' ? row.hourly_rate : undefined, // TODO(discovery)
-    monthly_fee: typeof row.monthly_fee === 'number' ? row.monthly_fee : undefined, // TODO(discovery)
-    service_types: undefined, // TODO(discovery): ['towing'] / ['mobile_unit'] per department
-    notes: 'יובא ממערכת נתי', // provenance marker
-  });
+function num(v) {
+  if (v == null || v === '') return undefined;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : undefined;
 }
 
-// Map one Nati source row → an OperationalRate record (tab "הסכמי תמחור").
-// Required: name, rate_type, amount. rate_type ∈ base|time_surcharge|
-// area_surcharge|toll_road|vehicle_type|service_type.
-function mapToOperationalRate(row: Record<string, unknown>): Record<string, unknown> {
+function dateStr(v) {
+  if (!v) return undefined;
+  // mysql2 returns DATE columns as JS Date objects → convert to YYYY-MM-DD.
+  const d = v instanceof Date ? v : new Date(v);
+  if (isNaN(d.getTime())) return undefined;
+  // Nati uses 1899-11-30 (or year < 1970) as an "empty" date — treat as missing.
+  if (d.getUTCFullYear() < 1970) return undefined;
+  return d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+}
+
+async function connectNati() {
+  const base = {
+    host: Deno.env.get('NATID_DB_HOST'),
+    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+    user: Deno.env.get('NATID_DB_USER'),
+    password: Deno.env.get('NATID_DB_PASSWORD'),
+    database: Deno.env.get('NATID_DB_NAME'),
+    connectTimeout: CONNECT_TIMEOUT_MS,
+  };
+  const sslVariants = [{ ssl: { rejectUnauthorized: false } }, { ssl: {} }, {}];
+  let lastErr;
+  for (const variant of sslVariants) {
+    try {
+      return await mysql.createConnection({ ...base, ...variant });
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr;
+}
+
+const SOURCE_SELECT = `
+  SELECT
+    p.supplier_id,
+    s.fullname              AS supplier_name,
+    s.type                  AS supplier_type,
+    p.default_distance_km,
+    p.default_distance_price,
+    p.double_distance_price,
+    p.extra_km_price,
+    p.double_extra_km_price,
+    p.futile_km_price,
+    p.double_futile_km_price,
+    p.regular_extra,
+    p.commercial_extra,
+    p.evening_extra,
+    p.commercial_evening_extra,
+    p.night_extra,
+    p.commercial_night_extra,
+    p.holiday_extra,
+    p.commercial_holiday_extra,
+    p.truck_extra,
+    p.palestina_extra,
+    p.commercial_palestina_extra,
+    p.road6,
+    p.from_d,
+    p.to_d
+  FROM supplier_distance_price_list p
+  LEFT JOIN suppliers s ON s.id = p.supplier_id
+`;
+
+// One Nati row → VendorContract (tab "חוזי ספקים").
+// Required: vendor_id, vendor_name, contract_type, start_date, end_date.
+function mapToVendorContract(row) {
   return clean({
-    name: (row.rate_name as string) || '', // TODO(discovery)
-    rate_type: 'base', // TODO(discovery)
-    amount: typeof row.amount === 'number' ? row.amount : undefined, // TODO(discovery)
-    is_percentage: false, // TODO(discovery)
-    is_active: true,
-    condition_label: (row.condition_label as string) || '', // TODO(discovery)
+    vendor_id: row.supplier_id != null ? String(row.supplier_id) : '',
+    vendor_name: row.supplier_name || `ספק ${row.supplier_id}`,
+    contract_number: `NATI-${row.supplier_id}`,
+    contract_type: 'per_call',
+    status: 'active',
+    start_date: dateStr(row.from_d) || '2020-01-01',
+    end_date: dateStr(row.to_d) || '2099-12-31',
+    rate_per_call: num(row.default_distance_price),
+    special_terms: buildTerms(row),
     notes: 'יובא ממערכת נתי',
   });
 }
 
-// ========== GENERIC UPSERT (dedup by a stable key) ==========
+// Pack the detailed distance/surcharge fields into special_terms (no dedicated
+// VendorContract columns exist for them) so nothing from Nati is lost.
+function buildTerms(row) {
+  const parts = [];
+  const add = (label, v, suffix = '') => {
+    const n = num(v);
+    if (n != null && n !== 0) parts.push(`${label}: ${n}${suffix}`);
+  };
+  add(`ק"מ בסיס`, row.default_distance_km, ' ק"מ');
+  add('מחיר בסיס', row.default_distance_price, ' ₪');
+  add(`דאבל ג'נט`, row.double_distance_price, ' ₪');
+  add(`ק"מ נוסף`, row.extra_km_price, ' ₪');
+  add(`ק"מ נוסף דאבל`, row.double_extra_km_price, ' ₪');
+  add(`ק"מ סרק`, row.futile_km_price, ' ₪');
+  add(`ק"מ סרק דאבל`, row.double_futile_km_price, ' ₪');
+  add('תוספת ערב', row.evening_extra, '%');
+  add('תוספת לילה', row.night_extra, '%');
+  add('תוספת חג', row.holiday_extra, '%');
+  add('תוספת מסחרי', row.commercial_extra, '%');
+  add('תוספת משאית', row.truck_extra, '%');
+  add('תוספת שטחים', row.palestina_extra, '%');
+  add('כביש 6', row.road6, ' ₪');
+  return parts.join(' | ');
+}
 
-async function upsertAll(
-  sdk: { entities: Record<string, { create: (d: unknown) => Promise<{ id: string }>; update: (id: string, d: unknown) => Promise<unknown> }> },
-  entityName: string,
-  items: Record<string, unknown>[],
-  keyField: string,
-  existingLookup: Record<string, string>
-) {
+async function upsertAll(sdk, entityName, items, keyField, existingLookup) {
   let created = 0, updated = 0, skipped = 0, errors = 0;
   for (let i = 0; i < items.length; i += BATCH_SIZE) {
     const batch = items.slice(i, i + BATCH_SIZE);
@@ -132,7 +175,7 @@ async function upsertAll(
           created++;
         }
       } catch (e) {
-        console.error(`[IMPORT] ${entityName} error:`, (e as { message?: string })?.message);
+        console.error(`[IMPORT] ${entityName} error:`, e?.message);
         errors++;
       }
       await sleep(ITEM_DELAY_MS);
@@ -142,14 +185,12 @@ async function upsertAll(
   return { created, updated, skipped, errors };
 }
 
-// ========== MAIN ==========
-
 Deno.serve(async (req) => {
+  let connection;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
-    // Auth: admin user OR scheduled automation (same pattern as syncNatiData).
     const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
     const isAutomation = (!!automationKey && body.automation_key === automationKey) || !!body.automation;
     if (!isAutomation) {
@@ -160,72 +201,47 @@ Deno.serve(async (req) => {
       }
     }
 
-    // dry_run defaults to TRUE — first run is always a safe preview.
-    const {
-      dry_run = true,
-      import_contracts = true,
-      import_rates = false,
-      force = false,
-    } = body;
+    const { dry_run = true } = body;
 
-    if (!SOURCE_TABLE || !SOURCE_SELECT) {
-      return Response.json({
-        success: false,
-        status: 'NOT_CONFIGURED',
-        message:
-          'שלד הייבוא מוכן, אך מקור הנתונים בנתי עדיין לא הוגדר. הריצו קודם את discoverNatiPricing, ' +
-          'ואז נמלא את SOURCE_TABLE / SOURCE_SELECT והמיפוי (mapToVendorContract / mapToOperationalRate).',
-      }, { status: 200 });
+    if (!Deno.env.get('NATID_DB_HOST')) {
+      return Response.json({ success: false, error: 'Missing NATID_DB_* secrets' }, { status: 500 });
     }
 
-    // 1) Read source rows from Nati — single connection.
-    console.log('[IMPORT] Connecting to Nati DB...');
-    const rows = await withNatiConnection(async (connection) => {
-      const [r] = await connection.query(SOURCE_SELECT);
-      return r as Record<string, unknown>[];
-    }, { force });
-    console.log(`[IMPORT] Got ${rows.length} source rows from ${SOURCE_TABLE}`);
+    connection = await connectNati();
+    const [rows] = await connection.query(SOURCE_SELECT);
+    console.log(`[IMPORT] Got ${rows.length} pricing rows from Nati`);
 
-    const contractItems = import_contracts ? rows.map(mapToVendorContract) : [];
-    const rateItems = import_rates ? rows.map(mapToOperationalRate) : [];
+    const contractItems = rows.map(mapToVendorContract);
 
     if (dry_run) {
       return Response.json({
         success: true,
         mode: 'dry_run',
-        source_table: SOURCE_TABLE,
+        source_table: 'supplier_distance_price_list',
         total_source_rows: rows.length,
         sample_source_row: rows[0] ?? null,
         sample_contract: contractItems[0] ?? null,
-        sample_rate: rateItems[0] ?? null,
       });
     }
 
-    // 2) Write — dedup against what already exists.
     const sdk = base44.asServiceRole;
-    const results: Record<string, unknown> = {};
-
-    if (import_contracts) {
-      const existing = await sdk.entities.VendorContract.filter({});
-      const lookup: Record<string, string> = {};
-      for (const c of existing) {
-        if (c.contract_number) lookup[String(c.contract_number)] = c.id;
-      }
-      results.contracts = await upsertAll(sdk, 'VendorContract', contractItems, 'contract_number', lookup);
+    const existing = await sdk.entities.VendorContract.filter({});
+    const lookup = {};
+    for (const c of existing) {
+      if (c.contract_number) lookup[String(c.contract_number)] = c.id;
     }
+    const contracts = await upsertAll(sdk, 'VendorContract', contractItems, 'contract_number', lookup);
 
-    if (import_rates) {
-      const existing = await sdk.entities.OperationalRate.filter({});
-      const lookup: Record<string, string> = {};
-      for (const r of existing) {
-        if (r.name) lookup[String(r.name)] = r.id;
-      }
-      results.rates = await upsertAll(sdk, 'OperationalRate', rateItems, 'name', lookup);
-    }
-
-    return Response.json({ success: true, source_table: SOURCE_TABLE, total_source_rows: rows.length, ...results });
+    return Response.json({
+      success: true,
+      source_table: 'supplier_distance_price_list',
+      total_source_rows: rows.length,
+      contracts,
+    });
   } catch (error) {
     console.error('[IMPORT] Fatal error:', error);
-    return natiErrorResponse(error);
+    return Response.json({ success: false, error: error?.message || 'import failed' }, { status: 500 });
+  } finally {
+    if (connection) await connection.end().catch(() => {});
   }
 });
