@@ -103,13 +103,10 @@ export default function QueueMonitor() {
 
   const workQueueQuery = useWorkQueue();
 
-  // Read active cases directly from Case entity
+  // Read active calls directly from Call entity
   const casesQuery = useQuery({
     queryKey: ['queue-cases'],
-    queryFn: () =>
-      base44.entities.Case.filter({ status: 'new' }, '-created_date', 500).catch(() =>
-        base44.entities.Case.list('-created_date', 500)
-      ),
+    queryFn: () => base44.entities.Call.list('-created_date', 500),
   });
 
   const queueItems = workQueueQuery.data || [];
@@ -128,16 +125,11 @@ export default function QueueMonitor() {
           id: c.id,
           call_id: c.id,
           queue_status: 'waiting_in_queue',
-          priority_score: c.priority === 'urgent' ? 90 : c.priority === 'high' ? 70 : 50,
+          priority_score:
+            c.call_priority === 'critical' ? 90 : c.call_priority === 'urgent' ? 70 : 50,
           added_to_queue_at: c.created_date,
           assigned_to_agent: null,
-          call: {
-            call_number: c.case_number,
-            customer_name: c.customer_name,
-            customer_phone: c.caller_phone,
-            pickup_location_address: c.location_address || c.location_city,
-            call_status: c.status,
-          },
+          call: c,
         }));
 
   const filteredItems = enrichedItems.filter((item) => {
