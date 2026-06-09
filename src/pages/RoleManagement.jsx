@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
+import { fetchUsersList } from '@/lib/usersListApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -108,20 +109,14 @@ export default function RoleManagement() {
 
   const { data: userPermissions = [] } = useQuery({
     queryKey: queryKeys.users.allPermissions(),
-    queryFn: async () => {
-      const result = await base44.functions.invoke('getUsersList', {});
-      return result.data?.permissions || [];
-    },
+    queryFn: async () => (await fetchUsersList()).permissions,
   });
 
   const { data: users = [] } = useQuery({
     queryKey: queryKeys.users.all(),
-    queryFn: async () => {
-      // Admin-gated server function (service role) instead of a direct
-      // client-side User.list(), which the platform blocks with 403.
-      const result = await base44.functions.invoke('getUsersList', {});
-      return result.data?.users || [];
-    },
+    // Admin-gated server function (service role) instead of a direct
+    // client-side User.list(), which the platform blocks with 403.
+    queryFn: async () => (await fetchUsersList()).users,
   });
 
   const saveRoleMutation = useMutation({

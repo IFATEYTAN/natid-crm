@@ -67,24 +67,29 @@ Deno.serve(async (req) => {
     const permissions = await base44.asServiceRole.entities.UserPermission.list();
 
     // Self-heal empty user_id on permissions by matching email -> user.id.
+    // Run the updates in parallel so a long list doesn't risk a function timeout.
     const usersByEmail = {};
     for (const u of users) {
       if (u.email) usersByEmail[u.email.trim().toLowerCase()] = u;
     }
+    const backfills = [];
     for (const perm of permissions) {
       if (!perm.user_id && perm.user_email) {
         const match = usersByEmail[perm.user_email.trim().toLowerCase()];
         if (match) {
-          try {
-            await base44.asServiceRole.entities.UserPermission.update(perm.id, {
+          perm.user_id = match.id;
+          backfills.push(
+            base44.asServiceRole.entities.UserPermission.update(perm.id, {
               user_id: match.id,
-            });
-            perm.user_id = match.id;
-          } catch (_e) {
-            // Non-fatal: keep returning data even if a single backfill fails.
-          }
+            }).catch((_e) => {
+              // Non-fatal: keep returning data even if a single backfill fails.
+            })
+          );
         }
       }
+    }
+    if (backfills.length > 0) {
+      await Promise.all(backfills);
     }
 
     return Response.json({

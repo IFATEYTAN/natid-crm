@@ -42,6 +42,7 @@ import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { roleLabels } from '@/config/labels';
+import { fetchUsersList } from '@/lib/usersListApi';
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',
@@ -70,20 +71,12 @@ export default function UserManagementPage() {
     error,
   } = useQuery({
     queryKey: queryKeys.users.all(),
-    queryFn: async () => {
-      // Use the admin-gated server function (service role) instead of a direct
-      // client-side User.list(), which the platform blocks with 403.
-      const result = await base44.functions.invoke('getUsersList', {});
-      return result.data?.users || [];
-    },
+    queryFn: async () => (await fetchUsersList()).users,
   });
 
   const { data: userPermissions = [] } = useQuery({
     queryKey: queryKeys.users.permissions(),
-    queryFn: async () => {
-      const result = await base44.functions.invoke('getUsersList', {});
-      return result.data?.permissions || [];
-    },
+    queryFn: async () => (await fetchUsersList()).permissions,
   });
 
   // Map user permissions by email for quick lookup
