@@ -385,6 +385,24 @@ export function buildCallColumns({ getCall, getCallId, renderActions }) {
         return <Text value={call?.special_customer || call?.customer_type} />;
       },
     },
+
+    // ---- עמודה נוספת (לא מהתמונות) - נציג מטפל, שימושית למסכי התורים ----
+    {
+      header: 'נציג מטפל',
+      cell: (item) => {
+        const agent = item.assigned_to_agent || getCall(item)?.assigned_to_agent;
+        return agent ? (
+          <div className="flex items-center gap-1.5">
+            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700">
+              {agent.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-sm">{agent}</span>
+          </div>
+        ) : (
+          <span className="text-sm text-gray-400">לא משובץ</span>
+        );
+      },
+    },
   ];
 }
 
