@@ -345,7 +345,7 @@ export default function CallsPage() {
                         <div className="text-xs text-[#6B778C] mt-0.5 tabular-nums" dir="ltr">
                           {c.vehicle_plate ||
                             c.vehicle_number ||
-                            `#${c.call_number || c.id.slice(0, 8)}`}
+                            `#${c.call_number || c.id?.slice(0, 8) || ''}`}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 ms-2 flex-shrink-0">

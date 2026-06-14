@@ -62,7 +62,7 @@ function formatMinutes(totalMins) {
 }
 
 function dateText(value) {
-  if (!value) return dash();
+  if (!value || isNaN(new Date(value).getTime())) return dash();
   return <span className="text-xs text-gray-600 whitespace-nowrap">{formatDateTime(value)}</span>;
 }
 
@@ -344,7 +344,7 @@ export function buildCallColumns({ getCall, getCallId, renderActions }) {
       cell: (item) => {
         const call = getCall(item);
         const amount = call?.payment_amount_customer ?? call?.price;
-        if (amount == null) return dash();
+        if (amount == null || amount === '' || isNaN(Number(amount))) return dash();
         return <span className="text-sm tabular-nums">{formatCurrency(amount)}</span>;
       },
     },
