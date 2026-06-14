@@ -26,6 +26,7 @@ export const PAGES = {
     "CustomerFeedback": lazy(() => import('./pages/CustomerFeedback')),
     "Customers": lazy(() => import('./pages/Customers')),
     "Dashboard": lazy(() => import('./pages/Dashboard')),
+    "Demo": lazy(() => import('./pages/Demo')),
     "DepartmentView": lazy(() => import('./pages/DepartmentView')),
     "EditCustomer": lazy(() => import('./pages/EditCustomer')),
     "EditVendor": lazy(() => import('./pages/EditVendor')),
