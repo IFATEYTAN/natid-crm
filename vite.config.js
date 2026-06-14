@@ -67,6 +67,13 @@ export default defineConfig({
       includeAssets: ['icons/icon.svg', 'icons/*.png'],
       manifest: false, // Using external manifest.json
       workbox: {
+        // Activate a new service worker immediately and take control of open
+        // tabs, then drop the old precache. Without these, a freshly deployed
+        // SW stays "waiting" while the old one keeps serving stale chunks,
+        // causing "Failed to fetch dynamically imported module" / white screen.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         // Don't intercept navigation to /login - let it reach the platform server
         navigateFallbackDenylist: [/^\/login/, /^\/api\//],
         // Files to cache

@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Truck, Phone, Star, Eye, Clock, MapPin } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { he } from 'date-fns/locale';
+import { Truck, Phone, Star, Eye, MapPin } from 'lucide-react';
+import LocationFreshnessBadge from './LocationFreshnessBadge';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -95,7 +94,9 @@ export default function AllVendorsLeafletMap({
                 {vendor.address && (
                   <div className="flex items-center gap-2 text-[#6b7280] text-xs">
                     <MapPin className="w-3 h-3" />
-                    <span className="truncate" title={vendor.address}>{vendor.address}</span>
+                    <span className="truncate" title={vendor.address}>
+                      {vendor.address}
+                    </span>
                   </div>
                 )}
                 {vendor.current_latitude && vendor.current_longitude && (
@@ -106,17 +107,9 @@ export default function AllVendorsLeafletMap({
                     </span>
                   </div>
                 )}
-                {vendor.last_location_update && (
-                  <div className="flex items-center gap-2 text-[#6b7280] text-xs">
-                    <Clock className="w-3 h-3" />
-                    <span>
-                      {formatDistanceToNow(new Date(vendor.last_location_update), {
-                        addSuffix: true,
-                        locale: he,
-                      })}
-                    </span>
-                  </div>
-                )}
+                <div className="pt-0.5">
+                  <LocationFreshnessBadge lastUpdate={vendor.last_location_update} />
+                </div>
               </div>
               {vendor.current_latitude && vendor.current_longitude && (
                 <div className="flex items-center gap-2 mb-3 pt-2 border-t border-gray-100">

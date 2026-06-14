@@ -23,7 +23,6 @@ import {
   Truck,
   Phone,
   MapPin,
-  Clock,
   Battery,
   Navigation,
   RefreshCw,
@@ -32,8 +31,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { he } from 'date-fns/locale';
+import LocationFreshnessBadge from '@/components/maps/LocationFreshnessBadge';
 
 // Lazy map component
 const VendorTrackingLeafletMap = lazyRetry(
@@ -304,17 +302,9 @@ export default function VendorTrackingPage() {
                           <Phone className="w-3 h-3" />
                           <span dir="ltr">{vendor.phone}</span>
                         </div>
-                        {vendor.last_location_update && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>
-                              {formatDistanceToNow(new Date(vendor.last_location_update), {
-                                addSuffix: true,
-                                locale: he,
-                              })}
-                            </span>
-                          </div>
-                        )}
+                        <div className="pt-0.5">
+                          <LocationFreshnessBadge lastUpdate={vendor.last_location_update} />
+                        </div>
                       </div>
 
                       {activeCall && (

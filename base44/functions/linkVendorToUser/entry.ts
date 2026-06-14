@@ -9,7 +9,33 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    if (!user || user.role !== 'admin') {
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Authorize: platform admin OR app-level admin (via UserPermission).
+    let isAdmin = user.role === 'admin';
+    if (!isAdmin) {
+      const adminRoleNames = ['admin', 'מנהל', 'מנהל מערכת'];
+      const roles = await base44.asServiceRole.entities.Role.list();
+      let perms = await base44.asServiceRole.entities.UserPermission.filter({ user_id: user.id });
+      if (!perms.length && user.email) {
+        perms = await base44.asServiceRole.entities.UserPermission.filter({ user_email: user.email });
+      }
+      const perm = perms[0];
+      if (perm) {
+        const role = roles.find(
+          (r) =>
+            r.id === perm.role_id ||
+            r.display_name === perm.role_name ||
+            r.name === perm.role_name
+        );
+        const names = [perm.role_name, role?.name, role?.display_name].filter(Boolean);
+        isAdmin = names.some((n) => adminRoleNames.includes(n));
+      }
+    }
+
+    if (!isAdmin) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
@@ -25,27 +51,41 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
+    // Normalize email to lowercase so the user lookup matches regardless of the
+    // casing the admin typed (user emails are stored lowercase).
+    const normalizedEmail = user_email.trim().toLowerCase();
+
     // Update vendor email
-    await base44.asServiceRole.entities.Vendor.update(vendor_id, { 
-      email: user_email 
+    await base44.asServiceRole.entities.Vendor.update(vendor_id, {
+      email: normalizedEmail,
     });
 
     // Try to set user role to vendor if they exist
-    const users = await base44.asServiceRole.entities.User.filter({ email: user_email });
+    const users = await base44.asServiceRole.entities.User.filter({ email: normalizedEmail });
     if (users.length > 0) {
       const targetUser = users[0];
       if (targetUser.role !== 'vendor' && targetUser.role !== 'ספק') {
-        await base44.asServiceRole.entities.User.update(targetUser.id, { 
+        await base44.asServiceRole.entities.User.update(targetUser.id, {
           role: 'vendor',
-          vendor_id: vendor_id 
+          vendor_id: vendor_id,
         });
       }
+      return Response.json({
+        success: true,
+        vendor_name: vendors[0].vendor_name,
+        linked_email: normalizedEmail,
+        role_updated: true,
+      });
     }
 
+    // No registered user with this email — report it instead of a silent success
+    // that hides the fact the role was never flipped to 'vendor'.
     return Response.json({
       success: true,
       vendor_name: vendors[0].vendor_name,
-      linked_email: user_email,
+      linked_email: normalizedEmail,
+      role_updated: false,
+      warning: 'הספק קושר, אך לא נמצא משתמש רשום עם כתובת זו. לאחר שהספק יירשם, יש לקשר שוב כדי להפוך אותו ל-vendor.',
     });
   } catch (error) {
     console.error('linkVendorToUser error:', error);

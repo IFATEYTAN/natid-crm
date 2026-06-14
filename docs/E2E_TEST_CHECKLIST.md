@@ -33,10 +33,15 @@
 | Close stale calls: anonymous blocked | 🟢 | `e2e/close-stale-calls.spec.js` |
 | Close stale calls: admin sees cleanup card | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
 | Close stale calls: Dry Run completes + renders result | 🟢 (gated) | `e2e/close-stale-calls.spec.js` |
+| GPS tracking: anonymous can't see location tracker | 🟢 | `e2e/gps-tracking.spec.js` |
+| GPS tracking: tracker renders for signed-in vendor | 🟢 (gated) | `e2e/gps-tracking.spec.js` |
+| GPS tracking: vendor shares location → fix posted to `updateVendorLocation` | 🟢 (gated) | `e2e/gps-tracking.spec.js` (faked geolocation) |
+| GPS tracking: movement pushes updated coordinates | 🟢 (gated) | `e2e/gps-tracking.spec.js` (faked geolocation) |
+| Maps: admin `/AllVendorsMap` Leaflet map mounts | 🟢 (gated) | `e2e/gps-tracking.spec.js` |
 | Admin login → Dashboard loads | 🟡 | manual checklist below |
 | Operator assigns vendor (full assignment deep-check) | 🟡 | manual checklist below |
 | Customer feedback token submission | 🟡 | manual checklist below |
-| GPS tracking updates | 🟡 | manual (needs real mobile) |
+| GPS tracking: real-device accuracy + map tiles | 🟡 | manual (needs real mobile — automation uses a faked position) |
 | Photo upload + AI extraction | 🟡 | manual (needs real device) |
 | SMS notifications | 🟡 | manual (needs Twilio + real phone) |
 | Permissions: operator can't access AdminDataCleanup | 🔴 | TODO — add to `e2e/permissions.spec.js` |
@@ -45,6 +50,8 @@
 
 **(gated)** = רץ רק כשמוגדרים credentials של בדיקה: `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` (צד מוקדן — אין משתמש operator ייעודי, אדמין מבצע את שלבי המוקדן) ו-`E2E_VENDOR_EMAIL`/`E2E_VENDOR_PASSWORD` (פורטל הספקים). מדלג בחן כשחסר. ראו `docs/E2E_SETUP.md`.
 **(E2E_BASE_URL)** = רץ רק כשמכוונים ל-Base44 אמיתי (לא ב-CI ברירת מחדל).
+
+**סיכום**: 55 טסטים אוטומטיים — 21 structural (רצים על כל PR) + 34 gated (רצים על main + nightly עם secrets).
 
 ה-CI מריץ אוטומטית: `quick-tests` על כל PR, `full-e2e` על main + nightly. ראו `.github/workflows/test.yml`.
 

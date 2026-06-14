@@ -18,8 +18,23 @@ import {
 import { Plus, Search, RefreshCw, MapPin, ChevronRight, ChevronLeft, User } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { format } from 'date-fns';
+import ColumnSelector from '@/components/calls/ColumnSelector';
+import { useColumnVisibility } from '@/components/calls/useColumnVisibility';
 
 const PAGE_SIZE = 50; // Smaller pages = faster rendering
+
+// כותרות העמודות בטבלת הקריאות (סדר קבוע)
+const CALL_COLUMNS = [
+  'פעולות',
+  "מס' רכב",
+  'שם מנוי',
+  'סטטוס',
+  'חברת ביטוח / סוכן',
+  'עדיפות',
+  'נציג מטפל',
+  'ספק',
+  'זמן פתיחת קריאה',
+];
 
 const SERVICE_TYPE_LABELS = {
   towing: 'גרירה',
@@ -85,6 +100,12 @@ export default function CallsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
   const [openClosedTab, setOpenClosedTab] = useState('open');
+
+  const { isHidden, toggleColumn, resetColumns } = useColumnVisibility({
+    pageName: 'Calls',
+    allColumns: CALL_COLUMNS,
+  });
+  const visibleColumns = CALL_COLUMNS.filter((h) => !isHidden(h));
 
   const {
     data: cases = [],
@@ -172,6 +193,12 @@ export default function CallsPage() {
             <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן
           </Button>
+          <ColumnSelector
+            allColumns={CALL_COLUMNS}
+            isHidden={isHidden}
+            onToggle={toggleColumn}
+            onReset={resetColumns}
+          />
           <Link to={createPageUrl('NewCase')}>
             <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2 h-10">
               <Plus className="w-4 h-4" />
@@ -375,17 +402,7 @@ export default function CallsPage() {
             <table className="w-full text-sm text-right min-w-[800px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {[
-                    'פעולות',
-                    "מס' רכב",
-                    'שם מנוי',
-                    'סטטוס',
-                    'חברת ביטוח / סוכן',
-                    'עדיפות',
-                    'נציג מטפל',
-                    'ספק',
-                    'זמן פתיחת קריאה',
-                  ].map((h) => (
+                  {visibleColumns.map((h) => (
                     <th
                       key={h}
                       className="px-4 py-3 text-xs font-semibold text-[#6B778C] whitespace-nowrap"
@@ -399,7 +416,7 @@ export default function CallsPage() {
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
                     <tr key={i}>
-                      {Array.from({ length: 9 }).map((_, j) => (
+                      {visibleColumns.map((_, j) => (
                         <td key={j} className="px-4 py-3">
                           <div className="h-4 bg-gray-100 rounded animate-pulse w-20" />
                         </td>
@@ -408,7 +425,7 @@ export default function CallsPage() {
                   ))
                 ) : paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-12 text-center text-[#6B778C]">
+                    <td colSpan={visibleColumns.length} className="px-4 py-12 text-center text-[#6B778C]">
                       אין קריאות להצגה
                     </td>
                   </tr>
@@ -416,88 +433,106 @@ export default function CallsPage() {
                   paginated.map((c) => (
                     <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                       {/* פעולות */}
-                      <td className="px-4 py-3">
-                        <Link to={createPageUrl(`CallDetails?id=${c.id}`)}>
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
-                            צפה
-                          </Button>
-                        </Link>
-                      </td>
+                      {!isHidden('פעולות') && (
+                        <td className="px-4 py-3">
+                          <Link to={createPageUrl(`CallDetails?id=${c.id}`)}>
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                              צפה
+                            </Button>
+                          </Link>
+                        </td>
+                      )}
                       {/* מס' רכב */}
-                      <td className="px-4 py-3 font-medium tabular-nums whitespace-nowrap" dir="ltr">
-                        {c.vehicle_plate || c.vehicle_number || '—'}
-                      </td>
+                      {!isHidden("מס' רכב") && (
+                        <td className="px-4 py-3 font-medium tabular-nums whitespace-nowrap" dir="ltr">
+                          {c.vehicle_plate || c.vehicle_number || '—'}
+                        </td>
+                      )}
                       {/* שם מנוי */}
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <Link
-                          to={createPageUrl(`CallDetails?id=${c.id}`)}
-                          className="font-medium text-blue-600 hover:underline"
-                        >
-                          {c.customer_name || '—'}
-                        </Link>
-                        <div className="text-xs text-[#6B778C] tabular-nums" dir="ltr">
-                          {c.customer_phone || ''}
-                        </div>
-                      </td>
-                      {/* סטטוס */}
-                      <td className="px-4 py-3">
-                        {c.call_status ? (
-                          <Badge
-                            className={cn(
-                              'text-xs',
-                              STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600'
-                            )}
+                      {!isHidden('שם מנוי') && (
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <Link
+                            to={createPageUrl(`CallDetails?id=${c.id}`)}
+                            className="font-medium text-blue-600 hover:underline"
                           >
-                            {STATUS_LABELS[c.call_status] || c.call_status}
-                          </Badge>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                      {/* חברת ביטוח / סוכן */}
-                      <td className="px-4 py-3 text-[#6B778C]">
-                        {c.insurance_company || c.insurance_agent ? (
-                          <div>
-                            <div className="font-medium text-[#172B4D]">
-                              {c.insurance_company || '—'}
-                            </div>
-                            {c.insurance_agent && (
-                              <div className="text-xs">{c.insurance_agent}</div>
-                            )}
+                            {c.customer_name || '—'}
+                          </Link>
+                          <div className="text-xs text-[#6B778C] tabular-nums" dir="ltr">
+                            {c.customer_phone || ''}
                           </div>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
+                        </td>
+                      )}
+                      {/* סטטוס */}
+                      {!isHidden('סטטוס') && (
+                        <td className="px-4 py-3">
+                          {c.call_status ? (
+                            <Badge
+                              className={cn(
+                                'text-xs',
+                                STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600'
+                              )}
+                            >
+                              {STATUS_LABELS[c.call_status] || c.call_status}
+                            </Badge>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                      )}
+                      {/* חברת ביטוח / סוכן */}
+                      {!isHidden('חברת ביטוח / סוכן') && (
+                        <td className="px-4 py-3 text-[#6B778C]">
+                          {c.insurance_company || c.insurance_agent ? (
+                            <div>
+                              <div className="font-medium text-[#172B4D]">
+                                {c.insurance_company || '—'}
+                              </div>
+                              {c.insurance_agent && (
+                                <div className="text-xs">{c.insurance_agent}</div>
+                              )}
+                            </div>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                      )}
                       {/* עדיפות */}
-                      <td className="px-4 py-3">
-                        {c.call_priority ? (
-                          <Badge
-                            className={cn(
-                              'text-xs',
-                              PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600'
-                            )}
-                          >
-                            {PRIORITY_LABELS[c.call_priority] || c.call_priority}
-                          </Badge>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
+                      {!isHidden('עדיפות') && (
+                        <td className="px-4 py-3">
+                          {c.call_priority ? (
+                            <Badge
+                              className={cn(
+                                'text-xs',
+                                PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600'
+                              )}
+                            >
+                              {PRIORITY_LABELS[c.call_priority] || c.call_priority}
+                            </Badge>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                      )}
                       {/* נציג מטפל */}
-                      <td className="px-4 py-3 text-[#6B778C]">
-                        {c.assigned_to_agent || <span className="text-gray-400">לא משובץ</span>}
-                      </td>
+                      {!isHidden('נציג מטפל') && (
+                        <td className="px-4 py-3 text-[#6B778C]">
+                          {c.assigned_to_agent || <span className="text-gray-400">לא משובץ</span>}
+                        </td>
+                      )}
                       {/* ספק */}
-                      <td className="px-4 py-3 text-[#6B778C] max-w-[150px]">
-                        <span className="truncate block">
-                          {c.assigned_vendor_name || <span className="text-gray-400">לא שובץ</span>}
-                        </span>
-                      </td>
+                      {!isHidden('ספק') && (
+                        <td className="px-4 py-3 text-[#6B778C] max-w-[150px]">
+                          <span className="truncate block">
+                            {c.assigned_vendor_name || <span className="text-gray-400">לא שובץ</span>}
+                          </span>
+                        </td>
+                      )}
                       {/* זמן פתיחת קריאה */}
-                      <td className="px-4 py-3 text-[#6B778C] whitespace-nowrap text-xs">
-                        {c.created_date ? format(new Date(c.created_date), 'dd/MM/yy HH:mm') : '—'}
-                      </td>
+                      {!isHidden('זמן פתיחת קריאה') && (
+                        <td className="px-4 py-3 text-[#6B778C] whitespace-nowrap text-xs">
+                          {c.created_date ? format(new Date(c.created_date), 'dd/MM/yy HH:mm') : '—'}
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

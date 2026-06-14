@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { buildCallColumns } from '@/components/calls/callTableColumns';
+import ColumnSelector from '@/components/calls/ColumnSelector';
+import { useColumnVisibility } from '@/components/calls/useColumnVisibility';
 import { Phone, MapPin, Clock, AlertTriangle, RefreshCw, User, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -57,10 +59,16 @@ export default function MyQueuePage() {
     [myCalls, activeCalls, completedCalls]
   );
 
-  const columns = buildCallColumns({
+  const allColumns = buildCallColumns({
     getCall: (call) => call,
     getCallId: (call) => call.id,
   });
+  const columnHeaders = allColumns.map((c) => c.header);
+  const { isHidden, toggleColumn, resetColumns } = useColumnVisibility({
+    pageName: 'MyQueue',
+    allColumns: columnHeaders,
+  });
+  const columns = allColumns.filter((c) => !isHidden(c.header));
 
   if (isError) {
     return (
@@ -79,10 +87,18 @@ export default function MyQueuePage() {
           <h1 className="text-2xl font-bold text-[#172B4D]">התור שלי</h1>
           <p className="text-[#6B778C] text-sm">קריאות שנפתחו על ידך</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2 w-fit">
-          <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
-          רענן
-        </Button>
+        <div className="flex items-center gap-2">
+          <ColumnSelector
+            allColumns={columnHeaders}
+            isHidden={isHidden}
+            onToggle={toggleColumn}
+            onReset={resetColumns}
+          />
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2 w-fit">
+            <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
+            רענן
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

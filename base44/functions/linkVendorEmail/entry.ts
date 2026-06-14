@@ -23,10 +23,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing vendor_id or email' }, { status: 400 });
     }
 
-    // Update vendor with the email
-    await base44.asServiceRole.entities.Vendor.update(vendor_id, { email });
+    // Normalize email to lowercase so it matches the user record regardless of
+    // how it was typed (user emails are stored lowercase).
+    const normalizedEmail = email.trim().toLowerCase();
 
-    return Response.json({ success: true, vendor_id, email });
+    // Update vendor with the email
+    await base44.asServiceRole.entities.Vendor.update(vendor_id, { email: normalizedEmail });
+
+    // Promote the matching user to a vendor so they get the vendor portal.
+    // Without this the user keeps role 'user' and cannot access the portal.
+    const users = await base44.asServiceRole.entities.User.filter({ email: normalizedEmail });
+    if (users.length > 0) {
+      const targetUser = users[0];
+      if (targetUser.role !== 'vendor' && targetUser.role !== 'ספק') {
+        await base44.asServiceRole.entities.User.update(targetUser.id, {
+          role: 'vendor',
+          vendor_id,
+        });
+      }
+      return Response.json({ success: true, vendor_id, email: normalizedEmail, role_updated: true });
+    }
+
+    // No user registered with this email yet — the email is linked, but the role
+    // will only flip once the user signs up. Surface a warning instead of a silent success.
+    return Response.json({
+      success: true,
+      vendor_id,
+      email: normalizedEmail,
+      role_updated: false,
+      warning: 'האימייל קושר לספק, אך לא נמצא משתמש רשום עם כתובת זו. לאחר שהספק יירשם, יש לקשר שוב כדי להפוך אותו ל-vendor.',
+    });
   } catch (error) {
     console.error('linkVendorEmail error:', error);
     return Response.json({ error: error.message }, { status: 500 });

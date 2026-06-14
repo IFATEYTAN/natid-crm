@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { base44 } from '@/lib/api';
+import { fetchUsersList } from '@/lib/usersListApi';
 import DataTable from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,7 +55,9 @@ export default function UserManagement() {
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: queryKeys.users.all(),
-    queryFn: () => base44.entities.User.list('-created_date'),
+    // Admin-gated server function (service role) instead of a direct
+    // client-side User.list(), which the platform blocks with 403.
+    queryFn: async () => (await fetchUsersList()).users,
   });
 
   const { currentUser } = usePermissions();

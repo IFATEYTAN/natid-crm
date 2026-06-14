@@ -403,7 +403,7 @@ export default function VendorPortalPage() {
             isOpen={showNewCallAlert}
             onAccept={handleAcceptCall}
             onDecline={handleDeclineCall}
-            timeoutSeconds={120}
+            timeoutSeconds={600}
             vendorContract={contractQuery.data}
             vendorProfile={vendorProfile}
           />
@@ -614,7 +614,7 @@ export default function VendorPortalPage() {
                   isOpen={showNewCallAlert}
                   onAccept={handleAcceptCall}
                   onDecline={handleDeclineCall}
-                  timeoutSeconds={120}
+                  timeoutSeconds={600}
                   vendorContract={contractQuery.data}
                   vendorProfile={vendorProfile}
                 />
