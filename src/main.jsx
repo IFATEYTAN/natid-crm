@@ -3,19 +3,30 @@ import ReactDOM from 'react-dom/client';
 import App from '@/App.jsx';
 import '@/index.css';
 
-// PWA stale-cache recovery. With skipWaiting + clientsClaim in the Workbox
-// config (vite.config.js), a freshly deployed service worker activates and
-// takes control immediately; reload once when that happens so the page runs
-// the new assets instead of getting stuck on stale chunks. Guarded so the
-// initial install (no prior controller) and reload loops are avoided.
+// One-time aggressive cleanup of any legacy service worker + caches.
+// An older PWA build is still serving stale assets (e.g. the removed manual
+// email/password login form) on some devices because its service worker keeps
+// control and controllerchange never fires. Unregister every service worker
+// and delete every cache once, then hard-reload to fetch the current build.
 if ('serviceWorker' in navigator) {
-  let reloading = false;
-  const hadController = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloading || !hadController) return;
-    reloading = true;
-    window.location.reload();
-  });
+  const CLEANUP_FLAG = 'sw_cleanup_v2';
+  if (!sessionStorage.getItem(CLEANUP_FLAG)) {
+    navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+      const hadServiceWorker = registrations.length > 0;
+      for (const registration of registrations) {
+        await registration.unregister();
+      }
+      if (window.caches) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+      sessionStorage.setItem(CLEANUP_FLAG, '1');
+      // Only reload if there was actually a stale SW to clear, to avoid loops.
+      if (hadServiceWorker) {
+        window.location.reload();
+      }
+    });
+  }
 }
 
 // Native Vite signal that a dynamic import failed because its chunk is stale.
