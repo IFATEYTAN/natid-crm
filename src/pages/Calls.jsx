@@ -20,21 +20,9 @@ import { cn } from '@/components/utils';
 import { format } from 'date-fns';
 import ColumnSelector from '@/components/calls/ColumnSelector';
 import { useColumnVisibility } from '@/components/calls/useColumnVisibility';
+import { buildCallColumns } from '@/components/calls/callTableColumns';
 
 const PAGE_SIZE = 50; // Smaller pages = faster rendering
-
-// כותרות העמודות בטבלת הקריאות (סדר קבוע)
-const CALL_COLUMNS = [
-  'פעולות',
-  "מס' רכב",
-  'שם מנוי',
-  'סטטוס',
-  'חברת ביטוח / סוכן',
-  'עדיפות',
-  'נציג מטפל',
-  'ספק',
-  'זמן פתיחת קריאה',
-];
 
 const SERVICE_TYPE_LABELS = {
   towing: 'גרירה',
@@ -101,11 +89,17 @@ export default function CallsPage() {
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
   const [openClosedTab, setOpenClosedTab] = useState('open');
 
+  // עמודות אחידות לכל מסכי הקריאות (מקור אמת יחיד - callTableColumns)
+  const allCallColumns = useMemo(
+    () => buildCallColumns({ getCall: (c) => c, getCallId: (c) => c.id }),
+    []
+  );
+  const CALL_COLUMNS = useMemo(() => allCallColumns.map((c) => c.header), [allCallColumns]);
   const { isHidden, toggleColumn, resetColumns } = useColumnVisibility({
     pageName: 'Calls',
     allColumns: CALL_COLUMNS,
   });
-  const visibleColumns = CALL_COLUMNS.filter((h) => !isHidden(h));
+  const visibleColumns = allCallColumns.filter((c) => !isHidden(c.header));
 
   const {
     data: cases = [],
@@ -349,7 +343,9 @@ export default function CallsPage() {
                           {c.customer_name || 'ללא שם'}
                         </div>
                         <div className="text-xs text-[#6B778C] mt-0.5 tabular-nums" dir="ltr">
-                          {c.vehicle_plate || c.vehicle_number || `#${c.call_number || c.id.slice(0, 8)}`}
+                          {c.vehicle_plate ||
+                            c.vehicle_number ||
+                            `#${c.call_number || c.id?.slice(0, 8) || ''}`}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 ms-2 flex-shrink-0">
@@ -402,12 +398,12 @@ export default function CallsPage() {
             <table className="w-full text-sm text-right min-w-[800px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {visibleColumns.map((h) => (
+                  {visibleColumns.map((col) => (
                     <th
-                      key={h}
+                      key={col.header}
                       className="px-4 py-3 text-xs font-semibold text-[#6B778C] whitespace-nowrap"
                     >
-                      {h}
+                      {col.header}
                     </th>
                   ))}
                 </tr>
@@ -425,114 +421,24 @@ export default function CallsPage() {
                   ))
                 ) : paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={visibleColumns.length} className="px-4 py-12 text-center text-[#6B778C]">
+                    <td
+                      colSpan={visibleColumns.length}
+                      className="px-4 py-12 text-center text-[#6B778C]"
+                    >
                       אין קריאות להצגה
                     </td>
                   </tr>
                 ) : (
                   paginated.map((c) => (
                     <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                      {/* פעולות */}
-                      {!isHidden('פעולות') && (
-                        <td className="px-4 py-3">
-                          <Link to={createPageUrl(`CallDetails?id=${c.id}`)}>
-                            <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
-                              צפה
-                            </Button>
-                          </Link>
+                      {visibleColumns.map((col) => (
+                        <td
+                          key={col.header}
+                          className="px-4 py-3 text-[#6B778C] whitespace-nowrap align-top"
+                        >
+                          {col.cell(c)}
                         </td>
-                      )}
-                      {/* מס' רכב */}
-                      {!isHidden("מס' רכב") && (
-                        <td className="px-4 py-3 font-medium tabular-nums whitespace-nowrap" dir="ltr">
-                          {c.vehicle_plate || c.vehicle_number || '—'}
-                        </td>
-                      )}
-                      {/* שם מנוי */}
-                      {!isHidden('שם מנוי') && (
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <Link
-                            to={createPageUrl(`CallDetails?id=${c.id}`)}
-                            className="font-medium text-blue-600 hover:underline"
-                          >
-                            {c.customer_name || '—'}
-                          </Link>
-                          <div className="text-xs text-[#6B778C] tabular-nums" dir="ltr">
-                            {c.customer_phone || ''}
-                          </div>
-                        </td>
-                      )}
-                      {/* סטטוס */}
-                      {!isHidden('סטטוס') && (
-                        <td className="px-4 py-3">
-                          {c.call_status ? (
-                            <Badge
-                              className={cn(
-                                'text-xs',
-                                STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600'
-                              )}
-                            >
-                              {STATUS_LABELS[c.call_status] || c.call_status}
-                            </Badge>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                      )}
-                      {/* חברת ביטוח / סוכן */}
-                      {!isHidden('חברת ביטוח / סוכן') && (
-                        <td className="px-4 py-3 text-[#6B778C]">
-                          {c.insurance_company || c.insurance_agent ? (
-                            <div>
-                              <div className="font-medium text-[#172B4D]">
-                                {c.insurance_company || '—'}
-                              </div>
-                              {c.insurance_agent && (
-                                <div className="text-xs">{c.insurance_agent}</div>
-                              )}
-                            </div>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                      )}
-                      {/* עדיפות */}
-                      {!isHidden('עדיפות') && (
-                        <td className="px-4 py-3">
-                          {c.call_priority ? (
-                            <Badge
-                              className={cn(
-                                'text-xs',
-                                PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600'
-                              )}
-                            >
-                              {PRIORITY_LABELS[c.call_priority] || c.call_priority}
-                            </Badge>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                      )}
-                      {/* נציג מטפל */}
-                      {!isHidden('נציג מטפל') && (
-                        <td className="px-4 py-3 text-[#6B778C]">
-                          {c.assigned_to_agent || <span className="text-gray-400">לא משובץ</span>}
-                        </td>
-                      )}
-                      {/* ספק */}
-                      {!isHidden('ספק') && (
-                        <td className="px-4 py-3 text-[#6B778C] max-w-[150px]">
-                          <span className="truncate block">
-                            {c.assigned_vendor_name || <span className="text-gray-400">לא שובץ</span>}
-                          </span>
-                        </td>
-                      )}
-                      {/* זמן פתיחת קריאה */}
-                      {!isHidden('זמן פתיחת קריאה') && (
-                        <td className="px-4 py-3 text-[#6B778C] whitespace-nowrap text-xs">
-                          {c.created_date ? format(new Date(c.created_date), 'dd/MM/yy HH:mm') : '—'}
-                        </td>
-                      )}
+                      ))}
                     </tr>
                   ))
                 )}
