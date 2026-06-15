@@ -197,15 +197,18 @@ export default function DataTable({
         })}
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden md:block table-container">
-        <Table className="table-base">
+      {/* Desktop Table View - vertical scroll with frozen (sticky) header */}
+      <div className="hidden md:block table-container max-h-[70vh] overflow-y-auto">
+        <table className="table-base caption-bottom text-sm">
           <TableHeader className="table-header">
             <TableRow>
               {columns.map((col, idx) => (
                 <TableHead
                   key={idx}
-                  className={cn('table-header-cell whitespace-nowrap', col.className)}
+                  className={cn(
+                    'table-header-cell whitespace-nowrap sticky top-0 z-10 bg-neutral-soft-50',
+                    col.className
+                  )}
                 >
                   {col.header}
                 </TableHead>
@@ -234,7 +237,7 @@ export default function DataTable({
               );
             })}
           </TableBody>
-        </Table>
+        </table>
       </div>
     </>
   );
