@@ -81,6 +81,21 @@ export default defineConfig({
         // Runtime caching for API calls
         runtimeCaching: [
           {
+            // NEVER cache auth-deciding endpoints. Serving a stale (pre-login)
+            // response for these makes the app think the user is logged out and
+            // bounce back to the login screen after a successful login — a
+            // production-only redirect loop (the SW is disabled in dev).
+            // Matches: /api/apps/<id>/entities/User/me,
+            //          /api/apps/public/.../public-settings/...,
+            //          any /api auth/login endpoints.
+            urlPattern: ({ url }) =>
+              url.pathname.includes('/entities/User/me') ||
+              url.pathname.includes('/public-settings/') ||
+              url.pathname.includes('/auth/') ||
+              url.pathname.endsWith('/login'),
+            handler: 'NetworkOnly',
+          },
+          {
             // Cache API responses (Base44 API)
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',

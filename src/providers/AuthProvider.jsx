@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/lib/api';
-import { appParams } from '@/lib/app-params';
+import { appParams, clearStoredToken } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
 import { isDemoMode } from '@/demo/demoMode';
 import { demoUser } from '@/demo/demoData';
@@ -66,6 +66,10 @@ export const AuthProvider = ({ children }) => {
         if (appError.status === 403 && appError.data?.extra_data?.reason) {
           const reason = appError.data.extra_data.reason;
           if (reason === 'auth_required') {
+            // The stored token (if any) is invalid/expired. Drop it so the next
+            // load starts clean and the login redirect can't be undermined by a
+            // stale token that keeps failing — the production redirect loop.
+            clearStoredToken();
             setAuthError({
               type: 'auth_required',
               message: 'Authentication required',
@@ -115,6 +119,10 @@ export const AuthProvider = ({ children }) => {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
+
+      // The token didn't pass the /me check — clear it so a stale token can't
+      // keep failing on subsequent loads (production redirect loop).
+      clearStoredToken();
 
       // Any auth failure should show the login page
       setAuthError({

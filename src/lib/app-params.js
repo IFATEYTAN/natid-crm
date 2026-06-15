@@ -56,3 +56,15 @@ const getAppParams = () => {
 export const appParams = {
   ...getAppParams(),
 };
+
+/**
+ * Clear any stored access token. Call this when the server rejects the token
+ * (401/403 auth_required) so a stale/expired token in localStorage can't
+ * persist across reloads and keep bouncing the user back to the login screen.
+ */
+export const clearStoredToken = () => {
+  if (isNode) return;
+  storage.removeItem('base44_access_token');
+  storage.removeItem('token');
+  appParams.token = null;
+};
