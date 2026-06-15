@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
@@ -22,8 +22,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Truck, Sparkles, Loader2 } from 'lucide-react';
+import { Truck, Sparkles, Loader2, Zap, Warehouse } from 'lucide-react';
 import { toast } from 'sonner';
+
+// סוג רכב השירות (סוג שיגור) - נבחר לפני בחירת הספק.
+const DISPATCH_TYPES = [
+  { key: 'mobile_unit', label: 'ניידת', icon: Zap, iconClass: 'text-blue-500' },
+  { key: 'tow_truck', label: 'גרר', icon: Truck, iconClass: 'text-orange-500' },
+  { key: 'tow_truck_storage', label: 'גרר עם אחסנה', icon: Warehouse, iconClass: 'text-stone-600' },
+];
 
 /**
  * דיאלוג שיבוץ ספק לקריאה - לשימוש חוזר מרשימת הקריאות ומכל מסך אחר.
@@ -45,11 +52,17 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
   const availableVendors = vendors.filter((v) => v.is_available_now && v.is_active);
 
   const [selectedVendor, setSelectedVendor] = useState('');
+  const [dispatchType, setDispatchType] = useState('');
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [autoAssignInfo, setAutoAssignInfo] = useState(null);
   const [assigning, setAssigning] = useState(false);
 
   const callId = call?.id;
+
+  // אתחול סוג השיגור מהקריאה בכל פתיחה של הדיאלוג.
+  useEffect(() => {
+    if (open) setDispatchType(call?.dispatch_type || '');
+  }, [open, call?.dispatch_type]);
 
   const handleClose = (next) => {
     if (!next) {
@@ -128,6 +141,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
         assigned_vendor_name: vendor?.vendor_name,
         assigned_at: new Date().toISOString(),
         call_status: 'assigning',
+        ...(dispatchType ? { dispatch_type: dispatchType } : {}),
       });
 
       queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
@@ -173,6 +187,26 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
         </DialogHeader>
 
         <div className="py-4 space-y-4">
+          {/* בחירת סוג רכב השירות - לפני בחירת הספק */}
+          <div>
+            <Label>סוג רכב שירות</Label>
+            <Select value={dispatchType} onValueChange={setDispatchType}>
+              <SelectTrigger>
+                <SelectValue placeholder="בחר סוג רכב שירות" />
+              </SelectTrigger>
+              <SelectContent>
+                {DISPATCH_TYPES.map(({ key, label, icon: Icon, iconClass }) => (
+                  <SelectItem key={key} value={key}>
+                    <span className="flex items-center gap-2">
+                      <Icon className={`w-3.5 h-3.5 ${iconClass}`} />
+                      {label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-3 space-y-2">
             <Button
               onClick={handleAutoAssign}

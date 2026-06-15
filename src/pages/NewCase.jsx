@@ -827,6 +827,12 @@ export default function NewCase() {
                         גרר
                       </span>
                     </SelectItem>
+                    <SelectItem value="tow_truck_storage">
+                      <span className="flex items-center gap-2">
+                        <Truck className="w-3 h-3 text-stone-600" />
+                        גרר עם אחסנה
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 {formData.dispatch_type === 'mobile_unit' && (
