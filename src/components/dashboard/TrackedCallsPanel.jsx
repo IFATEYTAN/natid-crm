@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl, formatWaitTime } from '@/components/utils';
+import { createPageUrl, formatWaitTime, WAIT_TIME_MAX_MINUTES } from '@/components/utils';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,7 +67,10 @@ function getElapsedTime(createdDate) {
   const diffMs = now - created;
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-  return { label: formatWaitTime(diffMinutes) ?? '-', minutes: diffMinutes };
+  return {
+    label: formatWaitTime(diffMinutes, { maxMinutes: WAIT_TIME_MAX_MINUTES }) ?? '-',
+    minutes: diffMinutes,
+  };
 }
 
 /**

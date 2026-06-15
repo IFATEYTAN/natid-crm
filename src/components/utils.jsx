@@ -29,14 +29,22 @@ export const formatDateTime = (dateString) => {
   return new Date(dateString).toLocaleString('he-IL');
 };
 
+// תקרת תצוגה לזמן המתנה - מעליה מוצג סימון חריגה במקום מספר ענק (קריאות ישנות שנשארו פתוחות).
+export const WAIT_TIME_MAX_MINUTES = 24 * 60;
+
 /**
  * מעצב משך זמן המתנה לשעות ודקות בלבד (אף פעם לא ימים) - תצוגה אחידה בכל הממשק.
  * @param {number} minutes - משך בדקות
- * @returns {string|null} למשל "906 שע׳ 52 דק׳" או "52 דק׳"; null אם אין נתון תקין
+ * @param {object} [opts]
+ * @param {number} [opts.maxMinutes] - תקרה; מעליה מוחזר "מעל X שע׳" כסימון חריגה
+ * @returns {string|null} למשל "12 שע׳ 52 דק׳" או "52 דק׳"; null אם אין נתון תקין
  */
-export const formatWaitTime = (minutes) => {
+export const formatWaitTime = (minutes, { maxMinutes } = {}) => {
   if (minutes == null || isNaN(minutes) || minutes < 0) return null;
   const total = Math.floor(Number(minutes));
+  if (maxMinutes != null && total > maxMinutes) {
+    return `מעל ${Math.floor(maxMinutes / 60)} שע׳`;
+  }
   const h = Math.floor(total / 60);
   const m = total % 60;
   if (h > 0) return `${h} שע׳ ${m} דק׳`;

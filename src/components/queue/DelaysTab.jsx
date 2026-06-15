@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { formatWaitTime } from '@/components/utils';
+import { formatWaitTime, WAIT_TIME_MAX_MINUTES } from '@/components/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -25,9 +25,11 @@ import {
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
 
-// מקבל מילישניות ומחזיר תצוגה אחידה של שעות ודקות בלבד.
+// מקבל מילישניות ומחזיר תצוגה אחידה של שעות ודקות בלבד (עם תקרת חריגה).
 function formatMinutes(ms) {
-  return formatWaitTime(Math.round((ms || 0) / 60000)) || '0 דק׳';
+  return (
+    formatWaitTime(Math.round((ms || 0) / 60000), { maxMinutes: WAIT_TIME_MAX_MINUTES }) || '0 דק׳'
+  );
 }
 
 function getDelayCategory(mins) {

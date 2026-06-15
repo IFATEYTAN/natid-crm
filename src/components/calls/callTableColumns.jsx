@@ -1,6 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl, formatDateTime, formatCurrency, formatWaitTime } from '@/components/utils';
+import {
+  createPageUrl,
+  formatDateTime,
+  formatCurrency,
+  formatWaitTime,
+  WAIT_TIME_MAX_MINUTES,
+} from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -99,10 +105,10 @@ export function buildCallColumns({ getCall, getCallId, renderActions }) {
         let display;
         if (typeof item.time_in_queue === 'number' && item.time_in_queue >= 0) {
           mins = item.time_in_queue;
-          display = formatWaitTime(mins);
+          display = formatWaitTime(mins, { maxMinutes: WAIT_TIME_MAX_MINUTES });
         } else if (from) {
           mins = Math.round((Date.now() - new Date(from).getTime()) / 60000);
-          display = formatWaitTime(mins);
+          display = formatWaitTime(mins, { maxMinutes: WAIT_TIME_MAX_MINUTES });
         }
         if (!display) return dash();
         return (
