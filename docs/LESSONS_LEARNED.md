@@ -23,6 +23,15 @@
 
 ## לקחים
 
+### [2026-06-15] Bug: לולאת התחברות בפרודקשן (חזרה למסך כניסה)
+
+**בעיה:** אחרי התחברות מוצלחת ב-Base44, המשתמש הוחזר שוב למסך הכניסה (redirect loop) — **רק בפרודקשן**, לא בפיתוח.
+**פתרון:** ה-Service Worker (פעיל רק בפרודקשן; `devOptions.enabled: false`) שמר ב-cache את **כל** קריאות `/api/` כולל `User/me` ו-`public-settings` — בדיוק הנקודות שקובעות אם המשתמש מחובר. עם `NetworkFirst` + timeout של 10ש', תשובה ישנה (מלפני ההתחברות) הוגשה מה-cache והאפליקציה "חשבה" שהמשתמש מנותק → חזרה למסך כניסה. התיקון: כלל `NetworkOnly` ל-endpoints של אימות (`/entities/User/me`, `/public-settings/`, `/auth/`, `/login`) לפני כלל ה-`/api/` הכללי, כך שלעולם לא תוגש תשובת אימות ישנה. בנוסף: ניקוי token פגום מ-`localStorage` כש-`auth_required` מוחזר, כדי שטוקן ישן לא יתקע את הלולאה בין רענונים.
+**לקח:** ב-PWA אסור לשמור ב-cache תשובות שקובעות מצב אימות. SW פעיל רק בפרודקשן — באג "שקורה רק בפרוד" מצביע כמעט תמיד על ה-SW/cache.
+**קבצים:** `vite.config.js`, `src/providers/AuthProvider.jsx`, `src/lib/app-params.js`
+
+---
+
 ### [2026-02-04] Convention: הקמת תשתית Claude Workflow
 
 **בעיה:** לא הייתה תשתית מסודרת לעבודה עם Claude Code בפרויקט.
