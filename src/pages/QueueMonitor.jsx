@@ -121,15 +121,21 @@ export default function QueueMonitor() {
   const isLoading = workQueueQuery.isLoading || casesQuery.isLoading;
 
   // Build enriched items from work queue + case lookups.
-  // If queue is empty, show active cases directly as pseudo-queue items - but
-  // exclude closed/cancelled calls so they don't appear as "waiting" with an
-  // ever-growing wait time (those are no longer in the queue).
+  // Queue items whose referenced call no longer exists (orphaned/stale rows)
+  // are dropped — otherwise they render as fully empty "—" rows.
+  // If no valid queue items remain, show active cases directly as pseudo-queue
+  // items - but exclude closed/cancelled calls so they don't appear as
+  // "waiting" with an ever-growing wait time (those are no longer in the queue).
+  const enrichedFromQueue = queueItems
+    .map((item) => {
+      const call = directCases.find((c) => c.id === item.call_id);
+      return call ? { ...item, call } : null;
+    })
+    .filter(Boolean);
+
   const enrichedItems =
-    queueItems.length > 0
-      ? queueItems.map((item) => {
-          const call = directCases.find((c) => c.id === item.call_id);
-          return { ...item, call };
-        })
+    enrichedFromQueue.length > 0
+      ? enrichedFromQueue
       : directCases
           .filter((c) => !['completed', 'cancelled'].includes(c.call_status))
           .map((c) => ({
