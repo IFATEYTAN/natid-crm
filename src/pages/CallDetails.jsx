@@ -62,6 +62,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { toast } from 'sonner';
+import { CLOSING_STATUSES, getClosingStatus } from '@/config/closingStatuses';
+import { createContinuationCall } from '@/features/calls/createContinuationCall';
 import { statusLabels, statusColors } from '@/components/config/labels';
 import CallActionsMenu from '@/components/call-details/CallActionsMenu';
 
@@ -109,6 +111,7 @@ export default function CallDetailsPage() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showPreCloseDialog, setShowPreCloseDialog] = useState(false);
   const [pendingCloseStatus, setPendingCloseStatus] = useState(null);
+  const [selectedClosingStatus, setSelectedClosingStatus] = useState('');
 
   // Permission & Audit
   const { currentUser, hasPermission } = usePermissions();
@@ -253,6 +256,97 @@ export default function CallDetailsPage() {
     }
   };
 
+  // Close a call with a specific closing status (תוצאת הטיפול). Drives the
+  // customer SMS and — for failure/extraction outcomes — opens a linked
+  // continuation call. Storage closes into a holding state with no SMS.
+  const handleCloseWithStatus = async (closingKey) => {
+    if (!canEdit) return;
+    const cfg = getClosingStatus(closingKey);
+    if (!cfg) return;
+
+    setShowPreCloseDialog(false);
+
+    // Shared event code linking the original leg with any continuation leg.
+    const caseCode =
+      call?.case_reference_code || call?.call_number || `EVT-${Date.now().toString().slice(-8)}`;
+
+    const updates = {
+      call_status: cfg.resultingStatus,
+      closing_status: closingKey,
+      case_reference_code: caseCode,
+    };
+    if (cfg.resultingStatus === 'completed') {
+      updates.closed_at = new Date().toISOString();
+      updates.closed_by = currentUser?.full_name || 'operator';
+    }
+
+    try {
+      await base44.entities.Call.update(callId, updates);
+    } catch {
+      toast.error('שגיאה בסגירת הקריאה');
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
+
+    logAction({
+      action: 'status_change',
+      entity_type: 'Call',
+      entity_id: callId,
+      entity_name: call?.call_number,
+      details: `סגירה: ${cfg.label}`,
+      old_value: call?.call_status,
+      new_value: cfg.resultingStatus,
+    });
+
+    base44.entities.CallHistory.create({
+      call_id: callId,
+      call_number: call?.call_number,
+      change_type: 'status',
+      old_value: call?.call_status,
+      new_value: cfg.resultingStatus,
+      changed_by: currentUser?.full_name || 'operator',
+      notes: `סטטוס סגירה: ${cfg.label}`,
+    });
+
+    if (cfg.resultingStatus === 'completed') {
+      base44.functions.invoke('generateCallSummary', { call_id: callId }).catch(() => {});
+    }
+
+    // Customer SMS per closing status (storage sends none by design).
+    if (cfg.sendsSms && call?.customer_phone && cfg.smsText) {
+      base44.functions
+        .invoke('sendSMS', { phone: call.customer_phone, message: cfg.smsText, callId })
+        .catch(() => {});
+    }
+
+    setSelectedClosingStatus('');
+
+    // Open a linked continuation call for failure / extraction outcomes.
+    if (cfg.createsContinuation) {
+      try {
+        const continuation = await createContinuationCall(base44, call, {
+          serviceCategory: cfg.continuationCategory || 'towing',
+          caseCode,
+          createdByName: currentUser?.full_name,
+        });
+        await base44.entities.Call.update(callId, { continuation_call_id: continuation.id });
+        queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
+        toast.success('נפתחה קריאת המשך מקושרת');
+        navigate(createPageUrl(`CallDetails?id=${continuation.id}`));
+      } catch {
+        toast.error('הקריאה נסגרה אך פתיחת קריאת ההמשך נכשלה');
+      }
+      return;
+    }
+
+    if (cfg.isStorage) {
+      toast.success('הקריאה נסגרה לאחסנה');
+    } else {
+      toast.success('הקריאה נסגרה בהצלחה');
+      setShowFeedback(true);
+    }
+  };
+
   // Location-based automatic assignment. Runs the server-side scoring engine
   // (autoAssignVendor: distance via Haversine, service match, rating, ETA via
   // OSRM) and pre-selects the top vendor so the operator can confirm.
@@ -264,7 +358,11 @@ export default function CallDetailsPage() {
       const res = await base44.functions.invoke('autoAssignVendor', { call_id: callId });
       const data = res?.data || res;
       if (!data?.success || !data?.recommendation) {
-        toast.error(data?.error === 'No available vendors' ? 'אין ספקים זמינים כרגע' : 'לא נמצא ספק מתאים לשיבוץ אוטומטי');
+        toast.error(
+          data?.error === 'No available vendors'
+            ? 'אין ספקים זמינים כרגע'
+            : 'לא נמצא ספק מתאים לשיבוץ אוטומטי'
+        );
         return;
       }
       const rec = data.recommendation;
@@ -276,7 +374,8 @@ export default function CallDetailsPage() {
         score: rec.score ?? null,
       });
       const distTxt = rec.details?.distance_km != null ? `, ${rec.details.distance_km} ק"מ` : '';
-      const etaTxt = rec.estimated_arrival_minutes != null ? `, הגעה ~${rec.estimated_arrival_minutes} דק'` : '';
+      const etaTxt =
+        rec.estimated_arrival_minutes != null ? `, הגעה ~${rec.estimated_arrival_minutes} דק'` : '';
       toast.success(`הומלץ אוטומטית: ${rec.vendor_name}${distTxt}${etaTxt}. לחצי "שבץ" לאישור.`);
     } catch (error) {
       // 404 here means the autoAssignVendor function isn't deployed on Base44.
@@ -447,15 +546,18 @@ export default function CallDetailsPage() {
                           </Button>
                           {autoAssignInfo && (
                             <p className="text-xs text-indigo-800">
-                              מומלץ: <span className="font-semibold">{autoAssignInfo.vendor_name}</span>
-                              {autoAssignInfo.distance_km != null && ` · ${autoAssignInfo.distance_km} ק"מ`}
+                              מומלץ:{' '}
+                              <span className="font-semibold">{autoAssignInfo.vendor_name}</span>
+                              {autoAssignInfo.distance_km != null &&
+                                ` · ${autoAssignInfo.distance_km} ק"מ`}
                               {autoAssignInfo.eta != null && ` · הגעה ~${autoAssignInfo.eta} דק'`}
                               {autoAssignInfo.score != null && ` · ציון ${autoAssignInfo.score}`}
                             </p>
                           )}
                           {!call?.pickup_location_lat && (
                             <p className="text-xs text-amber-700">
-                              לקריאה זו אין מיקום מדויק (קואורדינטות), לכן השיבוץ יתבסס על אזור הכיסוי בלבד.
+                              לקריאה זו אין מיקום מדויק (קואורדינטות), לכן השיבוץ יתבסס על אזור
+                              הכיסוי בלבד.
                             </p>
                           )}
                         </div>
@@ -804,47 +906,87 @@ export default function CallDetailsPage() {
           />
         </Suspense>
 
-        {/* Pre-Close Survey Confirmation Dialog */}
+        {/* Close Call — closing status selector */}
         <Dialog open={showPreCloseDialog} onOpenChange={setShowPreCloseDialog}>
           <DialogContent className="max-w-md" dir="rtl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-right">
                 <span className="text-2xl">📋</span>
-                סגירת קריאה — שליחת סקר
+                סגירת קריאה — בחירת סטטוס סגירה
               </DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800 font-medium leading-relaxed">
-                  לאחר סגירת הקריאה, הלקוח יקבל <strong>סקר שביעות רצון</strong> ב-SMS.
-                </p>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">סטטוס סגירה (תוצאת הטיפול)</Label>
+                <Select value={selectedClosingStatus} onValueChange={setSelectedClosingStatus}>
+                  <SelectTrigger className="w-full text-right">
+                    <SelectValue placeholder="בחר סטטוס סגירה..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CLOSING_STATUSES.map((s) => (
+                      <SelectItem key={s.key} value={s.key} className="text-right">
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                חשוב לנו לקבל משוב מהלקוח — כל מילוי סקר עוזר לנו לשפר את השירות. אנא וודא שהשירות
-                הסתיים בפועל לפני הסגירה.
-              </p>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-xs text-amber-700">
-                  💡 <strong>טיפ:</strong> ניתן לציין ללקוח בעל פה: "תקבל/י עכשיו SMS עם סקר קצר —
-                  חשוב לנו שתמלא/י אותו!"
-                </p>
-              </div>
+
+              {selectedClosingStatus &&
+                (() => {
+                  const cfg = getClosingStatus(selectedClosingStatus);
+                  if (!cfg) return null;
+                  return (
+                    <div className="space-y-2">
+                      {cfg.createsContinuation && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <p className="text-sm text-blue-800 font-medium">
+                            ↪️ תיפתח אוטומטית <strong>קריאת המשך מקושרת</strong> (גרירה), עם פרטי
+                            הלקוח והרכב מהקריאה הנוכחית.
+                          </p>
+                        </div>
+                      )}
+                      {cfg.isStorage && (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                          <p className="text-sm text-purple-800 font-medium">
+                            📦 הקריאה תיסגר במצב <strong>"באחסנה"</strong>. לא תישלח הודעת SMS
+                            ללקוח. גרירת המשך תיפתח ידנית בהמשך.
+                          </p>
+                        </div>
+                      )}
+                      <div
+                        className={`rounded-lg p-3 border ${
+                          cfg.sendsSms
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <p
+                          className={`text-xs ${cfg.sendsSms ? 'text-green-700' : 'text-gray-500'}`}
+                        >
+                          {cfg.sendsSms
+                            ? '📨 תישלח הודעת SMS ללקוח על סטטוס הסגירה.'
+                            : '🔕 לא תישלח הודעת SMS ללקוח.'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
             </div>
             <DialogFooter className="flex gap-2 justify-start">
               <Button
-                onClick={() => {
-                  setShowPreCloseDialog(false);
-                  handleStatusChange(pendingCloseStatus, { skipPreClose: true });
-                }}
+                disabled={!selectedClosingStatus}
+                onClick={() => handleCloseWithStatus(selectedClosingStatus)}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
-                סגור קריאה ושלח סקר
+                סגור קריאה
               </Button>
               <Button
                 variant="outline"
                 onClick={() => {
                   setShowPreCloseDialog(false);
                   setPendingCloseStatus(null);
+                  setSelectedClosingStatus('');
                 }}
               >
                 ביטול
