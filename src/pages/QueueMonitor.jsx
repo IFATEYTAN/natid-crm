@@ -106,10 +106,12 @@ export default function QueueMonitor() {
 
   const workQueueQuery = useWorkQueue();
 
-  // Read active calls directly from Call entity (shares cache with useCalls via queryKeys.calls.all())
+  // Read active calls directly from Call entity (shares cache with useCalls via queryKeys.calls.all()).
+  // Limit must be high enough to cover every call referenced by the work queue,
+  // otherwise enriched queue rows can't resolve their call and render empty ("—").
   const casesQuery = useQuery({
     queryKey: queryKeys.calls.all(),
-    queryFn: () => base44.entities.Call.list('-created_date', 300),
+    queryFn: () => base44.entities.Call.list('-created_date', 2000),
     staleTime: 1000 * 60 * 2,
     refetchOnWindowFocus: false,
   });
@@ -270,105 +272,102 @@ export default function QueueMonitor() {
   };
 
   const renderActions = (item) => (
-        <div className="flex items-center gap-1">
-          {/* Admin: always allow assignment/reassignment */}
-          {isAdmin && item.queue_status !== 'completed' && !item.assigned_to_agent && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              onClick={() => setAssignDialog({ open: true, item, mode: 'assign' })}
-            >
-              <UserPlus className="w-3 h-3" />
-              שבץ
-            </Button>
-          )}
-          {/* Non-admin: only allow if waiting and unassigned */}
-          {!isAdmin && !item.assigned_to_agent && item.queue_status === 'waiting_in_queue' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              onClick={() => setAssignDialog({ open: true, item, mode: 'assign' })}
-            >
-              <UserPlus className="w-3 h-3" />
-              שבץ
-            </Button>
-          )}
-          {item.assigned_to_agent && item.queue_status !== 'completed' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs gap-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-              onClick={() => setAssignDialog({ open: true, item, mode: 'transfer' })}
-            >
-              <ArrowLeftRight className="w-3 h-3" />
-              העבר
-            </Button>
-          )}
-          {/* Admin inline edit button */}
+    <div className="flex items-center gap-1">
+      {/* Admin: always allow assignment/reassignment */}
+      {isAdmin && item.queue_status !== 'completed' && !item.assigned_to_agent && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          onClick={() => setAssignDialog({ open: true, item, mode: 'assign' })}
+        >
+          <UserPlus className="w-3 h-3" />
+          שבץ
+        </Button>
+      )}
+      {/* Non-admin: only allow if waiting and unassigned */}
+      {!isAdmin && !item.assigned_to_agent && item.queue_status === 'waiting_in_queue' && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          onClick={() => setAssignDialog({ open: true, item, mode: 'assign' })}
+        >
+          <UserPlus className="w-3 h-3" />
+          שבץ
+        </Button>
+      )}
+      {item.assigned_to_agent && item.queue_status !== 'completed' && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs gap-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+          onClick={() => setAssignDialog({ open: true, item, mode: 'transfer' })}
+        >
+          <ArrowLeftRight className="w-3 h-3" />
+          העבר
+        </Button>
+      )}
+      {/* Admin inline edit button */}
+      {isAdmin && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
+          onClick={() => openEditDialog(item)}
+        >
+          <Edit className="w-3 h-3" />
+          ערוך
+        </Button>
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-7 w-7 p-0" aria-label="פעולות נוספות">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>פעולות</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => navigate(createPageUrl(`CaseDetails?id=${item.call_id}`))}
+          >
+            צפה בפרטים
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setPriorityDialog({ open: true, item })}>
+            <Gauge className="w-4 h-4 ms-2" />
+            שנה עדיפות
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              setAssignDialog({
+                open: true,
+                item,
+                mode: item.assigned_to_agent ? 'transfer' : 'assign',
+              })
+            }
+          >
+            <UserPlus className="w-4 h-4 ms-2" />
+            {item.assigned_to_agent ? 'העבר לנציג אחר' : 'שבץ לנציג'}
+          </DropdownMenuItem>
           {isAdmin && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
-              onClick={() => openEditDialog(item)}
-            >
-              <Edit className="w-3 h-3" />
-              ערוך
-            </Button>
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => openEditDialog(item)}>
+                <Edit className="w-4 h-4 ms-2" />
+                עריכת קריאה (מנהל)
+              </DropdownMenuItem>
+            </>
           )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-7 w-7 p-0" aria-label="פעולות נוספות">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuLabel>פעולות</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigate(createPageUrl(`CaseDetails?id=${item.call_id}`))}
-              >
-                צפה בפרטים
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setPriorityDialog({ open: true, item })}>
-                <Gauge className="w-4 h-4 ms-2" />
-                שנה עדיפות
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() =>
-                  setAssignDialog({
-                    open: true,
-                    item,
-                    mode: item.assigned_to_agent ? 'transfer' : 'assign',
-                  })
-                }
-              >
-                <UserPlus className="w-4 h-4 ms-2" />
-                {item.assigned_to_agent ? 'העבר לנציג אחר' : 'שבץ לנציג'}
-              </DropdownMenuItem>
-              {isAdmin && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => openEditDialog(item)}>
-                    <Edit className="w-4 h-4 ms-2" />
-                    עריכת קריאה (מנהל)
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={() => handleRemoveFromQueue(item)}
-              >
-                <Trash2 className="w-4 h-4 ms-2" />
-                הסר מהתור
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-red-600" onClick={() => handleRemoveFromQueue(item)}>
+            <Trash2 className="w-4 h-4 ms-2" />
+            הסר מהתור
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
 
   const allColumns = buildCallColumns({
     getCall: (item) => item.call,

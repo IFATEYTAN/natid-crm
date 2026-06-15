@@ -203,7 +203,10 @@ export default function DataTable({
           <TableHeader className="table-header">
             <TableRow>
               {columns.map((col, idx) => (
-                <TableHead key={idx} className={cn('table-header-cell', col.className)}>
+                <TableHead
+                  key={idx}
+                  className={cn('table-header-cell whitespace-nowrap', col.className)}
+                >
                   {col.header}
                 </TableHead>
               ))}
@@ -220,7 +223,10 @@ export default function DataTable({
                   className={cn('table-row', onRowClick && 'cursor-pointer', rowStatusColor)}
                 >
                   {columns.map((col, colIdx) => (
-                    <TableCell key={colIdx} className={cn('table-cell', col.cellClassName)}>
+                    <TableCell
+                      key={colIdx}
+                      className={cn('table-cell whitespace-nowrap', col.cellClassName)}
+                    >
                       {col.cell ? col.cell(row) : row[col.accessor]}
                     </TableCell>
                   ))}
