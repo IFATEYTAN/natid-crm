@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl, formatDateTime, formatCurrency } from '@/components/utils';
+import { createPageUrl, formatDateTime, formatCurrency, formatWaitTime } from '@/components/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,15 +52,6 @@ function Text({ value, className = '', dir }) {
   );
 }
 
-function formatMinutes(totalMins) {
-  if (totalMins == null || isNaN(totalMins) || totalMins < 0) return null;
-  const mins = Math.floor(totalMins);
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  if (h > 0) return `${h} שע׳ ${m} דק׳`;
-  return `${m} דק׳`;
-}
-
 function dateText(value) {
   if (!value || isNaN(new Date(value).getTime())) return dash();
   return <span className="text-xs text-gray-600 whitespace-nowrap">{formatDateTime(value)}</span>;
@@ -108,10 +99,10 @@ export function buildCallColumns({ getCall, getCallId, renderActions }) {
         let display;
         if (typeof item.time_in_queue === 'number' && item.time_in_queue >= 0) {
           mins = item.time_in_queue;
-          display = formatMinutes(mins);
+          display = formatWaitTime(mins);
         } else if (from) {
           mins = Math.round((Date.now() - new Date(from).getTime()) / 60000);
-          display = formatMinutes(mins);
+          display = formatWaitTime(mins);
         }
         if (!display) return dash();
         return (

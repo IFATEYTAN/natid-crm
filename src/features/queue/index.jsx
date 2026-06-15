@@ -5,6 +5,7 @@ import { base44 } from '@/lib/api';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { formatWaitTime } from '@/components/utils';
 import StatCard from '@/components/ui/StatCard';
 import DataTable from '@/components/ui/DataTable';
 import { Button } from '@/components/ui/button';
@@ -138,10 +139,7 @@ export default function MyQueue() {
   const getTimeInQueue = (addedAt) => {
     if (!addedAt) return '-';
     const minutes = differenceInMinutes(new Date(), parseISO(addedAt));
-    if (minutes < 60) return `${minutes} דק'`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}:${mins.toString().padStart(2, '0')} שעות`;
+    return formatWaitTime(minutes) ?? '-';
   };
 
   const myQueueColumns = [

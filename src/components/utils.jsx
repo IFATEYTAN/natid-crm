@@ -30,6 +30,20 @@ export const formatDateTime = (dateString) => {
 };
 
 /**
+ * מעצב משך זמן המתנה לשעות ודקות בלבד (אף פעם לא ימים) - תצוגה אחידה בכל הממשק.
+ * @param {number} minutes - משך בדקות
+ * @returns {string|null} למשל "906 שע׳ 52 דק׳" או "52 דק׳"; null אם אין נתון תקין
+ */
+export const formatWaitTime = (minutes) => {
+  if (minutes == null || isNaN(minutes) || minutes < 0) return null;
+  const total = Math.floor(Number(minutes));
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  if (h > 0) return `${h} שע׳ ${m} דק׳`;
+  return `${m} דק׳`;
+};
+
+/**
  * Safe wrapper around date-fns format() that returns fallback for invalid dates.
  */
 export const safeFormat = (dateValue, formatStr, options = {}) => {

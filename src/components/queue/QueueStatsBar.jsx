@@ -1,13 +1,10 @@
 import React from 'react';
 import { Clock, Users, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { formatWaitTime } from '@/components/utils';
 
+// מקבל מילישניות ומחזיר תצוגה אחידה של שעות ודקות בלבד.
 function formatMinutes(ms) {
-  if (!ms || ms <= 0) return '0 דק׳';
-  const mins = Math.round(ms / 60000);
-  if (mins < 60) return `${mins} דק׳`;
-  const hrs = Math.floor(mins / 60);
-  const remainMins = mins % 60;
-  return `${hrs} שע׳ ${remainMins > 0 ? `${remainMins} דק׳` : ''}`;
+  return formatWaitTime(Math.round((ms || 0) / 60000)) || '0 דק׳';
 }
 
 export default function QueueStatsBar({ queueItems, onFilterByStatus, activeFilter }) {

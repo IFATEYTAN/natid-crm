@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { createPageUrl, formatWaitTime } from '@/components/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
@@ -882,7 +882,7 @@ function CasesList({ department }) {
     {
       header: 'זמן המתנה',
       accessor: 'waiting_time_minutes',
-      cell: (row) => (row.waiting_time_minutes ? `${row.waiting_time_minutes} דק'` : '—'),
+      cell: (row) => formatWaitTime(row.waiting_time_minutes) ?? '—',
     },
     {
       header: 'סטטוס קריאה',
