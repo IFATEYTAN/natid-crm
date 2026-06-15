@@ -120,24 +120,28 @@ export default function QueueMonitor() {
   const directCases = casesQuery.data || [];
   const isLoading = workQueueQuery.isLoading || casesQuery.isLoading;
 
-  // Build enriched items from work queue + case lookups
-  // If queue is empty, show active cases directly as pseudo-queue items
+  // Build enriched items from work queue + case lookups.
+  // If queue is empty, show active cases directly as pseudo-queue items - but
+  // exclude closed/cancelled calls so they don't appear as "waiting" with an
+  // ever-growing wait time (those are no longer in the queue).
   const enrichedItems =
     queueItems.length > 0
       ? queueItems.map((item) => {
           const call = directCases.find((c) => c.id === item.call_id);
           return { ...item, call };
         })
-      : directCases.map((c) => ({
-          id: c.id,
-          call_id: c.id,
-          queue_status: 'waiting_in_queue',
-          priority_score:
-            c.call_priority === 'critical' ? 90 : c.call_priority === 'urgent' ? 70 : 50,
-          added_to_queue_at: c.created_date,
-          assigned_to_agent: null,
-          call: c,
-        }));
+      : directCases
+          .filter((c) => !['completed', 'cancelled'].includes(c.call_status))
+          .map((c) => ({
+            id: c.id,
+            call_id: c.id,
+            queue_status: 'waiting_in_queue',
+            priority_score:
+              c.call_priority === 'critical' ? 90 : c.call_priority === 'urgent' ? 70 : 50,
+            added_to_queue_at: c.created_date,
+            assigned_to_agent: null,
+            call: c,
+          }));
 
   const filteredItems = enrichedItems.filter((item) => {
     const matchesStatus = filterStatus === 'all' || item.queue_status === filterStatus;

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { formatWaitTime } from '@/components/utils';
+import { formatWaitTime, WAIT_TIME_MAX_MINUTES } from '@/components/utils';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ExportMenu from '@/components/ui/ExportMenu';
@@ -140,7 +140,7 @@ export default function Calls() {
       return formatWaitTime(call.time_to_completion) ?? '-';
     }
 
-    return formatWaitTime(minutes) ?? '-';
+    return formatWaitTime(minutes, { maxMinutes: WAIT_TIME_MAX_MINUTES }) ?? '-';
   };
 
   // SLA Status Icon
