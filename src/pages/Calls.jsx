@@ -465,14 +465,14 @@ export default function CallsPage() {
             )}
           </div>
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden md:block max-h-[70vh] overflow-auto">
             <table className="w-full text-sm text-right min-w-[800px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   {visibleColumns.map((col) => (
                     <th
                       key={col.header}
-                      className="px-4 py-3 text-xs font-semibold text-[#6B778C] whitespace-nowrap"
+                      className="px-4 py-3 text-xs font-semibold text-[#6B778C] whitespace-nowrap sticky top-0 z-10 bg-gray-50"
                     >
                       {col.header}
                     </th>
