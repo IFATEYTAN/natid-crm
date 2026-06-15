@@ -15,12 +15,75 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search, RefreshCw, MapPin, ChevronRight, ChevronLeft, User } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  RefreshCw,
+  ChevronRight,
+  ChevronLeft,
+  User,
+  MoreVertical,
+  Eye,
+  Truck,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/components/utils';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import ColumnSelector from '@/components/calls/ColumnSelector';
 import { useColumnVisibility } from '@/components/calls/useColumnVisibility';
 import { buildCallColumns } from '@/components/calls/callTableColumns';
+import AssignVendorDialog from '@/components/calls/AssignVendorDialog';
+
+const CLOSED_FOR_ACTIONS = ['completed', 'cancelled'];
+
+/** תפריט פעולות בכל שורה ברשימת הקריאות - צפייה ושיבוץ ספק ישירות מהטבלה. */
+function CallRowActions({ call, onAssign }) {
+  const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
+  const canAssign = hasPermission('calls', 'assign');
+  const isClosed = CLOSED_FOR_ACTIONS.includes(call?.call_status);
+
+  return (
+    <DropdownMenu dir="rtl">
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          aria-label="פעולות"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreVertical className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-48">
+        <DropdownMenuLabel>פעולות</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => navigate(createPageUrl(`CallDetails?id=${call.id}`))}>
+          <Eye className="w-4 h-4 ms-2" />
+          צפה בפרטים
+        </DropdownMenuItem>
+        {canAssign && !isClosed && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onAssign(call)}>
+              <Truck className="w-4 h-4 ms-2" />
+              שבץ ספק
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const PAGE_SIZE = 50; // Smaller pages = faster rendering
 
@@ -88,10 +151,18 @@ export default function CallsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
   const [openClosedTab, setOpenClosedTab] = useState('open');
+  const [assignTarget, setAssignTarget] = useState({ open: false, call: null });
 
   // עמודות אחידות לכל מסכי הקריאות (מקור אמת יחיד - callTableColumns)
   const allCallColumns = useMemo(
-    () => buildCallColumns({ getCall: (c) => c, getCallId: (c) => c.id }),
+    () =>
+      buildCallColumns({
+        getCall: (c) => c,
+        getCallId: (c) => c.id,
+        renderActions: (c) => (
+          <CallRowActions call={c} onAssign={(call) => setAssignTarget({ open: true, call })} />
+        ),
+      }),
     []
   );
   const CALL_COLUMNS = useMemo(() => allCallColumns.map((c) => c.header), [allCallColumns]);
@@ -478,6 +549,13 @@ export default function CallsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* שיבוץ ספק ישירות מרשימת הקריאות */}
+      <AssignVendorDialog
+        call={assignTarget.call}
+        open={assignTarget.open}
+        onOpenChange={(open) => setAssignTarget((prev) => ({ ...prev, open }))}
+      />
     </div>
   );
 }
