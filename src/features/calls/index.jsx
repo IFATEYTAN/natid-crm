@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/lib/api';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { formatWaitTime } from '@/components/utils';
 import DataTable from '@/components/ui/DataTable';
 import StatusBadge from '@/components/ui/StatusBadge';
 import ExportMenu from '@/components/ui/ExportMenu';
@@ -136,12 +137,10 @@ export default function Calls() {
     const minutes = differenceInMinutes(now, created);
 
     if (call.call_status === 'completed' || call.call_status === 'cancelled') {
-      return call.time_to_completion ? `${call.time_to_completion} דק'` : '-';
+      return formatWaitTime(call.time_to_completion) ?? '-';
     }
 
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}:${mins.toString().padStart(2, '0')}` : `${mins} דק'`;
+    return formatWaitTime(minutes) ?? '-';
   };
 
   // SLA Status Icon
