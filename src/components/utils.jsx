@@ -29,21 +29,23 @@ export const formatDateTime = (dateString) => {
   return new Date(dateString).toLocaleString('he-IL');
 };
 
-// תקרת תצוגה לזמן המתנה - מעליה מוצג סימון חריגה במקום מספר ענק (קריאות ישנות שנשארו פתוחות).
-export const WAIT_TIME_MAX_MINUTES = 24 * 60;
-
 /**
- * מעצב משך זמן המתנה לשעות ודקות בלבד (אף פעם לא ימים) - תצוגה אחידה בכל הממשק.
+ * מעצב משך זמן לתצוגה אחידה בכל הממשק:
+ *   עד שעה        → דקות ("52 דק׳")
+ *   עד 24 שעות    → שעות ודקות ("12 שע׳ 52 דק׳")
+ *   מ-24 שעות ומעלה → ימים (ושעות) ("יום", "יומיים 3 שע׳", "5 ימים 7 שע׳")
  * @param {number} minutes - משך בדקות
- * @param {object} [opts]
- * @param {number} [opts.maxMinutes] - תקרה; מעליה מוחזר "מעל X שע׳" כסימון חריגה
- * @returns {string|null} למשל "12 שע׳ 52 דק׳" או "52 דק׳"; null אם אין נתון תקין
+ * @returns {string|null} מחרוזת מעוצבת; null אם אין נתון תקין
  */
-export const formatWaitTime = (minutes, { maxMinutes } = {}) => {
+export const formatWaitTime = (minutes) => {
   if (minutes == null || isNaN(minutes) || minutes < 0) return null;
   const total = Math.floor(Number(minutes));
-  if (maxMinutes != null && total > maxMinutes) {
-    return `מעל ${Math.floor(maxMinutes / 60)} שע׳`;
+  const DAY = 24 * 60;
+  if (total >= DAY) {
+    const days = Math.floor(total / DAY);
+    const remHours = Math.floor((total % DAY) / 60);
+    const dayStr = days === 1 ? 'יום' : days === 2 ? 'יומיים' : `${days} ימים`;
+    return remHours > 0 ? `${dayStr} ${remHours} שע׳` : dayStr;
   }
   const h = Math.floor(total / 60);
   const m = total % 60;

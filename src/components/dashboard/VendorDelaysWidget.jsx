@@ -1,11 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  createPageUrl,
-  safeParseISO,
-  formatWaitTime,
-  WAIT_TIME_MAX_MINUTES,
-} from '@/components/utils';
+import { createPageUrl, safeParseISO, formatWaitTime } from '@/components/utils';
 import { Clock, Timer, Eye, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -119,7 +114,7 @@ const delayTypeLabels = {
 };
 
 function formatDelay(minutes) {
-  return formatWaitTime(minutes, { maxMinutes: WAIT_TIME_MAX_MINUTES }) ?? '0 דק׳';
+  return formatWaitTime(minutes) ?? '0 דק׳';
 }
 
 export default function VendorDelaysWidget({ calls, isLoading, compact = false }) {

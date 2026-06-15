@@ -1,12 +1,10 @@
 import React from 'react';
 import { Clock, Users, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
-import { formatWaitTime, WAIT_TIME_MAX_MINUTES } from '@/components/utils';
+import { formatWaitTime } from '@/components/utils';
 
-// מקבל מילישניות ומחזיר תצוגה אחידה של שעות ודקות בלבד (עם תקרת חריגה).
+// מקבל מילישניות ומחזיר תצוגה אחידה (דקות / שעות / ימים מעל יממה).
 function formatMinutes(ms) {
-  return (
-    formatWaitTime(Math.round((ms || 0) / 60000), { maxMinutes: WAIT_TIME_MAX_MINUTES }) || '0 דק׳'
-  );
+  return formatWaitTime(Math.round((ms || 0) / 60000)) || '0 דק׳';
 }
 
 export default function QueueStatsBar({ queueItems, onFilterByStatus, activeFilter }) {
