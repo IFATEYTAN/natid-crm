@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { formatWaitTime } from '@/components/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -24,13 +25,9 @@ import {
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
 
+// מקבל מילישניות ומחזיר תצוגה אחידה של שעות ודקות בלבד.
 function formatMinutes(ms) {
-  if (!ms || ms <= 0) return '0 דק׳';
-  const mins = Math.round(ms / 60000);
-  if (mins < 60) return `${mins} דק׳`;
-  const hrs = Math.floor(mins / 60);
-  const remainMins = mins % 60;
-  return `${hrs} שע׳ ${remainMins > 0 ? `${remainMins} דק׳` : ''}`;
+  return formatWaitTime(Math.round((ms || 0) / 60000)) || '0 דק׳';
 }
 
 function getDelayCategory(mins) {

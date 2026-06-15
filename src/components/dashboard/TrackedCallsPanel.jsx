@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { createPageUrl, formatWaitTime } from '@/components/utils';
 import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,18 +67,7 @@ function getElapsedTime(createdDate) {
   const diffMs = now - created;
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-  if (diffMinutes < 60) {
-    return { label: `${diffMinutes} דקות`, minutes: diffMinutes };
-  }
-
-  const hours = Math.floor(diffMinutes / 60);
-  const remainingMinutes = diffMinutes % 60;
-
-  if (remainingMinutes === 0) {
-    return { label: `${hours} שעות`, minutes: diffMinutes };
-  }
-
-  return { label: `${hours} שעות ו-${remainingMinutes} דקות`, minutes: diffMinutes };
+  return { label: formatWaitTime(diffMinutes) ?? '-', minutes: diffMinutes };
 }
 
 /**

@@ -15,7 +15,7 @@ import {
   XCircle,
   Route,
 } from 'lucide-react';
-import { formatDateTime } from '@/components/utils';
+import { formatDateTime, formatWaitTime } from '@/components/utils';
 import { statusLabels } from '@/config/labels';
 
 /**
@@ -114,7 +114,7 @@ const colorMap = {
 
 /**
  * Calculate duration between two ISO date strings.
- * Returns a Hebrew-formatted string like "15 דקות" or "2 שעות ו-30 דקות".
+ * Returns a uniform Hebrew-formatted string like "15 דק׳" or "2 שע׳ 30 דק׳".
  */
 function formatDuration(startDate, endDate) {
   if (!startDate || !endDate) return null;
@@ -126,12 +126,7 @@ function formatDuration(startDate, endDate) {
   const totalMinutes = Math.floor(diffMs / 60000);
   if (totalMinutes < 1) return 'פחות מדקה';
 
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours === 0) return `${minutes} דקות`;
-  if (minutes === 0) return `${hours} שעות`;
-  return `${hours} שעות ו-${minutes} דקות`;
+  return formatWaitTime(totalMinutes);
 }
 
 /**
