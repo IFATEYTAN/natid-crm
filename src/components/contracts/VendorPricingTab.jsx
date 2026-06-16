@@ -39,7 +39,7 @@ export default function VendorPricingTab() {
 
   return (
     <div className="space-y-4 text-end" dir="rtl">
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
+      <div className="flex flex-col sm:flex-row-reverse justify-between gap-4 items-center">
         <div className="relative flex-1 sm:w-64">
           <Search className="absolute start-3 top-2.5 h-4 w-4 text-gray-400" />
           <Input
@@ -75,13 +75,13 @@ export default function VendorPricingTab() {
           {filtered.map((p) => (
             <Card key={p.id} className="bg-white">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center justify-between flex-row-reverse">
+                <CardTitle className="text-sm flex items-center justify-between">
                   <span>{p.vendor_name}</span>
                   <Badge className="bg-gray-100 text-gray-600">ספק #{p.vendor_id}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2 justify-end text-xs">
+                <div className="flex flex-wrap gap-2 justify-start text-xs">
                   <Badge className="bg-blue-100 text-blue-800">
                     בסיס: {money(p.base_price)} ({p.base_distance_km || 0} ק"מ)
                   </Badge>
