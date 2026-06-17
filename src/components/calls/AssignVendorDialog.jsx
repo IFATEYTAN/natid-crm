@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import CityAutocomplete from '@/components/forms/CityAutocomplete';
+import { coverageAreas } from '@/config/coverageConstants';
 import {
   Select,
   SelectContent,
@@ -103,6 +104,30 @@ const LOCKED_STATUSES = [
   'in_progress',
 ];
 
+// תוויות עבריות לסוגי שירות של ספק (כפי שנשמרים בכרטיס הספק ב-CRM).
+const VENDOR_SERVICE_LABELS = {
+  tow_truck: 'גרר',
+  mechanic: 'ניידת',
+  tire_service: 'צמיגים',
+  fuel_delivery: 'דלק',
+  locksmith: 'מנעולן',
+  multi_service: 'משולב',
+};
+
+// מפתח אזור -> תווית עברית (מתוך הגדרת אזורי הכיסוי).
+const AREA_LABELS = coverageAreas.reduce((acc, a) => {
+  acc[a.key] = a.label;
+  return acc;
+}, {});
+
+// אזורי הכיסוי של הספק הם 6 אזורים גסים; אזור הקריאה עשוי להיות מפורט יותר
+// (north_haifa וכו'). מנרמלים לאזור הראשי — הרישא שלפני הקו התחתון — כדי
+// להתאים לכיסוי הספק, לכל האזורים ולא רק לצפון.
+const normalizeAreaForVendor = (area) => {
+  if (!area || area === 'undefined' || area === 'all_country') return null;
+  return String(area).split('_')[0];
+};
+
 /**
  * דיאלוג שיבוץ ספק לקריאה - מקור יחיד לשימוש חוזר מרשימת הקריאות וממסך "צפה".
  *
@@ -130,7 +155,8 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
 
   const [selectedVendor, setSelectedVendor] = useState('');
   const [dispatchType, setDispatchType] = useState('');
-  const dispatchFilteredVendors = filterVendorsByDispatchType(availableVendors, dispatchType);
+  // מתג להצגת כל הספקים הזמינים, ללא סינון לפי סוג רכב/אזור (סעיף 6).
+  const [showAllVendors, setShowAllVendors] = useState(false);
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [autoAssignInfo, setAutoAssignInfo] = useState(null);
   const [assigning, setAssigning] = useState(false);
@@ -151,12 +177,31 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
   const showStorageField = isStorage;
   const showDestField = isStorage || (hasActiveVendor && mode === 'continue');
 
+  // סינון הספקים לפי סוג רכב השירות (גרר/ניידת) ולפי אזור הקריאה (סעיף 6).
+  // צד השירות משתמש בסיווג הספק (classifyVendor) כמו בשאר הדיאלוג, כך שספק
+  // עם כרטיס חלקי מסווג נכון; צד האזור "סלחני לחוסר מידע": ספק נפסל רק אם
+  // מוגדר לו כיסוי שסותר את אזור הקריאה. "הצג הכל" מבטל את הסינון לחלוטין.
+  const callArea = normalizeAreaForVendor(call?.pickup_location_area);
+  const filteredVendors = useMemo(() => {
+    if (showAllVendors) return availableVendors;
+    return filterVendorsByDispatchType(availableVendors, dispatchType).filter((v) => {
+      if (!callArea || !Array.isArray(v.coverage_areas) || v.coverage_areas.length === 0) {
+        return true;
+      }
+      return v.coverage_areas.includes(callArea) || v.coverage_areas.includes('all_country');
+    });
+  }, [availableVendors, dispatchType, callArea, showAllVendors]);
+
+  // האם הסינון פעיל בפועל (יש סוג רכב או אזור להסתמך עליהם).
+  const filterActive = !showAllVendors && (!!dispatchType || !!callArea);
+
   // אתחול ערכי הדיאלוג בכל פתיחה - מתוך הקריאה.
   useEffect(() => {
     if (!open) return;
     setDispatchType(call?.dispatch_type || '');
     setMode('continue');
     setSelectedVendor('');
+    setShowAllVendors(false);
     setAutoAssignInfo(null);
     setStorageCity(call?.storage_location_city || '');
     setStorageAddress(call?.storage_location_address || '');
@@ -164,13 +209,13 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
     setDestAddress(call?.dropoff_location_address || '');
   }, [open, call?.id]);
 
-  // ניקוי בחירת ספק ידנית אם היא כבר לא מתאימה לסוג רכב השירות שנבחר.
+  // ניקוי בחירת ספק ידנית ברגע שהסינון מסתיר אותה (שינוי סוג רכב, אזור, או
+  // החזרת הסינון אחרי "הצג הכל") - אחרת אפשר לשבץ ספק שכבר לא מוצג ברשימה.
   useEffect(() => {
-    if (selectedVendor && !dispatchFilteredVendors.some((v) => v.id === selectedVendor)) {
+    if (selectedVendor && !filteredVendors.some((v) => v.id === selectedVendor)) {
       setSelectedVendor('');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatchType]);
+  }, [filteredVendors, selectedVendor]);
 
   const handleClose = (next) => {
     if (!next) {
@@ -521,26 +566,75 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
           )}
 
           <div>
-            <Label>או בחר ספק ידנית</Label>
+            <div className="flex items-center justify-between">
+              <Label>או בחר ספק ידנית</Label>
+              {availableVendors.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllVendors((s) => !s)}
+                  className="text-xs text-indigo-600 hover:underline"
+                >
+                  {showAllVendors ? 'סנן לפי סוג ואזור' : 'הצג את כל הספקים'}
+                </button>
+              )}
+            </div>
+
+            {/* תיאור הסינון הפעיל - סוג רכב + אזור הקריאה */}
+            {filterActive && (
+              <p className="mb-1 text-xs text-gray-500">
+                מסונן לפי
+                {dispatchType
+                  ? ` ${DISPATCH_TYPES.find((d) => d.key === dispatchType)?.label}`
+                  : ''}
+                {dispatchType && callArea ? ' ·' : ''}
+                {callArea ? ` אזור ${AREA_LABELS[callArea] || callArea}` : ''}
+                {` — ${filteredVendors.length} מתוך ${availableVendors.length} ספקים זמינים`}
+              </p>
+            )}
+
             <Select value={selectedVendor} onValueChange={setSelectedVendor}>
               <SelectTrigger>
                 <SelectValue placeholder="בחר ספק" />
               </SelectTrigger>
               <SelectContent>
-                {dispatchFilteredVendors.length === 0 ? (
+                {filteredVendors.length === 0 ? (
                   <div className="px-3 py-2 text-sm text-gray-400">
-                    {dispatchType ? 'אין ספקים זמינים מהסוג שנבחר כרגע' : 'אין ספקים זמינים כרגע'}
+                    {availableVendors.length === 0
+                      ? 'אין ספקים זמינים כרגע'
+                      : 'אין ספק זמין שתואם לסוג הרכב/אזור'}
                   </div>
                 ) : (
-                  dispatchFilteredVendors.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.vendor_name}
-                      {vendor.coverage_cities ? ` - ${vendor.coverage_cities}` : ''}
-                    </SelectItem>
-                  ))
+                  filteredVendors.map((vendor) => {
+                    const services = (Array.isArray(vendor.service_type) ? vendor.service_type : [])
+                      .map((s) => VENDOR_SERVICE_LABELS[s] || s)
+                      .join(', ');
+                    const areas = (
+                      Array.isArray(vendor.coverage_areas) ? vendor.coverage_areas : []
+                    )
+                      .map((a) => AREA_LABELS[a] || a)
+                      .join(', ');
+                    const meta = [services, areas].filter(Boolean).join(' · ');
+                    return (
+                      <SelectItem key={vendor.id} value={vendor.id}>
+                        {vendor.vendor_name}
+                        {meta ? ` — ${meta}` : ''}
+                      </SelectItem>
+                    );
+                  })
                 )}
               </SelectContent>
             </Select>
+
+            {/* כשהסינון מסתיר את כל הספקים - מסלול מילוט ברור */}
+            {filterActive && filteredVendors.length === 0 && availableVendors.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowAllVendors(true)}
+                className="mt-1 text-xs text-indigo-600 hover:underline"
+              >
+                הצג בכל זאת את כל הספקים הזמינים ({availableVendors.length})
+              </button>
+            )}
           </div>
         </div>
 
