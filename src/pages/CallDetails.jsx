@@ -2,7 +2,7 @@ import { lazyRetry } from '@/lib/lazyRetry';
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { createPageUrl, formatDateTime } from '@/components/utils';
-import { useVendors } from '@/components/features/vendors/hooks/useVendors';
+import AssignVendorDialog from '@/components/calls/AssignVendorDialog';
 import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -41,10 +41,8 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
@@ -57,8 +55,6 @@ import {
   Ban,
   CalendarClock,
   Car,
-  Sparkles,
-  Loader2,
 } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { toast } from 'sonner';
@@ -75,7 +71,6 @@ const CallFilesTab = lazyRetry(() => import('@/components/call-details/CallFiles
 const VendorLiveMap = lazyRetry(() => import('@/components/maps/VendorLiveMap'));
 const CallSummaryEditor = lazyRetry(() => import('@/components/call/CallSummaryEditor'));
 const QuickCallSummary = lazyRetry(() => import('@/components/ai/QuickCallSummary'));
-const VendorRecommendation = lazyRetry(() => import('@/components/ai/VendorRecommendation'));
 const FutureServiceSection = lazyRetry(
   () => import('@/components/call-details/FutureServiceSection')
 );
@@ -103,9 +98,6 @@ export default function CallDetailsPage() {
 
   const [showSignature, setShowSignature] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
-  const [selectedVendor, setSelectedVendor] = useState('');
-  const [autoAssigning, setAutoAssigning] = useState(false);
-  const [autoAssignInfo, setAutoAssignInfo] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -126,11 +118,7 @@ export default function CallDetailsPage() {
     enabled: !!callId,
     refetchInterval: 45000,
   });
-  const vendorsQuery = useVendors();
-
   const call = callQuery.data;
-  const vendors = vendorsQuery.data || [];
-  const availableVendors = vendors.filter((v) => v.is_available_now && v.is_active);
 
   // Operator notes state
   const [operatorNotes, setOperatorNotes] = useState('');
@@ -347,109 +335,6 @@ export default function CallDetailsPage() {
     }
   };
 
-  // Location-based automatic assignment. Runs the server-side scoring engine
-  // (autoAssignVendor: distance via Haversine, service match, rating, ETA via
-  // OSRM) and pre-selects the top vendor so the operator can confirm.
-  const handleAutoAssign = async () => {
-    if (!canAssign) return;
-    setAutoAssigning(true);
-    setAutoAssignInfo(null);
-    try {
-      const res = await base44.functions.invoke('autoAssignVendor', { call_id: callId });
-      const data = res?.data || res;
-      if (!data?.success || !data?.recommendation) {
-        toast.error(
-          data?.error === 'No available vendors'
-            ? 'אין ספקים זמינים כרגע'
-            : 'לא נמצא ספק מתאים לשיבוץ אוטומטי'
-        );
-        return;
-      }
-      const rec = data.recommendation;
-      setSelectedVendor(rec.vendor_id);
-      setAutoAssignInfo({
-        vendor_name: rec.vendor_name,
-        distance_km: rec.details?.distance_km ?? rec.details?.route_distance_km ?? null,
-        eta: rec.estimated_arrival_minutes ?? null,
-        score: rec.score ?? null,
-      });
-      const distTxt = rec.details?.distance_km != null ? `, ${rec.details.distance_km} ק"מ` : '';
-      const etaTxt =
-        rec.estimated_arrival_minutes != null ? `, הגעה ~${rec.estimated_arrival_minutes} דק'` : '';
-      toast.success(`הומלץ אוטומטית: ${rec.vendor_name}${distTxt}${etaTxt}. לחצי "שבץ" לאישור.`);
-    } catch (error) {
-      // 404 here means the autoAssignVendor function isn't deployed on Base44.
-      toast.error(`שיבוץ אוטומטי נכשל: ${error?.message || 'שגיאה לא ידועה'}`);
-    } finally {
-      setAutoAssigning(false);
-    }
-  };
-
-  const handleAssignVendor = async () => {
-    if (!selectedVendor || !canAssign) return;
-    // Re-fetch the call right before assigning to detect a concurrent
-    // assignment by another operator. autoAssignVendor has its own dedupe
-    // server-side, but manual assignment from this dialog had no guard, so
-    // two operators clicking simultaneously would both succeed and the
-    // second one would silently overwrite the first.
-    let fresh;
-    try {
-      fresh = await base44.entities.Call.get(callId);
-    } catch (error) {
-      toast.error(`לא ניתן לאמת את מצב הקריאה: ${error?.message || 'שגיאת רשת'}`);
-      return;
-    }
-
-    const lockedStatuses = [
-      'assigning',
-      'assigned',
-      'vendor_enroute',
-      'vendor_arrived',
-      'in_progress',
-    ];
-    if (
-      fresh?.assigned_vendor_id &&
-      fresh.assigned_vendor_id !== selectedVendor &&
-      lockedStatuses.includes(fresh.call_status)
-    ) {
-      toast.error(
-        `הקריאה כבר שובצה ל-${fresh.assigned_vendor_name || 'ספק אחר'} (${fresh.call_status}). רענני את הדף.`
-      );
-      queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
-      setShowAssignDialog(false);
-      return;
-    }
-
-    const vendor = vendors.find((v) => v.id === selectedVendor);
-    await base44.entities.Call.update(callId, {
-      assigned_vendor_id: selectedVendor,
-      assigned_vendor_name: vendor?.vendor_name,
-      assigned_at: new Date().toISOString(),
-      call_status: 'assigning',
-    });
-    queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
-
-    logAction({
-      action: 'assign',
-      entity_type: 'Call',
-      entity_id: callId,
-      entity_name: call?.call_number,
-      details: `Assigned to ${vendor?.vendor_name}`,
-    });
-
-    base44.entities.CallHistory.create({
-      call_id: callId,
-      call_number: call?.call_number,
-      change_type: 'vendor_assignment',
-      new_value: vendor?.vendor_name,
-      changed_by: currentUser?.full_name || 'operator',
-    });
-
-    setShowAssignDialog(false);
-    setAutoAssignInfo(null);
-    toast.success(`הקריאה שובצה ל-${vendor?.vendor_name}`);
-  };
-
   const handleSignatureSaved = () => {
     setShowSignature(false);
     queryClient.invalidateQueries({ queryKey: queryKeys.callPhotos.byCall(callId) });
@@ -517,88 +402,20 @@ export default function CallDetailsPage() {
             {call?.call_status !== 'completed' && call?.call_status !== 'cancelled' && (
               <>
                 <PermissionGuard category="calls" permission="assign">
-                  <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="gap-2 h-10 text-sm">
-                        <Truck className="w-4 h-4" />
-                        <span className="hidden sm:inline">שבץ ספק</span>
-                        <span className="sm:hidden">שיבוץ</span>
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>שיבוץ ספק לקריאה</DialogTitle>
-                        <DialogDescription>בחר ספק זמין לטיפול בקריאה</DialogDescription>
-                      </DialogHeader>
-                      <div className="py-4 space-y-4">
-                        <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-3 space-y-2">
-                          <Button
-                            onClick={handleAutoAssign}
-                            disabled={autoAssigning}
-                            className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700"
-                          >
-                            {autoAssigning ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Sparkles className="w-4 h-4" />
-                            )}
-                            {autoAssigning ? 'מחשב מיקום ומרחק...' : 'שיבוץ אוטומטי לפי מיקום'}
-                          </Button>
-                          {autoAssignInfo && (
-                            <p className="text-xs text-indigo-800">
-                              מומלץ:{' '}
-                              <span className="font-semibold">{autoAssignInfo.vendor_name}</span>
-                              {autoAssignInfo.distance_km != null &&
-                                ` · ${autoAssignInfo.distance_km} ק"מ`}
-                              {autoAssignInfo.eta != null && ` · הגעה ~${autoAssignInfo.eta} דק'`}
-                              {autoAssignInfo.score != null && ` · ציון ${autoAssignInfo.score}`}
-                            </p>
-                          )}
-                          {!call?.pickup_location_lat && (
-                            <p className="text-xs text-amber-700">
-                              לקריאה זו אין מיקום מדויק (קואורדינטות), לכן השיבוץ יתבסס על אזור
-                              הכיסוי בלבד.
-                            </p>
-                          )}
-                        </div>
-                        <Suspense
-                          fallback={<div className="h-20 bg-gray-50 rounded animate-pulse" />}
-                        >
-                          <VendorRecommendation
-                            callDetails={call}
-                            onSelectVendor={(vendor) => setSelectedVendor(vendor.id)}
-                          />
-                        </Suspense>
-                        <div>
-                          <Label>או בחר ספק ידנית</Label>
-                          <Select value={selectedVendor} onValueChange={setSelectedVendor}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="בחר ספק" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {availableVendors.map((vendor) => (
-                                <SelectItem key={vendor.id} value={vendor.id}>
-                                  {vendor.vendor_name} - {vendor.coverage_cities}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowAssignDialog(false)}>
-                          ביטול
-                        </Button>
-                        <Button
-                          onClick={handleAssignVendor}
-                          disabled={!selectedVendor}
-                          className="bg-[#FF0000] hover:bg-[#CC0000]"
-                        >
-                          שבץ
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <Button
+                    variant="outline"
+                    className="gap-2 h-10 text-sm"
+                    onClick={() => setShowAssignDialog(true)}
+                  >
+                    <Truck className="w-4 h-4" />
+                    <span className="hidden sm:inline">שבץ ספק</span>
+                    <span className="sm:hidden">שיבוץ</span>
+                  </Button>
+                  <AssignVendorDialog
+                    call={call}
+                    open={showAssignDialog}
+                    onOpenChange={setShowAssignDialog}
+                  />
                 </PermissionGuard>
 
                 <PermissionGuard category="calls" permission="edit">
