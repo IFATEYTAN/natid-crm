@@ -139,6 +139,9 @@ const PRIORITY_COLORS = {
 
 const CLOSED_STATUSES = ['completed', 'cancelled'];
 
+// האם הקריאה סגורה (טופלה / בוטלה). משמש להבחנה ויזואלית פתוח/סגור ברשימה.
+const isCallClosed = (c) => CLOSED_STATUSES.includes(c?.call_status);
+
 export default function CallsPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -380,11 +383,24 @@ export default function CallsPage() {
       {/* Table */}
       <Card className="bg-white">
         <CardHeader className="pb-2 px-3 sm:px-6">
-          <CardTitle className="text-sm sm:text-base font-semibold text-[#172B4D]">
-            {isLoading
-              ? 'טוען...'
-              : `${filtered.length} קריאות | עמוד ${currentPage} מתוך ${totalPages}`}
-          </CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-sm sm:text-base font-semibold text-[#172B4D]">
+              {isLoading
+                ? 'טוען...'
+                : `${filtered.length} קריאות | עמוד ${currentPage} מתוך ${totalPages}`}
+            </CardTitle>
+            {/* מקרא צבעים - הבחנה מהירה בין קריאה פתוחה לסגורה */}
+            <div className="flex items-center gap-3 text-xs text-[#6B778C]">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block w-2.5 h-3 rounded-sm bg-emerald-400" />
+                פתוחה
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block w-2.5 h-3 rounded-sm bg-gray-300" />
+                סגורה
+              </span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {/* Mobile Card View */}
@@ -401,7 +417,14 @@ export default function CallsPage() {
             ) : (
               paginated.map((c) => (
                 <Link key={c.id} to={createPageUrl(`CallDetails?id=${c.id}`)} className="block">
-                  <div className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all active:bg-gray-50">
+                  <div
+                    className={cn(
+                      'border rounded-lg p-3 hover:shadow-md transition-all border-r-4',
+                      isCallClosed(c)
+                        ? 'bg-gray-50 border-gray-200 border-r-gray-300 opacity-80 active:bg-gray-100'
+                        : 'bg-white border-gray-200 border-r-emerald-400 active:bg-gray-50'
+                    )}
+                  >
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-sm text-[#172B4D] truncate">
@@ -494,18 +517,32 @@ export default function CallsPage() {
                     </td>
                   </tr>
                 ) : (
-                  paginated.map((c) => (
-                    <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                      {visibleColumns.map((col) => (
-                        <td
-                          key={col.header}
-                          className="px-4 py-3 text-[#6B778C] whitespace-nowrap align-top"
-                        >
-                          {col.cell(c)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
+                  paginated.map((c) => {
+                    const closed = isCallClosed(c);
+                    return (
+                      <tr
+                        key={c.id}
+                        className={cn(
+                          'transition-colors border-r-4',
+                          closed
+                            ? 'bg-gray-50 border-r-gray-300 hover:bg-gray-100'
+                            : 'bg-white border-r-emerald-400 hover:bg-emerald-50/40'
+                        )}
+                      >
+                        {visibleColumns.map((col) => (
+                          <td
+                            key={col.header}
+                            className={cn(
+                              'px-4 py-3 whitespace-nowrap align-top',
+                              closed ? 'text-gray-400' : 'text-[#6B778C]'
+                            )}
+                          >
+                            {col.cell(c)}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
