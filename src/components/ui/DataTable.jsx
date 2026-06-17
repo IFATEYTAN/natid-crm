@@ -125,7 +125,7 @@ export default function DataTable({
   return (
     <>
       {/* Mobile Card View */}
-      <div className="md:hidden space-y-3">
+      <div className="md:hidden space-y-3" dir="rtl">
         {data.map((row, rowIdx) => {
           const mobileStatusColor =
             rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
@@ -198,8 +198,8 @@ export default function DataTable({
       </div>
 
       {/* Desktop Table View - vertical scroll with frozen (sticky) header */}
-      <div className="hidden md:block table-container max-h-[70vh] overflow-y-auto">
-        <table className="table-base caption-bottom text-sm">
+      <div className="hidden md:block table-container max-h-[70vh] overflow-y-auto" dir="rtl">
+        <table className="table-base caption-bottom text-sm text-right">
           <TableHeader className="table-header">
             <TableRow>
               {columns.map((col, idx) => (
