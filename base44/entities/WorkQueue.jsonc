@@ -59,5 +59,9 @@
   },
   "required": [
     "call_id"
-  ]
+  ],
+  "rls": {
+    "read": {},
+    "write": {}
+  }
 }

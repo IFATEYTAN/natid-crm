@@ -529,5 +529,9 @@
     "customer_name",
     "customer_phone",
     "pickup_location_address"
-  ]
+  ],
+  "rls": {
+    "read": {},
+    "write": {}
+  }
 }
