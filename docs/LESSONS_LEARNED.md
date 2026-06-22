@@ -228,6 +228,20 @@
 **לקח:** ריכוז כללי הסגירה בטבלת קונפיג אחת מאפשר השתלת נוסחי SMS סופיים ושינוי התנהגות ללא נגיעה בלוגיקה. נוסחי ה-SMS הם placeholder עד לקבלת הנוסחים הסופיים מהלקוח.
 **קבצים:** `base44/entities/Call.jsonc`, `src/config/closingStatuses.js`, `src/features/calls/createContinuationCall.js`, `src/pages/CallDetails.jsx`
 
+### [2026-06-22] Feature: חיווט תהליך קבלת קריאה → שיבוץ מקצה לקצה
+
+**בעיה:** ביקורת מצאה שהתהליך לא עבד מקצה-לקצה: (1) שיבוץ ידני של מוקדן רק סימן `call_status='assigning'` בלי ליצור הצעה (`CallAssignmentAttempt`) ובלי להתריע לספק — הספק לא ראה דבר. (2) `sendVendorAssignmentSMS` לא נקראה מאף מקום. (3) המתזמן (`processStaleAssignments` ואחרים) לא רץ — פקיעת הצעות/שיבוץ-מחדש/הסלמה היו מתים. (4) הבוט קרא ל-`autoAssignVendor` עם פרמטר שגוי (`callId`) ועם בעיית auth, ומסנן המוקדנים שלו היה `role==='user'`. (5) `src/pages/NewCase.jsx` יצר קריאה בלי `WorkQueue`. (6) שלושת שדות הסטטוס (`Call`/`WorkQueue`/`Case`) לא היו מסונכרנים. (7) סיום-שדה ע"י ספק/טכנאי עקף את מנוע הסגירה (`closingStatuses`) — בלי SMS ובלי קריאת-המשך. (8) ל-`cannot_complete` לא הייתה פעולת המשך אצל המוקדן.
+**פתרון:** הוחלט על מודל **הצעה + אישור ספק** ומתזמן כפול (poller + תיעוד פלטפורמה).
+- **ליבת שיבוץ משותפת** `_shared/assignVendor`: ניקוד ספקים, זיהוי ספק תפוס, ו-`commitVendorAssignment` (יוצר הצעה, מסמן `assigning`, מתריע לספק in-app + SMS). כל המסלולים עוברים דרכה: `assignVendorToCall` (בחירת מוקדן), `autoAssignVendor` (advisory + commit אופציונלי), `handleAssignmentResponse`/`releaseVendorCall`/בוט (קוראים ישירות עם service-role — בלי עמימות auth בין-פונקציות). תוקנו פרמטר הבוט ומסנן התפקידים.
+- **מתזמן**: `useStaleAssignmentPoller` (ב-Layout לאדמין/מוקדן) מפעיל `processStaleAssignments` כל ~2 דק'; `docs/SCHEDULED_FUNCTIONS.md` מתעד הגדרת מתזמן production. ה-reassign של המתזמן עבר ל-`autoOfferCall` (כולל התראה) והוסרה לוגיקת הניקוד המשוכפלת.
+- **קליטה→תור**: `NewCase.jsx` יוצר כעת `WorkQueue`.
+- **סנכרון סטטוס**: `_shared/syncCallStatus` ממפה `call_status`→`WorkQueue.queue_status`+`Case.status` (התאמה לפי `call_id`), מחווט ל-updateVendorCall/updateAgentCallStatus/handleAssignmentResponse/releaseVendorCall.
+- **סגירה**: `closeCall` (משותף למוקדן/ספק/טכנאי) מיישם את כללי הסגירה (SMS ללקוח + קריאת-המשך + סנכרון תור) עם עותק backend ב-`_shared/closingStatuses`. סיום ע"י ספק/טכנאי דורש כעת בחירת `closing_status`. ב-CallDetails נוסף באנר טיפול ל-`cannot_complete`.
+**לקח:** במערכת מבוזרת (Call/Function split של Base44) לוגיקה משותפת חייבת לחיות במודולי `_shared/<name>/entry.ts` (מיובאים כ-`./_shared/<name>.ts`); re-assignment בין-פונקציות עדיף שירוץ ישירות עם service-role במקום invoke-over-HTTP כדי להימנע מעמימות auth. סנכרון מצב חוצה-ישויות חייב מקור-אמת יחיד (Call) והתאמה לפי מזהה יציב (`call_id`).
+**קבצים:** `base44/functions/_shared/{assignVendor,syncCallStatus,closingStatuses}/entry.ts`, `base44/functions/{assignVendorToCall,closeCall,autoAssignVendor,handleAssignmentResponse,releaseVendorCall,processStaleAssignments,updateVendorCall,updateAgentCallStatus,99digitalBot}/entry.ts`, `src/hooks/useStaleAssignmentPoller.js`, `src/components/layout/Layout.jsx`, `src/pages/NewCase.jsx`, `src/components/calls/AssignVendorDialog.jsx`, `src/pages/VendorCallManagement.jsx`, `src/components/agent/AgentCallCard.jsx`, `src/pages/CallDetails.jsx`, `docs/SCHEDULED_FUNCTIONS.md`
+
+---
+
 ### [2026-06-22] Feature: עדכון סטטוס ע"י טכנאי — מאחורי הרשאה אדמיניסטרטיבית ייעודית
 
 **בעיה:** נדרש לאפשר לטכנאי שטח לעדכן סטטוס קריאה מהשטח — אך לא לכל טכנאי/מוקדן באופן גורף, אלא רק למי שהמנהל הרשה במפורש.
