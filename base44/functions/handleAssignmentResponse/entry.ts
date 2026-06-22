@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
 import { autoOfferCall } from './_shared/assignVendor.ts';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 const kv = await Deno.openKv();
 const limiter = createRateLimiter(kv);
@@ -127,6 +128,9 @@ Deno.serve(async (req) => {
         assigned_vendor_name: vendor?.vendor_name,
         assigned_at: new Date().toISOString()
       });
+
+      // Mirror status onto WorkQueue + Case
+      await syncCallStatus(base44, call, 'vendor_enroute');
 
       // Update vendor status to busy
       if (vendor) {

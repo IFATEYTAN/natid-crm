@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { autoOfferCall } from './_shared/assignVendor.ts';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 /**
  * Release a call back to the queue.
@@ -56,6 +57,9 @@ Deno.serve(async (req) => {
       assigned_vendor_id: null,
       assigned_vendor_name: null,
     });
+
+    // Mirror status onto WorkQueue + Case
+    await syncCallStatus(base44, call, 'awaiting_assignment');
 
     // Free the vendor
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: releasedVendorId });
