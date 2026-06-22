@@ -87,6 +87,27 @@ Deno.serve(async (req) => {
         }, { status: 409 });
       }
 
+      // Duplicate prevention: a vendor cannot accept this call while already handling
+      // another active call (guards against being offered two calls at once).
+      const ACTIVE_CALL_STATUSES = ['vendor_enroute', 'vendor_arrived', 'in_progress'];
+      const vendorActiveGroups = await Promise.all(
+        ACTIVE_CALL_STATUSES.map(s =>
+          base44.asServiceRole.entities.Call.filter({ assigned_vendor_id: attempt.vendor_id, call_status: s })
+        )
+      );
+      const vendorOtherActive = vendorActiveGroups.flat().filter(c => c.id !== call.id);
+      if (vendorOtherActive.length > 0) {
+        await base44.asServiceRole.entities.CallAssignmentAttempt.update(attempt.id, {
+          status: 'expired',
+          decline_reason: 'הספק כבר מטפל בקריאה פעילה אחרת'
+        });
+        return Response.json({
+          success: false,
+          error: 'Vendor already handling another active call',
+          active_call_id: vendorOtherActive[0].id
+        }, { status: 409 });
+      }
+
       // Update attempt status
       const responseTime = Math.round((Date.now() - new Date(attempt.created_date).getTime()) / 1000);
       await base44.asServiceRole.entities.CallAssignmentAttempt.update(attempt.id, {

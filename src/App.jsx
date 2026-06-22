@@ -97,7 +97,8 @@ const AuthenticatedApp = () => {
   // Determine main page dynamically based on user role
   const userRole = (user?.role || '').toLowerCase().trim();
   const isVendor = userRole === 'vendor' || userRole === 'ספק';
-  const effectiveMainPageKey = isVendor ? 'VendorPortal' : mainPageKey;
+  const isAgent = userRole === 'agent' || userRole === 'נציג שטח';
+  const effectiveMainPageKey = isVendor ? 'VendorPortal' : isAgent ? 'AgentDashboard' : mainPageKey;
   const EffectiveMainPage = Pages[effectiveMainPageKey] || MainPage;
 
   return (

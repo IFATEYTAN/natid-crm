@@ -5,18 +5,22 @@ const ALLOWED_VENDOR_FIELDS = [
   'call_status',
   'vendor_notes',
   'vendor_arrival_time_actual',
+  'cannot_complete_reason',
   'closed_at',
   'closed_by',
 ];
 
-// Valid status transitions for vendors
+// Valid status transitions for vendors.
+// 'cannot_complete' is an intermediate state a vendor can report when they reached
+// the site but cannot finish (e.g. locked underground parking, complex extraction).
+// It hands the call back to the operator to decide on a continuation / reassignment.
 const VENDOR_STATUS_TRANSITIONS = {
   assigning: ['vendor_enroute'],
   awaiting_assignment: ['vendor_enroute'],
   assigned: ['vendor_enroute'],
-  vendor_enroute: ['vendor_arrived', 'in_progress'],
-  vendor_arrived: ['in_progress'],
-  in_progress: ['completed'],
+  vendor_enroute: ['vendor_arrived', 'in_progress', 'cannot_complete'],
+  vendor_arrived: ['in_progress', 'cannot_complete'],
+  in_progress: ['completed', 'cannot_complete'],
 };
 
 Deno.serve(async (req) => {
@@ -101,6 +105,37 @@ Deno.serve(async (req) => {
       }
       if (Object.keys(caseUpdates).length > 0) {
         await base44.asServiceRole.entities.Case.update(cases[0].id, caseUpdates);
+      }
+    }
+
+    // When a vendor reports they cannot complete the call, log it and alert the desk
+    // so an operator can open a continuation call or reassign.
+    if (sanitizedUpdates.call_status === 'cannot_complete') {
+      const reason = sanitizedUpdates.cannot_complete_reason || 'לא צוינה סיבה';
+      const vendorName = call.assigned_vendor_name || 'ספק';
+      await base44.asServiceRole.entities.CallHistory.create({
+        call_id: call.id,
+        call_number: call.call_number,
+        change_type: 'status',
+        old_value: call.call_status,
+        new_value: 'cannot_complete',
+        notes: `הספק ${vendorName} דיווח שלא ניתן לטפל. סיבה: ${reason}`,
+        changed_by: user?.email || 'system',
+      });
+
+      const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+      const operators = await base44.asServiceRole.entities.User.filter({ role: 'operator' });
+      for (const op of [...admins, ...operators]) {
+        await base44.asServiceRole.entities.Notification.create({
+          user_id: op.id,
+          title: 'ספק לא יכול לטפל בקריאה',
+          message: `הספק ${vendorName} דיווח שלא ניתן לטפל בקריאה ${call.call_number || call.id.substring(0, 8)}. סיבה: ${reason}`,
+          type: 'warning',
+          is_read: false,
+          link: `/CallDetails?id=${call.id}`,
+          related_entity_id: call.id,
+          related_entity_type: 'call',
+        });
       }
     }
 

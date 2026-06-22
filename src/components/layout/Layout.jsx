@@ -102,7 +102,12 @@ function LayoutContent({ children, currentPageName }) {
   // Redirect authenticated users away from LandingPage to the appropriate home page
   useEffect(() => {
     if (!isLoadingAuth && currentUser && currentPageName === 'LandingPage' && effectiveRoleName) {
-      const home = effectiveRoleName === 'vendor' ? 'VendorPortal' : 'Dashboard';
+      const home =
+        effectiveRoleName === 'vendor'
+          ? 'VendorPortal'
+          : effectiveRoleName === 'agent'
+            ? 'AgentDashboard'
+            : 'Dashboard';
       navigate(createPageUrl(home), { replace: true });
     }
   }, [isLoadingAuth, currentUser, currentPageName, navigate, effectiveRoleName]);
@@ -126,6 +131,8 @@ function LayoutContent({ children, currentPageName }) {
         'Calls',
         'QueueMonitor',
         'Calendar',
+        'AgentDashboard',
+        'AgentCallManagement',
         'VendorPortal',
         'VendorCallManagement',
         'UserProfile',
@@ -196,6 +203,19 @@ function LayoutContent({ children, currentPageName }) {
         { name: 'ניהול קריאה', href: 'VendorCallManagement' },
         { name: 'הפרופיל שלי', href: 'MyVendorProfile' },
         { name: 'מדריך', href: 'VendorGuide' },
+        { name: 'הגדרות התראות', href: 'MyNotificationSettings' },
+      ],
+    },
+  ];
+
+  // Agent-specific compact navigation (field technician — reduced portal)
+  const agentNavigationGroups = [
+    {
+      title: 'אזור טכנאי',
+      items: [
+        { name: 'דשבורד טכנאי', href: 'AgentDashboard' },
+        { name: 'הקריאות שלי', href: 'AgentCallManagement' },
+        { name: 'הפרופיל שלי', href: 'UserProfile' },
         { name: 'הגדרות התראות', href: 'MyNotificationSettings' },
       ],
     },
@@ -277,7 +297,11 @@ function LayoutContent({ children, currentPageName }) {
   ];
 
   const navigationGroups =
-    effectiveRoleName === 'vendor' ? vendorNavigationGroups : fullNavigationGroups;
+    effectiveRoleName === 'vendor'
+      ? vendorNavigationGroups
+      : effectiveRoleName === 'agent'
+        ? agentNavigationGroups
+        : fullNavigationGroups;
 
   const handleLogout = async () => {
     await base44.auth.logout();

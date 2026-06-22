@@ -65,6 +65,10 @@ export const PAGE_PERMISSIONS = {
   VendorDetails: ['admin', 'operator'],
   VendorTracking: ['admin', 'operator'],
 
+  // Agent (field technician) - reduced portal
+  AgentDashboard: ['admin', 'agent'],
+  AgentCallManagement: ['admin', 'agent'],
+
   // Vendor only
   MyVendorProfile: ['vendor'],
   VendorCallManagement: ['vendor'],
