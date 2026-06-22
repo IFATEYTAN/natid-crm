@@ -58,32 +58,42 @@ export default function SmartAlertsTab({ currentUser }) {
       queryClient.invalidateQueries({ queryKey: queryKeys.smartAlerts.byUser(currentUser?.id) });
     },
     onError: (e) => {
+      // Background/interval runs fail silently; the manual refresh below surfaces a toast.
       console.warn('Smart alerts detection failed:', e?.message);
     },
   });
 
-  const runDetection = React.useCallback(() => {
-    if (!canRunDetection || detectMutation.isPending) return;
-    detectMutation.mutate();
-  }, [canRunDetection, detectMutation]);
+  // Hold the latest mutation in a ref so the interval can read isPending/mutate
+  // without re-running the effect (which would otherwise reset the interval on
+  // every render and could loop).
+  const detectMutationRef = React.useRef(detectMutation);
+  detectMutationRef.current = detectMutation;
 
   // Trigger detection on mount and on a recurring interval so the panel always
   // reflects the current state of the system (live/online data).
   React.useEffect(() => {
     if (!canRunDetection) return undefined;
-    runDetection();
-    const intervalId = setInterval(runDetection, DETECTION_INTERVAL);
+    const run = () => {
+      if (!detectMutationRef.current.isPending) {
+        detectMutationRef.current.mutate();
+      }
+    };
+    run();
+    const intervalId = setInterval(run, DETECTION_INTERVAL);
     return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRunDetection]);
 
   const handleManualRefresh = (e) => {
     e.stopPropagation();
-    if (canRunDetection) {
-      detectMutation.mutate();
-    } else {
+    if (!canRunDetection) {
       queryClient.invalidateQueries({ queryKey: queryKeys.smartAlerts.byUser(currentUser?.id) });
+      return;
     }
+    if (detectMutation.isPending) return;
+    detectMutation.mutate(undefined, {
+      onError: (err) =>
+        showToast.error('שגיאה בניתוח נתונים חיים: ' + (err?.message || 'שגיאה כללית')),
+    });
   };
 
   const markAsReadMutation = useMutation({

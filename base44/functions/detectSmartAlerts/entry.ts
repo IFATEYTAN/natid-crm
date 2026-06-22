@@ -18,15 +18,26 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Scheduled/cron runs have no user; interactive runs must be admin/operator.
-    let user = null;
-    try {
-      user = await base44.auth.me();
-    } catch {
-      user = null;
-    }
-    if (user && !['admin', 'operator'].includes(user.role)) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    const body = await req.json().catch(() => ({}));
+
+    // Auth (fail-closed): allow a scheduled automation run OR an admin/operator user.
+    // Scheduled runs have no logged-in user; the platform includes an "automation"
+    // object in the body (an explicit SYNC_AUTOMATION_KEY secret is accepted as a
+    // fallback). Anything else — including unauthenticated requests — is rejected,
+    // so the engine cannot be triggered anonymously under the service role.
+    const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
+    const isAutomation =
+      (!!automationKey && body.automation_key === automationKey) || !!body.automation;
+    if (!isAutomation) {
+      let user = null;
+      try {
+        user = await base44.auth.me();
+      } catch {
+        user = null;
+      }
+      if (!user || !['admin', 'operator'].includes(user.role)) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     // Use service role for system tasks
