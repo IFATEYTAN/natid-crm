@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { autoOfferCall } from './_shared/assignVendor.ts';
 
 /**
  * Scheduled job: handle assignment offers that vendors did not accept in time.
@@ -94,10 +95,17 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Try to reassign to the next-best available vendor.
-      const next = await pickNextVendor(svc, call, excludeVendorIds);
-      if (next) {
-        await reassign(svc, call, next, now);
+      // Try to offer the call to the next-best available vendor (shared module:
+      // creates a fresh offer + notifies the vendor in-app + SMS).
+      const offer = await autoOfferCall(base44, call, excludeVendorIds);
+      if (offer.success) {
+        await svc.entities.CallHistory.create({
+          call_id: call.id,
+          call_number: call.call_number || '',
+          change_type: 'note',
+          notes: `שיבוץ אוטומטי מחדש (ההצעה הקודמת פגה) לספק ${offer.recommendation?.vendor_name || ''}`,
+          changed_by: 'מערכת',
+        });
         results.reassigned++;
       } else {
         await escalateToOps(svc, call, elapsedMin, true);
@@ -111,39 +119,6 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Failed to process stale assignments' }, { status: 500 });
   }
 });
-
-// ---- Reassignment ---------------------------------------------------------
-
-async function reassign(svc, call, scored, now) {
-  const vendor = scored.vendor;
-  const expiresAt = new Date(now + 10 * 60 * 1000); // 10-minute acceptance window
-
-  await svc.entities.CallAssignmentAttempt.create({
-    call_id: call.id,
-    vendor_id: vendor.id,
-    status: 'pending',
-    score: scored.score,
-    distance_km: scored.distance_km,
-    expires_at: expiresAt.toISOString(),
-  });
-
-  await svc.entities.Call.update(call.id, {
-    assigned_vendor_id: vendor.id,
-    assigned_vendor_name: vendor.vendor_name,
-    assigned_vendor_area: call.pickup_location_area || null,
-    assigned_at: new Date(now).toISOString(),
-    call_status: 'assigning',
-    estimated_distance_km: scored.distance_km ?? call.estimated_distance_km,
-  });
-
-  await svc.entities.CallHistory.create({
-    call_id: call.id,
-    call_number: call.call_number || '',
-    change_type: 'note',
-    notes: `שיבוץ אוטומטי מחדש (ההצעה הקודמת פגה) לספק ${vendor.vendor_name}`,
-    changed_by: 'מערכת',
-  });
-}
 
 // ---- Escalation to the operations queue -----------------------------------
 
@@ -182,100 +157,3 @@ async function escalateToOps(svc, call, elapsedMin, noVendors = false) {
   }
 }
 
-// ---- Vendor selection (mirrors autoAssignVendor scoring) ------------------
-// NOTE: kept in sync with autoAssignVendor/entry.ts. If the scoring there
-// changes, update it here too (or extract to a shared module).
-
-async function pickNextVendor(svc, call, excludeVendorIds) {
-  const allVendors = await svc.entities.Vendor.filter({ is_active: true });
-  const available = allVendors.filter(
-    (v) => v.availability_status === 'available' && !excludeVendorIds.includes(v.id)
-  );
-  if (available.length === 0) return null;
-
-  const serviceCategoryMap = {
-    towing: ['tow_truck', 'multi_service'],
-    towing_storage: ['tow_truck', 'multi_service'],
-    towing_mobile: ['tow_truck', 'mechanic', 'multi_service'],
-    mobile_unit: ['mechanic', 'multi_service'],
-    storage_only: ['tow_truck', 'multi_service'],
-    other: ['multi_service', 'tow_truck'],
-  };
-  const issueTypeMap = {
-    mechanical: ['mechanic', 'multi_service'],
-    stopped_driving: ['tow_truck', 'multi_service'],
-    flat_tire: ['tire_service', 'tow_truck', 'multi_service'],
-    stuck_wheel: ['tow_truck', 'multi_service'],
-    accident: ['tow_truck', 'multi_service'],
-    no_fuel: ['fuel_delivery', 'multi_service'],
-    dead_battery: ['mechanic', 'multi_service'],
-    locked_keys: ['locksmith', 'multi_service'],
-    other: ['multi_service', 'tow_truck'],
-  };
-  const neededServices =
-    serviceCategoryMap[call.service_category] || issueTypeMap[call.issue_type] || ['tow_truck'];
-
-  const scored = available.map((vendor) => {
-    let score = 0;
-    let distance_km = null;
-
-    if (
-      vendor.current_latitude &&
-      vendor.current_longitude &&
-      call.pickup_location_lat &&
-      call.pickup_location_lon
-    ) {
-      const d = calculateDistance(
-        vendor.current_latitude,
-        vendor.current_longitude,
-        call.pickup_location_lat,
-        call.pickup_location_lon
-      );
-      distance_km = Math.round(d * 10) / 10;
-      if (d <= 5) score += 40;
-      else if (d <= 10) score += 35;
-      else if (d <= 20) score += 25;
-      else if (d <= 30) score += 15;
-      else if (d <= 50) score += 10;
-      else score += 5;
-    } else if (vendor.coverage_areas?.includes(call.pickup_location_area)) {
-      score += 25;
-    }
-
-    if (neededServices.some((s) => (vendor.service_type || []).includes(s))) score += 20;
-    if (vendor.average_rating) score += (vendor.average_rating / 5) * 20;
-    if (vendor.average_response_time) {
-      if (vendor.average_response_time <= 10) score += 10;
-      else if (vendor.average_response_time <= 20) score += 8;
-      else if (vendor.average_response_time <= 30) score += 6;
-      else if (vendor.average_response_time <= 45) score += 4;
-      else score += 2;
-    }
-    if (vendor.completion_rate) score += (vendor.completion_rate / 100) * 10;
-    if (call.vehicle_type && vendor.vehicle_types_supported?.includes(call.vehicle_type)) score += 5;
-
-    const active = vendor.total_calls_assigned || 0;
-    if (active < 3) score += 5;
-    else if (active < 5) score += 2;
-    else if (active > 10) score -= 5;
-
-    return { vendor, score: Math.round(score), distance_km };
-  });
-
-  scored.sort((a, b) => b.score - a.score);
-  return scored[0] || null;
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function toRad(deg) {
-  return deg * (Math.PI / 180);
-}

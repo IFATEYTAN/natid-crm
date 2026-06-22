@@ -9,6 +9,7 @@ const AgentBreakMode = lazyRetry(() => import('@/components/layout/AgentBreakMod
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/components/utils';
+import { useStaleAssignmentPoller } from '@/hooks/useStaleAssignmentPoller';
 
 const queryKeys = {
   notifications: {
@@ -50,6 +51,9 @@ function LayoutContent({ children, currentPageName }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const hasRedirected = useRef(false);
+
+  // In-app safety-net scheduler for stale vendor offers (admin/operator only).
+  useStaleAssignmentPoller(effectiveRoleName === 'admin' || effectiveRoleName === 'operator');
 
   // Fetch Notifications - only when user is authenticated
   const { data: notifications = [] } = useQuery({
