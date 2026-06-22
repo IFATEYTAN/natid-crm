@@ -282,7 +282,26 @@ export default function NewCase() {
         sla_arrival_deadline: slaArrivalDeadline.toISOString(),
       };
 
-      return base44.entities.Call.create(callPayload);
+      const createdCall = await base44.entities.Call.create(callPayload);
+
+      // Enqueue into the work queue so the call enters the assignment pipeline
+      // (mirrors the bot intake path; without this, operator-created calls never
+      // reach queue/auto-assignment).
+      try {
+        const priorityScore =
+          data.priority === 'critical' ? 100 : data.priority === 'urgent' ? 70 : 40;
+        await base44.entities.WorkQueue.create({
+          call_id: createdCall.id,
+          assigned_to_agent: null,
+          queue_status: 'waiting_in_queue',
+          priority_score: priorityScore,
+          added_to_queue_at: new Date().toISOString(),
+        });
+      } catch {
+        // Non-blocking: the call is created even if enqueue fails.
+      }
+
+      return createdCall;
     },
     onSuccess: (result, data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
