@@ -11,6 +11,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { Phone, MapPin, Clock, Wrench, Navigation, CheckCircle, AlertTriangle } from 'lucide-react';
 import { issueTypeLabels, priorityLabels, priorityColors } from '@/config/labels';
+import { CLOSING_STATUSES } from '@/config/closingStatuses';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -41,18 +42,50 @@ function getForwardAction(status) {
 export default function AgentCallCard({ call, canUpdateStatus = false }) {
   const queryClient = useQueryClient();
   const [showReasonDialog, setShowReasonDialog] = useState(false);
+  const [showClosingDialog, setShowClosingDialog] = useState(false);
   const [reason, setReason] = useState('');
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
+    queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+  };
 
   const mutation = useMutation({
     mutationFn: (updates) =>
       base44.functions.invoke('updateAgentCallStatus', { call_id: call.id, updates }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.queue.all() });
+      invalidate();
       showToast.success('הסטטוס עודכן');
     },
     onError: () => showToast.error('שגיאה בעדכון הסטטוס'),
   });
+
+  // Completion goes through the business-closure path (closing status + SMS + continuation)
+  const closeMutation = useMutation({
+    mutationFn: (closingKey) =>
+      base44.functions.invoke('closeCall', { call_id: call.id, closing_status: closingKey }),
+    onSuccess: (res) => {
+      const data = res?.data || res;
+      if (!data?.success) {
+        showToast.error('שגיאה בסגירת הקריאה');
+        return;
+      }
+      setShowClosingDialog(false);
+      invalidate();
+      showToast.success(
+        data.continuation_call_id ? 'הקריאה נסגרה ונפתחה קריאת המשך' : 'הקריאה נסגרה'
+      );
+    },
+    onError: () => showToast.error('שגיאה בסגירת הקריאה'),
+  });
+
+  const handleForward = (status) => {
+    if (status === 'completed') {
+      setShowClosingDialog(true);
+    } else {
+      mutation.mutate({ call_status: status });
+    }
+  };
 
   if (!call) return null;
 
@@ -133,7 +166,7 @@ export default function AgentCallCard({ call, canUpdateStatus = false }) {
               {forward && (
                 <Button
                   className="w-full bg-blue-600 hover:bg-blue-700 h-10"
-                  onClick={() => mutation.mutate({ call_status: forward.status })}
+                  onClick={() => handleForward(forward.status)}
                   disabled={mutation.isPending}
                 >
                   {forward.status === 'completed' ? (
@@ -183,6 +216,27 @@ export default function AgentCallCard({ call, canUpdateStatus = false }) {
             >
               שלח דיווח למוקד
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showClosingDialog} onOpenChange={setShowClosingDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>סגירת קריאה — בחר תוצאת טיפול</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            {CLOSING_STATUSES.map((s) => (
+              <Button
+                key={s.key}
+                variant="outline"
+                className="justify-start h-auto py-3 text-start whitespace-normal"
+                onClick={() => closeMutation.mutate(s.key)}
+                disabled={closeMutation.isPending}
+              >
+                {s.label}
+              </Button>
+            ))}
           </div>
         </DialogContent>
       </Dialog>

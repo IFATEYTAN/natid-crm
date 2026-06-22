@@ -465,6 +465,35 @@ export default function CallDetailsPage() {
           </div>
         </div>
 
+        {/* Vendor/technician reported they cannot complete — operator follow-up */}
+        {call?.call_status === 'cannot_complete' && (
+          <div className="rounded-lg border border-red-300 bg-red-50 p-4 space-y-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-red-900">לא ניתן לטפל בקריאה</p>
+                <p className="text-sm text-red-800">
+                  {call?.cannot_complete_reason || 'הספק/טכנאי דיווח שלא ניתן להשלים את הטיפול.'}
+                </p>
+              </div>
+            </div>
+            <PermissionGuard category="calls" permission="assign">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => setShowAssignDialog(true)}
+                >
+                  שבץ ספק מחדש
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setShowPreCloseDialog(true)}>
+                  סגור עם תוצאת טיפול
+                </Button>
+              </div>
+            </PermissionGuard>
+          </div>
+        )}
+
         {/* Main Content */}
         <Tabs defaultValue="details" className="space-y-4" dir="rtl">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
