@@ -61,11 +61,28 @@ Deno.serve(async (req) => {
 
     // Get all active vendors
     const allVendors = await base44.asServiceRole.entities.Vendor.filter({ is_active: true });
-    
-    // Filter available vendors (exclude busy, offline, on_break)
+
+    // Duplicate prevention: a vendor already handling an active call, or holding a
+    // pending (non-expired) offer on a different call, must not be offered a second
+    // call simultaneously. This guards against availability_status not yet reflecting
+    // an in-flight assignment.
+    const ACTIVE_CALL_STATUSES = ['vendor_enroute', 'vendor_arrived', 'in_progress'];
+    const activeCallGroups = await Promise.all(
+      ACTIVE_CALL_STATUSES.map(s => base44.asServiceRole.entities.Call.filter({ call_status: s }))
+    );
+    const busyVendorIds = new Set(
+      activeCallGroups.flat().map(c => c.assigned_vendor_id).filter(Boolean)
+    );
+    const globalPending = await base44.asServiceRole.entities.CallAssignmentAttempt.filter({ status: 'pending' });
+    globalPending
+      .filter(a => a.call_id !== call_id && new Date(a.expires_at) > new Date())
+      .forEach(a => busyVendorIds.add(a.vendor_id));
+
+    // Filter available vendors (exclude busy, offline, on_break, and already-occupied)
     const availableVendors = allVendors.filter(v =>
       v.availability_status === 'available' &&
-      !exclude_vendor_ids.includes(v.id)
+      !exclude_vendor_ids.includes(v.id) &&
+      !busyVendorIds.has(v.id)
     );
 
     if (availableVendors.length === 0) {

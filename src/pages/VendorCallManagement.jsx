@@ -40,6 +40,9 @@ export default function VendorCallManagementPage() {
   const [vendorProfile, setVendorProfile] = useState(null);
   const [selectedCallId, setSelectedCallId] = useState(null);
   const [showSignatureDialog, setShowSignatureDialog] = useState(false);
+  const [showProblemDialog, setShowProblemDialog] = useState(false);
+  const [problemReason, setProblemReason] = useState('');
+  const [problemSubmitting, setProblemSubmitting] = useState(false);
   const [vendorNotes, setVendorNotes] = useState('');
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
@@ -175,6 +178,55 @@ export default function VendorCallManagementPage() {
 
   const handleSaveNotes = () => {
     updateCallMutation.mutate({ vendor_notes: vendorNotes });
+  };
+
+  // Report that the call cannot be completed (stays with vendor, alerts the desk)
+  const handleCannotComplete = async () => {
+    setProblemSubmitting(true);
+    try {
+      await updateCallMutation.mutateAsync({
+        call_status: 'cannot_complete',
+        cannot_complete_reason: problemReason,
+      });
+      addHistoryMutation.mutate({
+        call_id: selectedCallId,
+        call_number: call.call_number,
+        change_type: 'status',
+        old_value: call.call_status,
+        new_value: 'cannot_complete',
+        notes: `דווח שלא ניתן לטפל. סיבה: ${problemReason || 'לא צוינה'}`,
+        changed_by: vendorProfile?.vendor_name || 'ספק',
+      });
+      showToast.success('הדיווח נשלח למוקד');
+      setShowProblemDialog(false);
+      setProblemReason('');
+    } catch {
+      showToast.error('שגיאה בשליחת הדיווח');
+    } finally {
+      setProblemSubmitting(false);
+    }
+  };
+
+  // Hand the call back to the queue for automatic re-assignment to another vendor
+  const handleReleaseCall = async () => {
+    setProblemSubmitting(true);
+    try {
+      await base44.functions.invoke('releaseVendorCall', {
+        call_id: selectedCallId,
+        reason: problemReason,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
+      });
+      showToast.success('הקריאה הוחזרה לשיבוץ מחדש');
+      setShowProblemDialog(false);
+      setProblemReason('');
+      navigate(createPageUrl('VendorPortal'));
+    } catch {
+      showToast.error('שגיאה בהחזרת הקריאה');
+    } finally {
+      setProblemSubmitting(false);
+    }
   };
 
   const handleSignatureSave = async (signatureDataUrl) => {
@@ -401,6 +453,10 @@ export default function VendorCallManagementPage() {
         onStatusUpdate={handleStatusUpdate}
         onSignature={() => setShowSignatureDialog(true)}
         onComplete={handleCompleteCall}
+        onProblem={() => {
+          setProblemReason('');
+          setShowProblemDialog(true);
+        }}
         isPending={updateCallMutation.isPending}
       />
 
@@ -415,6 +471,43 @@ export default function VendorCallManagementPage() {
             onCancel={() => setShowSignatureDialog(false)}
             loading={uploading}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Problem / cannot-complete dialog */}
+      <Dialog open={showProblemDialog} onOpenChange={setShowProblemDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>בעיה בטיפול בקריאה</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-[#6B778C]">
+              פרט את הסיבה. ניתן לדווח למוקד שלא ניתן לטפל (הקריאה נשארת אצלך), או להחזיר את הקריאה
+              לשיבוץ מחדש לספק אחר.
+            </p>
+            <Textarea
+              value={problemReason}
+              onChange={(e) => setProblemReason(e.target.value)}
+              placeholder="לדוגמה: חניון תת-קרקעי נעול, נדרש גרר מותאם..."
+              rows={3}
+            />
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCannotComplete}
+                disabled={problemSubmitting || !problemReason.trim()}
+              >
+                דווח למוקד — לא ניתן לטפל
+              </Button>
+              <Button
+                className="bg-orange-500 hover:bg-orange-600"
+                onClick={handleReleaseCall}
+                disabled={problemSubmitting || !problemReason.trim()}
+              >
+                החזר קריאה לשיבוץ מחדש
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
