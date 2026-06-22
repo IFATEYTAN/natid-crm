@@ -10,7 +10,8 @@ import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function AgentCallManagementPage() {
-  const { currentUser } = usePermissions();
+  const { currentUser, hasPermission } = usePermissions();
+  const canUpdateStatus = hasPermission('calls', 'update_status');
   const { calls, isLoading, isFetching, isError, error, refetch } = useAgentCalls(
     currentUser?.email
   );
@@ -69,7 +70,7 @@ export default function AgentCallManagementPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleCalls.map((call) => (
-            <AgentCallCard key={call.id} call={call} />
+            <AgentCallCard key={call.id} call={call} canUpdateStatus={canUpdateStatus} />
           ))}
         </div>
       )}

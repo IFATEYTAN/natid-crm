@@ -56,6 +56,7 @@ const PERMISSION_LABELS = {
   edit: 'עריכה',
   delete: 'מחיקה',
   assign: 'שיבוץ',
+  update_status: 'עדכון סטטוס קריאה',
   manage_contracts: 'ניהול חוזים',
   export: 'ייצוא',
   financial: 'דוחות כספיים',
@@ -73,7 +74,14 @@ const PERMISSION_LABELS = {
 };
 
 const DEFAULT_PERMISSIONS = {
-  calls: { view: true, create: true, edit: true, delete: false, assign: true },
+  calls: {
+    view: true,
+    create: true,
+    edit: true,
+    delete: false,
+    assign: true,
+    update_status: false,
+  },
   vendors: { view: true, create: false, edit: false, delete: false, manage_contracts: false },
   customers: { view: true, create: false, edit: false, delete: false },
   reports: { view: false, export: false, financial: false, performance: false, historical: false },

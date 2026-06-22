@@ -13,7 +13,8 @@ import { cn } from '@/lib/utils';
 const ACTIVE_STATUSES = openStatuses;
 
 export default function AgentDashboardPage() {
-  const { currentUser } = usePermissions();
+  const { currentUser, hasPermission } = usePermissions();
+  const canUpdateStatus = hasPermission('calls', 'update_status');
   const { calls, isLoading, isFetching, isError, error, refetch } = useAgentCalls(
     currentUser?.email
   );
@@ -115,7 +116,7 @@ export default function AgentDashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {activeCalls.map((call) => (
-              <AgentCallCard key={call.id} call={call} />
+              <AgentCallCard key={call.id} call={call} canUpdateStatus={canUpdateStatus} />
             ))}
           </div>
         )}

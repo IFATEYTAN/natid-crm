@@ -228,6 +228,15 @@
 **לקח:** ריכוז כללי הסגירה בטבלת קונפיג אחת מאפשר השתלת נוסחי SMS סופיים ושינוי התנהגות ללא נגיעה בלוגיקה. נוסחי ה-SMS הם placeholder עד לקבלת הנוסחים הסופיים מהלקוח.
 **קבצים:** `base44/entities/Call.jsonc`, `src/config/closingStatuses.js`, `src/features/calls/createContinuationCall.js`, `src/pages/CallDetails.jsx`
 
+### [2026-06-22] Feature: עדכון סטטוס ע"י טכנאי — מאחורי הרשאה אדמיניסטרטיבית ייעודית
+
+**בעיה:** נדרש לאפשר לטכנאי שטח לעדכן סטטוס קריאה מהשטח — אך לא לכל טכנאי/מוקדן באופן גורף, אלא רק למי שהמנהל הרשה במפורש.
+**פתרון:** נוספה הרשאה גרנולרית חדשה `calls.update_status` (תווית "עדכון סטטוס קריאה") שברירת המחדל שלה `false` לכל התפקידים (גם agent וגם operator); מנהל מפעיל אותה per-role/per-user דרך `RoleManagement` (היא נכללת ב-`DEFAULT_PERMISSIONS` ולכן מופיעה כ-toggle). האכיפה היא **דו-שכבתית**: ב-UI הכפתורים בכרטיס הקריאה (`AgentCallCard`) מוצגים רק כש-`hasPermission('calls','update_status')`; ובצד שרת פונקציית `updateAgentCallStatus` קוראת בעצמה את `UserPermission` (custom_permissions → Role.permissions → false, עם bypass ל-admin), מאמתת בעלות דרך `WorkQueue.assigned_to_agent`, ומאמתת מעבר סטטוס חוקי (`AGENT_STATUS_TRANSITIONS`) לפני העדכון. נוספו לסכמת `Call` הערך `cannot_complete` ל-enum והשדות `agent_notes`, `cannot_complete_reason`.
+**לקח:** הרשאה רגישה חייבת אכיפה בצד שרת ולא להסתמך על הסתרת כפתורים ב-UI; שכפול סדר הבדיקה של ה-client (custom→role→default) בתוך פונקציית ה-backend שומר על עקביות. הוספת מפתח ל-`DEFAULT_PERMISSIONS` היא מה שגורם לו להופיע אוטומטית בעורך התפקידים.
+**קבצים:** `base44/functions/updateAgentCallStatus/entry.ts`, `base44/entities/Call.jsonc`, `src/components/permissions/PermissionsContext.jsx`, `src/pages/RoleManagement.jsx`, `src/components/agent/AgentCallCard.jsx`, `src/pages/AgentDashboard.jsx`, `src/pages/AgentCallManagement.jsx`
+
+---
+
 ### [2026-06-22] Feature: סגירת פערים בתהליך שיוך — מניעת שיוך כפול, סטטוס "לא ניתן לטפל", החזרת קריאה ע"י ספק, ודפי טכנאי
 
 **בעיה:** ארבעה פערים בתהליך מקבלת הקריאה ועד השיוך: (1) ספק יכול היה לקבל שתי קריאות במקביל — לא הייתה נעילה ברמת הספק (רק ברמת הקריאה). (2) לא היה סטטוס ביניים כשספק הגיע אך לא יכול להשלים (חניון נעול, חילוץ מורכב). (3) ספק לא יכול היה להחזיר קריאה באמצע — רק מוקדן/אדמין שייכו מחדש. (4) דפי הטכנאי (`AgentDashboard`, `AgentCallManagement`) לא מומשו, ולתפקיד `agent` לא היה פורטל.

@@ -64,7 +64,14 @@ function resolveEffectiveRole(platformRole, userPermission) {
 // הגדרות הרשאות ברירת מחדל למוקדן
 // חייב להתאים ל-PAGE_PERMISSIONS ב-src/config/permissions.js
 const DEFAULT_OPERATOR_PERMISSIONS = {
-  calls: { view: true, create: true, edit: true, delete: false, assign: true },
+  calls: {
+    view: true,
+    create: true,
+    edit: true,
+    delete: false,
+    assign: true,
+    update_status: false,
+  },
   vendors: { view: true, create: true, edit: true, delete: false, manage_contracts: true },
   customers: { view: true, create: true, edit: true, delete: false },
   reports: { view: true, export: true, financial: false, performance: true, historical: true },
@@ -81,7 +88,14 @@ const DEFAULT_OPERATOR_PERMISSIONS = {
 
 // הגדרות הרשאות ברירת מחדל לטכנאי (agent) - הרשאות מצומצמות
 const DEFAULT_AGENT_PERMISSIONS = {
-  calls: { view: true, create: false, edit: false, delete: false, assign: false },
+  calls: {
+    view: true,
+    create: false,
+    edit: false,
+    delete: false,
+    assign: false,
+    update_status: false,
+  },
   vendors: { view: false, create: false, edit: false, delete: false, manage_contracts: false },
   customers: { view: false, create: false, edit: false, delete: false },
   reports: { view: false, export: false, financial: false, performance: false, historical: false },
@@ -226,8 +240,8 @@ export function PermissionsProvider({ children }) {
         setEffectiveRole(resolved);
         // Force sync user role locally if needed (optional)
         if (user && resolved && resolved !== user.role) {
-           // Update local object to match resolved role so other checks rely on the correct role
-           user.role = resolved;
+          // Update local object to match resolved role so other checks rely on the correct role
+          user.role = resolved;
         }
       } catch (e) {
         console.error('Failed to load user:', e);

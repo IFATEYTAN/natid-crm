@@ -15,6 +15,7 @@
         "vendor_enroute",
         "in_progress",
         "vendor_arrived",
+        "cannot_complete",
         "future_service",
         "in_followup",
         "in_storage",
@@ -384,6 +385,14 @@
     "operator_notes": {
       "type": "string",
       "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05de\u05d5\u05e7\u05d3\u05df"
+    },
+    "agent_notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05d8\u05db\u05e0\u05d0\u05d9 \u05e9\u05d8\u05d7"
+    },
+    "cannot_complete_reason": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05d1\u05ea \u05d0\u05d9-\u05d9\u05db\u05d5\u05dc\u05ea \u05dc\u05d8\u05e4\u05dc \u05d1\u05e7\u05e8\u05d9\u05d0\u05d4 (\u05d3\u05d9\u05d5\u05d5\u05d7 \u05e1\u05e4\u05e7/\u05d8\u05db\u05e0\u05d0\u05d9)"
     },
     "time_waiting": {
       "type": "number",
