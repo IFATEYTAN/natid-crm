@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { createRateLimiter, getClientIP, rateLimitResponse } from './_shared/rateLimit.ts';
+import { autoOfferCall } from './_shared/assignVendor.ts';
 
 const kv = await Deno.openKv();
 const limiter = createRateLimiter(kv);
@@ -191,9 +192,13 @@ Deno.serve(async (req) => {
       sla_target: 30
     });
 
-    // Find available agent (load balancing)
+    // Find available desk handler (load balancing).
+    // Match operator/agent roles incl. Hebrew variants (Base44 often returns 'user').
+    const HANDLER_ROLES = ['operator', 'agent', 'user', 'מוקדן', 'מתפעל', 'מנהל תפעול', 'נציג שטח'];
     const agents = await base44.asServiceRole.entities.User.list();
-    const operatorAgents = agents.filter(a => a.role === 'user');
+    const operatorAgents = agents.filter(
+      a => HANDLER_ROLES.includes(a.role) && a.role !== 'vendor' && a.role !== 'ספק'
+    );
     
     if (operatorAgents.length === 0) {
       // No agents available, add to general queue
@@ -270,17 +275,17 @@ Deno.serve(async (req) => {
       changed_by: 'בוט'
     });
     
-    // Try auto-assign vendor if automation is enabled
+    // Auto-offer the call to the best vendor (offer + accept model).
+    // Calls the shared module directly with the service-role client.
     try {
-      const autoAssignResult = await base44.functions.invoke('autoAssignVendor', {
-        callId: call.id
-      });
-      
-      if (autoAssignResult?.data?.success) {
-        console.log('Vendor auto-assigned:', autoAssignResult.data.vendor.name);
+      const offer = await autoOfferCall(base44, call, []);
+      if (offer.success) {
+        console.log('Vendor auto-offered:', offer.recommendation?.vendor_name);
+      } else {
+        console.log('Auto-offer skipped:', offer.error);
       }
     } catch (autoAssignError) {
-      console.log('Auto-assign not triggered:', autoAssignError.message);
+      console.log('Auto-offer not triggered:', autoAssignError.message);
     }
 
     // Send SMS to customer

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { autoOfferCall } from './_shared/assignVendor.ts';
 
 /**
  * Release a call back to the queue.
@@ -103,12 +104,9 @@ Deno.serve(async (req) => {
 
     let nextRecommendation = null;
     try {
-      const autoAssignResponse = await base44.functions.invoke('autoAssignVendor', {
-        call_id: call.id,
-        exclude_vendor_ids: excludeVendorIds,
-      });
-      if (autoAssignResponse.data?.success && autoAssignResponse.data?.recommendation) {
-        nextRecommendation = autoAssignResponse.data.recommendation;
+      const offer = await autoOfferCall(base44, { ...call, call_status: 'awaiting_assignment', assigned_vendor_id: null }, excludeVendorIds);
+      if (offer.success && offer.recommendation) {
+        nextRecommendation = offer.recommendation;
       }
     } catch (e) {
       console.error('releaseVendorCall: auto re-assign failed', e);

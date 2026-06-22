@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
+import { autoOfferCall } from './_shared/assignVendor.ts';
 
 const kv = await Deno.openKv();
 const limiter = createRateLimiter(kv);
@@ -213,18 +214,15 @@ Deno.serve(async (req) => {
       });
       const excludeVendorIds = previousAttempts.map(a => a.vendor_id);
 
-      // Try to find next best vendor
-      const autoAssignResponse = await base44.functions.invoke('autoAssignVendor', {
-        call_id: call.id,
-        exclude_vendor_ids: excludeVendorIds
-      });
+      // Try to offer the call to the next best vendor (direct, service-role)
+      const offer = await autoOfferCall(base44, call, excludeVendorIds);
 
-      if (autoAssignResponse.data?.success && autoAssignResponse.data?.recommendation) {
+      if (offer.success && offer.recommendation) {
         return Response.json({
           success: true,
           action: 'declined',
-          message: 'Assignment declined, found alternative vendor',
-          next_recommendation: autoAssignResponse.data.recommendation
+          message: 'Assignment declined, offered to alternative vendor',
+          next_recommendation: offer.recommendation
         });
       } else {
         // No more vendors available - update call status
