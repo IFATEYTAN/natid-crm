@@ -14,15 +14,24 @@ import {
   AlertOctagon,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { Link } from 'react-router-dom';
+import { isDemoMode } from '@/demo/demoMode';
+
+// How often to re-run live anomaly detection against the system data (5 min).
+const DETECTION_INTERVAL = 5 * 60 * 1000;
 
 export default function SmartAlertsTab({ currentUser }) {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = React.useState(false);
+
+  // Only admins and operators trigger live detection (the engine notifies them).
+  const canRunDetection = !isDemoMode() && ['admin', 'operator'].includes(currentUser?.role);
 
   const { data: alerts = [], isLoading } = useQuery({
     queryKey: queryKeys.smartAlerts.byUser(currentUser?.id),
@@ -38,8 +47,54 @@ export default function SmartAlertsTab({ currentUser }) {
       );
     },
     enabled: !!currentUser?.id,
-    refetchInterval: 90000, // Refresh every 30s
+    refetchInterval: 90000, // Refresh every 90s
   });
+
+  // Run the backend anomaly-detection engine against live system data, then
+  // refresh the alerts list. This keeps the panel online without a cron job.
+  const detectMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('detectSmartAlerts', {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.smartAlerts.byUser(currentUser?.id) });
+    },
+    onError: (e) => {
+      // Background/interval runs fail silently; the manual refresh below surfaces a toast.
+      console.warn('Smart alerts detection failed:', e?.message);
+    },
+  });
+
+  // Hold the latest mutation in a ref so the interval can read isPending/mutate
+  // without re-running the effect (which would otherwise reset the interval on
+  // every render and could loop).
+  const detectMutationRef = React.useRef(detectMutation);
+  detectMutationRef.current = detectMutation;
+
+  // Trigger detection on mount and on a recurring interval so the panel always
+  // reflects the current state of the system (live/online data).
+  React.useEffect(() => {
+    if (!canRunDetection) return undefined;
+    const run = () => {
+      if (!detectMutationRef.current.isPending) {
+        detectMutationRef.current.mutate();
+      }
+    };
+    run();
+    const intervalId = setInterval(run, DETECTION_INTERVAL);
+    return () => clearInterval(intervalId);
+  }, [canRunDetection]);
+
+  const handleManualRefresh = (e) => {
+    e.stopPropagation();
+    if (!canRunDetection) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.smartAlerts.byUser(currentUser?.id) });
+      return;
+    }
+    if (detectMutation.isPending) return;
+    detectMutation.mutate(undefined, {
+      onError: (err) =>
+        showToast.error('שגיאה בניתוח נתונים חיים: ' + (err?.message || 'שגיאה כללית')),
+    });
+  };
 
   const markAsReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
@@ -102,10 +157,30 @@ export default function SmartAlertsTab({ currentUser }) {
             {expanded && (
               <CardDescription>
                 מערכת זיהוי פרואקטיבי של בעיות תפעוליות, חריגות SLA וביצועי ספקים
+                {detectMutation.isPending && (
+                  <span className="inline-flex items-center gap-1 ms-2 text-orange-600">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    מנתח נתונים חיים...
+                  </span>
+                )}
               </CardDescription>
             )}
           </div>
           <div className="flex items-center gap-2">
+            {expanded && canRunDetection && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 text-gray-500"
+                title="רענן זיהוי חריגות"
+                disabled={detectMutation.isPending}
+                onClick={handleManualRefresh}
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${detectMutation.isPending ? 'animate-spin' : ''}`}
+                />
+              </Button>
+            )}
             {expanded && alerts.length > 0 && (
               <Button
                 variant="outline"

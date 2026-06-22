@@ -151,7 +151,7 @@
 | 3 | **יצירת התראות in-app** | createNotification.ts | Frontend יוצר notifications ישירות דרך entities, לא דרך הפונקציה |
 | 4 | **ניטור SLA וקריאות לא משובצות** | checkAndSendNotifications.ts | צריך cron job - אין scheduler |
 | 5 | **בדיקת תפוגת חוזים** | checkContractExpiry.ts | צריך cron job - אין scheduler |
-| 6 | **התראות חכמות** | detectSmartAlerts.ts | צריך cron job - אין scheduler |
+| 6 | **התראות חכמות** | detectSmartAlerts.ts | מופעל live מ-SmartAlertsTab (mount + כל 5 דק'); cron בפלטפורמה עדיין מומלץ לכיסוי כשאף אחד לא מחובר |
 | 7 | **ניתוח דפוסי קריאות** | analyzeCallPatterns.ts | הוחלף ע"י analyzeHistoricalPatterns - dead code |
 | 8 | **Webhook בוט גנרי** | botWebhook.ts | redundant עם 99digitalBot.ts, לא נקרא מאף מקום |
 

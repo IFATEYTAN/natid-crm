@@ -9,13 +9,36 @@ import { differenceInMinutes, subHours } from 'npm:date-fns@3.6.0';
  * 3. High rejection rate
  * 4. SLA breach risk
  * 5. High average completion time
+ *
+ * Recommended schedule: every ~5 minutes. Auth: cron (no user) or admin/operator.
+ * The SmartAlertsTab dashboard panel also invokes this on load so alerts stay
+ * live even before the platform scheduler is enabled.
  */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // For scheduled/cron tasks, user may be null or a service account.
-    // Auth is enforced at the platform level for cron invocations.
+    const body = await req.json().catch(() => ({}));
+
+    // Auth (fail-closed): allow a scheduled automation run OR an admin/operator user.
+    // Scheduled runs have no logged-in user; the platform includes an "automation"
+    // object in the body (an explicit SYNC_AUTOMATION_KEY secret is accepted as a
+    // fallback). Anything else — including unauthenticated requests — is rejected,
+    // so the engine cannot be triggered anonymously under the service role.
+    const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
+    const isAutomation =
+      (!!automationKey && body.automation_key === automationKey) || !!body.automation;
+    if (!isAutomation) {
+      let user = null;
+      try {
+        user = await base44.auth.me();
+      } catch {
+        user = null;
+      }
+      if (!user || !['admin', 'operator'].includes(user.role)) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
 
     // Use service role for system tasks
     const client = base44.asServiceRole;
