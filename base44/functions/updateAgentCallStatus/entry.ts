@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
 
     // Mirror status onto WorkQueue + Case
     if (sanitizedUpdates.call_status) {
-      const extraCaseUpdates = {};
+      const extraCaseUpdates: Record<string, any> = {};
       if (sanitizedUpdates.vendor_arrival_time_actual) {
         extraCaseUpdates.arrived_at = sanitizedUpdates.vendor_arrival_time_actual;
       }
