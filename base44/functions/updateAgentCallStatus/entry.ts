@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 // Fields an agent is allowed to set directly
 const ALLOWED_AGENT_FIELDS = ['call_status', 'cannot_complete_reason', 'agent_notes'];
@@ -128,6 +129,18 @@ Deno.serve(async (req) => {
 
     // Perform the update
     await base44.asServiceRole.entities.Call.update(call_id, sanitizedUpdates);
+
+    // Mirror status onto WorkQueue + Case
+    if (sanitizedUpdates.call_status) {
+      const extraCaseUpdates: Record<string, any> = {};
+      if (sanitizedUpdates.vendor_arrival_time_actual) {
+        extraCaseUpdates.arrived_at = sanitizedUpdates.vendor_arrival_time_actual;
+      }
+      if (sanitizedUpdates.closed_at) {
+        extraCaseUpdates.completed_at = sanitizedUpdates.closed_at;
+      }
+      await syncCallStatus(base44, call, sanitizedUpdates.call_status, extraCaseUpdates);
+    }
 
     // Log to call history
     if (sanitizedUpdates.call_status) {

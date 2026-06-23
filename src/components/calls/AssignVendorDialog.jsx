@@ -172,35 +172,39 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
       caseCode,
       createdByName: currentUser?.full_name,
     });
-    await base44.entities.Call.update(continuation.id, {
-      assigned_vendor_id: selectedVendor,
-      assigned_vendor_name: vendor?.vendor_name,
-      assigned_at: new Date().toISOString(),
-      call_status: 'assigning',
+    const extraUpdates = {
       ...(dispatchType ? { dispatch_type: dispatchType } : {}),
       ...buildLocationUpdates(),
-    });
+    };
+    if (Object.keys(extraUpdates).length > 0) {
+      await base44.entities.Call.update(continuation.id, extraUpdates);
+    }
     await base44.entities.Call.update(callId, { continuation_call_id: continuation.id });
+
+    // Offer the continuation to the additional vendor (offer + accept model)
+    const res = await base44.functions.invoke('assignVendorToCall', {
+      call_id: continuation.id,
+      vendor_id: selectedVendor,
+    });
+    const data = res?.data || res;
+    if (!data?.success) {
+      toast.error(
+        data?.error === 'Vendor is not available' ? 'הספק אינו זמין' : 'שיבוץ ההמשך נכשל'
+      );
+      return;
+    }
 
     logAction({
       action: 'assign',
       entity_type: 'Call',
       entity_id: continuation.id,
       entity_name: continuation.call_number,
-      details: `קריאת המשך מקריאה ${call?.call_number} — שובץ ${vendor?.vendor_name}`,
-    });
-    base44.entities.CallHistory.create({
-      call_id: continuation.id,
-      call_number: continuation.call_number,
-      change_type: 'vendor_assignment',
-      new_value: vendor?.vendor_name,
-      changed_by: currentUser?.full_name || 'operator',
-      notes: `קריאת המשך מקריאה ${call?.call_number}`,
+      details: `קריאת המשך מקריאה ${call?.call_number} — הוצעה ל-${vendor?.vendor_name}`,
     });
 
     queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
     queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
-    toast.success(`נפתחה קריאת המשך ושובצה ל-${vendor?.vendor_name}`);
+    toast.success(`נפתחה קריאת המשך והוצעה ל-${vendor?.vendor_name}`);
     handleClose(false);
     navigate(createPageUrl(`CallDetails?id=${continuation.id}`));
   };
@@ -239,14 +243,32 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
         return;
       }
 
-      await base44.entities.Call.update(callId, {
-        assigned_vendor_id: selectedVendor,
-        assigned_vendor_name: vendor?.vendor_name,
-        assigned_at: new Date().toISOString(),
-        call_status: 'assigning',
+      // Operator-set fields (location/dispatch) are applied directly; the assignment
+      // itself goes through assignVendorToCall which creates an offer + notifies the vendor.
+      const extraUpdates = {
         ...(dispatchType ? { dispatch_type: dispatchType } : {}),
         ...buildLocationUpdates(),
+      };
+      if (Object.keys(extraUpdates).length > 0) {
+        await base44.entities.Call.update(callId, extraUpdates);
+      }
+
+      const res = await base44.functions.invoke('assignVendorToCall', {
+        call_id: callId,
+        vendor_id: selectedVendor,
       });
+      const data = res?.data || res;
+      if (!data?.success) {
+        const msg =
+          data?.error === 'Vendor is not available'
+            ? 'הספק אינו זמין'
+            : data?.error === 'Call already assigned to a vendor'
+              ? `הקריאה כבר שובצה ל-${data?.assigned_vendor_name || 'ספק אחר'}`
+              : 'השיבוץ נכשל';
+        toast.error(msg);
+        queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
+        return;
+      }
 
       queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
       queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
@@ -256,18 +278,10 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
         entity_type: 'Call',
         entity_id: callId,
         entity_name: call?.call_number,
-        details: `Assigned to ${vendor?.vendor_name}`,
+        details: `Offered to ${vendor?.vendor_name}`,
       });
 
-      base44.entities.CallHistory.create({
-        call_id: callId,
-        call_number: call?.call_number,
-        change_type: 'vendor_assignment',
-        new_value: vendor?.vendor_name,
-        changed_by: currentUser?.full_name || 'operator',
-      });
-
-      toast.success(`הקריאה שובצה ל-${vendor?.vendor_name}`);
+      toast.success(`הקריאה הוצעה ל-${vendor?.vendor_name} — ממתין לאישור הספק`);
       handleClose(false);
     } catch (error) {
       toast.error(`השיבוץ נכשל: ${error?.message || 'שגיאה לא ידועה'}`);

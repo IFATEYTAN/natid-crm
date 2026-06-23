@@ -23,6 +23,7 @@ import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
 import { issueTypeLabels } from '@/config/labels';
+import { CLOSING_STATUSES } from '@/config/closingStatuses';
 import SignaturePad from '@/components/signature/SignaturePad';
 import EnhancedCallChat, { sendStatusMessage } from '@/components/chat/EnhancedCallChat';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
@@ -43,6 +44,8 @@ export default function VendorCallManagementPage() {
   const [showProblemDialog, setShowProblemDialog] = useState(false);
   const [problemReason, setProblemReason] = useState('');
   const [problemSubmitting, setProblemSubmitting] = useState(false);
+  const [showClosingDialog, setShowClosingDialog] = useState(false);
+  const [closingSubmitting, setClosingSubmitting] = useState(false);
   const [vendorNotes, setVendorNotes] = useState('');
   const [uploading, setUploading] = useState(false);
   const queryClient = useQueryClient();
@@ -267,7 +270,40 @@ export default function VendorCallManagementPage() {
       setShowSignatureDialog(true);
       return;
     }
-    handleStatusUpdate('completed');
+    // Completion must capture a closing status (drives customer SMS + continuation).
+    setShowClosingDialog(true);
+  };
+
+  // Close the call with a business closing status via the shared closeCall function.
+  const handleSelectClosing = async (closingKey) => {
+    setClosingSubmitting(true);
+    try {
+      const res = await base44.functions.invoke('closeCall', {
+        call_id: selectedCallId,
+        closing_status: closingKey,
+      });
+      const data = res?.data || res;
+      if (!data?.success) {
+        showToast.error('שגיאה בסגירת הקריאה');
+        return;
+      }
+      setShowClosingDialog(false);
+      if (data.continuation_call_id) {
+        showToast.success('הקריאה נסגרה ונפתחה קריאת המשך מקושרת');
+      } else if (data.is_storage) {
+        showToast.success('הקריאה נסגרה לאחסנה');
+      } else {
+        showToast.success('הקריאה נסגרה בהצלחה');
+      }
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.vendors.call(selectedCallId, vendorProfile?.id),
+      });
+      navigate(createPageUrl('VendorPortal'));
+    } catch {
+      showToast.error('שגיאה בסגירת הקריאה');
+    } finally {
+      setClosingSubmitting(false);
+    }
   };
 
   if (!selectedCallId) {
@@ -507,6 +543,28 @@ export default function VendorCallManagementPage() {
                 החזר קריאה לשיבוץ מחדש
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Closing status selector — drives customer SMS + linked continuation */}
+      <Dialog open={showClosingDialog} onOpenChange={setShowClosingDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>סגירת קריאה — בחר תוצאת טיפול</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            {CLOSING_STATUSES.map((s) => (
+              <Button
+                key={s.key}
+                variant="outline"
+                className="justify-start h-auto py-3 text-start whitespace-normal"
+                onClick={() => handleSelectClosing(s.key)}
+                disabled={closingSubmitting}
+              >
+                {s.label}
+              </Button>
+            ))}
           </div>
         </DialogContent>
       </Dialog>

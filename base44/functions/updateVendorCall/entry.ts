@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 // Fields a vendor is allowed to update on a call
 const ALLOWED_VENDOR_FIELDS = [
@@ -82,30 +83,16 @@ Deno.serve(async (req) => {
     // Perform the update
     await base44.asServiceRole.entities.Call.update(call_id, sanitizedUpdates);
 
-    // Also update corresponding Case entity if it exists
-    const cases = await base44.asServiceRole.entities.Case.filter({ case_number: call.call_number });
-    if (cases.length > 0) {
-      const caseUpdates = {};
-      if (sanitizedUpdates.call_status) {
-        const statusMap = {
-          'vendor_enroute': 'en_route',
-          'vendor_arrived': 'on_site', 
-          'in_progress': 'in_progress',
-          'completed': 'completed',
-        };
-        if (statusMap[sanitizedUpdates.call_status]) {
-          caseUpdates.status = statusMap[sanitizedUpdates.call_status];
-        }
-      }
+    // Mirror status onto WorkQueue + Case
+    if (sanitizedUpdates.call_status) {
+      const extraCaseUpdates: Record<string, any> = {};
       if (sanitizedUpdates.vendor_arrival_time_actual) {
-        caseUpdates.arrived_at = sanitizedUpdates.vendor_arrival_time_actual;
+        extraCaseUpdates.arrived_at = sanitizedUpdates.vendor_arrival_time_actual;
       }
       if (sanitizedUpdates.closed_at) {
-        caseUpdates.completed_at = sanitizedUpdates.closed_at;
+        extraCaseUpdates.completed_at = sanitizedUpdates.closed_at;
       }
-      if (Object.keys(caseUpdates).length > 0) {
-        await base44.asServiceRole.entities.Case.update(cases[0].id, caseUpdates);
-      }
+      await syncCallStatus(base44, call, sanitizedUpdates.call_status, extraCaseUpdates);
     }
 
     // When a vendor reports they cannot complete the call, log it and alert the desk
