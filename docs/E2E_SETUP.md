@@ -67,8 +67,16 @@
 | `E2E_OPERATOR_PASSWORD` | (הסיסמה שהגדרת) |
 | `E2E_VENDOR_EMAIL` | `e2e-vendor@natid.test` |
 | `E2E_VENDOR_PASSWORD` | (הסיסמה שהגדרת) |
+| `E2E_VENDOR_NAME` (אופציונלי) | שם התצוגה של ספק הבדיקה — כדי שהמוקדן יציע דווקא לו, וכך בדיקת המוקדן ובדיקת הספק ישתרשרו |
 
 **שים לב:** Secrets שמתחילים ב-`E2E_` כי כך הקוד מצפה לקרוא אותם.
+
+### תנאי seed לתהליך המלא
+
+כדי שבדיקת ה-lifecycle תושלם ולא תדלג באמצע, צריך **ספק זמין אחד לפחות**:
+רשומת `Vendor` עם `is_active: true` ו-`availability_status: 'available'`. רצוי שזה יהיה
+אותו ספק שמתחברים אליו ב-`E2E_VENDOR_*` ושמופיע ב-`E2E_VENDOR_NAME` — אחרת ההצעה תגיע
+לספק אחר וצד-הספק ידלג ("אין הצעה ממתינה").
 
 ### 3. לאמת שזה רץ
 
@@ -100,6 +108,18 @@ npx playwright test --grep "structural"
 ```
 
 ---
+
+## כיסוי: תהליך הקריאה המלא (`call-lifecycle.spec.js`)
+
+הבדיקה משקפת את מודל **הצעה + אישור** בפועל:
+
+1. **Structural** (תמיד) — אנונימי לא מגיע ל-`/NewCase`.
+2. **מוקדן** (`E2E_ADMIN_*`) — קליטה ב-`/NewCase` → **הצעת** ספק → הקריאה עוברת ל-"ספק שובץ" (`assigning`)
+   ונוצרת `CallAssignmentAttempt` ממתינה + התראה לספק.
+3. **ספק** (`E2E_VENDOR_*`) — **אישור** ההצעה ב-VendorPortal (`vendor_enroute`) → "הגעתי למקום"
+   (`in_progress`) → חתימת לקוח → "סיים קריאה" → בחירת **סטטוס סגירה** → סגירה (ובמידת הצורך קריאת המשך).
+
+צעדים שתלויים במצב ריצה (ספק זמין, הצעה ממתינה, קנבס החתימה) מדלגים בחן (`test.skip`) במקום להיכשל.
 
 ## הוספת test חדש
 
@@ -135,7 +155,7 @@ npx playwright test --grep "structural"
 הצעות לסיבובים הבאים, מסודרים לפי השפעה:
 
 1. **Permissions matrix tests** — קובץ `e2e/permissions.spec.js` שעובר על כל role×page ומוודא ש-403/אזור-ריק/redirect מתרחש כמצופה
-2. **Call lifecycle E2E** — operator יוצר → vendor רואה → vendor מעדכן → operator סוגר
+2. ~~**Call lifecycle E2E**~~ — ✅ מומש ב-`e2e/call-lifecycle.spec.js` (ראו "כיסוי: תהליך הקריאה המלא" לעיל)
 3. **Cross-browser** — להוסיף Firefox + WebKit ל-`playwright.config.js` projects
 4. **Visual regression** — להוסיף `@playwright/test`'s `toHaveScreenshot()` לדפים קריטיים
 5. **Performance budgets** — להריץ Lighthouse ב-CI על דפים מרכזיים, להיכשל אם LCP > 3s
