@@ -23,6 +23,7 @@
  */
 import mysql from 'npm:mysql2@3.9.7/promise';
 
+// Redeploy trigger — keep circuit-breaker + TLS fixes in sync with git main.
 const CONNECT_TIMEOUT_MS = 20_000;
 
 // Circuit-breaker tuning.
