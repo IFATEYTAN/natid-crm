@@ -5,7 +5,100 @@
  * Connection handling + circuit breaker live in ./_shared/natiDb.ts.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { withNatiConnection, natiErrorResponse } from './_shared/natiDb.ts';
+import mysql from 'npm:mysql2@3.9.7/promise';
+
+// ===== Inline Nati DB layer (shared _shared/natiDb module fails platform deployment — logic inlined) =====
+const NATI_CONNECT_TIMEOUT_MS = 20_000;
+const NATI_FAIL_THRESHOLD = 3;
+const NATI_GENERIC_COOLDOWN_MS = 2 * 60_000;
+const NATI_BLOCKED_COOLDOWN_MS = 10 * 60_000;
+let natiCircuit = { blockedUntil: 0, failures: 0, reason: '' };
+
+class NatiBlockedError extends Error {
+  retryAfterSec: number;
+  reason: string;
+  constructor(message: string, retryAfterSec: number, reason: string) {
+    super(message);
+    this.name = 'NatiBlockedError';
+    this.retryAfterSec = retryAfterSec;
+    this.reason = reason;
+  }
+}
+
+function isHostBlockedError(err) {
+  const e = err || {};
+  return e.code === 'ER_HOST_IS_BLOCKED' || e.errno === 1129 ||
+    /blocked because of many connection errors/i.test(String(e.message || ''));
+}
+
+async function withNatiConnection(fn, opts = {}) {
+  const config = {
+    host: Deno.env.get('NATID_DB_HOST'),
+    port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
+    user: Deno.env.get('NATID_DB_USER'),
+    password: Deno.env.get('NATID_DB_PASSWORD'),
+    database: Deno.env.get('NATID_DB_NAME'),
+    connectTimeout: NATI_CONNECT_TIMEOUT_MS,
+    // RDS presents an Amazon-RDS-CA cert Deno doesn't trust; still TLS-encrypted.
+    ssl: { rejectUnauthorized: false },
+  };
+  if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
+
+  const now = Date.now();
+  if (!opts.force && natiCircuit.blockedUntil > now) {
+    const retryAfterSec = Math.ceil((natiCircuit.blockedUntil - now) / 1000);
+    const base = natiCircuit.reason === 'host_blocked'
+      ? 'נתי חסמו זמנית את הכתובת שלנו (Host is blocked) — צריך שמנהל ה-DB בצד של נתי יריץ FLUSH HOSTS.'
+      : 'החיבור לנתי מושהה זמנית בגלל כשלי חיבור חוזרים.';
+    throw new NatiBlockedError(`${base} כדי לא להחמיר את החסימה, ננסה שוב בעוד ${retryAfterSec} שניות.`, retryAfterSec, natiCircuit.reason || 'cooldown');
+  }
+
+  let connection;
+  try {
+    connection = await mysql.createConnection(config);
+  } catch (err) {
+    if (isHostBlockedError(err)) {
+      natiCircuit = { blockedUntil: now + NATI_BLOCKED_COOLDOWN_MS, failures: natiCircuit.failures + 1, reason: 'host_blocked' };
+      throw new NatiBlockedError(
+        'נתי חסמו זמנית את הכתובת שלנו (Host is blocked). צריך שמנהל ה-DB בצד של נתי יריץ FLUSH HOSTS. עד אז עוצרים את הניסיונות ל-10 דקות כדי לא להחמיר.',
+        Math.ceil(NATI_BLOCKED_COOLDOWN_MS / 1000),
+        'host_blocked'
+      );
+    }
+    const failures = natiCircuit.failures + 1;
+    natiCircuit = {
+      blockedUntil: failures >= NATI_FAIL_THRESHOLD ? now + NATI_GENERIC_COOLDOWN_MS : 0,
+      failures,
+      reason: failures >= NATI_FAIL_THRESHOLD ? 'connect_failures' : '',
+    };
+    throw err;
+  }
+
+  try {
+    natiCircuit = { blockedUntil: 0, failures: 0, reason: '' };
+    return await fn(connection);
+  } finally {
+    await connection.end().catch(() => {});
+  }
+}
+
+function natiErrorResponse(err) {
+  if (err instanceof NatiBlockedError) {
+    return Response.json(
+      { error: err.message, reason: err.reason, retry_after_seconds: err.retryAfterSec },
+      { status: 503, headers: { 'Retry-After': String(err.retryAfterSec) } }
+    );
+  }
+  if (isHostBlockedError(err)) {
+    return Response.json(
+      { error: 'נתי חסמו זמנית את הכתובת שלנו (Host is blocked). צריך FLUSH HOSTS בצד של נתי.', reason: 'host_blocked' },
+      { status: 503 }
+    );
+  }
+  const message = (err && err.message) || 'שגיאה לא ידועה';
+  return Response.json({ error: message }, { status: 500 });
+}
+// ===== End inline Nati DB layer =====
 
 Deno.serve(async (req) => {
   try {
