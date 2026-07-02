@@ -63,12 +63,12 @@ Deno.serve(async (req) => {
     const statusLabels: Record<string, string> = {
       waiting_treatment: 'ממתין לטיפול',
       awaiting_assignment: 'ממתין לשיבוץ',
-      assigning: 'בתהליך שיבוץ',
+      assigning: 'ספק שובץ',
       vendor_enroute: 'נותן שירות בדרך',
       in_progress: 'בטיפול',
       vendor_arrived: 'נותן שירות הגיע',
       future_service: 'שירות עתידי',
-      completed: 'הושלם',
+      completed: 'סגור',
       cancelled: 'בוטל',
     };
 

@@ -62,6 +62,7 @@ export const PAGES = {
   UserGuide: lazy(() => import('./pages/UserGuide')),
   UserManagement: lazy(() => import('./pages/UserManagement')),
   UserProfile: lazy(() => import('./pages/UserProfile')),
+  CallUsageReport: lazy(() => import('./pages/CallUsageReport')),
   VendorCallManagement: lazy(() => import('./pages/VendorCallManagement')),
   VendorContracts: lazy(() => import('./pages/VendorContracts')),
   VendorDetails: lazy(() => import('./pages/VendorDetails')),

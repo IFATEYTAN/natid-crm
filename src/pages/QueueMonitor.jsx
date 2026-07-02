@@ -505,6 +505,7 @@ export default function QueueMonitor() {
                 data={filteredItems}
                 isLoading={isLoading}
                 emptyMessage="אין קריאות בתור כרגע"
+                pageSize={50}
               />
             </CardContent>
           </Card>

@@ -55,6 +55,7 @@ import {
   Ban,
   CalendarClock,
   Car,
+  RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { toast } from 'sonner';
@@ -171,6 +172,21 @@ export default function CallDetailsPage() {
   };
 
   // Intercept 'completed' status to show pre-close survey message
+  const [reactivating, setReactivating] = useState(false);
+  const handleReactivateCall = async () => {
+    if (!canEdit || reactivating) return;
+    setReactivating(true);
+    try {
+      await base44.functions.invoke('reactivateCall', { call_id: callId });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
+      toast.success('הקריאה הופעלה מחדש — טיימר ההגעה ללקוח אופס');
+    } catch {
+      toast.error('שגיאה בהפעלת הקריאה מחדש');
+    } finally {
+      setReactivating(false);
+    }
+  };
+
   const handleStatusChange = async (newStatus, reason) => {
     if (!canEdit) return;
 
@@ -445,6 +461,21 @@ export default function CallDetailsPage() {
                 ערוך קריאה
               </Button>
             </PermissionGuard>
+
+            {call?.call_status !== 'completed' && call?.call_status !== 'cancelled' && (
+              <PermissionGuard category="calls" permission="edit">
+                <Button
+                  variant="outline"
+                  className="gap-2 h-10 text-sm"
+                  onClick={handleReactivateCall}
+                  disabled={reactivating}
+                  title="לשימוש כשהקריאה נדחתה מסיבת לקוח (למשל צריך אשראי לעירבון או לא נתן יעד פריקה) — מאפס את טיימר ההגעה ללקוח מרגע הלחיצה"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  הפעלת קריאה מחדש
+                </Button>
+              </PermissionGuard>
+            )}
 
             <CallActionsMenu
               call={call}

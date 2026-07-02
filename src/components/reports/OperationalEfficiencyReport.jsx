@@ -2,7 +2,7 @@ import React, { useMemo, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Users, Activity, Phone } from 'lucide-react';
-import { OperatorLoadChart } from '@/components/reports/ReportsCharts';
+import { OperatorLoadChart, OperatorHandlingTimeChart } from '@/components/reports/ReportsCharts';
 
 export default function OperationalEfficiencyReport({ calls }) {
   // Stats calculation
@@ -10,7 +10,7 @@ export default function OperationalEfficiencyReport({ calls }) {
     // Average handling time (creation to closed_at or completed status if we simulate time)
     // Using time_to_completion if available, otherwise estimating
     const completedCalls = calls.filter(
-      (c) => c.call_status === 'completed' && c.time_to_completion
+      (c) => c.call_status === 'completed' && typeof c.time_to_completion === 'number'
     );
     const avgTime =
       completedCalls.reduce((sum, c) => sum + (c.time_to_completion || 0), 0) /
@@ -51,6 +51,24 @@ export default function OperationalEfficiencyReport({ calls }) {
       .map(([name, count]) => ({ name, calls: count }))
       .sort((a, b) => b.calls - a.calls)
       .slice(0, 10); // Top 10
+  }, [calls]);
+
+  // Per-operator average handling time (completed calls only)
+  const operatorHandlingTimeData = useMemo(() => {
+    const byOperator = {};
+    calls
+      .filter((c) => c.call_status === 'completed' && typeof c.time_to_completion === 'number')
+      .forEach((call) => {
+        const operator = call.created_by ? call.created_by.split('@')[0] : 'System';
+        if (!byOperator[operator]) byOperator[operator] = { sum: 0, count: 0 };
+        byOperator[operator].sum += call.time_to_completion;
+        byOperator[operator].count += 1;
+      });
+
+    return Object.entries(byOperator)
+      .map(([name, { sum, count }]) => ({ name, avgMinutes: Math.round(sum / count) }))
+      .sort((a, b) => b.avgMinutes - a.avgMinutes)
+      .slice(0, 10);
   }, [calls]);
 
   return (
@@ -124,13 +142,20 @@ export default function OperationalEfficiencyReport({ calls }) {
           </CardContent>
         </Card>
 
-        {/* We can add another chart here later, e.g., calls by hour of day */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">התפלגות זמני טיפול</CardTitle>
+            <CardTitle className="text-lg">זמן טיפול ממוצע למוקדן</CardTitle>
           </CardHeader>
-          <CardContent className="flex items-center justify-center h-[300px] text-gray-400">
-            בקרוב...
+          <CardContent>
+            {operatorHandlingTimeData.length > 0 ? (
+              <Suspense fallback={<Skeleton className="h-[300px]" />}>
+                <OperatorHandlingTimeChart data={operatorHandlingTimeData} />
+              </Suspense>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-400">
+                אין מספיק נתונים (זמן טיפול) בתקופה זו
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

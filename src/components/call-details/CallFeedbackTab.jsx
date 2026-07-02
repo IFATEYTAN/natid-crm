@@ -2,17 +2,33 @@ import React, { useState } from 'react';
 import { Star, CheckCircle, Send, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
+import { satisfactionLabels, satisfactionColors } from '@/config/satisfaction';
 
 export default function CallFeedbackTab({ call, callId }) {
   const queryClient = useQueryClient();
   const [feedbackToken, setFeedbackToken] = useState(null);
   const [sendingSurvey, setSendingSurvey] = useState(false);
+
+  // Final satisfaction result across all survey attempts (ignores "no
+  // answer" attempts unless every attempt went unanswered — QA audit Group E).
+  const { data: satisfaction } = useQuery({
+    queryKey: queryKeys.callSatisfaction.byCall(callId),
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getCallSatisfaction', { call_id: callId });
+      return res.data?.success ? res.data : null;
+    },
+    enabled: !!callId,
+  });
+
+  const refreshSatisfaction = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.callSatisfaction.byCall(callId) });
 
   const handleSendSurvey = async () => {
     setSendingSurvey(true);
@@ -21,6 +37,7 @@ export default function CallFeedbackTab({ call, callId }) {
       if (response.data?.success) {
         setFeedbackToken(response.data.token);
         toast.success('סקר נשלח ללקוח בהצלחה!');
+        refreshSatisfaction();
       } else {
         toast.error(response.data?.error || 'שגיאה בשליחת הסקר');
       }
@@ -38,6 +55,7 @@ export default function CallFeedbackTab({ call, callId }) {
       if (response.data?.token) {
         setFeedbackToken(response.data.token);
         toast.success('קישור לסקר נוצר בהצלחה');
+        refreshSatisfaction();
       }
     } catch {
       toast.error('שגיאה ביצירת הקישור');
@@ -63,6 +81,16 @@ export default function CallFeedbackTab({ call, callId }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {satisfaction && satisfaction.status !== 'not_sent' && (
+            <div className="flex justify-center mb-3">
+              <Badge
+                variant="outline"
+                className={cn('text-sm', satisfactionColors[satisfaction.status])}
+              >
+                שביעות רצון סופית: {satisfactionLabels[satisfaction.status]}
+              </Badge>
+            </div>
+          )}
           {call?.customer_rating ? (
             <div className="text-center py-4">
               <div className="flex justify-center gap-1 mb-2">

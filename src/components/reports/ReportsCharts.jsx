@@ -129,6 +129,22 @@ export function OperatorLoadChart({ data }) {
   );
 }
 
+export function OperatorHandlingTimeChart({ data }) {
+  return (
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Bar dataKey="avgMinutes" name="דק' טיפול ממוצע" fill="#f97316" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 export function CustomerFrequencyChart({ data }) {
   return (
     <div className="h-[300px]">

@@ -59,6 +59,7 @@ export const PAGE_PERMISSIONS = {
   QueueMonitor: ['admin', 'operator'],
   Reminders: ['admin', 'operator'],
   Reports: ['admin', 'operator'],
+  CallUsageReport: ['admin', 'operator'],
   ServiceProviders: ['admin', 'operator'],
   SpecialCaseForm: ['admin', 'operator'],
   VendorContracts: ['admin', 'operator'],

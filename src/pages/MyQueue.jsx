@@ -37,15 +37,26 @@ export default function MyQueuePage() {
     return allCalls.filter((call) => call.created_by === currentUser.email);
   }, [allCalls, currentUser?.email]);
 
-  const activeCalls = myCalls.filter((c) =>
-    [
-      'waiting_treatment',
-      'awaiting_assignment',
-      'assigning',
-      'vendor_enroute',
-      'in_progress',
-    ].includes(c.call_status)
-  );
+  const activeCalls = useMemo(() => {
+    const priorityRank = { critical: 0, urgent: 1, normal: 2 };
+    return myCalls
+      .filter((c) =>
+        [
+          'waiting_treatment',
+          'awaiting_assignment',
+          'assigning',
+          'vendor_enroute',
+          'in_progress',
+        ].includes(c.call_status)
+      )
+      .sort((a, b) => {
+        const rankDiff =
+          (priorityRank[a.call_priority] ?? 2) - (priorityRank[b.call_priority] ?? 2);
+        if (rankDiff !== 0) return rankDiff;
+        // Within the same priority, oldest waiting call first
+        return new Date(a.created_date) - new Date(b.created_date);
+      });
+  }, [myCalls]);
   const completedCalls = myCalls.filter((c) => ['completed', 'cancelled'].includes(c.call_status));
 
   const stats = useMemo(
@@ -85,7 +96,9 @@ export default function MyQueuePage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#172B4D]">התור שלי</h1>
-          <p className="text-[#6B778C] text-sm">קריאות שנפתחו על ידך</p>
+          <p className="text-[#6B778C] text-sm">
+            קריאות שנפתחו על ידך — הפעילות ממוינות לפי עדיפות (דחוף/קריטי קודם)
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <ColumnSelector
