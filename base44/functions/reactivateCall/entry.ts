@@ -29,6 +29,13 @@ Deno.serve(async (req) => {
     }
     const call = calls[0];
 
+    if (['completed', 'cancelled'].includes(call.call_status)) {
+      return Response.json(
+        { error: 'לא ניתן להפעיל מחדש קריאה סגורה/מבוטלת' },
+        { status: 409 }
+      );
+    }
+
     const reactivatedAt = new Date().toISOString();
     await base44.asServiceRole.entities.Call.update(call_id, { reactivated_at: reactivatedAt });
 

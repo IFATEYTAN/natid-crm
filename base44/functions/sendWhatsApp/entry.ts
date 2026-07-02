@@ -241,7 +241,7 @@ Deno.serve(async (req) => {
       message,
       scheduled_time,
       cancel_reason,
-      phone,
+      phone: document_target_phone,
       email,
       document_url,
       document_name,
@@ -357,7 +357,7 @@ Deno.serve(async (req) => {
 
     // ── 5b. Document via WhatsApp (Send Document dialog, call-files tab) ──
     else if (type === 'document') {
-      const targetPhone = phone || vendor_phone || (call?.customer_phone as string);
+      const targetPhone = document_target_phone || vendor_phone || (call?.customer_phone as string);
       if (!targetPhone) return Response.json({ error: 'phone required' }, { status: 400 });
       if (!document_url) return Response.json({ error: 'document_url required' }, { status: 400 });
 
@@ -395,7 +395,7 @@ Deno.serve(async (req) => {
           subject: `מסמך מצורף${call_number ? ` — קריאה ${call_number}` : ''}`,
           body: `
             <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right;">
-              <h2>מסמך מצורף</h2>
+              <h2 style="color: #FF0000;">מסמך מצורף</h2>
               <p>${customer_name ? `שלום ${customer_name},` : 'שלום,'}</p>
               <p>מצורף אליך מסמך מ"נתיב שירותי דרך"${call_number ? ` בנוגע לקריאה ${call_number}` : ''}:</p>
               <p><a href="${document_url}" target="_blank">${document_name || 'לחץ/י כאן לצפייה במסמך'}</a></p>

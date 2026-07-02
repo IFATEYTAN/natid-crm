@@ -185,6 +185,11 @@ export const queryKeys = {
     callsPage: () => ['calls-report'],
     ratingsPage: () => ['ratings-report'],
     paymentsPage: () => ['payments-report'],
+    usageReport: (from, to) => ['reports', 'usage-report', from, to],
+  },
+
+  callSatisfaction: {
+    byCall: (callId) => ['call-satisfaction', callId],
   },
 
   // Service Providers (legacy/alias)

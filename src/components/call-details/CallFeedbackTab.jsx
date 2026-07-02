@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Star, CheckCircle, Send, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
 import { satisfactionLabels, satisfactionColors } from '@/config/satisfaction';
@@ -15,23 +15,20 @@ export default function CallFeedbackTab({ call, callId }) {
   const queryClient = useQueryClient();
   const [feedbackToken, setFeedbackToken] = useState(null);
   const [sendingSurvey, setSendingSurvey] = useState(false);
-  const [satisfaction, setSatisfaction] = useState(null);
 
   // Final satisfaction result across all survey attempts (ignores "no
   // answer" attempts unless every attempt went unanswered — QA audit Group E).
-  useEffect(() => {
-    if (!callId) return;
-    let cancelled = false;
-    base44.functions
-      .invoke('getCallSatisfaction', { call_id: callId })
-      .then((res) => {
-        if (!cancelled && res.data?.success) setSatisfaction(res.data);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [callId, call?.customer_rating]);
+  const { data: satisfaction } = useQuery({
+    queryKey: queryKeys.callSatisfaction.byCall(callId),
+    queryFn: async () => {
+      const res = await base44.functions.invoke('getCallSatisfaction', { call_id: callId });
+      return res.data?.success ? res.data : null;
+    },
+    enabled: !!callId,
+  });
+
+  const refreshSatisfaction = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.callSatisfaction.byCall(callId) });
 
   const handleSendSurvey = async () => {
     setSendingSurvey(true);
@@ -40,6 +37,7 @@ export default function CallFeedbackTab({ call, callId }) {
       if (response.data?.success) {
         setFeedbackToken(response.data.token);
         toast.success('סקר נשלח ללקוח בהצלחה!');
+        refreshSatisfaction();
       } else {
         toast.error(response.data?.error || 'שגיאה בשליחת הסקר');
       }
@@ -57,6 +55,7 @@ export default function CallFeedbackTab({ call, callId }) {
       if (response.data?.token) {
         setFeedbackToken(response.data.token);
         toast.success('קישור לסקר נוצר בהצלחה');
+        refreshSatisfaction();
       }
     } catch {
       toast.error('שגיאה ביצירת הקישור');

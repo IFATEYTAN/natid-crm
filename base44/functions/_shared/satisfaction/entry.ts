@@ -50,9 +50,10 @@ export function computeCallSatisfaction(tokens: FeedbackTokenLike[]): CallSatisf
 
   if (answered.length > 0) {
     const last = answered[0];
+    const color = ratingToColor(last.rating as number);
     return {
-      status: ratingToColor(last.rating as number),
-      color: ratingToColor(last.rating as number),
+      status: color,
+      color,
       rating: last.rating as number,
       answered_at: last.used_at || null,
     };

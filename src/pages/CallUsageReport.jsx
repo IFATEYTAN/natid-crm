@@ -13,6 +13,7 @@ import ExportMenu from '@/components/ui/ExportMenu';
 import { RefreshCw } from 'lucide-react';
 import { statusLabels, issueTypeLabels } from '@/config/labels';
 import { satisfactionLabels, satisfactionColors } from '@/config/satisfaction';
+import { queryKeys } from '@/lib/queryKeys';
 import { cn } from '@/lib/utils';
 
 const todayStr = () => format(new Date(), 'yyyy-MM-dd');
@@ -70,12 +71,12 @@ const COLUMNS = [
   },
 ];
 
-export default function UsageReport() {
+export default function CallUsageReport() {
   const [from, setFrom] = useState(monthAgoStr());
   const [to, setTo] = useState(todayStr());
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: ['usage-report', from, to],
+    queryKey: queryKeys.reports.usageReport(from, to),
     queryFn: () =>
       base44.functions.invoke('getUsageReport', {
         from: new Date(from).toISOString(),

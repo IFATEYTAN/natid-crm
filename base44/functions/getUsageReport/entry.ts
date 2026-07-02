@@ -1,6 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { computeCallSatisfaction } from './_shared/satisfaction.ts';
 
+const ISRAEL_TZ = 'Asia/Jerusalem';
+
+// created_date is stored/queried in UTC; splitting the raw ISO string
+// (slice(0,10)/slice(11,16)) is wrong by 2-3 hours and can show the wrong
+// calendar day near midnight. Format in Israel local time instead.
+function splitLocalDateTime(isoString: string): { date: string; time: string } {
+  const d = new Date(isoString);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: ISRAEL_TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || '';
+  return {
+    date: `${get('year')}-${get('month')}-${get('day')}`,
+    time: `${get('hour')}:${get('minute')}`,
+  };
+}
+
 /**
  * QA audit Group C (#109) — usage report with 17+ columns, one row per call
  * regardless of how many vendors touched it (built directly off Call, which
@@ -93,8 +116,8 @@ Deno.serve(async (req) => {
         service_type: call.service_category || call.dispatch_type || null,
         reported_issue: call.issue_description || call.issue_type || null,
         vendor_count: vendorCount,
-        report_date: call.created_date ? call.created_date.slice(0, 10) : null,
-        report_time: call.created_date ? call.created_date.slice(11, 16) : null,
+        report_date: call.created_date ? splitLocalDateTime(call.created_date).date : null,
+        report_time: call.created_date ? splitLocalDateTime(call.created_date).time : null,
         status: call.call_status,
         taken_by: call.created_by || null,
         call_number: call.call_number || null,

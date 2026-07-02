@@ -267,7 +267,7 @@ function LayoutContent({ children, currentPageName }) {
       title: 'ניהול ונתונים',
       items: [
         { name: 'דוחות', href: 'Reports' },
-        { name: 'דוח שימושים', href: 'UsageReport' },
+        { name: 'דוח שימושים', href: 'CallUsageReport' },
         { name: 'ניתוח נתונים היסטוריים', href: 'HistoricalDataAnalysis' },
         { name: 'ייצוא מתקדם', href: 'AdvancedExport' },
         { name: 'לקוחות', href: 'Customers' },

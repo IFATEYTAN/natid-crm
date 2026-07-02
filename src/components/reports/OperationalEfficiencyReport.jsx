@@ -10,7 +10,7 @@ export default function OperationalEfficiencyReport({ calls }) {
     // Average handling time (creation to closed_at or completed status if we simulate time)
     // Using time_to_completion if available, otherwise estimating
     const completedCalls = calls.filter(
-      (c) => c.call_status === 'completed' && c.time_to_completion
+      (c) => c.call_status === 'completed' && typeof c.time_to_completion === 'number'
     );
     const avgTime =
       completedCalls.reduce((sum, c) => sum + (c.time_to_completion || 0), 0) /
@@ -57,7 +57,7 @@ export default function OperationalEfficiencyReport({ calls }) {
   const operatorHandlingTimeData = useMemo(() => {
     const byOperator = {};
     calls
-      .filter((c) => c.call_status === 'completed' && c.time_to_completion)
+      .filter((c) => c.call_status === 'completed' && typeof c.time_to_completion === 'number')
       .forEach((call) => {
         const operator = call.created_by ? call.created_by.split('@')[0] : 'System';
         if (!byOperator[operator]) byOperator[operator] = { sum: 0, count: 0 };

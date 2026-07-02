@@ -51,13 +51,17 @@ export default function DataTable({
 }) {
   const [page, setPage] = useState(1);
   const totalPages = pageSize ? Math.max(1, Math.ceil((data?.length || 0) / pageSize)) : 1;
+  // Clamp for rendering — if a filter/refetch shrinks the dataset below the
+  // stored page, fall back to the last valid page instead of an empty one.
+  // Deliberately NOT reset on every data-length change (e.g. live polling
+  // adding/removing a row): that would bump a user reading page 3 back to
+  // page 1 on every refetch.
   const currentPage = Math.min(page, totalPages);
 
-  // Reset to page 1 whenever the underlying dataset shrinks/changes shape
-  // (e.g. a filter is applied) so we don't land on a now-empty page.
+  // Only reset when pagination itself is (de)activated for this table.
   useEffect(() => {
-    if (pageSize) setPage(1);
-  }, [pageSize, data?.length]);
+    setPage(1);
+  }, [pageSize]);
 
   const pagedData = useMemo(() => {
     if (!pageSize || !data) return data;

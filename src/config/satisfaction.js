@@ -21,9 +21,3 @@ export const satisfactionColors = {
   pending: 'bg-blue-100 text-blue-700 border-blue-300',
   not_sent: 'bg-gray-100 text-gray-500 border-gray-300',
 };
-
-export function ratingToSatisfactionColor(rating) {
-  if (rating >= 4) return 'green';
-  if (rating === 3) return 'yellow';
-  return 'red';
-}
