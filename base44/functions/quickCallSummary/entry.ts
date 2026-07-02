@@ -37,8 +37,8 @@ Deno.serve(async (req) => {
 
     const statusLabels = {
       waiting_treatment: 'ממתין לטיפול', awaiting_assignment: 'ממתין לשיוך',
-      assigning: 'בשיוך', vendor_enroute: 'ספק בדרך', in_progress: 'בטיפול',
-      completed: 'הושלם', cancelled: 'בוטל'
+      assigning: 'ספק שובץ', vendor_enroute: 'ספק בדרך', in_progress: 'בטיפול',
+      completed: 'סגור', cancelled: 'בוטל'
     };
 
     let durationMinutes = null;

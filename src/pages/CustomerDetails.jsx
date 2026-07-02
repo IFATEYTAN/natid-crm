@@ -105,7 +105,7 @@ export default function CustomerDetails() {
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-[#6b7280]" />
               <a
-                className="text-blue-600 hover:underline tabular-nums"
+                className="text-blue-600 hover:underline tabular-nums text-right"
                 dir="ltr"
                 href={`tel:${customer.phone || ''}`}
               >
