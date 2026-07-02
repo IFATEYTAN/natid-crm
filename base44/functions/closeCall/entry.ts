@@ -104,12 +104,33 @@ Deno.serve(async (req) => {
     // AI summary + satisfaction-survey SMS for completed calls (best-effort).
     // The legacy CallDetails status-change path already sends the survey on
     // 'completed'; this closing-status path bypassed it entirely (D-09).
+    //
+    // sendFeedbackSMS itself hard-gates to admin/operator callers, but
+    // closeCall is also legitimately called by vendors/agents closing their
+    // own assigned call (see the ownership check above) — invoking
+    // sendFeedbackSMS with the original caller's auth would 403 in exactly
+    // that scenario. Replicate its (small, non-role-gated) token+SMS steps
+    // directly via service role instead of routing through its HTTP handler.
     if (cfg.resultingStatus === 'completed') {
       base44.functions.invoke('generateCallSummary', { call_id: call.id }).catch(() => {});
       if (call.customer_phone) {
-        base44.functions.invoke('sendFeedbackSMS', { call_id: call.id }).catch((e) => {
-          console.error('closeCall: feedback survey SMS failed', e);
-        });
+        (async () => {
+          try {
+            const tokenResponse = await base44.asServiceRole.functions.invoke('createFeedbackToken', {
+              call_id: call.id,
+            });
+            const token = tokenResponse.data?.token;
+            if (!token) return;
+            const feedbackUrl = `https://app.base44.com/a/6955a04a2de0845ff4cb8a71/CustomerFeedback?token=${token}`;
+            const smsMessage = `שלום ${call.customer_name?.split(' ')[0] || 'לקוח יקר'}, תודה שבחרת בנתי! נשמח אם תדרג את השירות שקיבלת: ${feedbackUrl}`;
+            await base44.asServiceRole.functions.invoke('sendSMS', {
+              phone: call.customer_phone,
+              message: smsMessage,
+            });
+          } catch (e) {
+            console.error('closeCall: feedback survey SMS failed', e);
+          }
+        })();
       }
     }
 
