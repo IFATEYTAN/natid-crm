@@ -101,9 +101,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    // AI summary for completed calls (best-effort)
+    // AI summary + satisfaction-survey SMS for completed calls (best-effort).
+    // The legacy CallDetails status-change path already sends the survey on
+    // 'completed'; this closing-status path bypassed it entirely (D-09).
     if (cfg.resultingStatus === 'completed') {
       base44.functions.invoke('generateCallSummary', { call_id: call.id }).catch(() => {});
+      if (call.customer_phone) {
+        base44.functions.invoke('sendFeedbackSMS', { call_id: call.id }).catch((e) => {
+          console.error('closeCall: feedback survey SMS failed', e);
+        });
+      }
     }
 
     // Linked continuation call for failure / extraction outcomes

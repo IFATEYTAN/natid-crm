@@ -33,7 +33,11 @@ const limiter = createRateLimiter(kv);
  * Send via Twilio WhatsApp API
  * Requires: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM
  */
-async function sendViaTwilio(to: string, body: string): Promise<{ ok: boolean; error?: string }> {
+async function sendViaTwilio(
+  to: string,
+  body: string,
+  mediaUrl?: string
+): Promise<{ ok: boolean; error?: string }> {
   const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
   const from = Deno.env.get('TWILIO_WHATSAPP_NUMBER') || Deno.env.get('TWILIO_WHATSAPP_FROM') || 'whatsapp:+14155238886';
@@ -53,6 +57,7 @@ async function sendViaTwilio(to: string, body: string): Promise<{ ok: boolean; e
   formData.append('To', toWhatsApp);
   formData.append('From', from);
   formData.append('Body', body);
+  if (mediaUrl) formData.append('MediaUrl', mediaUrl);
 
   const res = await fetch(url, {
     method: 'POST',
@@ -120,7 +125,8 @@ async function sendViaGreenAPI(
 async function sendWhatsAppMessage(
   to: string,
   body: string,
-  isGroup = false
+  isGroup = false,
+  mediaUrl?: string
 ): Promise<{ ok: boolean; provider?: string; error?: string }> {
   // For groups, use Green API (Twilio doesn't support group messages)
   if (isGroup) {
@@ -129,8 +135,13 @@ async function sendWhatsAppMessage(
   }
 
   // Try Twilio first
-  const twilioResult = await sendViaTwilio(to, body);
+  const twilioResult = await sendViaTwilio(to, body, mediaUrl);
   if (twilioResult.ok) return { ok: true, provider: 'twilio' };
+
+  // Document sends require Twilio's MediaUrl support — Green API uses a
+  // different (file-upload) endpoint we don't implement, so don't silently
+  // fall back to a text-only message that omits the attachment.
+  if (mediaUrl) return { ok: false, provider: 'twilio', error: twilioResult.error };
 
   // Fallback to Green API
   console.log('Twilio failed, trying Green API:', twilioResult.error);
@@ -222,7 +233,21 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { type, call_id, vendor_phone, group_id, message, scheduled_time, cancel_reason } = body;
+    const {
+      type,
+      call_id,
+      vendor_phone,
+      group_id,
+      message,
+      scheduled_time,
+      cancel_reason,
+      phone,
+      email,
+      document_url,
+      document_name,
+      call_number,
+      customer_name,
+    } = body;
 
     if (!type) {
       return Response.json({ error: 'Missing type' }, { status: 400 });
@@ -327,6 +352,72 @@ Deno.serve(async (req) => {
           notes: `הודעת הרגעה WhatsApp נשלחה ללקוח ${phone}`,
           changed_by: user.full_name || user.email,
         }).catch(() => {});
+      }
+    }
+
+    // ── 5b. Document via WhatsApp (Send Document dialog, call-files tab) ──
+    else if (type === 'document') {
+      const targetPhone = phone || vendor_phone || (call?.customer_phone as string);
+      if (!targetPhone) return Response.json({ error: 'phone required' }, { status: 400 });
+      if (!document_url) return Response.json({ error: 'document_url required' }, { status: 400 });
+
+      const msg = [
+        `📎 *מסמך מצורף — נתיב שירותי דרך*`,
+        (call_number || call?.call_number) ? `מספר קריאה: ${call_number || call?.call_number}` : '',
+        `קובץ: ${document_name || 'מסמך'}`,
+      ]
+        .filter((l) => l !== '')
+        .join('\n');
+
+      const result = await sendWhatsAppMessage(targetPhone, msg, false, document_url);
+      results.push({ target: targetPhone, ...result });
+
+      if (call_id && result.ok) {
+        await base44.entities.CallHistory.create({
+          call_id,
+          call_number: call?.call_number,
+          change_type: 'whatsapp_sent',
+          new_value: 'document_sent',
+          notes: `מסמך "${document_name || ''}" נשלח ב-WhatsApp ל-${targetPhone}`,
+          changed_by: user.full_name || user.email,
+        }).catch(() => {});
+      }
+    }
+
+    // ── 5c. Document via email (Send Document dialog, call-files tab) ─────
+    else if (type === 'email_document') {
+      if (!email) return Response.json({ error: 'email required' }, { status: 400 });
+      if (!document_url) return Response.json({ error: 'document_url required' }, { status: 400 });
+
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: email,
+          subject: `מסמך מצורף${call_number ? ` — קריאה ${call_number}` : ''}`,
+          body: `
+            <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right;">
+              <h2>מסמך מצורף</h2>
+              <p>${customer_name ? `שלום ${customer_name},` : 'שלום,'}</p>
+              <p>מצורף אליך מסמך מ"נתיב שירותי דרך"${call_number ? ` בנוגע לקריאה ${call_number}` : ''}:</p>
+              <p><a href="${document_url}" target="_blank">${document_name || 'לחץ/י כאן לצפייה במסמך'}</a></p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+              <p style="color: #666; font-size: 12px;">הודעה זו נשלחה ממערכת נתיב - שירותי דרך</p>
+            </div>
+          `,
+        });
+        results.push({ target: email, ok: true });
+
+        if (call_id) {
+          await base44.entities.CallHistory.create({
+            call_id,
+            call_number: call?.call_number,
+            change_type: 'email_sent',
+            new_value: 'document_sent',
+            notes: `מסמך "${document_name || ''}" נשלח במייל ל-${email}`,
+            changed_by: user.full_name || user.email,
+          }).catch(() => {});
+        }
+      } catch (emailError) {
+        results.push({ target: email, ok: false, error: (emailError as Error)?.message });
       }
     }
 
