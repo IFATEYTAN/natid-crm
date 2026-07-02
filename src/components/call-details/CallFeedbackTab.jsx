@@ -1,18 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, CheckCircle, Send, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import CallFeedbackForm from '@/components/feedback/CallFeedbackForm';
+import { satisfactionLabels, satisfactionColors } from '@/config/satisfaction';
 
 export default function CallFeedbackTab({ call, callId }) {
   const queryClient = useQueryClient();
   const [feedbackToken, setFeedbackToken] = useState(null);
   const [sendingSurvey, setSendingSurvey] = useState(false);
+  const [satisfaction, setSatisfaction] = useState(null);
+
+  // Final satisfaction result across all survey attempts (ignores "no
+  // answer" attempts unless every attempt went unanswered — QA audit Group E).
+  useEffect(() => {
+    if (!callId) return;
+    let cancelled = false;
+    base44.functions
+      .invoke('getCallSatisfaction', { call_id: callId })
+      .then((res) => {
+        if (!cancelled && res.data?.success) setSatisfaction(res.data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [callId, call?.customer_rating]);
 
   const handleSendSurvey = async () => {
     setSendingSurvey(true);
@@ -63,6 +82,16 @@ export default function CallFeedbackTab({ call, callId }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {satisfaction && satisfaction.status !== 'not_sent' && (
+            <div className="flex justify-center mb-3">
+              <Badge
+                variant="outline"
+                className={cn('text-sm', satisfactionColors[satisfaction.status])}
+              >
+                שביעות רצון סופית: {satisfactionLabels[satisfaction.status]}
+              </Badge>
+            </div>
+          )}
           {call?.customer_rating ? (
             <div className="text-center py-4">
               <div className="flex justify-center gap-1 mb-2">
