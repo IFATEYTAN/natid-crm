@@ -1110,6 +1110,7 @@ function CasesList({ department }) {
         onRowClick={handleRowDoubleClick}
         rowColorField="status"
         emptyMessage="לא נמצאו פניות במחלקה זו"
+        pageSize={50}
       />
     </div>
   );

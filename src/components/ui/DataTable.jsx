@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -9,7 +9,8 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { Inbox, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Inbox, ChevronRight, ChevronLeft } from 'lucide-react';
 import EmptyState from './EmptyState';
 
 // Status-based row coloring map
@@ -36,6 +37,10 @@ export default function DataTable({
   emptyPreset,
   onEmptyAction,
   rowColorField = null,
+  // Opt-in client-side pagination — for screens rendering dozens/hundreds of
+  // rows at once (e.g. queue monitors), this keeps the DOM small instead of
+  // rendering the entire dataset in one long scrollable table.
+  pageSize = null,
   // Mobile card configuration
   mobileCardConfig = {
     titleAccessor: null, // Which field to show as card title
@@ -44,6 +49,22 @@ export default function DataTable({
     showFields: [], // Which columns to show in card body (by accessor)
   },
 }) {
+  const [page, setPage] = useState(1);
+  const totalPages = pageSize ? Math.max(1, Math.ceil((data?.length || 0) / pageSize)) : 1;
+  const currentPage = Math.min(page, totalPages);
+
+  // Reset to page 1 whenever the underlying dataset shrinks/changes shape
+  // (e.g. a filter is applied) so we don't land on a now-empty page.
+  useEffect(() => {
+    if (pageSize) setPage(1);
+  }, [pageSize, data?.length]);
+
+  const pagedData = useMemo(() => {
+    if (!pageSize || !data) return data;
+    return data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [data, pageSize, currentPage]);
+
+  const visibleData = pageSize ? pagedData : data;
   // Loading state - Desktop skeleton
   const LoadingSkeleton = () => (
     <>
@@ -126,7 +147,7 @@ export default function DataTable({
     <>
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3" dir="rtl">
-        {data.map((row, rowIdx) => {
+        {visibleData.map((row, rowIdx) => {
           const mobileStatusColor =
             rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
           return (
@@ -216,7 +237,7 @@ export default function DataTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row, rowIdx) => {
+            {visibleData.map((row, rowIdx) => {
               const rowStatusColor =
                 rowColorField && row[rowColorField] ? statusRowColors[row[rowColorField]] : '';
               return (
@@ -239,6 +260,38 @@ export default function DataTable({
           </TableBody>
         </table>
       </div>
+
+      {pageSize && totalPages > 1 && (
+        <div className="flex items-center justify-between gap-2 py-3 px-1 text-sm text-neutral-soft-600">
+          <span>
+            מציג {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, data.length)}{' '}
+            מתוך {data.length}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronRight className="w-4 h-4" />
+              הקודם
+            </Button>
+            <span className="tabular-nums">
+              {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              הבא
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
