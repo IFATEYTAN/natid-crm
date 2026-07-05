@@ -73,36 +73,49 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2. Unassigned calls > 15 minutes
-    const unassignedCalls = await client.entities.Case.filter({ 
-      status: 'new',
-      assigned_provider_id: null 
-    });
+    // 2. Unassigned calls > 15 minutes. Bounded + sorted so this can't pull an
+    // unbounded table. Consolidated into ONE alert (instead of one per call) so
+    // a real backlog (e.g. from the Nati sync) doesn't spam every admin/operator
+    // with a notification per stale call.
+    const unassignedCalls = await client.entities.Case.filter(
+      { status: 'new', assigned_provider_id: null },
+      '-created_date',
+      500
+    );
 
-    for (const call of unassignedCalls) {
-      const created = new Date(call.created_date);
-      const minutes = differenceInMinutes(now, created);
-      if (minutes > 15) {
-        notifications.push({
-          title: 'קריאה ללא שיבוץ',
-          message: `קריאה ${call.case_number || call.id.substring(0,8)} ממתינה לשיבוץ כבר ${minutes} דקות`,
-          type: 'smart_alert',
-          link: `/CallDetails?id=${call.id}`,
-          related_entity_id: call.id,
-          related_entity_type: 'case'
-        });
-      }
+    const staleUnassigned = unassignedCalls
+      .map((call) => ({ call, minutes: differenceInMinutes(now, new Date(call.created_date)) }))
+      .filter(({ minutes }) => minutes > 15);
+
+    if (staleUnassigned.length === 1) {
+      const { call, minutes } = staleUnassigned[0];
+      notifications.push({
+        title: 'קריאה ללא שיבוץ',
+        message: `קריאה ${call.case_number || call.id.substring(0,8)} ממתינה לשיבוץ כבר ${minutes} דקות`,
+        type: 'smart_alert',
+        link: `/CallDetails?id=${call.id}`,
+        related_entity_id: call.id,
+        related_entity_type: 'case'
+      });
+    } else if (staleUnassigned.length > 1) {
+      const oldest = staleUnassigned.reduce((a, b) => (b.minutes > a.minutes ? b : a));
+      notifications.push({
+        title: 'קריאות ללא שיבוץ',
+        message: `${staleUnassigned.length} קריאות ממתינות לשיבוץ מעל 15 דקות (הישנה ביותר: ${oldest.minutes} דקות)`,
+        type: 'smart_alert',
+        link: `/Calls?status=awaiting_assignment`,
+        related_entity_id: 'unassigned_backlog',
+        related_entity_type: 'case'
+      });
     }
 
-    // 3. High rejection rate (last 24h)
+    // 3. High rejection rate (last 24h). Bounded + sorted by recency since the
+    // SDK filter doesn't support date-range queries — we still filter the 24h
+    // window in memory, but capped at the most recent 2000 attempts instead of
+    // the whole table.
     const oneDayAgo = subHours(now, 24).toISOString();
-    // Fetch attempts manually since we can't do complex aggregation easily via simple SDK yet
-    // filtering by created_date might need check if supported, assuming filter works or we fetch all and filter
-    const attempts = await client.entities.CallAssignmentAttempt.filter({
-      // simple filter, if date filtering not supported, we filter in memory (assuming not huge volume for now)
-      // optimization: limit or sort
-    });
-    
+    const attempts = await client.entities.CallAssignmentAttempt.filter({}, '-created_date', 2000);
+
     const attemptsLast24h = attempts.filter(a => a.created_date >= oneDayAgo);
     const vendorStats = {};
     
@@ -135,9 +148,11 @@ Deno.serve(async (req) => {
     }
 
     // 4. SLA Breach Risk (< 30 mins left)
-    const activeCalls = await client.entities.Case.filter({ 
-      status: { $in: ['new', 'assigned', 'en_route'] } 
-    });
+    const activeCalls = await client.entities.Case.filter(
+      { status: { $in: ['new', 'assigned', 'en_route'] } },
+      '-created_date',
+      500
+    );
 
     for (const call of activeCalls) {
       if (call.sla_arrival_deadline && !call.sla_arrival_met) {
@@ -159,11 +174,12 @@ Deno.serve(async (req) => {
     // 5. High Average Completion Time
     // Calculate global average for last week? Or just use static threshold for now as simpler start
     // Let's compare vendor vs global average for completed calls in last 24h
-    const completedCalls = await client.entities.Case.filter({ 
-      status: 'completed'
-      // filter date in memory
-    });
-    
+    const completedCalls = await client.entities.Case.filter(
+      { status: 'completed' },
+      '-completed_at',
+      500
+    );
+
     const completedLast24h = completedCalls.filter(c => c.completed_at >= oneDayAgo);
     
     if (completedLast24h.length > 10) {
@@ -197,38 +213,48 @@ Deno.serve(async (req) => {
         }
     }
 
-    // Deduplicate and send
-    // Simple deduplication: Check if similar notification exists for today?
-    // For MVP, just send. But try to avoid spamming every run.
-    // Maybe check if smart_alert for same related_entity_id exists in last 1 hour?
-    
-    const recentAlerts = await client.entities.Notification.filter({
-        type: 'smart_alert',
-        // filter by date later
-    });
-    const recentAlertsMap = new Set(recentAlerts.filter(n => 
+    // Deduplicate: skip alerts that already fired for the same entity+title in
+    // the last hour. Bounded + sorted (only the last hour's worth is ever
+    // relevant) instead of scanning the whole Notification table.
+    const recentAlerts = await client.entities.Notification.filter(
+        { type: 'smart_alert' },
+        '-created_date',
+        500
+    );
+    const recentAlertsMap = new Set(recentAlerts.filter(n =>
         new Date(n.created_date) > subHours(now, 1) // last hour
     ).map(n => `${n.related_entity_id}_${n.title}`));
 
+    // Spam guard: cap how many distinct alerts a single run can create. The
+    // per-scenario consolidation above (one alert for the whole unassigned-calls
+    // backlog, rather than one per call) already does most of the work; this cap
+    // is a backstop against any scenario producing a burst of distinct alerts.
+    const MAX_ALERTS_PER_RUN = 10;
+
     let createdCount = 0;
+    let skippedForCap = 0;
     for (const notif of notifications) {
         const key = `${notif.related_entity_id}_${notif.title}`;
-        if (!recentAlertsMap.has(key)) {
-            // Notify all admins and operators
-            for (const recipient of notifyUsers) {
-                await client.entities.Notification.create({
-                    ...notif,
-                    user_id: recipient.id
-                });
-            }
-            createdCount++;
+        if (recentAlertsMap.has(key)) continue;
+        if (createdCount >= MAX_ALERTS_PER_RUN) { skippedForCap++; continue; }
+        // Notify all admins and operators
+        for (const recipient of notifyUsers) {
+            await client.entities.Notification.create({
+                ...notif,
+                user_id: recipient.id
+            });
         }
+        createdCount++;
+    }
+    if (skippedForCap > 0) {
+      console.log(`[SMART_ALERTS] Capped run at ${MAX_ALERTS_PER_RUN} alerts, skipped ${skippedForCap} more`);
     }
 
-    return Response.json({ success: true, alerts_created: createdCount });
+    return Response.json({ success: true, alerts_created: createdCount, alerts_skipped_cap: skippedForCap });
 
   } catch (error) {
     console.error('Smart alerts error:', error);
-    return Response.json({ error: 'Failed to detect alerts' }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return Response.json({ error: message }, { status: 500 });
   }
 });

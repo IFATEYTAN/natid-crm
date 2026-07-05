@@ -582,14 +582,33 @@ Deno.serve(async (req) => {
 
     console.log(`[SYNC] Got ${allAppeals.length} open appeals from Nati DB`);
 
+    const sdk = base44.asServiceRole;
+
+    // Backlog priority: appeals not yet in the CRM (by call_number) go first, so
+    // an old backlog of open Nati appeals actually drains over successive runs
+    // instead of the same "30 newest/updated" appeals being reprocessed forever.
+    // Then appeals Nati marked as updated, then most recently added.
+    let existingCallRows = [];
+    try {
+      existingCallRows = await sdk.entities.Call.filter({});
+    } catch (e) {
+      console.error('[SYNC] Failed to load existing calls for backlog prioritization:', e.message);
+    }
+    const existingCallNumbers = new Set(
+      existingCallRows.filter((c) => c.call_number).map((c) => c.call_number)
+    );
+
     const MAX_PER_RUN = 30;
     const sorted = [...allAppeals].sort((a, b) => {
+      const aIsNew = !existingCallNumbers.has(String(a.id));
+      const bIsNew = !existingCallNumbers.has(String(b.id));
+      if (aIsNew !== bIsNew) return aIsNew ? -1 : 1;
       if (a.has_updated === 1 && b.has_updated !== 1) return -1;
       if (b.has_updated === 1 && a.has_updated !== 1) return 1;
       return new Date(b.date_added || 0) - new Date(a.date_added || 0);
     });
     const appeals = sorted.slice(0, MAX_PER_RUN);
-    console.log(`[SYNC] Processing ${appeals.length} of ${allAppeals.length} (prioritized updated/recent)`);
+    console.log(`[SYNC] Processing ${appeals.length} of ${allAppeals.length} (prioritized new/updated/recent)`);
 
     if (dry_run) {
       return Response.json({
@@ -603,16 +622,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const sdk = base44.asServiceRole;
     const results = {};
 
     console.log('[SYNC] Loading existing records...');
-    const [existingVendors, existingCustomers, existingCalls, existingCases] = await Promise.all([
+    const [existingVendors, existingCustomers, existingCases] = await Promise.all([
       sync_vendors ? sdk.entities.Vendor.filter({}) : [],
       sync_customers ? sdk.entities.Customer.filter({}) : [],
-      sync_calls ? sdk.entities.Call.filter({}) : [],
       sync_cases ? sdk.entities.Case.filter({}) : [],
     ]);
+    // Reuse the fetch done above for backlog prioritization instead of querying Call twice.
+    const existingCalls = sync_calls ? existingCallRows : [];
 
     // Build vendor lookups by both stable supplier id (preferred) and by name
     // (fallback for legacy rows that pre-date the supplier_id mapping). Looking
