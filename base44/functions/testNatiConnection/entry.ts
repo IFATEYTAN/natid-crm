@@ -57,9 +57,12 @@ async function withNatiConnection(fn, opts = {}) {
     password: Deno.env.get('NATID_DB_PASSWORD'),
     database: Deno.env.get('NATID_DB_NAME'),
     connectTimeout: NATI_CONNECT_TIMEOUT_MS,
-    // RDS presents an Amazon-RDS-CA cert Deno doesn't trust; still TLS-encrypted.
-    ssl: { rejectUnauthorized: false },
   };
+  // Deno's TLS layer ignores rejectUnauthorized:false and always validates the
+  // peer cert (UnknownIssuer). ssl_mode lets us pick: 'off' (plain TCP) or
+  // 'insecure' (TLS, best-effort skip validation).
+  if (opts.sslMode === 'insecure') config.ssl = { rejectUnauthorized: false };
+  if (opts.noDb) delete config.database;
   if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
 
   const now = Date.now();
@@ -110,7 +113,11 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
   }
 
+  const body = await req.json().catch(() => ({}));
+  const sslMode = body.ssl_mode === 'insecure' ? 'insecure' : 'off';
+
   const results: Record<string, unknown> = {
+    ssl_mode: sslMode,
     config: {
       host: Deno.env.get('NATID_DB_HOST'),
       port: parseInt(Deno.env.get('NATID_DB_PORT') || '3306'),
@@ -121,11 +128,13 @@ Deno.serve(async (req) => {
   };
 
   try {
+    const noDb = body.no_db === true;
     const data = await withNatiConnection(async (connection) => {
       const [ping] = await connection.query('SELECT 1 as test, NOW() as server_time');
-      const [tables] = await connection.query('SHOW TABLES');
+      const listSql = noDb ? 'SHOW DATABASES' : 'SHOW TABLES';
+      const [tables] = await connection.query(listSql);
       return { ping: ping[0], tables: tables.map((t) => Object.values(t)[0]) };
-    });
+    }, { sslMode, noDb, force: body.force === true });
     results.test1_ssl = { status: 'OK', data: data.ping };
     results.test3_tables = { status: 'OK', tables: data.tables };
   } catch (e) {
