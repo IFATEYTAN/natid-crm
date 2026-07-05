@@ -1,6 +1,6 @@
 /**
  * testNatiConnection — Tests direct MySQL connection to Natid DB
- * Admin only. Returns connection diagnostics + sample table list.
+ * Admin only. Returns connection diagnostics + sample table list. (redeploy touch)
  *
  * Uses a SINGLE connection (via ./_shared/natiDb.ts) for both the ping and the
  * table list — every extra connection is one more chance to trip Nati's
