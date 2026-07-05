@@ -86,6 +86,9 @@ function NatiSyncStatusBanner({ status, loading, onRefresh }) {
                 {lastRun.trigger === 'automation' ? ' (אוטומטי)' : ''} — {lastRun.created ?? 0}{' '}
                 נוצרו, {lastRun.updated ?? 0} עודכנו
                 {lastRun.errors ? `, ${lastRun.errors} שגיאות` : ''}
+                {typeof lastRun.backlog_remaining === 'number'
+                  ? ` · צבר שטרם סונכרן: ${lastRun.backlog_remaining}`
+                  : ''}
               </span>
             </>
           ) : (
@@ -239,6 +242,12 @@ export default function AdminDataCleanup() {
       }
       if (dryRun) {
         addLog(`סה"כ מנתיד: ${res.data.total_from_nati} קריאות`, 'info');
+        if (typeof res.data.backlog_remaining === 'number') {
+          addLog(
+            `מתוכן טרם סונכרנו לראשונה (צבר): ${res.data.backlog_remaining}`,
+            res.data.backlog_remaining > 0 ? 'warn' : 'success'
+          );
+        }
         addLog(`ספקים ייחודיים: ${res.data.vendors_found}`, 'info');
         addLog(`לקוחות ייחודיים: ${res.data.customers_found}`, 'info');
       } else {
@@ -254,6 +263,14 @@ export default function AdminDataCleanup() {
           `קריאות: ${res.data.cases?.created || 0} חדשות, ${res.data.cases?.updated || 0} עודכנו, ${res.data.cases?.errors || 0} שגיאות`,
           res.data.cases?.errors > 0 ? 'warn' : 'success'
         );
+        if (typeof res.data.backlog_remaining === 'number') {
+          addLog(
+            res.data.backlog_remaining > 0
+              ? `נותרו כ-${res.data.backlog_remaining} קריאות בצבר שטרם סונכרנו לראשונה (יטופלו בריצות הבאות)`
+              : 'אין צבר שממתין — כל הקריאות הפתוחות בנתי כבר קיימות במערכת',
+            res.data.backlog_remaining > 0 ? 'warn' : 'success'
+          );
+        }
       }
       addLog('=== הסנכרון הסתיים ===', 'success');
       // Invalidate dashboard/queue/calls caches so the new data appears immediately

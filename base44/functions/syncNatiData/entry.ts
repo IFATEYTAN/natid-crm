@@ -610,10 +610,18 @@ Deno.serve(async (req) => {
     const appeals = sorted.slice(0, MAX_PER_RUN);
     console.log(`[SYNC] Processing ${appeals.length} of ${allAppeals.length} (prioritized new/updated/recent)`);
 
+    // How many of Nati's currently-open appeals have never been synced into the
+    // CRM at all (as opposed to already-synced ones just waiting for an update).
+    // This is what "backlog" means for the admin UI: it should trend to 0 as
+    // successive runs catch up, even though total_from_nati itself won't (Nati
+    // keeps opening new appeals). Computed before this run's own writes.
+    const backlogRemaining = allAppeals.filter((a) => !existingCallNumbers.has(String(a.id))).length;
+
     if (dry_run) {
       return Response.json({
         success: true, mode: 'dry_run',
         total_from_nati: allAppeals.length,
+        backlog_remaining: backlogRemaining,
         appeals_count: appeals.length,
         sample_call: appeals.length > 0 ? mapToCall(appeals[0]) : null,
         sample_case: appeals.length > 0 ? mapToCase(appeals[0]) : null,
@@ -772,6 +780,7 @@ Deno.serve(async (req) => {
       ok: true,
       trigger: isAutomationRun ? 'automation' : 'manual',
       total_from_nati: allAppeals.length,
+      backlog_remaining: backlogRemaining,
       processed: appeals.length,
       created: (results.calls?.created || 0) + (results.cases?.created || 0),
       updated: (results.calls?.updated || 0) + (results.cases?.updated || 0),
@@ -782,6 +791,7 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       total_from_nati: allAppeals.length,
+      backlog_remaining: backlogRemaining,
       processed_appeals: appeals.length,
       duration_ms: duration,
       ...results,
