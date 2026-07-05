@@ -227,6 +227,16 @@ export default function AdminDataCleanup() {
     try {
       const res = await base44.functions.invoke('syncNatiData', { dry_run: dryRun });
       setSyncResult(res.data);
+      if (!res.data || res.data.error) {
+        const reasonSuffix = res.data?.reason ? ` (${res.data.reason})` : '';
+        addLog(
+          `שגיאת סנכרון: ${res.data?.error || 'לא התקבלה תגובה מהשרת (ייתכן timeout)'}${reasonSuffix}`,
+          'error'
+        );
+        fetchSyncStatus();
+        setIsSyncing(false);
+        return;
+      }
       if (dryRun) {
         addLog(`סה"כ מנתיד: ${res.data.total_from_nati} קריאות`, 'info');
         addLog(`ספקים ייחודיים: ${res.data.vendors_found}`, 'info');

@@ -7,12 +7,27 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
 
-// ===== Inline Nati DB layer (shared _shared/natiDb module fails platform deployment — logic inlined) =====
+// ===== Inline Nati DB layer (kept per-file: an earlier shared _shared/natiDb
+// import failed to deploy. Circuit state below lives in Deno KV, so it is
+// shared + persistent across all Nati functions and warm/cold starts — unlike
+// a plain in-memory variable, which let each function keep hammering Nati
+// independently even while a sibling function was already cooling down) =====
 const NATI_CONNECT_TIMEOUT_MS = 20_000;
 const NATI_FAIL_THRESHOLD = 3;
 const NATI_GENERIC_COOLDOWN_MS = 2 * 60_000;
 const NATI_BLOCKED_COOLDOWN_MS = 10 * 60_000;
-let natiCircuit = { blockedUntil: 0, failures: 0, reason: '' };
+const NATI_CIRCUIT_KV_KEY = ['nati_circuit'];
+
+async function getNatiCircuit() {
+  const kv = await Deno.openKv();
+  const entry = await kv.get(NATI_CIRCUIT_KV_KEY);
+  return entry.value || { blockedUntil: 0, failures: 0, reason: '' };
+}
+
+async function setNatiCircuit(circuit) {
+  const kv = await Deno.openKv();
+  await kv.set(NATI_CIRCUIT_KV_KEY, circuit);
+}
 
 class NatiBlockedError extends Error {
   retryAfterSec: number;
@@ -45,6 +60,7 @@ async function withNatiConnection(fn, opts = {}) {
   if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
 
   const now = Date.now();
+  const natiCircuit = await getNatiCircuit();
   if (!opts.force && natiCircuit.blockedUntil > now) {
     const retryAfterSec = Math.ceil((natiCircuit.blockedUntil - now) / 1000);
     const base = natiCircuit.reason === 'host_blocked'
@@ -58,7 +74,7 @@ async function withNatiConnection(fn, opts = {}) {
     connection = await mysql.createConnection(config);
   } catch (err) {
     if (isHostBlockedError(err)) {
-      natiCircuit = { blockedUntil: now + NATI_BLOCKED_COOLDOWN_MS, failures: natiCircuit.failures + 1, reason: 'host_blocked' };
+      await setNatiCircuit({ blockedUntil: now + NATI_BLOCKED_COOLDOWN_MS, failures: natiCircuit.failures + 1, reason: 'host_blocked' });
       throw new NatiBlockedError(
         'נתי חסמו זמנית את הכתובת שלנו (Host is blocked). צריך שמנהל ה-DB בצד של נתי יריץ FLUSH HOSTS. עד אז עוצרים את הניסיונות ל-10 דקות כדי לא להחמיר.',
         Math.ceil(NATI_BLOCKED_COOLDOWN_MS / 1000),
@@ -66,16 +82,16 @@ async function withNatiConnection(fn, opts = {}) {
       );
     }
     const failures = natiCircuit.failures + 1;
-    natiCircuit = {
+    await setNatiCircuit({
       blockedUntil: failures >= NATI_FAIL_THRESHOLD ? now + NATI_GENERIC_COOLDOWN_MS : 0,
       failures,
       reason: failures >= NATI_FAIL_THRESHOLD ? 'connect_failures' : '',
-    };
+    });
     throw err;
   }
 
   try {
-    natiCircuit = { blockedUntil: 0, failures: 0, reason: '' };
+    await setNatiCircuit({ blockedUntil: 0, failures: 0, reason: '' });
     return await fn(connection);
   } finally {
     await connection.end().catch(() => {});
