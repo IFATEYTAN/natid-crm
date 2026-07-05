@@ -104,15 +104,34 @@ uRuPdShrBFm4ArGR2PPs4zCQuKgqAjEAi0TA3PVqAxKpoz+Ps8/054p9WTgDfBFZ
 i/lm2yTaPs0xjY6FNWoy7fsVw5oEKxOn
 -----END CERTIFICATE-----`;
 
+// Deno KV can be unavailable on some runtimes ("Default database is not
+// available" comes from Deno.openKv — NOT from Nati's MySQL). Never let the
+// circuit-breaker bookkeeping kill an otherwise healthy DB connection: fall
+// back to in-memory state and report KV health separately in the response.
+const kvState = { available: true, error: '' };
+let memCircuit = { blockedUntil: 0, failures: 0, reason: '' };
+
 async function getNatiCircuit() {
-  const kv = await Deno.openKv();
-  const entry = await kv.get(NATI_CIRCUIT_KV_KEY);
-  return entry.value || { blockedUntil: 0, failures: 0, reason: '' };
+  try {
+    const kv = await Deno.openKv();
+    const entry = await kv.get(NATI_CIRCUIT_KV_KEY);
+    return entry.value || { blockedUntil: 0, failures: 0, reason: '' };
+  } catch (e) {
+    kvState.available = false;
+    kvState.error = String((e as { message?: string })?.message || e);
+    return memCircuit;
+  }
 }
 
 async function setNatiCircuit(circuit) {
-  const kv = await Deno.openKv();
-  await kv.set(NATI_CIRCUIT_KV_KEY, circuit);
+  memCircuit = circuit;
+  try {
+    const kv = await Deno.openKv();
+    await kv.set(NATI_CIRCUIT_KV_KEY, circuit);
+  } catch (e) {
+    kvState.available = false;
+    kvState.error = String((e as { message?: string })?.message || e);
+  }
 }
 
 class NatiBlockedError extends Error {
@@ -236,5 +255,8 @@ Deno.serve(async (req) => {
     }
   }
 
+  results.kv = kvState.available
+    ? { status: 'OK' }
+    : { status: 'UNAVAILABLE', error: kvState.error, note: 'circuit breaker running on in-memory fallback' };
   return Response.json(results, { status: 200 });
 });
