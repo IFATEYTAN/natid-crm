@@ -271,7 +271,9 @@ export default function AdminDataCleanup() {
         ]);
       }
     } catch (err) {
-      addLog(`שגיאת סנכרון: ${err.message}`, 'error');
+      const errMsg = err.response?.data?.error || err.message;
+      const reason = err.response?.data?.reason;
+      addLog(`שגיאת סנכרון: ${errMsg}${reason ? ` (${reason})` : ''}`, 'error');
     }
     fetchSyncStatus();
     setIsSyncing(false);
