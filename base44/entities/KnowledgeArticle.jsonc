@@ -1,0 +1,42 @@
+{
+  "name": "KnowledgeArticle",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "כותרת המאמר"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "mechanical",
+        "electrical",
+        "towing",
+        "battery",
+        "flat_tire",
+        "lockout",
+        "general",
+        "process"
+      ],
+      "default": "general",
+      "description": "קטגוריה"
+    },
+    "problem_description": {
+      "type": "string",
+      "description": "תיאור הבעיה/התקלה"
+    },
+    "solution": {
+      "type": "string",
+      "description": "פתרון שלב אחר שלב"
+    },
+    "tags": {
+      "type": "string",
+      "description": "תגיות מופרדות בפסיק"
+    }
+  },
+  "required": [
+    "title",
+    "problem_description",
+    "solution"
+  ]
+}
