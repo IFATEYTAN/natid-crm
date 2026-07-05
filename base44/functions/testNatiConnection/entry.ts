@@ -9,6 +9,7 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import mysql from 'npm:mysql2@3.9.7/promise';
+import net from 'node:net';
 
 // ===== Inline Nati DB layer (kept per-file: an earlier shared _shared/natiDb
 // import failed to deploy. Circuit state below lives in Deno KV, so it is
@@ -160,13 +161,21 @@ async function withNatiConnection(fn, opts = {}) {
     database: Deno.env.get('NATID_DB_NAME'),
     connectTimeout: NATI_CONNECT_TIMEOUT_MS,
   };
-  // Deno's TLS layer ignores rejectUnauthorized:false and always validates the
-  // peer cert. 'secure' (default) pins the official Amazon RDS CA bundle and
-  // validates against the real RDS hostname via servername (we dial the relay's
-  // IP, so without it hostname verification would fail). 'off' (plain TCP) and
-  // 'insecure' remain for diagnostics only.
-  if (opts.sslMode === 'secure') config.ssl = { ca: NATI_RDS_CA_PEM, servername: NATI_TLS_SERVERNAME };
-  else if (opts.sslMode === 'insecure') config.ssl = { rejectUnauthorized: false };
+  // TLS: mysql2 hardcodes the TLS validation name to config.host
+  // (lib/connection.js: `const servername = this.config.host`) and Deno's TLS
+  // layer always verifies the peer cert. So in 'secure' mode config.host
+  // carries the real RDS hostname (validation passes against the pinned RDS
+  // CA bundle) while a custom stream dials the relay's static IP. 'off'
+  // (plain TCP) and 'insecure' remain for diagnostics only.
+  if (opts.sslMode === 'secure') {
+    const dialHost = config.host;
+    const dialPort = config.port;
+    config.host = NATI_TLS_SERVERNAME;
+    config.stream = () => net.connect(dialPort, dialHost);
+    config.ssl = { ca: NATI_RDS_CA_PEM };
+  } else if (opts.sslMode === 'insecure') {
+    config.ssl = { rejectUnauthorized: false };
+  }
   if (opts.noDb) delete config.database;
   if (!config.host || !config.user || !config.password) throw new Error('Missing NATID_DB_* secrets');
 
