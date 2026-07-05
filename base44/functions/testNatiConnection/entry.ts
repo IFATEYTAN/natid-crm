@@ -229,6 +229,7 @@ Deno.serve(async (req) => {
       user: Deno.env.get('NATID_DB_USER'),
       database: Deno.env.get('NATID_DB_NAME'),
       has_password: !!Deno.env.get('NATID_DB_PASSWORD'),
+      tls_servername: NATI_TLS_SERVERNAME,
     },
   };
 
