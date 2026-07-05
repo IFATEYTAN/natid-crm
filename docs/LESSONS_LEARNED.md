@@ -273,17 +273,32 @@
 
 ---
 
+### [2026-07-05] Bug: שרשרת תקלות בחיבור לנתי — socat תקוע על DNS ישן, אימות TLS ב-Deno, ו-Deno KV לא זמין ב-Base44
+
+**תיאור:** אחרי FLUSH HOSTS בצד נתי הסנכרון עדיין נכשל. האבחון חשף שלוש תקלות נפרדות שהתחזו לתקלה אחת:
+1. **ה-relay ב-DigitalOcean‏ (socat על 209.38.223.238) היה תקוע על IP ישן** — socat מתרגם את שם ה-RDS ל-IP פעם אחת בעלייה, וה-IP של ה-RDS התחלף מאז יוני. כל התעבורה הגיעה למכונה זרה ב-AWS, שהחזירה שגיאות מוזרות. `systemctl restart socat-natid` פתר; נוסף `RuntimeMaxSec=86400` (override) לריענון DNS יומי אוטומטי.
+2. **סביבת ה-Deno של Base44 תמיד מאמתת תעודות TLS** — היא מתעלמת מ-`rejectUnauthorized: false`, ו-mysql2 מקבע את שם האימות ל-`config.host` (ומתעלם מ-`ssl.servername`). הפתרון: הצמדת (pin) חבילת ה-CA הרשמית של Amazon RDS‏ il-central-1 בקוד, שם ה-RDS האמיתי ב-`config.host` (לאימות), וחיוג ל-IP הקבוע של ה-relay דרך `config.stream = () => net.connect(...)`. כך יש TLS מלא ומאומת דרך ה-relay. כשלי ה-TLS הקודמים נספרו כ-connection errors אצל נתי — כנראה המקור המרכזי לחסימות `max_connect_errors` החוזרות.
+3. **‏Deno KV לא זמין בסביבת Base44** — `Deno.openKv()` זורק "Default database is not available", ולכן ה-circuit breaker המשותף (מ-08/06 ומ-PR ‎#159) מעולם לא באמת עבד שם, וגרוע מזה: הפיל ריצות שהחיבור עצמו הצליח בהן. כל הפונקציות עודכנו ל-fallback שקט לזיכרון מקומי.
+
+**כללים תפעוליים שנקבעו:** `NATID_DB_HOST` חייב להצביע על ה-relay‏ (209.38.223.238), לא ישירות על ה-RDS (ה-Security Group של נתי מכניס רק את ה-IP הזה); הסוד `NATID_DB_TLS_SERVERNAME` מחזיק את שם ה-RDS לאימות התעודה; חיבור מוצלח מאפס את מונה השגיאות של נתי — סנכרון מתוזמן בריא הוא ההגנה הכי טובה מחסימה.
+
+**לקח:** relay מבוסס socat חייב ריענון DNS מתוזמן (`RuntimeMaxSec`), אחרת החלפת IP של היעד מפילה אותו בשקט. בסביבת Deno אין לסמוך על `rejectUnauthorized:false` — תמיד להצמיד CA ולאמת מול שם אמיתי. ואסור להניח ש-API של הפלטפורמה (Deno KV) קיים בכל runtime — לעטוף ב-fallback ולדווח על זמינותו בנפרד, אחרת שגיאת תשתית פנימית מתחזה לשגיאת אינטגרציה חיצונית ומטעה את האבחון.
+
+**קבצים:** `base44/functions/{testNatiConnection,syncNatiData,closeStaleNatiCalls,fetchNatiAppeals,fetchLiveNatiData,discoverNatiPricing,importNatiPricing}/entry.ts`; בצד השרת: `/etc/systemd/system/socat-natid.service.d/override.conf` ב-droplet של DigitalOcean
+
+---
+
 <!-- הוסף רשומות חדשות מעל שורה זו -->
 
 ## סטטיסטיקות
 
 | קטגוריה | מספר רשומות |
 |----------|-------------|
-| Bug | 4 |
+| Bug | 5 |
 | Feature | 3 |
 | Architecture | 3 |
 | Performance | 1 |
 | Security | 3 |
 | Convention | 3 |
 | Tooling | 3 |
-| **סה"כ** | **20** |
+| **סה"כ** | **21** |
