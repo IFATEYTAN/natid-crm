@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
-import { pickBestVendor, commitVendorAssignment } from './_shared/assignVendor.ts';
+import { pickBestVendor, commitVendorAssignment, hasActivePendingAttemptForCall } from './_shared/assignVendor.ts';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 const kv = await Deno.openKv();
 const limiter = createRateLimiter(kv);
@@ -49,17 +50,10 @@ Deno.serve(async (req) => {
     }
 
     // Existing pending (non-expired) offer for this call
-    const pendingAttempts = await base44.asServiceRole.entities.CallAssignmentAttempt.filter({
-      call_id,
-      status: 'pending',
-    });
-    const activePending = pendingAttempts.filter((a) => new Date(a.expires_at) > new Date());
-    if (activePending.length > 0) {
+    if (await hasActivePendingAttemptForCall(base44, call_id)) {
       return Response.json({
         success: false,
         error: 'Call has a pending assignment attempt',
-        pending_vendor_id: activePending[0].vendor_id,
-        expires_at: activePending[0].expires_at,
       });
     }
 
@@ -108,6 +102,8 @@ Deno.serve(async (req) => {
         score: top.score,
         distanceKm: top.details.distance_km,
       });
+      // Mirror the 'assigning' status onto WorkQueue + Case
+      await syncCallStatus(base44, call, 'assigning');
     }
 
     return Response.json({
