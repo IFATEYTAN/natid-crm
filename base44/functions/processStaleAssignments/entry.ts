@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import { autoOfferCall } from './_shared/assignVendor.ts';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 /**
  * Scheduled job: handle assignment offers that vendors did not accept in time.
@@ -99,6 +100,8 @@ Deno.serve(async (req) => {
       // creates a fresh offer + notifies the vendor in-app + SMS).
       const offer = await autoOfferCall(base44, call, excludeVendorIds);
       if (offer.success) {
+        // Mirror the 'assigning' status onto WorkQueue + Case
+        await syncCallStatus(base44, call, 'assigning');
         await svc.entities.CallHistory.create({
           call_id: call.id,
           call_number: call.call_number || '',
@@ -128,6 +131,7 @@ async function escalateToOps(svc, call, elapsedMin, noVendors = false) {
     assigned_vendor_id: null,
     assigned_vendor_name: null,
   });
+  await syncCallStatus({ asServiceRole: svc }, call, 'awaiting_assignment');
 
   const reason = noVendors
     ? 'לא נמצא ספק זמין נוסף'

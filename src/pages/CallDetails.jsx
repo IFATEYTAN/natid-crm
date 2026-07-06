@@ -60,7 +60,6 @@ import {
 import { cn } from '@/components/utils';
 import { toast } from 'sonner';
 import { CLOSING_STATUSES, getClosingStatus } from '@/config/closingStatuses';
-import { createContinuationCall } from '@/features/calls/createContinuationCall';
 import { statusLabels, statusColors } from '@/components/config/labels';
 import CallActionsMenu from '@/components/call-details/CallActionsMenu';
 
@@ -197,16 +196,16 @@ export default function CallDetailsPage() {
       return;
     }
 
-    const updates = { call_status: newStatus };
-    if (newStatus === 'completed') {
-      updates.closed_at = new Date().toISOString();
+    try {
+      await base44.functions.invoke('updateCallStatus', {
+        call_id: callId,
+        call_status: newStatus,
+        reason: newStatus === 'waiting_treatment' ? reason : undefined,
+      });
+    } catch {
+      toast.error('שגיאה בעדכון סטטוס');
+      return;
     }
-    if (newStatus === 'waiting_treatment' && reason) {
-      updates.closed_at = null;
-      updates.closed_by = null;
-    }
-
-    await base44.entities.Call.update(callId, updates);
     queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
     logAction({
       action: 'status_change',
@@ -225,15 +224,6 @@ export default function CallDetailsPage() {
         // Auto summary generation failed silently
       }
     }
-
-    base44.entities.CallHistory.create({
-      call_id: callId,
-      call_number: call?.call_number,
-      change_type: 'status',
-      old_value: call?.call_status,
-      new_value: newStatus,
-      changed_by: currentUser?.full_name || 'operator',
-    });
 
     const statusMessages = {
       vendor_enroute: 'הספק יצא לדרך ובקרוב יגיע אליך',
@@ -270,26 +260,22 @@ export default function CallDetailsPage() {
 
     setShowPreCloseDialog(false);
 
-    // Shared event code linking the original leg with any continuation leg.
-    const caseCode =
-      call?.case_reference_code || call?.call_number || `EVT-${Date.now().toString().slice(-8)}`;
-
-    const updates = {
-      call_status: cfg.resultingStatus,
-      closing_status: closingKey,
-      case_reference_code: caseCode,
-    };
-    if (cfg.resultingStatus === 'completed') {
-      updates.closed_at = new Date().toISOString();
-      updates.closed_by = currentUser?.full_name || 'operator';
-    }
-
+    // closeCall applies the full closing rules server-side (resulting status,
+    // customer SMS, WorkQueue/Case sync, and — for failure/extraction outcomes —
+    // a linked continuation call already enqueued into WorkQueue).
+    let result;
     try {
-      await base44.entities.Call.update(callId, updates);
+      const res = await base44.functions.invoke('closeCall', {
+        call_id: callId,
+        closing_status: closingKey,
+      });
+      result = res?.data ?? res;
+      if (result?.error) throw new Error(result.error);
     } catch {
       toast.error('שגיאה בסגירת הקריאה');
       return;
     }
+
     queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
 
     logAction({
@@ -302,48 +288,15 @@ export default function CallDetailsPage() {
       new_value: cfg.resultingStatus,
     });
 
-    base44.entities.CallHistory.create({
-      call_id: callId,
-      call_number: call?.call_number,
-      change_type: 'status',
-      old_value: call?.call_status,
-      new_value: cfg.resultingStatus,
-      changed_by: currentUser?.full_name || 'operator',
-      notes: `סטטוס סגירה: ${cfg.label}`,
-    });
-
-    if (cfg.resultingStatus === 'completed') {
-      base44.functions.invoke('generateCallSummary', { call_id: callId }).catch(() => {});
-    }
-
-    // Customer SMS per closing status (storage sends none by design).
-    if (cfg.sendsSms && call?.customer_phone && cfg.smsText) {
-      base44.functions
-        .invoke('sendSMS', { phone: call.customer_phone, message: cfg.smsText, callId })
-        .catch(() => {});
-    }
-
     setSelectedClosingStatus('');
 
-    // Open a linked continuation call for failure / extraction outcomes.
-    if (cfg.createsContinuation) {
-      try {
-        const continuation = await createContinuationCall(base44, call, {
-          serviceCategory: cfg.continuationCategory || 'towing',
-          caseCode,
-          createdByName: currentUser?.full_name,
-        });
-        await base44.entities.Call.update(callId, { continuation_call_id: continuation.id });
-        queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
-        toast.success('נפתחה קריאת המשך מקושרת');
-        navigate(createPageUrl(`CallDetails?id=${continuation.id}`));
-      } catch {
-        toast.error('הקריאה נסגרה אך פתיחת קריאת ההמשך נכשלה');
-      }
+    if (result?.continuation_call_id) {
+      toast.success('נפתחה קריאת המשך מקושרת');
+      navigate(createPageUrl(`CallDetails?id=${result.continuation_call_id}`));
       return;
     }
 
-    if (cfg.isStorage) {
+    if (result?.is_storage) {
       toast.success('הקריאה נסגרה לאחסנה');
     } else {
       toast.success('הקריאה נסגרה בהצלחה');

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-import { getBusyVendorIds, commitVendorAssignment } from './_shared/assignVendor.ts';
+import { getBusyVendorIds, commitVendorAssignment, hasActivePendingAttemptForCall } from './_shared/assignVendor.ts';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 /**
  * Assign a SPECIFIC vendor to a call as an offer (offer + accept model).
@@ -43,6 +44,16 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Don't create a second offer while one is already pending on this call — the
+    // earlier vendor's offer would otherwise be silently orphaned (still shown to
+    // them, still acceptable) while assigned_vendor_id gets overwritten underneath it.
+    if (await hasActivePendingAttemptForCall(base44, call_id)) {
+      return Response.json(
+        { success: false, error: 'Call already has a pending assignment offer' },
+        { status: 409 }
+      );
+    }
+
     const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendor_id });
     const vendor = vendors?.[0];
     if (!vendor) {
@@ -65,6 +76,9 @@ Deno.serve(async (req) => {
     }
 
     const attempt = await commitVendorAssignment(base44, { call, vendor });
+
+    // Mirror the 'assigning' status onto WorkQueue + Case
+    await syncCallStatus(base44, call, 'assigning');
 
     // History entry for the offer
     await base44.asServiceRole.entities.CallHistory.create({

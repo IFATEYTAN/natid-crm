@@ -288,6 +288,31 @@
 
 ---
 
+### [2026-07-06] Bug: מסך "צפה בקריאה" עוקף את מנוע הסגירה + פערי סנכרון סטטוס בשיבוץ
+
+**בעיה:** ביקורת מקצה-לקצה על תהליך ניהול קריאה (פתיחה→תור→שיבוץ→מעקב→סגירה) העלתה חמישה פערים אמיתיים, מעבר למה שתועד ב-22/06:
+1. **`CallDetails.jsx` מעולם לא קרא לפונקציית ה-backend `closeCall`** — `handleStatusChange`/`handleCloseWithStatus` כתבו ישירות ל-`Call.update()` מהדפדפן, עם מימוש-כפול (וחלקי) של כללי הסגירה בצד לקוח. התוצאה: WorkQueue/Case לא סונכרנו בסגירה מהמסך הראשי (!), וקריאת המשך שנפתחה מ-CallDetails **מעולם לא נכנסה ל-WorkQueue** — לא הייתה נכנסת לתור השיבוץ לעולם.
+2. **אותה תקלה בדיוק** ב-`AssignVendorDialog.jsx` בזרימת "המשך עם ספק נוסף" (סעיף 8 מ-17/06) — קריאת ההמשך נוצרה, אך גם היא מעולם לא נכנסה ל-WorkQueue.
+3. **`commitVendorAssignment`/`autoOfferCall` (ליבת השיבוץ המשותפת) הזיזו קריאה ל-`call_status='assigning'` בלי לקרוא ל-`syncCallStatus`** — כל 5 הנתיבים שמזמינים אותם (assignVendorToCall, autoAssignVendor, handleAssignmentResponse, releaseVendorCall, 99digitalBot) השאירו את ה-WorkQueue תקוע על "ממתין בתור" למשך כל שלב ההצעה לספק.
+4. **`assignVendorToCall` (שיבוץ ידני ע"י מוקדן) לא בדק אם כבר קיימת הצעת שיבוץ פעילה** על הקריאה לפני יצירת הצעה נוספת — בניגוד ל-`autoAssignVendor` שכן בדק. אפשר היה להציע את אותה קריאה לשני ספקים בו-זמנית.
+5. **מרוץ (race) קל באישור הצעה** ב-`handleAssignmentResponse` — קריאה-ואז-כתיבה בלי נעילה, חלון תיאורטי לאישור כפול בו-זמני.
+6. **`syncCallStatus` לא הכיר את `in_storage`** (אחד מ-7 סטטוסי הסגירה, "גרר לאחסנה") — קריאה שנסגרת לאחסנה השאירה WorkQueue/Case תקועים.
+
+**פתרון:**
+1. `handleCloseWithStatus` ב-CallDetails.jsx עבר לקרוא ל-`closeCall` (במקום לשכפל את הלוגיקה) — קוד הרבה יותר קצר, ומקבל בחינם SMS/סיכום AI/סנכרון/קריאת-המשך-עם-WorkQueue ישירות מה-backend המתוחזק.
+2. `handleStatusChange` עבר לקרוא לפונקציית backend **חדשה**, `updateCallStatus` — מקבילה למוקדן/אדמין ל-`updateAgentCallStatus`/`updateVendorCall` הקיימות (Call.update + syncCallStatus + CallHistory במקום אחד).
+3. `AssignVendorDialog.jsx`'s `handleContinue` מקבל כעת `WorkQueue.create` אחרי יצירת קריאת ההמשך, כמו ב-NewCase.jsx וב-closeCall.
+4. נוסף `await syncCallStatus(base44, call, 'assigning')` בכל אחד מ-5 הקריאות ל-`commitVendorAssignment`/`autoOfferCall` (בכוונה **לא** כ-import פנימי בין מודולי `_shared` — ראה "לקח" למטה).
+5. נוסף helper משותף `hasActivePendingAttemptForCall` ב-`_shared/assignVendor`, בשימוש גם ב-`autoAssignVendor` (הוחלף הבדיקה המוטבעת) וגם ב-`assignVendorToCall` (בדיקה חדשה, 409 אם יש הצעה פעילה).
+6. נוסף re-check של סטטוס ה-attempt מיד לפני הכתיבה הסופית ב-`handleAssignmentResponse` (מצמצם את חלון המרוץ; אין compare-and-swap אמיתי ב-SDK אז זו לא הגנה מלאה).
+7. `in_storage` נוסף ל-`QUEUE_STATUS_MAP`/`CASE_STATUS_MAP` (ממופה ל-`completed` בשני היעדים, כמו `cancelled` — אין להם מצב "אחסנה" ייעודי).
+8. נמחק קובץ מת יתום `src/features/calls/NewCase.jsx` (גרסה כפולה לא-מנותבת של `src/pages/NewCase.jsx`).
+
+**לקח:** מסך UI מרכזי (CallDetails) יכול לשכפל בשקט לוגיקת backend קיימת ותקינה בלי שאף אחד ישים לב — כי שני המימושים "עובדים" מנקודת המבט של המשתמש (הקריאה נסגרת), רק אחד מהם משאיר את המערכת בפועל לא מסונכרנת. כשיש פונקציית backend "מקור אמת" (כמו closeCall) — יש לוודא שכל מסך UI שמבצע את אותה פעולה קורא לה, לא רק לבדוק שהפונקציה עצמה נכונה. גם: מודולי `_shared` **לא** מייבאים זה את זה במכוון (למרות שזה היה מוריד שכפול קוד) — הניסיון הקודם (08/06, ראו רשומה מ-05/07) עם `_shared/natiDb` שנכשל בפריסה מלמד שסביבת הפריסה כאן שברירית סביב imports חוצי-קבצים; import רגיל מפונקציה למודול `_shared` בודד עובד מצוין (מוכח ב-20+ פונקציות), אבל import בין שני מודולי `_shared` הוא דפוס שלא הוכח כעובד — עדיף חזרתיות קטנה (קריאה מפורשת מכל צרכן) על פני סיכון פריסה שקטה.
+**קבצים:** `src/pages/CallDetails.jsx`, `src/components/calls/AssignVendorDialog.jsx`, `base44/functions/updateCallStatus/entry.ts` (חדש), `base44/functions/_shared/{assignVendor,syncCallStatus}/entry.ts`, `base44/functions/{assignVendorToCall,autoAssignVendor,handleAssignmentResponse,releaseVendorCall,processStaleAssignments,99digitalBot}/entry.ts`
+
+---
+
 ### [2026-07-05] Bug: המשך תקלת סנכרון נתי — צבר לא מתנקז, 500/502 בהתראות חכמות, ו-KnowledgeArticle חסרה
 
 **בעיה:** שלושה פערים נמצאו יחד אחרי שהחיבור לנתי עצמו תוקן (ראו הרשומה הקודמת מהיום):
@@ -311,11 +336,11 @@
 
 | קטגוריה | מספר רשומות |
 |----------|-------------|
-| Bug | 6 |
+| Bug | 7 |
 | Feature | 3 |
 | Architecture | 3 |
 | Performance | 1 |
 | Security | 3 |
 | Convention | 3 |
 | Tooling | 3 |
-| **סה"כ** | **22** |
+| **סה"כ** | **23** |

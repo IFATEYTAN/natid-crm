@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { createRateLimiter, getClientIP, rateLimitResponse } from './_shared/rateLimit.ts';
 import { autoOfferCall } from './_shared/assignVendor.ts';
+import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 const kv = await Deno.openKv();
 const limiter = createRateLimiter(kv);
@@ -280,6 +281,8 @@ Deno.serve(async (req) => {
     try {
       const offer = await autoOfferCall(base44, call, []);
       if (offer.success) {
+        // Mirror the 'assigning' status onto WorkQueue + Case
+        await syncCallStatus(base44, call, 'assigning');
         console.log('Vendor auto-offered:', offer.recommendation?.vendor_name);
       } else {
         console.log('Auto-offer skipped:', offer.error);

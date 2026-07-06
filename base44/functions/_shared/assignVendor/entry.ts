@@ -7,6 +7,12 @@
  * Called directly (with a service-role base44 client) by autoAssignVendor,
  * assignVendorToCall, handleAssignmentResponse, releaseVendorCall and the bot — this
  * avoids cross-function HTTP auth ambiguity (the caller already holds the right context).
+ *
+ * NOTE: this module deliberately does NOT import other _shared modules (e.g.
+ * syncCallStatus) — cross-_shared imports have previously failed to deploy silently
+ * on this platform (see docs/LESSONS_LEARNED.md, 2026-07-05). Every caller below is
+ * responsible for calling syncCallStatus itself after commitVendorAssignment/
+ * autoOfferCall moves a call to 'assigning'.
  */
 
 const ACTIVE_CALL_STATUSES = ['vendor_enroute', 'vendor_arrived', 'in_progress'];
@@ -45,6 +51,21 @@ export async function getBusyVendorIds(base44: any, excludeCallId: string | null
     .filter((a: any) => a.call_id !== excludeCallId && new Date(a.expires_at) > new Date())
     .forEach((a: any) => busy.add(a.vendor_id));
   return busy;
+}
+
+/**
+ * Whether a call already has a fresh (non-expired) pending offer to some vendor.
+ * Callers that create a NEW offer directly (assignVendorToCall, autoAssignVendor's
+ * commit branch) must check this first — otherwise two offers can end up pending
+ * on the same call at once (the earlier vendor's offer is orphaned but still
+ * acceptable, and the call's assigned_vendor_id gets silently overwritten).
+ */
+export async function hasActivePendingAttemptForCall(base44: any, callId: string) {
+  const pendingAttempts = await base44.asServiceRole.entities.CallAssignmentAttempt.filter({
+    call_id: callId,
+    status: 'pending',
+  });
+  return pendingAttempts.some((a: any) => new Date(a.expires_at) > new Date());
 }
 
 // Pure scoring of a single vendor against a call. Returns { score, details }.

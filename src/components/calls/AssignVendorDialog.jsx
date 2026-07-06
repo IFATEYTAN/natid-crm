@@ -181,6 +181,21 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
     }
     await base44.entities.Call.update(callId, { continuation_call_id: continuation.id });
 
+    // Enqueue the continuation so it's tracked like any other call (QueueMonitor,
+    // stale-assignment processing) — createContinuationCall only creates the Call.
+    try {
+      await base44.entities.WorkQueue.create({
+        call_id: continuation.id,
+        assigned_to_agent: null,
+        queue_status: 'waiting_in_queue',
+        priority_score:
+          call?.call_priority === 'critical' ? 100 : call?.call_priority === 'urgent' ? 70 : 40,
+        added_to_queue_at: new Date().toISOString(),
+      });
+    } catch {
+      // Non-blocking: the continuation call still exists even if enqueue fails.
+    }
+
     // Offer the continuation to the additional vendor (offer + accept model)
     const res = await base44.functions.invoke('assignVendorToCall', {
       call_id: continuation.id,
