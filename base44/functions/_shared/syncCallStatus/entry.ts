@@ -17,6 +17,9 @@ const QUEUE_STATUS_MAP: Record<string, string> = {
   cannot_complete: 'in_progress',
   completed: 'completed',
   cancelled: 'completed',
+  // Storage is a holding state (closeCall's "tow_to_storage" closing status) — off
+  // the active queue like a completion, though a continuation leg may reopen later.
+  in_storage: 'completed',
 };
 
 // Call.call_status -> Case.status
@@ -27,6 +30,7 @@ const CASE_STATUS_MAP: Record<string, string> = {
   in_progress: 'in_progress',
   completed: 'completed',
   cancelled: 'cancelled',
+  in_storage: 'completed',
 };
 
 /**
