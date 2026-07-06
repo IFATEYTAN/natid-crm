@@ -188,7 +188,8 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
         call_id: continuation.id,
         assigned_to_agent: null,
         queue_status: 'waiting_in_queue',
-        priority_score: call?.call_priority === 'critical' ? 100 : call?.call_priority === 'urgent' ? 70 : 40,
+        priority_score:
+          call?.call_priority === 'critical' ? 100 : call?.call_priority === 'urgent' ? 70 : 40,
         added_to_queue_at: new Date().toISOString(),
       });
     } catch {
