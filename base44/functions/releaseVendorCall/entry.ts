@@ -111,6 +111,8 @@ Deno.serve(async (req) => {
       const offer = await autoOfferCall(base44, { ...call, call_status: 'awaiting_assignment', assigned_vendor_id: null }, excludeVendorIds);
       if (offer.success && offer.recommendation) {
         nextRecommendation = offer.recommendation;
+        // Mirror the 'assigning' status onto WorkQueue + Case
+        await syncCallStatus(base44, call, 'assigning');
       }
     } catch (e) {
       console.error('releaseVendorCall: auto re-assign failed', e);
