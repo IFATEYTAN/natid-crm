@@ -68,6 +68,8 @@
 | `E2E_VENDOR_EMAIL` | `e2e-vendor@natid.test` |
 | `E2E_VENDOR_PASSWORD` | (הסיסמה שהגדרת) |
 | `E2E_VENDOR_NAME` (אופציונלי) | שם התצוגה של ספק הבדיקה — כדי שהמוקדן יציע דווקא לו, וכך בדיקת המוקדן ובדיקת הספק ישתרשרו |
+| `E2E_FOREIGN_CALL_ID` (אופציונלי) | מזהה קריאה אמיתי המשויך לספק **אחר** (לא ספק הבדיקה) — לחיזוק בדיקת ה-scoping ב-`e2e/vendor-scoping.spec.js`. בלעדיו הבדיקה משתמשת ב-UUID אקראי שלא קיים, שמכסה את אותו נתיב קוד (call not found / not owned) אך פחות ריאליסטי |
+| `E2E_CUSTOMER_PHONE` + `E2E_CUSTOMER_CALL_NUMBER` (אופציונלי, זוג) | טלפון + מספר קריאה של קריאה אמיתית וקיימת ב-DB — מפעיל את בדיקת ה-lookup המלאה ב-`e2e/customer-portal.spec.js` (הזנה → כרטיס סטטוס). בלעדיהם רק הנתיב השלילי (bogus credentials) נבדק |
 
 **שים לב:** Secrets שמתחילים ב-`E2E_` כי כך הקוד מצפה לקרוא אותם.
 
