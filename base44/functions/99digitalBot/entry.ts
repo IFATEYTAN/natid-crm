@@ -193,6 +193,41 @@ Deno.serve(async (req) => {
       sla_target: 30
     });
 
+    // Mirror a matching Case (best-effort, non-blocking) — Call is the operational
+    // source of truth, but Reports, ServiceProviders and detectSmartAlerts read from
+    // Case. Without this, bot-opened calls were invisible to reporting and to the
+    // smart-alerts engine.
+    try {
+      await base44.asServiceRole.entities.Case.create({
+        case_number: callNumber,
+        customer_name: data.customer.name,
+        caller_name: data.customer.name,
+        caller_phone: data.customer.phone,
+        vehicle_number: data.vehicle.plate,
+        vehicle_type: vehicleTypeResolved || data.vehicle.type,
+        vehicle_model: data.vehicle.model,
+        vehicle_year: data.vehicle.year,
+        fuel_type: data.vehicle.fuel_type,
+        service_type: data.incident.type || 'other',
+        location_address: data.incident.pickup_location.address,
+        location_city: data.incident.pickup_location.city,
+        location_lat: data.incident.pickup_location.lat,
+        location_lng: data.incident.pickup_location.lon,
+        destination_address: data.incident.dropoff_location?.address,
+        destination_city: data.incident.dropoff_location?.city,
+        status: 'new',
+        priority: data.incident.priority === 'דחוף' ? 'urgent' : 'normal',
+        problem_description: data.incident.description,
+        is_toll_road: data.questionnaire?.is_toll_road,
+        is_vip: data.customer.is_vip || false,
+        insurance_company: data.customer.insurance_company,
+        package_name: data.customer.membership_package,
+        opening_source: 'bot',
+      });
+    } catch (caseError) {
+      console.log('Case mirror creation failed (non-blocking):', caseError.message);
+    }
+
     // Find available desk handler (load balancing).
     // Match operator/agent roles incl. Hebrew variants (Base44 often returns 'user').
     const HANDLER_ROLES = ['operator', 'agent', 'user', 'מוקדן', 'מתפעל', 'מנהל תפעול', 'נציג שטח'];

@@ -301,6 +301,74 @@ export default function NewCase() {
         // Non-blocking: the call is created even if enqueue fails.
       }
 
+      // Mirror a matching Case (best-effort, non-blocking) — Call is the operational
+      // source of truth (vendor portal/assignment/GPS all consume it), but Reports,
+      // ServiceProviders and detectSmartAlerts read from Case. Without this, calls
+      // opened here were invisible to reporting and to the smart-alerts engine.
+      try {
+        await base44.entities.Case.create({
+          case_number: callNumber,
+          customer_id: data.customer_id || undefined,
+          customer_name: data.customer_name || data.caller_name || '',
+          caller_name: data.caller_name,
+          caller_phone: data.caller_phone,
+          vehicle_number: data.vehicle_number,
+          vehicle_type: data.vehicle_type,
+          vehicle_model: data.vehicle_model,
+          vehicle_year: data.vehicle_year ? parseInt(data.vehicle_year, 10) : undefined,
+          fuel_type: data.fuel_type || undefined,
+          vehicle_model_code: data.vehicle_model_code,
+          coverage_details: data.coverage_details,
+          service_type: data.service_type,
+          location_address: data.location_address,
+          location_city: data.location_city,
+          location_lat: pickupGeo?.lat,
+          location_lng: pickupGeo?.lon,
+          destination_address: data.destination_address,
+          destination_city: data.destination_city,
+          status: 'new',
+          priority: data.priority === 'critical' ? 'urgent' : data.priority || 'normal',
+          problem_description: data.problem_description,
+          internal_notes: data.internal_notes,
+          is_in_parking: data.is_in_parking,
+          is_at_garage: data.is_at_garage,
+          was_towed_before: data.was_towed_before,
+          is_toll_road: data.is_toll_road,
+          is_dirt_road: data.is_dirt_road,
+          questionnaire_engine_starts: data.questionnaire_engine_starts,
+          questionnaire_gearbox_ok: data.questionnaire_gearbox_ok,
+          questionnaire_starter_sound: data.questionnaire_starter_sound,
+          questionnaire_automatic_neutral: data.questionnaire_automatic_neutral,
+          questionnaire_steering_free: data.questionnaire_steering_free,
+          questionnaire_handbrake_electric: data.questionnaire_handbrake_electric,
+          questionnaire_truck_access: data.questionnaire_truck_access,
+          deposit_type: data.deposit_type,
+          deposit_amount: data.deposit_amount ? parseFloat(data.deposit_amount) : undefined,
+          deposit_date: data.deposit_date,
+          deposit_reason: data.deposit_reason,
+          deposit_agent: data.deposit_agent,
+          deposit_status: data.deposit_status || undefined,
+          payment_type: data.payment_type,
+          payment_date: data.payment_date,
+          payment_amount: data.payment_amount ? parseFloat(data.payment_amount) : undefined,
+          payment_total: data.payment_total ? parseFloat(data.payment_total) : undefined,
+          payment_installments: data.payment_installments
+            ? parseInt(data.payment_installments, 10)
+            : undefined,
+          payment_delivered_to: data.payment_delivered_to,
+          payment_agent: data.payment_agent,
+          payment_paid_for: data.payment_paid_for,
+          early_alert_minutes: data.early_alert_minutes
+            ? parseInt(data.early_alert_minutes, 10)
+            : undefined,
+          sla_response_deadline: slaResponseDeadline.toISOString(),
+          sla_arrival_deadline: slaArrivalDeadline.toISOString(),
+          opening_source: 'call_center',
+        });
+      } catch {
+        // Non-blocking: the call is fully created/queued even if the Case mirror fails.
+      }
+
       return createdCall;
     },
     onSuccess: (result, data) => {
