@@ -110,6 +110,17 @@ Deno.serve(async (req) => {
         }, { status: 409 });
       }
 
+      // Narrow the accept race: re-check the attempt is still pending right before
+      // committing (best-effort — the SDK has no atomic compare-and-swap update, so
+      // this shrinks the concurrent-accept window but doesn't eliminate it entirely).
+      const recheck = await base44.asServiceRole.entities.CallAssignmentAttempt.filter({ id: attempt_id });
+      if (!recheck.length || recheck[0].status !== 'pending') {
+        return Response.json({
+          error: 'Assignment already processed',
+          status: recheck[0]?.status
+        }, { status: 400 });
+      }
+
       // Update attempt status
       const responseTime = Math.round((Date.now() - new Date(attempt.created_date).getTime()) / 1000);
       await base44.asServiceRole.entities.CallAssignmentAttempt.update(attempt.id, {
@@ -222,6 +233,9 @@ Deno.serve(async (req) => {
       const offer = await autoOfferCall(base44, call, excludeVendorIds);
 
       if (offer.success && offer.recommendation) {
+        // Mirror the 'assigning' status onto WorkQueue + Case
+        await syncCallStatus(base44, call, 'assigning');
+
         return Response.json({
           success: true,
           action: 'declined',
@@ -233,6 +247,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Call.update(call.id, {
           call_status: 'awaiting_assignment'
         });
+        await syncCallStatus(base44, call, 'awaiting_assignment');
 
         return Response.json({
           success: true,
