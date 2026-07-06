@@ -224,7 +224,7 @@ export default function Dashboard() {
           </div>
         </div>
         {/* Row 2: Action Buttons */}
-        <div className="flex gap-2 sm:gap-3 justify-end flex-wrap">
+        <div dir="rtl" className="flex gap-2 sm:gap-3 justify-start flex-wrap">
           {!isDemoMode() && (
             <Link to={createPageUrl('Demo')}>
               <Button

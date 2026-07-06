@@ -82,3 +82,30 @@ test.describe('Customer portal — functional form', () => {
     ]);
   });
 });
+
+test.describe('Customer portal — real lookup (phone + call# → status)', () => {
+  // Requires a real, existing call in the target Base44 environment. See
+  // docs/E2E_SETUP.md for how to seed E2E_CUSTOMER_PHONE / E2E_CUSTOMER_CALL_NUMBER.
+  const customerPhone = process.env.E2E_CUSTOMER_PHONE;
+  const customerCallNumber = process.env.E2E_CUSTOMER_CALL_NUMBER;
+  const hasSeedData = hasRealBackend && Boolean(customerPhone && customerCallNumber);
+
+  test.skip(
+    !hasSeedData,
+    'E2E_CUSTOMER_PHONE / E2E_CUSTOMER_CALL_NUMBER not set — see docs/E2E_SETUP.md'
+  );
+
+  test('valid phone + call number returns the status card', async ({ page }) => {
+    await page.goto('/CustomerPortal');
+    await page.waitForLoadState('networkidle');
+
+    await page.getByPlaceholder('C-12345678').fill(customerCallNumber);
+    await page.getByPlaceholder('050-1234567').fill(customerPhone);
+
+    await page.getByRole('button', { name: /חפש קריאה/ }).click();
+
+    await expect(
+      page.getByRole('heading', { name: new RegExp(`קריאה ${customerCallNumber}`) })
+    ).toBeVisible({ timeout: 30_000 });
+  });
+});

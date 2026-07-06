@@ -44,14 +44,14 @@
 | GPS tracking: real-device accuracy + map tiles | 🟡 | manual (needs real mobile — automation uses a faked position) |
 | Photo upload + AI extraction | 🟡 | manual (needs real device) |
 | SMS notifications | 🟡 | manual (needs Twilio + real phone) |
-| Permissions: operator can't access AdminDataCleanup | 🔴 | TODO — add to `e2e/permissions.spec.js` |
-| Permissions: vendor only sees own calls | 🔴 | TODO |
-| Customer portal: phone+call# → status | 🔴 | TODO |
+| Permissions: operator can't access AdminDataCleanup | 🟢 (gated) | `e2e/permissions.spec.js` (בתוך `ADMIN_PAGES` ללולאת ה-operator) |
+| Permissions: vendor only sees own calls | 🟢 (gated) | `e2e/vendor-scoping.spec.js` — ניגש ישירות ל-`/VendorCallManagement?id=` עם call id זר/לא קיים, מוודא שההודעה "לא נמצאה/אין הרשאה" מוצגת ושום action-bar לא נחשף |
+| Customer portal: phone+call# → status | 🟢 (gated) | `e2e/customer-portal.spec.js` — דורש `E2E_CUSTOMER_PHONE`/`E2E_CUSTOMER_CALL_NUMBER` (קריאה קיימת אמיתית), ראו `docs/E2E_SETUP.md` |
 
 **(gated)** = רץ רק כשמוגדרים credentials של בדיקה: `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` (צד מוקדן — אין משתמש operator ייעודי, אדמין מבצע את שלבי המוקדן) ו-`E2E_VENDOR_EMAIL`/`E2E_VENDOR_PASSWORD` (פורטל הספקים). מדלג בחן כשחסר. ראו `docs/E2E_SETUP.md`.
 **(E2E_BASE_URL)** = רץ רק כשמכוונים ל-Base44 אמיתי (לא ב-CI ברירת מחדל).
 
-**סיכום**: 55 טסטים אוטומטיים — 21 structural (רצים על כל PR) + 34 gated (רצים על main + nightly עם secrets).
+**סיכום**: 57 טסטים אוטומטיים — 18 structural (רצים על כל PR, מאומת מקומית) + 39 gated (רצים על main + nightly עם secrets, או מקומית עם test users).
 
 ה-CI מריץ אוטומטית: `quick-tests` על כל PR, `full-e2e` על main + nightly. ראו `.github/workflows/test.yml`.
 
