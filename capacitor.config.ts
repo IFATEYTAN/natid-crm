@@ -11,6 +11,22 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
   },
+  android: {
+    // Required by @capacitor-community/background-geolocation: without the
+    // legacy bridge, Android halts background location updates after ~5 minutes.
+    // See docs/LIVE_TRACKING_CAPACITOR_PLAN.md.
+    useLegacyBridge: true,
+  },
+  plugins: {
+    // Route WebView fetch/XHR through the native HTTP stack. After ~5 minutes in
+    // the background Android throttles HTTP requests initiated from the WebView,
+    // which would stall the updateVendorLocation posts that carry the tracked
+    // location. CapacitorHttp keeps those requests flowing natively. Native-only;
+    // no effect on the web build.
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
 };
 
 export default config;

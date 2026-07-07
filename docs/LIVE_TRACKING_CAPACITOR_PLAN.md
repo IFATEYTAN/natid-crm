@@ -20,11 +20,21 @@ Capacitor עוטף את אפליקציית ה-React/Vite הקיימת כאפלי
 - ✅ `src/services/backgroundLocation.js` — מאזין מיקומי-רקע (דרך `registerPlugin`) שמזין את **`updateVendorLocation` הקיימת**.
 - ✅ חיווט ב-`VendorGPSTracker.jsx` — בנייטיב מפעיל מעקב-רקע ומדלג על ה-watch של הדפדפן; ב-web no-op מוחלט.
 - ✅ npm scripts: `cap:sync`, `cap:ios`, `cap:android`.
+- ✅ **פרויקטי נייטיב נוצרו והוקומטו** (`ios/` + `android/`) עם ה-plugin מחווט בשניהם (`npx cap add`).
+- ✅ **הרשאות iOS** ב-`ios/App/App/Info.plist`: `NSLocationWhenInUseUsageDescription`, `NSLocationAlwaysAndWhenInUseUsageDescription`, `UIBackgroundModes: [location]` (טקסטים בעברית).
+- ✅ **הרשאות Android** — מוצהרות אוטומטית ע"י ה-plugin (`ACCESS_FINE/COARSE_LOCATION`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`, ה-service וה-gps feature). ה-plugin משתמש ב-foreground service, ולכן **לא** נדרשת `ACCESS_BACKGROUND_LOCATION`.
+- ✅ **הגדרות אמינות ל-Android** ב-`capacitor.config.ts`:
+  - `android.useLegacyBridge: true` — בלעדיו Android עוצר עדכוני-רקע אחרי ~5 דק'.
+  - `plugins.CapacitorHttp.enabled: true` — מנתב בקשות WebView (כולל `updateVendorLocation`) דרך שכבת ה-HTTP הנייטיבית, כדי שלא ייחנקו אחרי ~5 דק' ברקע.
+- ✅ שם ערוץ ההתראה בעברית ("שיתוף מיקום") ב-`android/.../res/values/strings.xml`.
 
-**מה שנשאר (רץ מקומית על מחשב מפתח):**
-1. `npx cap add ios && npx cap add android` (יוצר את תיקיות הנייטיב).
-2. הוספת ההרשאות (סעיף "הרשאות" למטה).
-3. build והרצה על מכשיר + הפצה.
+**מה שנשאר (רץ מקומית על מחשב מפתח — דורש macOS/Xcode ו-Android Studio):**
+1. **iOS:** `cd ios/App && pod install` (CocoaPods לא זמין בלינוקס/CI), פתיחה ב-Xcode, הגדרת Signing Team, build על מכשיר.
+2. **Android:** פתיחה ב-Android Studio (`npm run cap:android`), sync של Gradle, build על מכשיר. אופציונלי: אייקון התראה ייעודי (`ic_tracking`) — כרגע ברירת המחדל היא אייקון האפליקציה.
+3. בדיקת מכשיר אמיתי: מסך נעול + מעבר ל-Waze → לוודא שהמיקום ממשיך להישלח (במיוחד מעבר לסף 5 דק' ברקע, שבודק את `useLegacyBridge` + `CapacitorHttp`).
+4. הפצה (סעיף "הפצה" למטה).
+
+> ⚠️ הערה ל-`CapacitorHttp`: הפעלתו משנה את שכבת ה-HTTP של **כל** קריאות ה-WebView בנייטיב (כולל ה-SDK של base44). זו הדרך המתועדת לפתור את חניקת בקשות-הרקע, אך יש לאמת על מכשיר שאימות/כותרות של base44 עובדים כרגיל. במידת הצורך אפשר לכבות ולנתב ידנית רק את `updateVendorLocation`.
 
 > הערה: ה-scaffold משתמש ב-plugin הקהילתי החינמי. לשדרוג production (מבוסס-תנועה, חסכוני יותר) אפשר להחליף ל-`@transistorsoft/capacitor-background-geolocation` — אותו מבנה, API דומה.
 
