@@ -15,8 +15,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Only vendors use this endpoint; admins/operators have full access through normal APIs
-    if (user.role !== 'vendor' && user.role !== 'ספק') {
+    // Only vendors use this endpoint; admins/operators have full access through normal APIs.
+    // Invited users carry platform role "user" — their app-level role lives in UserPermission,
+    // so fall back to that mapping before rejecting.
+    let isVendorRole = user.role === 'vendor' || user.role === 'ספק';
+    if (!isVendorRole && user.email) {
+      const perms = await base44.asServiceRole.entities.UserPermission.filter({
+        user_email: user.email,
+      });
+      isVendorRole = perms.some((p) => p.role_name === 'vendor' || p.role_name === 'ספק');
+    }
+    if (!isVendorRole) {
       return Response.json({ error: 'This endpoint is for vendor role only' }, { status: 403 });
     }
 
