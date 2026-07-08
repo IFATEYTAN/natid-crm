@@ -40,6 +40,26 @@ const DISPATCH_TYPES = [
   { key: 'tow_truck_storage', label: 'גרר עם אחסנה', icon: Warehouse, iconClass: 'text-stone-600' },
 ];
 
+// זיהוי יכולות הספק לפי service_type - תומך גם בערכי מפתח (mobile_unit/tow_truck) וגם בתוויות בעברית.
+const hasMobileService = (v) => {
+  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+  return types.includes('mobile_unit') || types.some((t) => t === 'ניידת');
+};
+
+const hasTowService = (v) => {
+  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
+  return types.includes('tow_truck') || types.some((t) => t === 'גרירה' || t === 'גרר');
+};
+
+// סינון ספקים לפי סוג רכב השירות שנבחר - ניידת מציגה רק ספקי ניידת, גרר/גרר עם אחסנה מציגים רק ספקי גרר.
+const filterVendorsByDispatchType = (vendorList, dispatchType) => {
+  if (dispatchType === 'mobile_unit') return vendorList.filter(hasMobileService);
+  if (dispatchType === 'tow_truck' || dispatchType === 'tow_truck_storage') {
+    return vendorList.filter(hasTowService);
+  }
+  return vendorList;
+};
+
 // סטטוסים שבהם הקריאה כבר "תפוסה" על-ידי ספק משובץ.
 const LOCKED_STATUSES = [
   'assigning',
@@ -76,6 +96,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
 
   const [selectedVendor, setSelectedVendor] = useState('');
   const [dispatchType, setDispatchType] = useState('');
+  const dispatchFilteredVendors = filterVendorsByDispatchType(availableVendors, dispatchType);
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [autoAssignInfo, setAutoAssignInfo] = useState(null);
   const [assigning, setAssigning] = useState(false);
@@ -108,6 +129,14 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
     setDestCity(call?.dropoff_location_city || '');
     setDestAddress(call?.dropoff_location_address || '');
   }, [open, call?.id]);
+
+  // ניקוי בחירת ספק ידנית אם היא כבר לא מתאימה לסוג רכב השירות שנבחר.
+  useEffect(() => {
+    if (selectedVendor && !dispatchFilteredVendors.some((v) => v.id === selectedVendor)) {
+      setSelectedVendor('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatchType]);
 
   const handleClose = (next) => {
     if (!next) {
@@ -469,10 +498,14 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
                 <SelectValue placeholder="בחר ספק" />
               </SelectTrigger>
               <SelectContent>
-                {availableVendors.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-gray-400">אין ספקים זמינים כרגע</div>
+                {dispatchFilteredVendors.length === 0 ? (
+                  <div className="px-3 py-2 text-sm text-gray-400">
+                    {dispatchType
+                      ? 'אין ספקים זמינים מהסוג שנבחר כרגע'
+                      : 'אין ספקים זמינים כרגע'}
+                  </div>
                 ) : (
-                  availableVendors.map((vendor) => (
+                  dispatchFilteredVendors.map((vendor) => (
                     <SelectItem key={vendor.id} value={vendor.id}>
                       {vendor.vendor_name}
                       {vendor.coverage_cities ? ` - ${vendor.coverage_cities}` : ''}
