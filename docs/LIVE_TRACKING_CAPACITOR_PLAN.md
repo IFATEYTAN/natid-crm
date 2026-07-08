@@ -36,7 +36,7 @@ Capacitor עוטף את אפליקציית ה-React/Vite הקיימת כאפלי
 
 > ⚠️ הערה ל-`CapacitorHttp`: הפעלתו משנה את שכבת ה-HTTP של **כל** קריאות ה-WebView בנייטיב (כולל ה-SDK של base44). זו הדרך המתועדת לפתור את חניקת בקשות-הרקע, אך יש לאמת על מכשיר שאימות/כותרות של base44 עובדים כרגיל. במידת הצורך אפשר לכבות ולנתב ידנית רק את `updateVendorLocation`.
 
-> הערה: ה-scaffold משתמש ב-plugin הקהילתי החינמי. לשדרוג production (מבוסס-תנועה, חסכוני יותר) אפשר להחליף ל-`@transistorsoft/capacitor-background-geolocation` — אותו מבנה, API דומה.
+> **✅ החלטה (סגורה):** נשארים עם ה-plugin הקהילתי **החינמי** `@capacitor-community/background-geolocation`. אם בעתיד ההצדקה תעלה (חיסכון סוללה, מעקב מבוסס-תנועה) אפשר לשדרג ל-`@transistorsoft/capacitor-background-geolocation` — אותו מבנה, API דומה, בלי שינוי בצד השרת.
 
 ## דרישות מקדימות
 - חשבון Apple Developer (להפצת iOS) + חשבון Google Play (Android), או הפצה פנימית (MDM / TestFlight / APK).
@@ -114,7 +114,7 @@ await BackgroundGeolocation.start();
 - **Push "עדכון מיקום נדרש"** — `nudgeStaleVendorLocations` (cron ~5 דק') לספק בקריאה פעילה עם מיקום שהתיישן.
 - **חיווי "מיקום לא עדכני"** במסכי המעקב (`LocationFreshnessBadge`).
 
-## נקודות החלטה לפני התחלה
-1. iOS + Android, או אחד מהם בלבד?
-2. הפצה פנימית (MDM/TestFlight) או חנויות ציבוריות?
-3. plugin בתשלום (Transistorsoft, בשל יותר) או קהילתי חינמי?
+## נקודות החלטה
+1. ✅ **הוחלט:** iOS + Android שניהם. Android נבנה קודם (ללא Mac); iOS ממתין למחשב Mac (עדיאל).
+2. ⏳ **פתוח:** הפצה פנימית (MDM/TestFlight/APK ישיר) או חנויות ציבוריות (Google Play + App Store)?
+3. ✅ **הוחלט:** plugin קהילתי **חינמי** (`@capacitor-community/background-geolocation`).
