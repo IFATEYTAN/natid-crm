@@ -60,6 +60,30 @@ const filterVendorsByDispatchType = (vendorList, dispatchType) => {
   return vendorList;
 };
 
+// תרגום קוד השגיאה שמוחזר מ-assignVendorToCall להודעה ברורה בעברית.
+// הפונקציה תחזיר תוצאה גם עבור שגיאות HTTP (4xx/409) שגורמות לקריאת ה-axios
+// לזרוק חריגה, וגם עבור body עם success:false שחוזר בסטטוס 200 - כדי שהודעת
+// השגיאה האמיתית תוצג למשתמש במקום הודעת axios הגנרית "Request failed...".
+const ASSIGN_ERROR_LABELS = {
+  'Vendor is not available': 'הספק אינו זמין',
+  'Vendor is already handling another call or has a pending offer':
+    'הספק כבר מטפל בקריאה אחרת או שיש לו הצעה ממתינה',
+  'Call already has a pending assignment offer': 'לקריאה כבר יש הצעת שיבוץ ממתינה לספק אחר',
+  'Call not found': 'הקריאה לא נמצאה - ייתכן שנמחקה או עודכנה',
+  'Vendor not found': 'הספק לא נמצא - ייתכן שנמחק',
+  'Unauthorized - admin or operator role required': 'אין לך הרשאה לבצע שיבוץ',
+  'No available vendors': 'אין ספקים זמינים כרגע',
+};
+
+const describeAssignError = (error, data) => {
+  const body = data || error?.response?.data;
+  const serverError = body?.error;
+  if (serverError === 'Call already assigned to a vendor') {
+    return `הקריאה כבר שובצה ל-${body?.assigned_vendor_name || 'ספק אחר'}`;
+  }
+  return ASSIGN_ERROR_LABELS[serverError] || serverError || error?.message || 'שגיאה לא ידועה';
+};
+
 // סטטוסים שבהם הקריאה כבר "תפוסה" על-ידי ספק משובץ.
 const LOCKED_STATUSES = [
   'assigning',
@@ -172,7 +196,9 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
         toast.error(
           data?.error === 'No available vendors'
             ? 'אין ספקים זמינים כרגע'
-            : 'לא נמצא ספק מתאים לשיבוץ אוטומטי'
+            : data?.error
+              ? describeAssignError(null, data)
+              : 'לא נמצא ספק מתאים לשיבוץ אוטומטי'
         );
         return;
       }
@@ -186,7 +212,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
       });
       toast.success(`הומלץ אוטומטית: ${rec.vendor_name}. לחצי "שבץ" לאישור.`);
     } catch (error) {
-      toast.error(`שיבוץ אוטומטי נכשל: ${error?.message || 'שגיאה לא ידועה'}`);
+      toast.error(`שיבוץ אוטומטי נכשל: ${describeAssignError(error)}`);
     } finally {
       setAutoAssigning(false);
     }
@@ -232,9 +258,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
     });
     const data = res?.data || res;
     if (!data?.success) {
-      toast.error(
-        data?.error === 'Vendor is not available' ? 'הספק אינו זמין' : 'שיבוץ ההמשך נכשל'
-      );
+      toast.error(`שיבוץ ההמשך נכשל: ${describeAssignError(null, data)}`);
       return;
     }
 
@@ -303,13 +327,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
       });
       const data = res?.data || res;
       if (!data?.success) {
-        const msg =
-          data?.error === 'Vendor is not available'
-            ? 'הספק אינו זמין'
-            : data?.error === 'Call already assigned to a vendor'
-              ? `הקריאה כבר שובצה ל-${data?.assigned_vendor_name || 'ספק אחר'}`
-              : 'השיבוץ נכשל';
-        toast.error(msg);
+        toast.error(`השיבוץ נכשל: ${describeAssignError(null, data)}`);
         queryClient.invalidateQueries({ queryKey: queryKeys.calls.all() });
         return;
       }
@@ -328,7 +346,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
       toast.success(`הקריאה הוצעה ל-${vendor?.vendor_name} — ממתין לאישור הספק`);
       handleClose(false);
     } catch (error) {
-      toast.error(`השיבוץ נכשל: ${error?.message || 'שגיאה לא ידועה'}`);
+      toast.error(`השיבוץ נכשל: ${describeAssignError(error)}`);
     } finally {
       setAssigning(false);
     }
@@ -431,7 +449,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
                 <div className="space-y-2">
                   <Label className="flex items-center gap-1.5 text-stone-700">
                     <Truck className="w-3.5 h-3.5" />
-                    יעד סופי
+                    יעד סופי / יעד המשך מאחסנה
                   </Label>
                   <CityAutocomplete
                     id="dest_city"
@@ -448,7 +466,8 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
               )}
               {isStorage && (
                 <p className="text-xs text-stone-500">
-                  גרר 1: איסוף → אחסנה. גרר 2 (קריאת המשך): אחסנה → יעד סופי.
+                  גרר 1: איסוף → אחסנה. גרר 2 (קריאת המשך): אחסנה → יעד סופי / יעד המשך (ייתכנו מספר
+                  רגלי אחסנה).
                 </p>
               )}
             </div>
@@ -500,9 +519,7 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
               <SelectContent>
                 {dispatchFilteredVendors.length === 0 ? (
                   <div className="px-3 py-2 text-sm text-gray-400">
-                    {dispatchType
-                      ? 'אין ספקים זמינים מהסוג שנבחר כרגע'
-                      : 'אין ספקים זמינים כרגע'}
+                    {dispatchType ? 'אין ספקים זמינים מהסוג שנבחר כרגע' : 'אין ספקים זמינים כרגע'}
                   </div>
                 ) : (
                   dispatchFilteredVendors.map((vendor) => (
