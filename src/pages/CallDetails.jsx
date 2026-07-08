@@ -202,8 +202,10 @@ export default function CallDetailsPage() {
         call_status: newStatus,
         reason: newStatus === 'waiting_treatment' ? reason : undefined,
       });
-    } catch {
-      toast.error('שגיאה בעדכון סטטוס');
+    } catch (error) {
+      toast.error(
+        `שגיאה בעדכון סטטוס: ${error?.response?.data?.error || error?.message || 'שגיאה לא ידועה'}`
+      );
       return;
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.calls.single(callId) });
@@ -271,8 +273,10 @@ export default function CallDetailsPage() {
       });
       result = res?.data ?? res;
       if (result?.error) throw new Error(result.error);
-    } catch {
-      toast.error('שגיאה בסגירת הקריאה');
+    } catch (error) {
+      toast.error(
+        `שגיאה בסגירת הקריאה: ${error?.response?.data?.error || error?.message || 'שגיאה לא ידועה'}`
+      );
       return;
     }
 
