@@ -101,4 +101,4 @@ function computeCallSatisfaction(tokens: FeedbackTokenLike[]): CallSatisfactionR
   // Every attempt was sent, expired, and never answered.
   return { status: 'no_answer', color: null, rating: null, answered_at: null };
 }
-// ===== End inline _shared/satisfaction =====
+// ===== End inline _shared/satisfaction ===== (redeploy)
