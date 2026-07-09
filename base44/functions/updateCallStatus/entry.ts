@@ -65,3 +65,5 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Failed to update call status' }, { status: 500 });
   }
 });
+
+// redeploy-marker v2

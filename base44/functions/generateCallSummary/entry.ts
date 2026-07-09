@@ -169,3 +169,4 @@ ${callData.historyNotes ? `\nהיסטוריית פעולות:\n${callData.histor
     return Response.json({ error: 'Failed to generate call summary' }, { status: 500 });
   }
 });
+// redeploy-marker v2

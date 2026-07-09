@@ -19,3 +19,4 @@ Deno.serve(async (req) => {
         instructions: "Copy these keys and paste them as VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in the secrets panel"
     });
 });
+// redeploy-marker v2

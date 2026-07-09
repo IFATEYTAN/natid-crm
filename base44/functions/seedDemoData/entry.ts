@@ -342,3 +342,4 @@ Deno.serve(async (req) => {
     return Response.json({ success: false, error: 'Failed to seed demo data' }, { status: 500 });
   }
 });
+// redeploy-marker v2

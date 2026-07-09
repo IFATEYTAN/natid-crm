@@ -103,3 +103,5 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Failed to assign vendor' }, { status: 500 });
   }
 });
+
+// redeploy-marker v2
