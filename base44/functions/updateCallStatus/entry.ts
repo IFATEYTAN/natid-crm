@@ -12,7 +12,7 @@ import { syncCallStatus } from './_shared/syncCallStatus.ts';
  * NOT for closing statuses — those go through closeCall, which additionally applies
  * the closing rules (customer SMS, linked continuation call) on top of the same sync.
  */
-// redeploy 2026-07-09: _shared/appRole moved to appRole/entry.ts (deploy-breaking flat file)
+// redeploy 2026-07-09 v2: _shared/appRole moved to appRole/entry.ts (deploy-breaking flat file)
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
