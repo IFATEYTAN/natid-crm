@@ -1,9 +1,5 @@
 /**
-<<<<<<<< HEAD:base44/functions/_shared/appRole/entry.ts
- * App-level role resolution for backend functions. (v3 — registered via platform write path)
-========
- * App-level role resolution for backend functions. (v5 — guarded serve so the standalone deploy succeeds)
->>>>>>>> origin/main:base44/functions/_shared/appRole.ts
+ * App-level role resolution for backend functions.
  *
  * Invited users carry the Base44 platform role "user"; their real app role
  * lives in the UserPermission entity (role_name, Hebrew or English). Any
