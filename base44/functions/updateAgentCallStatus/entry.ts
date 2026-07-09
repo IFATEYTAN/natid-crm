@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 // Fields an agent is allowed to set directly
 const ALLOWED_AGENT_FIELDS = ['call_status', 'cannot_complete_reason', 'agent_notes'];
@@ -230,3 +229,76 @@ async function resolveAppRole(base44: any, user: any): Promise<string | null> {
   return 'operator';
 }
 // ===== End inline app-role resolution =====
+
+// ===== Inline call-status sync (kept per-file: re-saving a _shared module through the
+// platform invalidates its deployment record and breaks every importer - see
+// docs/LESSONS_LEARNED.md 2026-07-09) =====
+// Call.call_status -> WorkQueue.queue_status
+const QUEUE_STATUS_MAP: Record<string, string> = {
+  waiting_treatment: 'waiting_in_queue',
+  awaiting_assignment: 'waiting_in_queue',
+  assigning: 'in_progress',
+  vendor_enroute: 'in_progress',
+  vendor_arrived: 'in_progress',
+  in_progress: 'in_progress',
+  cannot_complete: 'in_progress',
+  completed: 'completed',
+  cancelled: 'completed',
+  in_storage: 'completed',
+};
+
+// Call.call_status -> Case.status
+const CASE_STATUS_MAP: Record<string, string> = {
+  assigning: 'assigned',
+  vendor_enroute: 'en_route',
+  vendor_arrived: 'on_site',
+  in_progress: 'in_progress',
+  completed: 'completed',
+  cancelled: 'cancelled',
+  in_storage: 'completed',
+};
+
+/**
+ * Sync the WorkQueue item(s) and Case linked to a call to a new call_status.
+ * Best-effort and non-throwing - status mirroring must never block the primary update.
+ */
+// deno-lint-ignore no-explicit-any
+async function syncCallStatus(
+  base44: any,
+  call: any,
+  newCallStatus: string,
+  extraCaseUpdates: Record<string, any> = {}
+) {
+  const svc = base44.asServiceRole;
+  try {
+    const queueStatus = QUEUE_STATUS_MAP[newCallStatus];
+    if (queueStatus) {
+      const items = await svc.entities.WorkQueue.filter({ call_id: call.id });
+      for (const item of items) {
+        if (item.queue_status !== queueStatus) {
+          const upd: Record<string, any> = { queue_status: queueStatus };
+          if (queueStatus === 'completed' && !item.completed_at) {
+            upd.completed_at = new Date().toISOString();
+          }
+          await svc.entities.WorkQueue.update(item.id, upd);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('syncCallStatus: WorkQueue sync failed', e);
+  }
+  try {
+    const caseStatus = CASE_STATUS_MAP[newCallStatus];
+    const caseUpdates: Record<string, any> = { ...extraCaseUpdates };
+    if (caseStatus) caseUpdates.status = caseStatus;
+    if (Object.keys(caseUpdates).length > 0 && call.call_number) {
+      const cases = await svc.entities.Case.filter({ case_number: call.call_number });
+      if (cases.length > 0) {
+        await svc.entities.Case.update(cases[0].id, caseUpdates);
+      }
+    }
+  } catch (e) {
+    console.error('syncCallStatus: Case sync failed', e);
+  }
+}
+// ===== End inline call-status sync =====
