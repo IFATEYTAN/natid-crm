@@ -1,5 +1,9 @@
 /**
+<<<<<<<< HEAD:base44/functions/_shared/appRole/entry.ts
  * App-level role resolution for backend functions. (v3 — registered via platform write path)
+========
+ * App-level role resolution for backend functions. (v5 — guarded serve so the standalone deploy succeeds)
+>>>>>>>> origin/main:base44/functions/_shared/appRole.ts
  *
  * Invited users carry the Base44 platform role "user"; their real app role
  * lives in the UserPermission entity (role_name, Hebrew or English). Any
@@ -51,4 +55,14 @@ export async function resolveAppRole(base44: any, user: any): Promise<string | n
   }
   // Same default as the frontend: unknown or unmapped invited users act as operator.
   return 'operator';
+}
+
+// Shared module — not an API endpoint. The platform still deploys every file under
+// functions/ as an isolate; without a server the deploy fails and the module never
+// becomes importable. Serve a stub ONLY when run standalone (import.meta.main),
+// so importers are unaffected.
+if (import.meta.main) {
+  Deno.serve(() =>
+    Response.json({ error: 'Shared module - not directly invokable' }, { status: 404 })
+  );
 }
