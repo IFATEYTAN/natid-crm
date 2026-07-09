@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { resolveAppRole } from './_shared/appRole.ts';
+import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
 
 const kv = await Deno.openKv();
