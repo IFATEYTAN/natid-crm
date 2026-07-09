@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate (deploy-check)
+import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate (deploy-check-2)
 import { differenceInMinutes, subHours } from 'npm:date-fns@3.6.0';
 
 /**
