@@ -40,16 +40,26 @@ const DISPATCH_TYPES = [
   { key: 'tow_truck_storage', label: 'גרר עם אחסנה', icon: Warehouse, iconClass: 'text-stone-600' },
 ];
 
-// זיהוי יכולות הספק לפי service_type - תומך גם בערכי מפתח (mobile_unit/tow_truck) וגם בתוויות בעברית.
-const hasMobileService = (v) => {
+// זיהוי יכולות הספק: לפי service_type אם קיים (ערכי מפתח או תוויות בעברית), אחרת לפי שם הספק —
+// לרוב הספקים המיובאים מהמערכת הישנה service_type ריק, וסינון לפי השדה בלבד היה מסתיר את כולם.
+// ספק שלא ניתן לסווג בכלל לא מוסתר (מופיע בשתי הרשימות) — עדיף להציג יותר מדי מאשר לחסום שיבוץ.
+const MOBILE_TYPE_VALUES = ['mobile_unit', 'tire_service', 'mechanic', 'multi_service', 'ניידת'];
+const TOW_TYPE_VALUES = ['tow_truck', 'towing', 'multi_service', 'גרירה', 'גרר'];
+const MOBILE_NAME_PATTERN = /ניידת|סטרטר/;
+const TOW_NAME_PATTERN = /גרר|גורר|גרירה/;
+
+const classifyVendor = (v) => {
   const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-  return types.includes('mobile_unit') || types.some((t) => t === 'ניידת');
+  const name = v.vendor_name || '';
+  const mobile =
+    types.some((t) => MOBILE_TYPE_VALUES.includes(t)) || MOBILE_NAME_PATTERN.test(name);
+  const tow = types.some((t) => TOW_TYPE_VALUES.includes(t)) || TOW_NAME_PATTERN.test(name);
+  if (!mobile && !tow) return { mobile: true, tow: true };
+  return { mobile, tow };
 };
 
-const hasTowService = (v) => {
-  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-  return types.includes('tow_truck') || types.some((t) => t === 'גרירה' || t === 'גרר');
-};
+const hasMobileService = (v) => classifyVendor(v).mobile;
+const hasTowService = (v) => classifyVendor(v).tow;
 
 // סינון ספקים לפי סוג רכב השירות שנבחר - ניידת מציגה רק ספקי ניידת, גרר/גרר עם אחסנה מציגים רק ספקי גרר.
 const filterVendorsByDispatchType = (vendorList, dispatchType) => {
