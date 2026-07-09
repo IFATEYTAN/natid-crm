@@ -81,7 +81,10 @@ Deno.serve(async (req) => {
       ];
 
       // Check cache first
-      const cached = await kv.get<{ roadDistance: number; duration: number }>(cacheKey);
+      const cacheKv = await openKvSafe();
+      const cached = cacheKv
+        ? await cacheKv.get<{ roadDistance: number; duration: number }>(cacheKey)
+        : { value: null };
       if (cached.value) {
         roadDistance = cached.value.roadDistance;
         duration = cached.value.duration;
@@ -107,7 +110,10 @@ Deno.serve(async (req) => {
               duration = Math.round(leg.duration.value / 60);
 
               // Cache the result
-              await kv.set(cacheKey, { roadDistance, duration }, { expireIn: CACHE_TTL_MS });
+              const setKv = await openKvSafe();
+              if (setKv) {
+                await setKv.set(cacheKey, { roadDistance, duration }, { expireIn: CACHE_TTL_MS });
+              }
             } else if (data.status === 'OVER_QUERY_LIMIT') {
               console.error('Google Maps OVER_QUERY_LIMIT - falling back to Haversine');
             }
