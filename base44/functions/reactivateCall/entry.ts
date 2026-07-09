@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-import { resolveAppRole } from './_shared/appRole.ts';
+import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate
 
 /**
  * "הפעלת קריאה מחדש" (QA audit #109, requirement ג'): when a call was
