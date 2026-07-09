@@ -172,7 +172,7 @@ async function resolveAppRole(base44: any, user: any): Promise<string | null> {
   }
   return 'operator';
 }
-// ===== End inline app-role resolution =====
+// ===== End inline app-role resolution ===== (redeploy)
 
 // ===== Inline call-status sync (kept per-file: re-saving a _shared module through the
 // platform invalidates its deployment record and breaks every importer - see
