@@ -535,7 +535,20 @@ Deno.serve(async (req) => {
     if (!isAutomation) {
       let user = null;
       try { user = await base44.auth.me(); } catch (_) {}
-      if (!user || user.role !== 'admin') {
+      if (!user) {
+        return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
+      }
+      // Invited users carry platform role "user" — their app-level role lives in UserPermission.
+      let isAdmin = user.role === 'admin';
+      if (!isAdmin && user.email) {
+        try {
+          const perms = await base44.asServiceRole.entities.UserPermission.filter({
+            user_email: user.email,
+          });
+          isAdmin = perms.some((p) => ['admin', 'מנהל', 'מנהל מערכת'].includes(p.role_name));
+        } catch (_) {}
+      }
+      if (!isAdmin) {
         return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
       }
     }
