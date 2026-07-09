@@ -52,3 +52,4 @@ export async function resolveAppRole(base44: any, user: any): Promise<string | n
   // Same default as the frontend: unknown or unmapped invited users act as operator.
   return 'operator';
 }
+  
