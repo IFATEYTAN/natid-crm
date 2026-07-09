@@ -1,5 +1,5 @@
 /**
- * App-level role resolution for backend functions.
+ * App-level role resolution for backend functions. (v2 — force redeploy)
  *
  * Invited users carry the Base44 platform role "user"; their real app role
  * lives in the UserPermission entity (role_name, Hebrew or English). Any
