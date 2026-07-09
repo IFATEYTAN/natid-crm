@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { resolveAppRole } from './_shared/appRole.ts';
+import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate
 
 Deno.serve(async (req) => {
   try {
