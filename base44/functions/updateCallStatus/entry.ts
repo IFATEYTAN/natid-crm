@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 /**
@@ -15,7 +16,8 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user || !['admin', 'operator'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!user || !['admin', 'operator'].includes(appRole)) {
       return Response.json(
         { error: 'Unauthorized - admin or operator role required' },
         { status: 403 }

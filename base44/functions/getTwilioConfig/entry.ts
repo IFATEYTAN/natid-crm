@@ -1,10 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { resolveAppRole } from './_shared/appRole.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
+    const appRole = await resolveAppRole(base44, user);
+    if (!user || appRole !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
     const sid = Deno.env.get('TWILIO_ACCOUNT_SID') || '';

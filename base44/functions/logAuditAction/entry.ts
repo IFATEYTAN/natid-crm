@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
 
 const kv = await Deno.openKv();
@@ -14,7 +15,8 @@ Deno.serve(async (req) => {
     }
 
     // Only admins and operators can create audit log entries
-    if (!['admin', 'operator'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!['admin', 'operator'].includes(appRole)) {
       return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
     }
 
@@ -36,7 +38,7 @@ Deno.serve(async (req) => {
       user_id: user.id,
       user_email: user.email,
       user_name: user.full_name,
-      user_role: user.role,
+      user_role: appRole,
       details: typeof details === 'object' ? JSON.stringify(details) : details,
       severity,
       ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',

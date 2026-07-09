@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { getClosingStatus, createContinuationCall } from './_shared/closingStatuses.ts';
 import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
@@ -36,8 +37,8 @@ Deno.serve(async (req) => {
     }
     const call = calls[0];
 
-    // Authorization / ownership
-    const role = user.role;
+    // Authorization / ownership (app-level role — invited users carry platform role "user")
+    const role = await resolveAppRole(base44, user);
     const isOps = role === 'admin' || role === 'operator';
     if (!isOps) {
       if (role === 'vendor' || role === 'ספק') {

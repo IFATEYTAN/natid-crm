@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 
 /**
  * Update vendor location - called from vendor GPS tracker
@@ -16,8 +17,10 @@ Deno.serve(async (req) => {
 
     console.log('[updateVendorLocation] User:', user.email, 'Role:', user.role);
 
+    const appRole = await resolveAppRole(base44, user);
+
     // Only vendors (and admins for testing) can update vendor location
-    if (!['admin', 'vendor'].includes(user.role)) {
+    if (!['admin', 'vendor'].includes(appRole)) {
       console.log('[updateVendorLocation] Forbidden - role:', user.role);
       return Response.json({ error: 'Forbidden - vendor role required' }, { status: 403 });
     }
@@ -63,7 +66,7 @@ Deno.serve(async (req) => {
     console.log('[updateVendorLocation] Found vendor:', vendor.vendor_name, 'email:', vendor.email);
 
     // Ownership check: vendors can only update their own location
-    if (user.role === 'vendor' && vendor.email !== user.email) {
+    if (appRole === 'vendor' && vendor.email !== user.email) {
       console.log('[updateVendorLocation] Ownership mismatch:', vendor.email, '!=', user.email);
       return Response.json({ error: 'Forbidden - can only update your own location' }, { status: 403 });
     }

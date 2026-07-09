@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { autoOfferCall } from './_shared/assignVendor.ts';
 import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
@@ -31,7 +32,8 @@ Deno.serve(async (req) => {
     } catch {
       user = null;
     }
-    if (user && !['admin', 'operator'].includes(user.role)) {
+    const appRole = user ? await resolveAppRole(base44, user) : null;
+    if (user && !['admin', 'operator'].includes(appRole)) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

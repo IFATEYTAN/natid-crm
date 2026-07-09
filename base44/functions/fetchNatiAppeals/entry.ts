@@ -5,6 +5,7 @@
  * Connection handling + circuit breaker live in ./_shared/natiDb.ts.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { resolveAppRole } from './_shared/appRole.ts';
 import mysql from 'npm:mysql2@3.9.7/promise';
 import net from 'node:net';
 
@@ -225,7 +226,8 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
+    const appRole = await resolveAppRole(base44, user);
+    if (!user || appRole !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 

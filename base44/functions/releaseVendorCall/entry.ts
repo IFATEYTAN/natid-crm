@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { autoOfferCall } from './_shared/assignVendor.ts';
 import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
@@ -20,7 +21,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!['admin', 'operator', 'vendor', 'ספק'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!['admin', 'operator', 'vendor'].includes(appRole)) {
       return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
     }
 
@@ -40,7 +42,7 @@ Deno.serve(async (req) => {
     }
 
     // Ownership check: a vendor can only release a call assigned to them
-    if (user.role === 'vendor' || user.role === 'ספק') {
+    if (appRole === 'vendor') {
       const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ email: user.email });
       if (!vendorRecords.length || call.assigned_vendor_id !== vendorRecords[0].id) {
         return Response.json({ error: 'Forbidden - this call is not assigned to you' }, { status: 403 });

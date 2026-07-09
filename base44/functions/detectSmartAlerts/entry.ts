@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { differenceInMinutes, subHours } from 'npm:date-fns@3.6.0';
 
 /**
@@ -35,7 +36,8 @@ Deno.serve(async (req) => {
       } catch {
         user = null;
       }
-      if (!user || !['admin', 'operator'].includes(user.role)) {
+      const appRole = await resolveAppRole(base44, user);
+      if (!user || !['admin', 'operator'].includes(appRole)) {
         return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
     }
