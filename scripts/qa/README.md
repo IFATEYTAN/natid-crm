@@ -1,35 +1,43 @@
-# QA automation scripts
+# QA automation scripts (E2E)
 
-## `e2e-core-journey.mjs`
+Full skill + process: **`.claude/skills/e2e-testing.md`**. Scenarios: `docs/QA_E2E_TEST_SCENARIOS.md`.
 
-Automates the core call-lifecycle E2E journey (create → assign → vendor accept →
-status transitions) across operator + vendor browser sessions.
-
-> ⚠️ **Run against STAGING, not production.** It creates calls, sends SMS, and
-> mutates vendor/call state.
-
+## Setup (once)
 ```bash
-npm i -D playwright   # if not installed
+npm i -D playwright                       # or: cd <scratchpad> && npm install playwright
+cp scripts/qa/.env.e2e.example scripts/qa/.env.e2e   # then fill in passwords
+set -a; source scripts/qa/.env.e2e; set +a
+```
+Inside the Claude Code cloud sandbox, keep `PROXY=$HTTPS_PROXY`, `TLS_MAX=tls1.2`,
+`CHROMIUM_PATH=/opt/pw-browsers/chromium` (the proxy doesn't support Chromium's TLS 1.3).
 
-BASE_URL=https://staging-xxx.base44.app \
-OP_EMAIL=operator@test  OP_PW=***  \
-VND_EMAIL=vendor@test   VND_PW=*** \
-VENDOR_NAME="Test Vendor"          \
-SHOTS_DIR=./qa-shots               \
-node scripts/qa/e2e-core-journey.mjs
+## Run order
+
+### 1. Connectivity + deployment smoke (always first)
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" "$BASE_URL"     # 200/302 ok, 000 = network blocked
+node scripts/qa/e2e-smoke.mjs                            # invited operator: functions 200 vs 403/404
+```
+`403/404` → the backend role fix is **not deployed**; ask the owner to Publish in the Base44 editor. Stop here.
+
+### 2. Permissions matrix (part ו', F1–F7 — safe, no writes)
+```bash
+node scripts/qa/e2e-permissions.mjs
 ```
 
-Optional env: `DISPATCH` (default `ניידת`), `TEST_PHONE`, `TEST_ADDR`,
-`PROXY` + `TLS_MAX` (behind a TLS-terminating proxy), `CHROMIUM_PATH`.
+### 3. Core call-lifecycle journey (creates production data — see warning)
+```bash
+node scripts/qa/e2e-core-journey.mjs
+```
+Covers A1 create → A3 assign vendor → A4 vendor accept → A5 status transitions.
 
-Exit code `0` = all steps passed, `1` = at least one failed, `2` = missing env.
+> ⚠️ **Prefer STAGING.** On production this creates calls, sends SMS, and mutates
+> vendor/call state. Use `TEST_PHONE`/`TEST_ADDR`, mark calls `E2E …`, and clean
+> up (set `cancelled`) afterwards. Never close a call that would SMS a real phone.
 
-### What it covers (maps to `docs/QA_E2E_TEST_SCENARIOS.md`)
-- A1.1 create call + validation
-- A3.4 operator assigns vendor (offer model)
-- A4.3 vendor accepts the offer
-- A5 vendor status transitions (יצאתי לדרך → הגעתי למקום)
+## Coverage
+Automated: A1, A3–A5, permissions (ו'), reports (ז'), sync via DB (ה'), notification bell (ד').
+Manual/device (team, per the 95-test doc): GPS (ב'), AI output (ג'), photos, signature, customer SMS.
 
-Steps that need a real device / customer phone / signature (GPS, photos,
-customer SMS, closing signature) are intentionally out of scope — see the
-coverage matrix in `docs/QA_E2E_RUN_2026-07-09.md`.
+## Exit codes
+`0` all passed · `1` a check failed · `2` missing env · `3` navigation/network error.
