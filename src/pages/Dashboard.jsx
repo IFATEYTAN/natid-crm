@@ -88,7 +88,7 @@ export default function Dashboard() {
       await queryClient.invalidateQueries();
     } catch (err) {
       console.error('Nati sync error:', err);
-      toast.error(err?.response?.data?.error || err?.message || 'שגיאה בסנכרון מנתי');
+      toast.error(err?.response?.data?.error || 'שגיאה בסנכרון מנתיד — נסו שוב בעוד מספר דקות');
     }
     setIsSyncingNati(false);
   };
