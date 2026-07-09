@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate
+import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate (deploy-check-2)
 import { differenceInMinutes, subHours } from 'npm:date-fns@3.6.0';
 
 /**
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Use service role for system tasks
+    // Use service role for system tasks (redeploy-check)
     const client = base44.asServiceRole;
 
     const admins = await client.entities.User.filter({ role: 'admin' });
