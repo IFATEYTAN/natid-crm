@@ -1,6 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const kv = await Deno.openKv();
+// Deno KV is unavailable at isolate boot on this platform - a top-level
+// `await Deno.openKv()` crashes every deploy (UNCAUGHT_EXCEPTION: "Default
+// database is not available"). Open lazily at request time and fail open.
+// See docs/LESSONS_LEARNED.md 2026-07-09.
+let _lazyKv: Deno.Kv | null = null;
+let _lazyKvUnavailable = false;
+async function openKvSafe(): Promise<Deno.Kv | null> {
+  if (_lazyKv || _lazyKvUnavailable) return _lazyKv;
+  try {
+    _lazyKv = await Deno.openKv();
+  } catch (e) {
+    console.error('Deno KV unavailable - falling back to no-op storage', e);
+    _lazyKvUnavailable = true;
+  }
+  return _lazyKv;
+}
+
+const kv: Deno.Kv | null = null; // opened lazily via openKvSafe() - see below
 const limiter = createRateLimiter(kv);
 
 Deno.serve(async (req) => {
@@ -146,14 +163,11 @@ interface RateLimitResult {
   resetAt: number;
 }
 
-function createRateLimiter(kv: Deno.Kv) {
+function createRateLimiter(_bootKv: Deno.Kv | null) {
   return {
     /**
-     * Check and consume a rate limit token.
-     * @param prefix - Category prefix (e.g., 'sms', 'webhook', 'maps')
-     * @param key - Unique identifier (user ID, IP address, phone number)
-     * @param maxRequests - Maximum requests allowed in the window
-     * @param windowMs - Time window in milliseconds
+     * Check and consume a rate limit token. Fails OPEN (allowed) when Deno KV
+     * is unavailable in this runtime - availability must not block business flows.
      */
     async check(
       prefix: string,
@@ -161,57 +175,39 @@ function createRateLimiter(kv: Deno.Kv) {
       maxRequests: number,
       windowMs: number
     ): Promise<RateLimitResult> {
+      const kv = await openKvSafe();
       const now = Date.now();
+      if (!kv) return { allowed: true, remaining: maxRequests, resetAt: now + windowMs };
       const windowStart = now - windowMs;
       const kvKey = ['rate_limit', prefix, key];
-
-      // Get current window data
       const entry = await kv.get<{ timestamps: number[] }>(kvKey);
-      const timestamps = (entry.value?.timestamps || []).filter(
-        (t) => t > windowStart
-      );
-
+      const timestamps = (entry.value?.timestamps || []).filter((t) => t > windowStart);
       if (timestamps.length >= maxRequests) {
         const oldestInWindow = timestamps[0];
-        return {
-          allowed: false,
-          remaining: 0,
-          resetAt: oldestInWindow + windowMs,
-        };
+        return { allowed: false, remaining: 0, resetAt: oldestInWindow + windowMs };
       }
-
-      // Add current request timestamp
       timestamps.push(now);
       await kv.set(kvKey, { timestamps }, { expireIn: windowMs });
-
-      return {
-        allowed: true,
-        remaining: maxRequests - timestamps.length,
-        resetAt: now + windowMs,
-      };
+      return { allowed: true, remaining: maxRequests - timestamps.length, resetAt: now + windowMs };
     },
 
-    /**
-     * Get daily counter for quota monitoring (e.g., Google Maps API).
-     * @param prefix - Category prefix
-     * @returns Current daily count
-     */
+    /** Daily counter for quota monitoring (0 when KV is unavailable). */
     async getDailyCount(prefix: string): Promise<number> {
-      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-      const kvKey = ['daily_count', prefix, today];
-      const entry = await kv.get<{ count: number }>(kvKey);
+      const kv = await openKvSafe();
+      if (!kv) return 0;
+      const today = new Date().toISOString().slice(0, 10);
+      const entry = await kv.get<{ count: number }>(['daily_count', prefix, today]);
       return entry.value?.count || 0;
     },
 
-    /**
-     * Increment daily counter.
-     */
+    /** Increment daily counter (no-op returning 0 when KV is unavailable). */
     async incrementDaily(prefix: string): Promise<number> {
+      const kv = await openKvSafe();
+      if (!kv) return 0;
       const today = new Date().toISOString().slice(0, 10);
       const kvKey = ['daily_count', prefix, today];
       const entry = await kv.get<{ count: number }>(kvKey);
       const newCount = (entry.value?.count || 0) + 1;
-      // Expire after 48 hours to auto-cleanup
       await kv.set(kvKey, { count: newCount }, { expireIn: 48 * 60 * 60 * 1000 });
       return newCount;
     },
