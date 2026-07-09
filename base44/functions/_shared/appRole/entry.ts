@@ -1,5 +1,5 @@
 /**
- * App-level role resolution for backend functions. (v2 — force redeploy)
+ * App-level role resolution for backend functions. (v3 — registered via platform write path)
  *
  * Invited users carry the Base44 platform role "user"; their real app role
  * lives in the UserPermission entity (role_name, Hebrew or English). Any
@@ -52,4 +52,3 @@ export async function resolveAppRole(base44: any, user: any): Promise<string | n
   // Same default as the frontend: unknown or unmapped invited users act as operator.
   return 'operator';
 }
-  
