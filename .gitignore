@@ -39,3 +39,7 @@ dist-ssr
 # but ignore local session files
 .claude/local/
 .claude/*.log
+# E2E test credentials (never commit)
+scripts/qa/.env.e2e
+qa-shots/
+!scripts/qa/.env.e2e.example

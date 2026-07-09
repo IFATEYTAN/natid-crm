@@ -126,6 +126,7 @@ Located in `.claude/skills/`. Use by name in prompts (e.g., "הרץ ci-build-che
 | Vendor Portal Check | `vendor-portal-check.md` | After changing vendor features |
 | Hooks & Queries | `hooks-and-queries.md` | After adding/changing React Query hooks |
 | Analytics | `analytics.md` | For codebase statistics and health metrics |
+| E2E Testing | `e2e-testing.md` | Live end-to-end run with the 3 test users (admin/operator/vendor) — call lifecycle, assignment, permissions |
 | Full System Test | `full-system-test.md` | Before release - runs ALL skills sequentially |
 
 ### Utility Skills
