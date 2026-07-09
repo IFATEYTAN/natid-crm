@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { computeCallSatisfaction } from './_shared/satisfaction.ts';
 
 const ISRAEL_TZ = 'Asia/Jerusalem';
@@ -39,7 +40,8 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!['admin', 'operator'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!['admin', 'operator'].includes(appRole)) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 

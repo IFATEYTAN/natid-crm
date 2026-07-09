@@ -8,6 +8,7 @@
  * already in a cooldown, we report it instead of adding another failed connect.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { resolveAppRole } from './_shared/appRole.ts';
 import mysql from 'npm:mysql2@3.9.7/promise';
 import net from 'node:net';
 
@@ -223,7 +224,8 @@ Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   let user = null;
   try { user = await base44.auth.me(); } catch (_) {}
-  if (!user || user.role !== 'admin') {
+  const appRole = await resolveAppRole(base44, user);
+  if (!user || appRole !== 'admin') {
     return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
   }
 

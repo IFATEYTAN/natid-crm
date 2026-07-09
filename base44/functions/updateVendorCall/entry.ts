@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 // Fields a vendor is allowed to update on a call
@@ -46,27 +47,29 @@ Deno.serve(async (req) => {
     }
     const call = allCalls[0];
 
+    const appRole = await resolveAppRole(base44, user);
+
     // Ownership check: vendors can only update calls assigned to them
-    if (user.role === 'vendor' || user.role === 'ספק') {
+    if (appRole === 'vendor') {
       const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ email: user.email });
       if (!vendorRecords.length || call.assigned_vendor_id !== vendorRecords[0].id) {
         return Response.json({ error: 'Forbidden - this call is not assigned to you' }, { status: 403 });
       }
-    } else if (!['admin', 'operator'].includes(user.role)) {
+    } else if (!['admin', 'operator'].includes(appRole)) {
       return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
     }
 
     // Filter to allowed fields only (vendors can't change arbitrary fields)
     const sanitizedUpdates = {};
     for (const [key, value] of Object.entries(updates)) {
-      if ((user.role === 'vendor' || user.role === 'ספק') && !ALLOWED_VENDOR_FIELDS.includes(key)) {
+      if ((appRole === 'vendor') && !ALLOWED_VENDOR_FIELDS.includes(key)) {
         continue; // Silently skip disallowed fields for vendors
       }
       sanitizedUpdates[key] = value;
     }
 
     // Validate status transitions for vendors
-    if ((user.role === 'vendor' || user.role === 'ספק') && sanitizedUpdates.call_status) {
+    if ((appRole === 'vendor') && sanitizedUpdates.call_status) {
       const currentStatus = call.call_status;
       const allowedNext = VENDOR_STATUS_TRANSITIONS[currentStatus] || [];
       if (!allowedNext.includes(sanitizedUpdates.call_status)) {

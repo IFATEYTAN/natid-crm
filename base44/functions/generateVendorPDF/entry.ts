@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { jsPDF } from 'npm:jspdf@2.5.2';
 
 Deno.serve(async (req) => {
@@ -22,8 +23,10 @@ Deno.serve(async (req) => {
   }
   const vendor = vendors[0];
 
+  const appRole = await resolveAppRole(base44, user);
+
   // Vendor users can only generate their own report
-  if (user.role === 'vendor' && vendor.email !== user.email) {
+  if (appRole === 'vendor' && vendor.email !== user.email) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 

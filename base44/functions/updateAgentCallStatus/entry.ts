@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { syncCallStatus } from './_shared/syncCallStatus.ts';
 
 // Fields an agent is allowed to set directly
@@ -58,7 +59,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing call_id or updates' }, { status: 400 });
     }
 
-    const isAdmin = user.role === 'admin';
+    const isAdmin = (await resolveAppRole(base44, user)) === 'admin';
 
     // Permission gate: admins bypass; everyone else needs the granted permission.
     if (!isAdmin) {

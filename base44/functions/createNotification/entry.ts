@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
 
 const kv = await Deno.openKv();
@@ -14,7 +15,8 @@ Deno.serve(async (req) => {
     }
 
     // Only admin/operator can create notifications
-    if (!['admin', 'operator'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!['admin', 'operator'].includes(appRole)) {
       return Response.json({ error: 'Forbidden - admin or operator role required' }, { status: 403 });
     }
 

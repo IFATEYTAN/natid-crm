@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { resolveAppRole } from './_shared/appRole.ts';
 
 /**
  * Update vendor status (available/break) and notify operators
@@ -13,7 +14,8 @@ Deno.serve(async (req) => {
     }
 
     // Only vendor or admin
-    if (!['admin', 'vendor', 'ספק'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!['admin', 'vendor'].includes(appRole)) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -31,7 +33,7 @@ Deno.serve(async (req) => {
     const vendor = vendors[0];
 
     // Ownership check: vendors can only update their own status
-    if (user.role === 'vendor' && vendor.email !== user.email) {
+    if (appRole === 'vendor' && vendor.email !== user.email) {
       return Response.json({ error: 'Forbidden - can only update your own status' }, { status: 403 });
     }
 

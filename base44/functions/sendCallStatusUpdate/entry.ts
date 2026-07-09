@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
 
 const kv = await Deno.openKv();
@@ -22,7 +23,8 @@ Deno.serve(async (req) => {
     }
 
     // Only admin, operator, or vendor can send status updates
-    if (!['admin', 'operator', 'vendor'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!['admin', 'operator', 'vendor'].includes(appRole)) {
       return Response.json({ error: 'Forbidden - insufficient permissions' }, { status: 403 });
     }
 
@@ -43,7 +45,7 @@ Deno.serve(async (req) => {
     const call = calls[0];
 
     // Ownership check: vendors can only update calls assigned to them
-    if (user.role === 'vendor') {
+    if (appRole === 'vendor') {
       const vendorRecords = await base44.entities.Vendor.filter({ email: user.email });
       if (!vendorRecords.length || call.assigned_vendor_id !== vendorRecords[0].id) {
         return Response.json({ error: 'Forbidden - this call is not assigned to you' }, { status: 403 });

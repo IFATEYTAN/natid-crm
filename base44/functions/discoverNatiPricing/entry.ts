@@ -14,6 +14,7 @@
  * builder regenerates this file, re-apply this withNatiConnection wiring.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { resolveAppRole } from './_shared/appRole.ts';
 import mysql from 'npm:mysql2@3.9.7/promise';
 import net from 'node:net';
 
@@ -250,7 +251,8 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   let user = null;
   try { user = await base44.auth.me(); } catch (_) {}
-  if (!user || user.role !== 'admin') {
+  const appRole = await resolveAppRole(base44, user);
+  if (!user || appRole !== 'admin') {
     return Response.json({ error: 'נדרשת הרשאת מנהל' }, { status: 403 });
   }
 

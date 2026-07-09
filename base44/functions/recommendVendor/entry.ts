@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
 
 const kv = await Deno.openKv();
@@ -10,7 +11,8 @@ Deno.serve(async (req) => {
 
         // Verify caller is authenticated admin or operator
         const user = await base44.auth.me();
-        if (!user || !['admin', 'operator'].includes(user.role)) {
+        const appRole = await resolveAppRole(base44, user);
+        if (!user || !['admin', 'operator'].includes(appRole)) {
             return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
         }
 

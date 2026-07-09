@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { resolveAppRole } from './_shared/appRole.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -9,7 +10,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (user.role !== 'admin') {
+    const appRole = await resolveAppRole(base44, user);
+    if (appRole !== 'admin') {
       return Response.json(
         { error: 'Forbidden - only admins can seed demo data' },
         { status: 403 }

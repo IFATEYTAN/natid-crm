@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { resolveAppRole } from './_shared/appRole.ts';
 import { createRateLimiter, rateLimitResponse } from './_shared/rateLimit.ts';
 import { autoOfferCall } from './_shared/assignVendor.ts';
 import { syncCallStatus } from './_shared/syncCallStatus.ts';
@@ -20,7 +21,8 @@ Deno.serve(async (req) => {
     }
 
     // Only vendors (and admins for override) can respond to assignments
-    if (!['admin', 'vendor'].includes(user.role)) {
+    const appRole = await resolveAppRole(base44, user);
+    if (!['admin', 'vendor'].includes(appRole)) {
       return Response.json({ error: 'Forbidden - vendor role required' }, { status: 403 });
     }
 
@@ -45,7 +47,7 @@ Deno.serve(async (req) => {
     const attempt = attempts[0];
 
     // Ownership check: vendors can only respond to their own assignments
-    if (user.role === 'vendor') {
+    if (appRole === 'vendor') {
       const vendorRecords = await base44.asServiceRole.entities.Vendor.filter({ email: user.email });
       if (!vendorRecords.length || vendorRecords[0].id !== attempt.vendor_id) {
         return Response.json({ error: 'Forbidden - this assignment belongs to another vendor' }, { status: 403 });
