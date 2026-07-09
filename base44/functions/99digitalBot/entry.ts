@@ -548,7 +548,7 @@ function rateLimitResponse(resetAt: number): Response {
     }
   );
 }
-// ===== End inline _shared/rateLimit =====
+// ===== End inline _shared/rateLimit ===== (redeploy)
 
 // ===== Inline _shared/assignVendor (kept per-file: shared-module bundling is broken
 // platform-wide for new deployments - see docs/LESSONS_LEARNED.md 2026-07-09) =====
