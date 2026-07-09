@@ -8,7 +8,7 @@
  * already in a cooldown, we report it instead of adding another failed connect.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { resolveAppRole } from './_shared/appRole.ts';
+import { resolveAppRole } from './_shared/appRole.ts'; // app-level role gate
 import mysql from 'npm:mysql2@3.9.7/promise';
 import net from 'node:net';
 
