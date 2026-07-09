@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Use service role for system tasks
+    // Use service role for system tasks (redeploy-check)
     const client = base44.asServiceRole;
 
     const admins = await client.entities.User.filter({ role: 'admin' });
