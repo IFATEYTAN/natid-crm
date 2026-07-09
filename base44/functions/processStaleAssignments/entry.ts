@@ -163,5 +163,3 @@ async function escalateToOps(svc, call, elapsedMin, noVendors = false) {
   }
 }
 
-
-// redeploy-marker v2

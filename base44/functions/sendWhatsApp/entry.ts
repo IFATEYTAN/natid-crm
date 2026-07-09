@@ -448,5 +448,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
-
-// redeploy-marker v2

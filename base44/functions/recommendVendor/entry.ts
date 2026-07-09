@@ -84,4 +84,3 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Failed to recommend vendor' }, { status: 500 });
     }
 });
-// redeploy-marker v2

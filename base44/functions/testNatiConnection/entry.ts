@@ -272,5 +272,3 @@ Deno.serve(async (req) => {
     : { status: 'UNAVAILABLE', error: kvState.error, note: 'circuit breaker running on in-memory fallback' };
   return Response.json(results, { status: 200 });
 });
-
-// redeploy-marker v2

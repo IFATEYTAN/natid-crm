@@ -55,5 +55,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Failed to reactivate call' }, { status: 500 });
   }
 });
-
-// redeploy-marker v2

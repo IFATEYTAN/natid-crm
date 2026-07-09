@@ -119,5 +119,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Failed to nudge stale vendor locations' }, { status: 500 });
   }
 });
-
-// redeploy-marker v2

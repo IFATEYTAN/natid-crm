@@ -79,4 +79,3 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Failed to analyze vendor performance' }, { status: 500 });
     }
 });
-// redeploy-marker v2

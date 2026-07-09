@@ -138,5 +138,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Failed to build usage report' }, { status: 500 });
   }
 });
-
-// redeploy-marker v2
