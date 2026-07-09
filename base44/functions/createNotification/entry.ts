@@ -154,7 +154,7 @@ async function resolveAppRole(base44: any, user: any): Promise<string | null> {
   }
   return 'operator';
 }
-// ===== End inline app-role resolution =====
+// ===== End inline app-role resolution ===== (redeploy)
 
 // ===== Inline _shared/rateLimit (kept per-file: shared-module bundling is broken
 // platform-wide for new deployments - see docs/LESSONS_LEARNED.md 2026-07-09) =====
