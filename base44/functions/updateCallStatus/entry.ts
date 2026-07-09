@@ -107,4 +107,4 @@ async function resolveAppRole(base44: any, user: any): Promise<string | null> {
   }
   return 'operator';
 }
-// ===== End inline app-role resolution ===== (deploy 1)
+// ===== End inline app-role resolution ===== (deploy 2)
