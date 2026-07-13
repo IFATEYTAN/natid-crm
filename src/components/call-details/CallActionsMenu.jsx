@@ -17,11 +17,20 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { MoreVertical, RotateCcw, Truck, MapPin, Ban, Bell, CheckCircle, MessageCircle, Users } from 'lucide-react';
+import { MoreVertical, RotateCcw, Truck, MapPin, Warehouse, Ban, Bell, CheckCircle, MessageCircle, Users } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { showToast } from '@/components/ui/FeedbackToast';
 import { Input } from '@/components/ui/input';
 import { statusLabels } from '@/components/config/labels';
+import { canTransition, getAllowedTransitions, getTransitionLabel } from '@/config/statusTransitions';
+
+// אייקון לכל קיצור-סטטוס בתפריט הפעולות
+const STATUS_SHORTCUT_ICONS = {
+  vendor_arrived: MapPin,
+  vendor_enroute: Truck,
+  in_progress: Truck,
+  in_storage: Warehouse,
+};
 
 export default function CallActionsMenu({
   call,
@@ -85,30 +94,33 @@ export default function CallActionsMenu({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          {/* Status changes - always available with edit permission */}
-          {canEdit && !isClosedOrCancelled && (
-            <>
-              {call?.call_status !== 'vendor_arrived' && (
-                <DropdownMenuItem onClick={() => onStatusChange('vendor_arrived')}>
-                  <MapPin className="w-4 h-4 ms-2" />
-                  נותן השירות הגיע
-                </DropdownMenuItem>
-              )}
-              {call?.call_status !== 'in_progress' && (
-                <DropdownMenuItem onClick={() => onStatusChange('in_progress')}>
-                  <Truck className="w-4 h-4 ms-2" />
-                  נותן השירות במקום
-                </DropdownMenuItem>
-              )}
-              {call?.call_status !== 'vendor_enroute' && (
-                <DropdownMenuItem onClick={() => onStatusChange('vendor_enroute')}>
-                  <Truck className="w-4 h-4 ms-2" />
-                  ספק בדרך
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-            </>
-          )}
+          {/* Status changes — only the allowed next steps for the current status */}
+          {canEdit &&
+            !isClosedOrCancelled &&
+            (() => {
+              // סטטוס לא ממופה — נופל חזרה לקיצורים הקודמים
+              const allowed = getAllowedTransitions(call?.call_status) || [
+                'vendor_arrived',
+                'in_progress',
+                'vendor_enroute',
+              ];
+              const shortcuts = allowed.filter((s) => s !== 'completed' && s !== 'cancelled');
+              if (!shortcuts.length) return null;
+              return (
+                <>
+                  {shortcuts.map((status) => {
+                    const Icon = STATUS_SHORTCUT_ICONS[status] || Truck;
+                    return (
+                      <DropdownMenuItem key={status} onClick={() => onStatusChange(status)}>
+                        <Icon className="w-4 h-4 ms-2" />
+                        {getTransitionLabel(status, statusLabels)}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  <DropdownMenuSeparator />
+                </>
+              );
+            })()}
 
           {/* Assign vendor */}
           {canAssign && !isClosedOrCancelled && (
@@ -141,7 +153,7 @@ export default function CallActionsMenu({
           </DropdownMenuItem>
 
           {/* Cancel */}
-          {canEdit && !isClosedOrCancelled && (
+          {canEdit && !isClosedOrCancelled && canTransition(call?.call_status, 'cancelled') && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -166,7 +178,7 @@ export default function CallActionsMenu({
           )}
 
           {/* Complete */}
-          {canEdit && !isClosedOrCancelled && (
+          {canEdit && !isClosedOrCancelled && canTransition(call?.call_status, 'completed') && (
             <DropdownMenuItem onClick={() => onStatusChange('completed')}>
               <CheckCircle className="w-4 h-4 ms-2" />
               סגור קריאה

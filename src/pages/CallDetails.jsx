@@ -60,6 +60,7 @@ import {
 import { cn } from '@/components/utils';
 import { toast } from 'sonner';
 import { CLOSING_STATUSES, getClosingStatus } from '@/config/closingStatuses';
+import { getAllowedTransitions, getTransitionLabel } from '@/config/statusTransitions';
 import { statusLabels, statusColors } from '@/components/config/labels';
 import CallActionsMenu from '@/components/call-details/CallActionsMenu';
 
@@ -119,6 +120,14 @@ export default function CallDetailsPage() {
     refetchInterval: 45000,
   });
   const call = callQuery.data;
+
+  // רק הצעדים הבאים המותרים מהסטטוס הנוכחי (הגדרת דורית 13.7) —
+  // סטטוס לא ממופה נופל חזרה להצגת כל הסטטוסים
+  const allowedNextStatuses = useMemo(() => {
+    const allowed = getAllowedTransitions(call?.call_status);
+    if (allowed) return allowed;
+    return Object.keys(statusLabels).filter((key) => key !== call?.call_status);
+  }, [call?.call_status]);
 
   // Operator notes state
   const [operatorNotes, setOperatorNotes] = useState('');
@@ -188,6 +197,13 @@ export default function CallDetailsPage() {
 
   const handleStatusChange = async (newStatus, reason) => {
     if (!canEdit) return;
+
+    // Cancellation goes through the cancel dialog (deposit rules, reason),
+    // never as a raw status write
+    if (newStatus === 'cancelled') {
+      setShowCancelDialog(true);
+      return;
+    }
 
     // Show pre-close confirmation before marking as completed
     if (newStatus === 'completed' && !reason?.skipPreClose) {
@@ -397,9 +413,15 @@ export default function CallDetailsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(statusLabels).map(([key, label]) => (
+                      {/* הסטטוס הנוכחי — לתצוגה בלבד */}
+                      {call?.call_status && (
+                        <SelectItem value={call.call_status} disabled>
+                          {statusLabels[call.call_status] || call.call_status}
+                        </SelectItem>
+                      )}
+                      {allowedNextStatuses.map((key) => (
                         <SelectItem key={key} value={key}>
-                          {label}
+                          {getTransitionLabel(key, statusLabels)}
                         </SelectItem>
                       ))}
                     </SelectContent>
