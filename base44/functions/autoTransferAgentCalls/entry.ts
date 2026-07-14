@@ -12,6 +12,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const UNHANDLED_STATUSES = [
   'waiting_treatment',
@@ -21,6 +22,21 @@ const UNHANDLED_STATUSES = [
 
 export default async function handler(req: Request): Promise<Response> {
   try {
+    // ===== Access gate (security scan 2026-07-14): this function re-queues an
+    // agent's calls and holds a service-level DB key. Allowed only for an
+    // authenticated app user (agents trigger it from break mode) or a matching
+    // x-internal-secret header (INTERNAL_JOB_SECRET app env var).
+    const base44 = createClientFromRequest(req);
+    const internalSecret = Deno.env.get('INTERNAL_JOB_SECRET');
+    const secretOk =
+      !!internalSecret && req.headers.get('x-internal-secret') === internalSecret;
+    if (!secretOk) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
     const { agent_id, agent_email, reason = 'break_timeout' } = await req.json();
 
     if (!agent_id && !agent_email) {

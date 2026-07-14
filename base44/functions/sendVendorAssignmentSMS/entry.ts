@@ -12,26 +12,38 @@ Deno.serve(async (req) => {
   
   if (isAutomation) {
     callId = body.event?.entity_id;
-    callData = body.data;
-    console.log(`[SMS] Automation trigger: call ${callId}, vendor changed to ${callData?.assigned_vendor_id}`);
+    console.log(`[SMS] Automation trigger: call ${callId}`);
   } else {
+    // ===== Access gate (security scan 2026-07-14): direct (non-automation)
+    // invocation triggers a paid SMS — allowed only for an authenticated app
+    // user or a matching x-internal-secret header (INTERNAL_JOB_SECRET env var).
+    const internalSecret = Deno.env.get('INTERNAL_JOB_SECRET');
+    const secretOk =
+      !!internalSecret && req.headers.get('x-internal-secret') === internalSecret;
+    if (!secretOk) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+    }
     callId = body.call_id;
-    callData = null;
     console.log(`[SMS] Direct call: call_id=${callId}`);
   }
-  
+
   if (!callId) {
     return Response.json({ success: false, error: 'Missing call_id' }, { status: 400 });
   }
-  
-  // Fetch full call if needed
-  if (!callData || !callData.assigned_vendor_id) {
-    const calls = await base44.asServiceRole.entities.Call.filter({});
-    const found = calls.find(c => c.id === callId);
-    if (!found) {
+
+  // Never trust the caller-supplied payload (the automation endpoint is publicly
+  // reachable) — always re-fetch the call by id via service role. A forged
+  // request can then only re-send the SMS of a real assignment, and the recent-SMS
+  // dedup below bounds that too.
+  {
+    const calls = await base44.asServiceRole.entities.Call.filter({ id: callId });
+    if (!calls || calls.length === 0) {
       return Response.json({ success: false, error: 'Call not found' }, { status: 404 });
     }
-    callData = found;
+    callData = calls[0];
   }
   
   const vendorId = callData.assigned_vendor_id;
@@ -39,9 +51,35 @@ Deno.serve(async (req) => {
     return Response.json({ success: false, error: 'No vendor assigned to this call' }, { status: 400 });
   }
   
+  // Recent-SMS dedup: skip if an assignment SMS for this call+vendor was already
+  // logged in the last 10 minutes (bounds replay of the public automation endpoint
+  // and duplicate automation triggers alike).
+  try {
+    const recentHistory = await base44.asServiceRole.entities.CallHistory.filter(
+      { call_id: callId },
+      '-created_date',
+      20
+    );
+    const tenMinAgo = Date.now() - 10 * 60 * 1000;
+    const dup = (recentHistory || []).find(
+      (h) =>
+        h.change_type === 'note' &&
+        typeof h.new_value === 'string' &&
+        h.new_value.startsWith('SMS נשלח לספק') &&
+        h.created_date &&
+        new Date(h.created_date).getTime() > tenMinAgo
+    );
+    if (dup) {
+      console.log(`[SMS] Duplicate suppressed for call ${callId} — SMS already sent recently`);
+      return Response.json({ success: true, skipped: true, reason: 'duplicate_recent_sms' });
+    }
+  } catch {
+    // Dedup check is best-effort — never block a legitimate send on its failure
+  }
+
   // Fetch vendor
-  const vendors = await base44.asServiceRole.entities.Vendor.filter({});
-  const vendor = vendors.find(v => v.id === vendorId);
+  const vendors = await base44.asServiceRole.entities.Vendor.filter({ id: vendorId });
+  const vendor = vendors && vendors.length > 0 ? vendors[0] : null;
   if (!vendor) {
     console.error(`[SMS] Vendor ${vendorId} not found`);
     return Response.json({ success: false, error: 'Vendor not found' }, { status: 404 });

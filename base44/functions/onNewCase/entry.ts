@@ -16,9 +16,23 @@ Deno.serve(async (req) => {
     }
 
     const caseId = event.entity_id;
-    const caseData = data;
+    if (!caseId) {
+      // Guard: filter({ id: undefined }) would match ALL cases
+      return Response.json({ error: 'Missing entity_id' }, { status: 400 });
+    }
     const results = { workQueue: null, autoAssigned: null, notifications: 0, vendorLinked: false };
     const sdk = base44.asServiceRole;
+
+    // ===== Access hardening (security scan 2026-07-14): this endpoint is invoked
+    // anonymously by the platform's entity automation, so it cannot require auth.
+    // Instead, never trust the caller-supplied payload — re-fetch the Case by id
+    // via service role. A forged request can then only re-process a real record,
+    // and the WorkQueue creation below is already deduped.
+    const fetchedCases = await sdk.entities.Case.filter({ id: caseId });
+    if (!fetchedCases || fetchedCases.length === 0) {
+      return Response.json({ error: 'Case not found' }, { status: 404 });
+    }
+    const caseData = fetchedCases[0];
 
     // Determine if this case already has a vendor assigned
     const hasVendor = !!(caseData.assigned_provider_name && caseData.assigned_provider_name.trim());
