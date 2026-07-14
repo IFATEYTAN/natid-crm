@@ -43,3 +43,4 @@ dist-ssr
 scripts/qa/.env.e2e
 qa-shots/
 !scripts/qa/.env.e2e.example
+base44/.app.jsonc
