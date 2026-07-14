@@ -33,7 +33,7 @@ export default async function handler(req: Request): Promise<Response> {
     if (!secretOk) {
       const user = await base44.auth.me().catch(() => null);
       if (!user) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 

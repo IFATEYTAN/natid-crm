@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
         h.change_type === 'note' &&
         typeof h.new_value === 'string' &&
         h.new_value.startsWith('SMS נשלח לספק') &&
+        h.created_date &&
         new Date(h.created_date).getTime() > tenMinAgo
     );
     if (dup) {

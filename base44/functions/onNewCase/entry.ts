@@ -16,6 +16,10 @@ Deno.serve(async (req) => {
     }
 
     const caseId = event.entity_id;
+    if (!caseId) {
+      // Guard: filter({ id: undefined }) would match ALL cases
+      return Response.json({ error: 'Missing entity_id' }, { status: 400 });
+    }
     const results = { workQueue: null, autoAssigned: null, notifications: 0, vendorLinked: false };
     const sdk = base44.asServiceRole;
 
