@@ -55,8 +55,11 @@ describe('STATUS_TRANSITIONS — הזרימה המדורגת של דורית', (
     }
   });
 
-  it('ביטול זמין מכל סטטוס פתוח פרט ל"המתנה לחיוב" — וגם שם קיים (תיקון Bugbot ‎#181)', () => {
-    expect(STATUS_TRANSITIONS.awaiting_payment).toContain('cancelled');
+  it('ביטול זמין מכל סטטוס פתוח, כולל "המתנה לחיוב" (תיקון Bugbot ‎#181)', () => {
+    for (const [status, targets] of Object.entries(STATUS_TRANSITIONS)) {
+      if (status === 'completed' || status === 'cancelled') continue;
+      expect(targets, `סטטוס "${status}" אינו מציע ביטול`).toContain('cancelled');
+    }
     expect(STATUS_TRANSITIONS.awaiting_payment).toContain('completed');
   });
 });
@@ -91,25 +94,28 @@ describe('getAllowedTransitions', () => {
 
 describe('getTransitionLabel — תוויות הקשריות', () => {
   it('מעבר ל-vendor_arrived מוצג כ"ספק הגיע ללקוח"', () => {
-    expect(getTransitionLabel('vendor_arrived', statusLabels)).toBe('ספק הגיע ללקוח');
+    expect(getTransitionLabel('vendor_arrived')).toBe('ספק הגיע ללקוח');
   });
 
   it('מעבר ל-in_storage מוצג כ"ספק הגיע לאחסנה"', () => {
-    expect(getTransitionLabel('in_storage', statusLabels)).toBe('ספק הגיע לאחסנה');
+    expect(getTransitionLabel('in_storage')).toBe('ספק הגיע לאחסנה');
   });
 
   it('מעבר ל-completed מוצג כ"סגירת קריאה"', () => {
-    expect(getTransitionLabel('completed', statusLabels)).toBe('סגירת קריאה');
+    expect(getTransitionLabel('completed')).toBe('סגירת קריאה');
   });
 
   it('מעבר ל-cancelled מוצג כ"ביטול פניה"', () => {
-    expect(getTransitionLabel('cancelled', statusLabels)).toBe('ביטול פניה');
+    expect(getTransitionLabel('cancelled')).toBe('ביטול פניה');
   });
 
-  it('סטטוס בלי תווית הקשרית נופל לתווית הרגילה', () => {
-    expect(getTransitionLabel('waiting_treatment', statusLabels)).toBe(
-      statusLabels.waiting_treatment
-    );
+  it('סטטוס בלי תווית הקשרית נופל לתווית ה-fallback שסופקה', () => {
+    const mockFallback = { waiting_treatment: 'ממתין לטיפול' };
+    expect(getTransitionLabel('waiting_treatment', mockFallback)).toBe('ממתין לטיפול');
+  });
+
+  it('בלי תווית הקשרית ובלי fallback — מוחזר המפתח עצמו', () => {
+    expect(getTransitionLabel('waiting_treatment')).toBe('waiting_treatment');
   });
 
   it('כל התוויות ההקשריות מפנות לסטטוסים קיימים', () => {
