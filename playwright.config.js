@@ -14,7 +14,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
-  reporter: process.env.CI ? 'github' : [['list'], ['html', { open: 'never' }]],
+  // In CI use 'line' alongside 'github': the github reporter only annotates
+  // failures at the end, which reads as a silent hang on long live runs.
+  reporter: process.env.CI
+    ? [['line'], ['github']]
+    : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
     trace: 'on-first-retry',
