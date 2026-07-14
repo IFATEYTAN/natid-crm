@@ -4,6 +4,19 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // ===== Access gate (security scan 2026-07-14): scheduled job. Allowed only
+    // with a matching x-internal-secret header (INTERNAL_JOB_SECRET app env var)
+    // or an authenticated platform admin. Anonymous public invocation is rejected.
+    const internalSecret = Deno.env.get('INTERNAL_JOB_SECRET');
+    const secretOk =
+      !!internalSecret && req.headers.get('x-internal-secret') === internalSecret;
+    if (!secretOk) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
     // 1. Fetch enabled notification settings
     const settings = await base44.asServiceRole.entities.NotificationSetting.filter({ enabled: true });
     if (!settings || settings.length === 0) {

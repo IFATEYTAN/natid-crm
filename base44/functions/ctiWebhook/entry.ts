@@ -36,6 +36,21 @@ Deno.serve(async (req) => {
     );
   }
 
+  // ===== Access gate (security scan 2026-07-14): this endpoint returns customer
+  // details by phone number, so it must not be publicly queryable. The PBX must
+  // send the shared secret in the x-webhook-secret header. Fail closed — when
+  // CTI_WEBHOOK_SECRET is not configured the endpoint is disabled entirely.
+  const ctiSecret = Deno.env.get('CTI_WEBHOOK_SECRET');
+  if (!ctiSecret) {
+    return Response.json(
+      { error: 'CTI webhook disabled — CTI_WEBHOOK_SECRET is not configured' },
+      { status: 503 }
+    );
+  }
+  if (req.headers.get('x-webhook-secret') !== ctiSecret) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const base44 = createClientFromRequest(req);
 

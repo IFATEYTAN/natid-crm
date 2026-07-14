@@ -4,8 +4,18 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // For scheduled/cron tasks, user may be null or a service account.
-    // Auth is enforced at the platform level for cron invocations.
+    // ===== Access gate (security scan 2026-07-14): scheduled job. Allowed only
+    // with a matching x-internal-secret header (INTERNAL_JOB_SECRET app env var)
+    // or an authenticated platform admin. Anonymous public invocation is rejected.
+    const internalSecret = Deno.env.get('INTERNAL_JOB_SECRET');
+    const secretOk =
+      !!internalSecret && req.headers.get('x-internal-secret') === internalSecret;
+    if (!secretOk) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
 
     // Get all active contracts
     const contracts = await base44.asServiceRole.entities.VendorContract.filter({

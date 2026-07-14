@@ -352,6 +352,14 @@ export default function CTISettings() {
               )}
             </Button>
           </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-sm text-amber-800">
+              <strong>אבטחה:</strong> ה-Webhook מוגן בסוד משותף. יש להגדיר במרכזיה
+              כותרת (Header) בשם <code dir="ltr">x-webhook-secret</code> עם הערך שהוגדר
+              במשתנה הסביבה <code dir="ltr">CTI_WEBHOOK_SECRET</code> בהגדרות האפליקציה.
+              ללא הסוד — בקשות יידחו.
+            </p>
+          </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
               <strong>פורמט בקשה:</strong> POST עם JSON
