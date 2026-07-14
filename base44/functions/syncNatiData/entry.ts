@@ -338,7 +338,10 @@ function mapToCall(a) {
     issue_type: mapIssueType(a.department_id),
     issue_description: a.diagnose || '',
     issue_detail: String(a.serve_type || ''),
-    customer_name: a.requester || '',
+    // customer_name is REQUIRED on the Call schema, and clean() strips empty
+    // strings — an appeal without a requester must still carry a placeholder,
+    // otherwise every such Call.create fails validation (sync 14.07: errors=30)
+    customer_name: a.requester || 'לא צוין',
     customer_phone: a.tel || a.tel1 || 'לא צוין',
     customer_phone_2: a.tel1 || '',
     customer_id_number: a.client_id ? String(a.client_id) : '',
@@ -393,8 +396,8 @@ function mapToCall(a) {
 function mapToCase(a) {
   const data = {
     case_number: String(a.id),
-    customer_name: a.requester || '',
-    caller_name: a.requester || '',
+    customer_name: a.requester || 'לא צוין',
+    caller_name: a.requester || 'לא צוין',
     caller_phone: a.tel || a.tel1 || '',
     vehicle_number: a.car_num || '',
     vehicle_year: a.car_year || undefined,
