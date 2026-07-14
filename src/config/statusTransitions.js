@@ -38,7 +38,7 @@ export const STATUS_TRANSITIONS = {
   future_service: ['waiting_treatment', 'cancelled'],
   in_followup: ['waiting_treatment', 'completed', 'cancelled'],
   continued_treatment: ['vendor_arrived', 'cancelled'],
-  awaiting_payment: ['completed'],
+  awaiting_payment: ['completed', 'cancelled'],
   completed: [],
   cancelled: [],
 };
