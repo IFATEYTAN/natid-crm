@@ -30,7 +30,10 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
 const OUT_DIR = join(ROOT, 'docs', 'screenshots');
-const BASE_URL = process.argv[2] || process.env.E2E_BASE_URL || 'http://localhost:5173';
+const BASE_URL = (process.argv[2] || process.env.E2E_BASE_URL || 'http://localhost:5173').replace(
+  /\/$/,
+  ''
+);
 const USE_DEMO = process.env.CAPTURE_DEMO !== 'false';
 const HEADED = process.env.HEADED === '1';
 
@@ -58,7 +61,7 @@ const DETAIL_PAGES = new Set([
 
 function getPageKeys() {
   const src = readFileSync(join(ROOT, 'src', 'pages.config.js'), 'utf8');
-  const keys = [...src.matchAll(/^\s{2}([A-Za-z0-9_]+):\s*lazy\(/gm)].map((m) => m[1]);
+  const keys = [...src.matchAll(/^\s*([A-Za-z0-9_]+):\s*lazy\(/gm)].map((m) => m[1]);
   if (!keys.length) throw new Error('No page keys parsed from src/pages.config.js');
   return keys;
 }
@@ -69,44 +72,48 @@ async function main() {
   console.log(`Capturing ${pages.length} screens from ${BASE_URL} (demo=${USE_DEMO})`);
 
   const browser = await chromium.launch({ headless: !HEADED });
-  const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
-    locale: 'he-IL',
-    timezoneId: 'Asia/Jerusalem',
-  });
-  const page = await context.newPage();
-
-  // Activate demo mode once — persists via localStorage.
-  if (USE_DEMO) {
-    await page.goto(`${BASE_URL}/?demo=true`, { waitUntil: 'networkidle' });
-  } else {
-    await page.goto(BASE_URL, { waitUntil: 'networkidle' });
-    if (HEADED) {
-      console.log('Log in manually in the browser window, then press Enter here...');
-      await new Promise((resolve) => process.stdin.once('data', resolve));
-    }
-  }
-
   const failures = [];
-  for (const key of pages) {
-    const isMobile = MOBILE_PAGES.has(key);
-    try {
-      await page.setViewportSize(
-        isMobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }
-      );
-      await page.goto(`${BASE_URL}/${key}`, { waitUntil: 'networkidle', timeout: 30_000 });
-      // Let lazy chunks, charts and maps settle.
-      await page.waitForTimeout(2500);
-      await page.screenshot({ path: join(OUT_DIR, `${key}.png`), fullPage: false });
-      const note = DETAIL_PAGES.has(key) ? ' (detail page — may show empty state without an id)' : '';
-      console.log(`  ok  ${key}${isMobile ? ' [mobile]' : ''}${note}`);
-    } catch (err) {
-      failures.push(key);
-      console.warn(`  FAIL ${key}: ${err.message.split('\n')[0]}`);
-    }
-  }
+  try {
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+      locale: 'he-IL',
+      timezoneId: 'Asia/Jerusalem',
+    });
+    const page = await context.newPage();
 
-  await browser.close();
+    // Activate demo mode once — persists via localStorage.
+    if (USE_DEMO) {
+      await page.goto(`${BASE_URL}/?demo=true`, { waitUntil: 'networkidle' });
+    } else {
+      await page.goto(BASE_URL, { waitUntil: 'networkidle' });
+      if (HEADED) {
+        console.log('Log in manually in the browser window, then press Enter here...');
+        await new Promise((resolve) => process.stdin.once('data', resolve));
+      }
+    }
+
+    for (const key of pages) {
+      const isMobile = MOBILE_PAGES.has(key);
+      try {
+        await page.setViewportSize(
+          isMobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }
+        );
+        await page.goto(`${BASE_URL}/${key}`, { waitUntil: 'networkidle', timeout: 30_000 });
+        // Let lazy chunks, charts and maps settle.
+        await page.waitForTimeout(2500);
+        await page.screenshot({ path: join(OUT_DIR, `${key}.png`), fullPage: false });
+        const note = DETAIL_PAGES.has(key)
+          ? ' (detail page — may show empty state without an id)'
+          : '';
+        console.log(`  ok  ${key}${isMobile ? ' [mobile]' : ''}${note}`);
+      } catch (err) {
+        failures.push(key);
+        console.warn(`  FAIL ${key}: ${err.message.split('\n')[0]}`);
+      }
+    }
+  } finally {
+    await browser.close();
+  }
   console.log(`\nDone. ${pages.length - failures.length}/${pages.length} captured → docs/screenshots/`);
   if (failures.length) {
     console.warn(`Failed: ${failures.join(', ')}`);
