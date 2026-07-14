@@ -61,7 +61,8 @@ jobs:
   full-e2e:
     name: Full E2E (Base44 + auth)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 54 live tests on 1 worker with real logins — 20m got cancelled mid-run twice (14.07)
+    timeout-minutes: 45
     needs: quick-tests
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
@@ -89,17 +90,27 @@ jobs:
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
         run: |
+          # Trim stray whitespace — a leading tab in E2E_BASE_URL once hung the whole suite (14.07)
+          E2E_BASE_URL="$(printf '%s' "$E2E_BASE_URL" | xargs)"
           if [ -z "$E2E_BASE_URL" ] || [ -z "$E2E_ADMIN_EMAIL" ] || [ -z "$E2E_ADMIN_PASSWORD" ]; then
             echo "::warning::Skipping full E2E — required secrets are not set. See docs/E2E_SETUP.md."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
+            case "$E2E_BASE_URL" in
+              https://*) ;;
+              *)
+                echo "::error::E2E_BASE_URL is not a valid https:// URL (check for stray characters in the secret)"
+                exit 1
+                ;;
+            esac
             echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "base_url=$E2E_BASE_URL" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Full E2E (Base44 + auth)
         if: steps.check_secrets.outputs.skip != 'true'
         env:
-          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          E2E_BASE_URL: ${{ steps.check_secrets.outputs.base_url }}
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
           E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
           E2E_OPERATOR_EMAIL: ${{ secrets.E2E_OPERATOR_EMAIL }}
