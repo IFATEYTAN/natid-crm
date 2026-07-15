@@ -4,6 +4,7 @@
   "properties": {
     "title": {
       "type": "string",
+      "minLength": 1,
       "description": "כותרת התסריט"
     },
     "script_type": {
@@ -19,6 +20,7 @@
     },
     "content": {
       "type": "string",
+      "minLength": 1,
       "description": "תוכן התסריט המלא למוקדן"
     },
     "notes": {
