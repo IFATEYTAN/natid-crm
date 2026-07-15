@@ -598,6 +598,18 @@ flowchart LR
 
 ⚠️ ממצא אבטחה פתוח: **Prompt Injection ב-`categorizeCall`** — קלט חופשי של משתמש נכנס לפרומפט ללא תיחום (ראו פרק 13).
 
+#### שדרוג מנוע ה-AI — חיבור Claude API (פיילוט, 15/07)
+
+הוחלט לחבר מודל שפה ייעודי (Claude של Anthropic) במקום המודל האנונימי של הפלטפורמה, לשיפור איכות העברית והשליטה בתוצאות. **מומש פיילוט על `generateCallSummary`** (סיכום קריאה):
+
+- הפונקציה מנסה קודם את **Claude API** (`api.anthropic.com`, מודל ברירת מחדל `claude-sonnet-5`, ניתן לעקוף עם `ANTHROPIC_MODEL`).
+- אם המפתח לא מוגדר או שהקריאה נכשלת — **fallback אוטומטי** למודל של Base44 (`Core.InvokeLLM`); הסיכומים לעולם לא נשברים.
+- התשובה מחזירה `summary_source` (`claude`/`base44`) כדי לוודא איזה מנוע ענה בפועל.
+- הפרומפט הועבר למבנה system+user עם תיחום מפורש של קלט המשתמש כנתונים — מקטין את סיכון ה-prompt-injection בפונקציה זו.
+- **הגדרה נדרשת:** `ANTHROPIC_API_KEY` כ-Environment Variable ב-Base44 (צד שרת בלבד; מונפק ב-console.anthropic.com).
+
+**המשך מתוכנן:** לאחר אימות איכות הפיילוט — הרחבה לשאר פונקציות ה-AI (categorizeCall, recommendVendor, ניתוחים) דרך אותה תבנית helper (מועתק פר-פונקציה בשל מגבלת המודולים המשותפים של הפלטפורמה).
+
 ### 9.2 אינטגרציות ומפתחות API — טבלה מלאה
 
 **כל הסודות מוגדרים כ-Environment Variables בלוח הבקרה של Base44 (צד שרת בלבד) — אין ערכי סוד בקוד או בריפו** (אומת בסריקה; קובץ `.env.example` מכיל placeholders בלבד). להעברה לעדיאל נדרשת מסירת גישה ל: Base44 Builder, חשבון Twilio, מסוף Google Cloud, ה-droplet ב-DigitalOcean, ו-GitHub repo.
@@ -607,6 +619,7 @@ flowchart LR
 | **Twilio SMS** | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | sendSMS, sendCallStatusUpdate, sendFeedbackSMS, sendVendorAssignmentSMS, sendNotification | ⚠️ קוד מוכן ונבדק לוגית; **חשבון production וזיהוי SMS אמיתי טרם אומתו מקצה לקצה; נוסחי הודעות = placeholder** |
 | **Twilio WhatsApp** | `TWILIO_WHATSAPP_NUMBER` / `TWILIO_WHATSAPP_FROM` | sendWhatsApp | כנ"ל |
 | **Green API (WhatsApp fallback)** | `GREEN_API_INSTANCE_ID`, `GREEN_API_TOKEN`, `SUPPORT_PHONE` | sendWhatsApp | קוד מוכן |
+| **Anthropic Claude API** | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` (אופציונלי) | generateCallSummary (פיילוט — ראו 9.1); בהמשך שאר פונקציות ה-AI | 🟡 פיילוט; fallback אוטומטי למודל Base44 |
 | **Google Maps** | `GOOGLE_MAPS_API_KEY` | calculateDistanceAndETA, getGoogleMapsKey (מונפק רק לתפקידים מורשים) | ✅ עובד; ⚠️ נדרשת הגבלת referrer/APIs במסוף Google |
 | **Web Push (VAPID)** | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | sendPushNotification, nudgeStaleVendorLocations | ✅ ב-PWA; לא מחובר ל-FCM/APNs נייטיבי |
 | **בוט 99Digital** | `BOT_WEBHOOK_SECRET` | 99digitalBot | מאובטח (fail-closed) |
