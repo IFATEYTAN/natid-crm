@@ -247,4 +247,4 @@ async function findLeastBusyAgent(sdk) {
     openCount: bestCount,
   };
 }
-// deployed 2026-07-15
+// deployed 2026-07-15 v2
