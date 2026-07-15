@@ -63,6 +63,57 @@ export const useNatiSyncDryRun = () => {
 };
 
 /**
+ * Push dry-run (bidirectional sync — outbound half) — diffs CRM calls against
+ * Nati's live rows and returns what WOULD be written, without touching Nati.
+ */
+export const useNatiPushDryRun = () => {
+  return useMutation({
+    mutationFn: (options) => settingsApi.runNatiPushDryRun(options),
+    onError: (error) => {
+      toast.error(friendlyError(error));
+    },
+    onSuccess: (response) => {
+      const data = unwrap(response);
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      toast.success(
+        `תצוגה מקדימה: ${data?.counts?.would_update ?? 0} קריאות יעודכנו בנתי (ללא שינוי: ${data?.counts?.no_change ?? 0})`
+      );
+    },
+  });
+};
+
+/**
+ * Real push — writes CRM-side changes back to Nati's MySQL. Conservative:
+ * status moves forward only, everything else fills empty Nati fields only.
+ * Does not modify CRM entities, so no query invalidation is needed.
+ */
+export const useNatiPushRun = () => {
+  return useMutation({
+    mutationFn: (options) => settingsApi.runNatiPush(options),
+    onError: (error) => {
+      toast.error(friendlyError(error));
+    },
+    onSuccess: (response) => {
+      const data = unwrap(response);
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      const updated = data?.counts?.updated ?? 0;
+      const errors = data?.counts?.errors ?? 0;
+      if (errors > 0) {
+        toast.warning(`דחיפה לנתי הסתיימה: ${updated} עודכנו, ${errors} שגיאות`);
+      } else {
+        toast.success(`דחיפה לנתי הושלמה: ${updated} קריאות עודכנו בנתי`);
+      }
+    },
+  });
+};
+
+/**
  * Real sync — writes new/updated records to Base44 entities.
  */
 export const useNatiSyncRun = () => {

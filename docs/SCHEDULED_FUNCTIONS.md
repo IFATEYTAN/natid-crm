@@ -14,6 +14,7 @@
 | פונקציה | מה היא עושה | תדירות מומלצת | Auth |
 |---------|-------------|----------------|------|
 | `syncNatiData` | מסנכרן קריאות/תיקים/ספקים/לקוחות פתוחים מ-DB של נתי (עד 30 לריצה, בעדיפות לחדשים ואז מעודכנים) | כל 5–10 דקות | cron (עם `automation_key`) או admin |
+| `pushNatiUpdates` | הצד היוצא של הסנכרון הדו-כיווני: דוחף שינויים מה-CRM חזרה ל-DB של נתי (סגירה/ביטול קדימה-בלבד, שיבוץ ספק/זמנים/הערות רק לשדות ריקים בנתי, אישור QC ידני; עד 30 עדכונים לריצה, diff מול הרשומה החיה) | כל 5–10 דקות (מומלץ בהסטה מ-syncNatiData, למשל דקות 2,7,12…) | cron (עם `automation_key`) או admin |
 | `processStaleAssignments` | פוקעת הצעות שיבוץ שלא אושרו, מציעה מחדש לספק הבא, ומסלימה לתור התפעול אחרי 30 דק' | כל 1–2 דקות | cron ללא משתמש, או admin/operator |
 | `nudgeStaleVendorLocations` | התראה לספקים שמיקום ה-GPS שלהם לא עודכן | כל 5–10 דקות | cron / admin |
 | `detectSmartAlerts` | זיהוי חריגות/עיכובים ויצירת התראות | כל 2–5 דקות | cron / admin |
@@ -22,7 +23,7 @@
 | `autoTransferAgentCalls` | העברת קריאות מנציג שיצא להפסקה/לא זמין | כל 2–5 דקות | cron / admin |
 | `closeStaleNatiCalls` | סגירה אוטומטית של קריאות נתי ישנות | יומי | cron / admin |
 
-> `syncNatiData` תומך גם ב-`automation_key` (סוד `SYNC_AUTOMATION_KEY`) כפרמטר גוף הבקשה,
+> גם `syncNatiData` וגם `pushNatiUpdates` תומכים ב-`automation_key` (סוד `SYNC_AUTOMATION_KEY`) כפרמטר גוף הבקשה,
 > לשימוש כשקשה להגדיר הרשאת admin/operator ל-cron. אפשר להשאיר את גוף הבקשה `{}` אם
 > ה-Scheduler שולח בקשה מאומתת בתור admin, אחרת לשלוח `{ "automation_key": "..." }`.
 

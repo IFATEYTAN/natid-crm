@@ -12,8 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Database, Eye, Play, AlertCircle, CheckCircle, Loader2, Clock } from 'lucide-react';
-import { useNatiSyncDryRun, useNatiSyncRun } from '@/features/settings/hooks/useNatiSync';
+import {
+  Database,
+  Eye,
+  Play,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+  Clock,
+  Upload,
+} from 'lucide-react';
+import {
+  useNatiSyncDryRun,
+  useNatiSyncRun,
+  useNatiPushDryRun,
+  useNatiPushRun,
+} from '@/features/settings/hooks/useNatiSync';
 
 const STORAGE_KEY = 'natid_sync_panel_filters';
 const LAST_SYNC_KEY = 'natid_last_sync_at';
@@ -121,6 +135,8 @@ export default function NatiSyncPanel() {
   const [, forceTick] = useState(0);
   const dryRun = useNatiSyncDryRun();
   const runSync = useNatiSyncRun();
+  const pushDryRun = useNatiPushDryRun();
+  const pushRun = useNatiPushRun();
 
   useEffect(() => {
     setFilters(loadFilters());
@@ -163,9 +179,19 @@ export default function NatiSyncPanel() {
     }
   };
 
+  const onPushDryRun = () => pushDryRun.mutate({});
+  const onPushRun = () => {
+    if (window.confirm('האם לדחוף את העדכונים לנתי? פעולה זו תעדכן רשומות במסד הנתונים של נתי.')) {
+      pushRun.mutate({});
+    }
+  };
+
   const isPending = dryRun.isPending || runSync.isPending;
+  const isPushPending = pushDryRun.isPending || pushRun.isPending;
   const dryRunData = dryRun.data?.data ?? dryRun.data;
   const runData = runSync.data?.data ?? runSync.data;
+  const pushDryRunData = pushDryRun.data?.data ?? pushDryRun.data;
+  const pushRunData = pushRun.data?.data ?? pushRun.data;
   const lastSyncRelative = formatRelative(lastSyncAt);
 
   return (
@@ -178,11 +204,11 @@ export default function NatiSyncPanel() {
           <div className="flex-1">
             <CardTitle className="text-lg text-[#111827] flex items-center gap-2">
               סנכרון מנתי שירותים
-              <Badge className="bg-amber-100 text-amber-800 text-xs">דמו / Read-only</Badge>
+              <Badge className="bg-emerald-100 text-emerald-800 text-xs">דו-כיווני</Badge>
             </CardTitle>
             <CardDescription className="text-[#6b7280]">
-              משיכת קריאות, ספקים ולקוחות מה-API של נתי לתוך מערכת ה-CRM. השלב הראשון הוא קריאה בלבד
-              - שינויים בממשק שלנו לא יחזרו לנתי בשלב זה.
+              משיכת קריאות, ספקים ולקוחות מה-DB של נתי לתוך מערכת ה-CRM, ודחיפת עדכונים שבוצעו כאן
+              (סגירות, שיבוצים, זמני הגעה, הערות ובקרת איכות) חזרה לנתי.
             </CardDescription>
             {lastSyncRelative && (
               <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-[#6b7280]">
@@ -391,14 +417,125 @@ export default function NatiSyncPanel() {
           </div>
         )}
 
+        {/* Push back to Nati (bidirectional — outbound half) */}
+        <div className="space-y-3 pt-4 border-t border-[#e5e7eb]">
+          <div className="flex items-start gap-2">
+            <Upload className="w-4 h-4 text-[#3b82f6] mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-[#111827]">דחיפת עדכונים לנתי</h3>
+              <p className="text-xs text-[#6b7280]">
+                שינויים שבוצעו כאן על קריאות שמקורן בנתי נכתבים חזרה למסד של נתי: סגירה/ביטול, שיבוץ
+                ספק (רק אם אין ספק בנתי), זמני הגעה וסיום, הערות מוקד ואישור בקרת איכות. הדחיפה
+                שמרנית — לעולם לא דורסת נתונים קיימים בנתי ולא פותחת מחדש קריאה סגורה.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={onPushDryRun}
+              disabled={isPushPending}
+              className="gap-2"
+            >
+              {pushDryRun.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+              תצוגה מקדימה (Dry Run)
+            </Button>
+            <Button
+              onClick={onPushRun}
+              disabled={isPushPending}
+              className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2"
+            >
+              {pushRun.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              דחוף לנתי
+            </Button>
+          </div>
+
+          {/* Push dry-run results */}
+          {pushDryRunData && !pushDryRunData.error && pushDryRunData.mode === 'dry_run' && (
+            <div className="rounded-md border border-blue-200 bg-blue-50 p-4 space-y-3">
+              <div className="flex items-center gap-2 text-blue-900 font-semibold">
+                <Eye className="w-4 h-4" /> תצוגה מקדימה - מה יידחף לנתי
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <ResultStat label="מועמדות לבדיקה" value={pushDryRunData.counts?.candidates} />
+                <ResultStat label="נמצאו בנתי" value={pushDryRunData.counts?.matched_in_nati} />
+                <ResultStat
+                  label="יעודכנו"
+                  value={pushDryRunData.counts?.would_update}
+                  tone="success"
+                />
+                <ResultStat label="ללא שינוי" value={pushDryRunData.counts?.no_change} />
+              </div>
+              {pushDryRunData.planned?.length > 0 && (
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-blue-700 font-medium">
+                    פירוט העדכונים המתוכננים
+                  </summary>
+                  <pre
+                    dir="ltr"
+                    className="mt-2 p-3 bg-white rounded border border-blue-100 overflow-auto max-h-64"
+                  >
+                    {JSON.stringify(pushDryRunData.planned, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          )}
+
+          {/* Push real-run results */}
+          {pushRunData && !pushRunData.error && pushRunData.success && !pushRunData.mode && (
+            <div className="rounded-md border border-green-200 bg-green-50 p-4 space-y-3">
+              <div className="flex items-center gap-2 text-green-900 font-semibold">
+                <CheckCircle className="w-4 h-4" /> הדחיפה לנתי הושלמה
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <ResultStat label="מועמדות לבדיקה" value={pushRunData.counts?.candidates} />
+                <ResultStat
+                  label="עודכנו בנתי"
+                  value={pushRunData.counts?.updated}
+                  tone="success"
+                />
+                <ResultStat label="ללא שינוי" value={pushRunData.counts?.no_change} />
+                <ResultStat
+                  label="שגיאות"
+                  value={pushRunData.counts?.errors}
+                  tone={pushRunData.counts?.errors > 0 ? 'error' : 'default'}
+                />
+              </div>
+              {pushRunData.applied?.length > 0 && (
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-green-700 font-medium">
+                    פירוט העדכונים שבוצעו
+                  </summary>
+                  <pre
+                    dir="ltr"
+                    className="mt-2 p-3 bg-white rounded border border-green-100 overflow-auto max-h-64"
+                  >
+                    {JSON.stringify(pushRunData.applied, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Error display */}
-        {(dryRun.isError || runSync.isError) && (
+        {(dryRun.isError || runSync.isError || pushDryRun.isError || pushRun.isError) && (
           <div className="rounded-md border border-red-200 bg-red-50 p-4 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
             <div className="text-sm text-red-900">
               <div className="font-semibold mb-1">שגיאה בסנכרון</div>
               <div>
-                {(dryRun.error || runSync.error)?.message || 'שגיאה לא ידועה - בדקי את ה-Console'}
+                {(dryRun.error || runSync.error || pushDryRun.error || pushRun.error)?.message ||
+                  'שגיאה לא ידועה - בדקי את ה-Console'}
               </div>
             </div>
           </div>

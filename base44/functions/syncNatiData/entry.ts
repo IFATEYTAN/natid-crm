@@ -828,6 +828,19 @@ Deno.serve(async (req) => {
       console.log('[SYNC] Syncing calls...');
       const callRowByNumber = {};
       for (const c of existingCalls) { if (c.call_number) callRowByNumber[c.call_number] = c; }
+      // Bidirectional guard (pushNatiUpdates is the outbound half): CRM statuses
+      // grouped by the Nati status bucket they map back to. When the local and
+      // incoming statuses land in the same bucket, the local one is finer-grained
+      // (e.g. vendor_arrived vs. Nati's generic "in treatment") and must not be
+      // flattened by the pull.
+      const CRM_STATUS_TO_NATI_BUCKET = {
+        waiting_treatment: 0, awaiting_assignment: 0,
+        assigning: 1, vendor_enroute: 1, vendor_arrived: 1, in_progress: 1,
+        cannot_complete: 1, future_service: 1, in_followup: 1, in_storage: 1,
+        continued_treatment: 1, awaiting_payment: 1,
+        completed: 2, cancelled: 3,
+      };
+      const TERMINAL_CRM_STATUSES = new Set(['completed', 'cancelled']);
       const callItems = appeals.map(mapToCall);
       for (const item of callItems) {
         // A QC decision made manually in this CRM (special cases) must survive
@@ -838,6 +851,22 @@ Deno.serve(async (req) => {
         if (existing?.quality_control_source === 'manual' && item.passed_quality_control !== true) {
           delete item.passed_quality_control;
           delete item.quality_control_source;
+        }
+        // A call closed/cancelled in the CRM stays closed even while Nati still
+        // reports it open — pushNatiUpdates closes it on the Nati side on its
+        // next run. Reverting it here would lose the closure entirely (the push
+        // diff would then see CRM == Nati == open and write nothing).
+        if (existing && item.call_status) {
+          const localTerminal = TERMINAL_CRM_STATUSES.has(existing.call_status);
+          const incomingTerminal = TERMINAL_CRM_STATUSES.has(item.call_status);
+          const localBucket = CRM_STATUS_TO_NATI_BUCKET[existing.call_status];
+          const incomingBucket = CRM_STATUS_TO_NATI_BUCKET[item.call_status];
+          // Guard against statuses missing from the bucket map (e.g. a future
+          // CRM status): undefined === undefined must NOT count as "same bucket".
+          const sameBucket = localBucket !== undefined && localBucket === incomingBucket;
+          if ((localTerminal && !incomingTerminal) || (!incomingTerminal && sameBucket)) {
+            delete item.call_status;
+          }
         }
       }
       // Snapshot before syncEntity mutates callLookup, so we can tell which
