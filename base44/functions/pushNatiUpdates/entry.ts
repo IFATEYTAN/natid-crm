@@ -109,6 +109,7 @@ i/lm2yTaPs0xjY6FNWoy7fsVw5oEKxOn
 -----END CERTIFICATE-----`;
 const NATI_LAST_PUSH_KV_KEY = ['nati_last_push_run'];
 const NATI_PUSH_WATERMARK_KV_KEY = ['nati_push_watermark'];
+const NATI_PUSH_RETRY_KV_KEY = ['nati_push_retry'];
 
 // Deno KV can be unavailable on some runtimes — fall back to in-memory state.
 let memCircuit = { blockedUntil: 0, failures: 0, reason: '' };
@@ -268,12 +269,33 @@ async function setPushWatermark(iso) {
     await kv.set(NATI_PUSH_WATERMARK_KV_KEY, iso);
   } catch (_) { /* Deno KV unavailable — next run re-diffs everything (safe, diff-based) */ }
 }
+
+// Retry queue for calls whose UPDATE failed: { [call_number]: attempts }.
+// Lets the watermark advance past errors (no poison-pill stall) without losing
+// the failed updates — they are re-examined on subsequent runs until
+// MAX_PUSH_RETRY_ATTEMPTS, then dropped with a log.
+async function getPushRetryMap() {
+  try {
+    const kv = await Deno.openKv();
+    return (await kv.get(NATI_PUSH_RETRY_KV_KEY)).value ?? {};
+  } catch (_) {
+    return {};
+  }
+}
+
+async function setPushRetryMap(map) {
+  try {
+    const kv = await Deno.openKv();
+    await kv.set(NATI_PUSH_RETRY_KV_KEY, map);
+  } catch (_) { /* Deno KV unavailable — failed calls retry only via the overlap window */ }
+}
 // ===== End inline Nati DB layer =====
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 const ITEM_DELAY_MS = 150;
 const MAX_UPDATES_PER_RUN = 30;
+const MAX_PUSH_RETRY_ATTEMPTS = 5;
 const SELECT_CHUNK_SIZE = 200;
 // Overlap window on the incremental watermark so a Call updated exactly while
 // the previous push ran is still re-examined next run. Re-examining is free of
@@ -473,13 +495,16 @@ Deno.serve(async (req) => {
     console.log('[PUSH] Loading CRM calls...');
     const allCalls = await sdk.entities.Call.filter({});
     const watermark = full_scan ? null : await getPushWatermark();
+    const retryMap = full_scan ? {} : await getPushRetryMap();
     const sinceMs = watermark ? new Date(watermark).getTime() - WATERMARK_OVERLAP_MS : 0;
     const candidates = allCalls.filter((c) => {
       if (!c.call_number || !/^\d+$/.test(String(c.call_number))) return false;
+      // Previously failed updates are re-examined regardless of the watermark.
+      if (retryMap[c.call_number] !== undefined) return true;
       const changedAt = new Date(c.updated_date || c.created_date || 0).getTime();
       return changedAt >= sinceMs;
     });
-    console.log(`[PUSH] ${candidates.length} candidate calls (of ${allCalls.length}) since watermark=${watermark || 'none'}`);
+    console.log(`[PUSH] ${candidates.length} candidate calls (of ${allCalls.length}) since watermark=${watermark || 'none'}, retrying=${Object.keys(retryMap).length}`);
 
     // Vendor id -> Nati supplier id (vendor_number) for assignment write-back.
     const vendorNumberById = {};
@@ -545,6 +570,7 @@ Deno.serve(async (req) => {
       let updated = 0, errors = 0;
       const fieldCounts = {};
       const errorSamples = [];
+      const erroredCallNumbers = [];
       for (const p of toApply) {
         try {
           const cols = Object.keys(p.updates);
@@ -559,6 +585,7 @@ Deno.serve(async (req) => {
           console.log(`[PUSH] Updated appeal ${p.call_number}: ${p.reasons.join(', ')}`);
         } catch (e) {
           errors++;
+          erroredCallNumbers.push(p.call_number);
           if (errorSamples.length < 3) errorSamples.push(`${p.call_number}: ${e.message}`);
           console.error(`[PUSH] Update error (appeal ${p.call_number}):`, e.message);
         }
@@ -577,6 +604,7 @@ Deno.serve(async (req) => {
         },
         field_counts: fieldCounts,
         error_samples: errorSamples,
+        errored_call_numbers: erroredCallNumbers,
         applied: toApply.map((p) => ({ call_number: p.call_number, fields: p.reasons })),
       };
     }, { force });
@@ -593,10 +621,34 @@ Deno.serve(async (req) => {
     }
 
     lastWritePushAtMs = Date.now();
-    // Advance the watermark only when everything planned was applied cleanly;
-    // on partial errors keep the old watermark so failed calls are retried.
-    if (result.counts.errors === 0 && result.counts.deferred_to_next_run === 0) {
+    // Advance the watermark whenever every candidate was examined (nothing
+    // deferred by the per-run cap) — even if some UPDATEs failed. A stuck
+    // watermark would make one persistently-failing call ("poison pill")
+    // re-scan the whole backlog forever. Failed calls are not lost: they go
+    // into the KV retry queue and are re-examined on the next runs, up to
+    // MAX_PUSH_RETRY_ATTEMPTS.
+    if (result.counts.deferred_to_next_run === 0) {
       await setPushWatermark(runStartedAtIso);
+    }
+
+    // Update the retry queue: failed calls accumulate attempts (dropped with a
+    // log once exhausted); anything that succeeded or no longer needs a change
+    // simply falls out of the queue.
+    {
+      const newRetryMap = {};
+      let retriesDropped = 0;
+      for (const cn of result.errored_call_numbers || []) {
+        const attempts = (retryMap[cn] || 0) + 1;
+        if (attempts >= MAX_PUSH_RETRY_ATTEMPTS) {
+          retriesDropped++;
+          console.error(`[PUSH] Giving up on appeal ${cn} after ${attempts} failed attempts — dropping from retry queue`);
+        } else {
+          newRetryMap[cn] = attempts;
+        }
+      }
+      result.counts.retry_queued = Object.keys(newRetryMap).length;
+      result.counts.retry_dropped = retriesDropped;
+      await setPushRetryMap(newRetryMap);
     }
 
     await recordPushRun({

@@ -859,9 +859,11 @@ Deno.serve(async (req) => {
         if (existing && item.call_status) {
           const localTerminal = TERMINAL_CRM_STATUSES.has(existing.call_status);
           const incomingTerminal = TERMINAL_CRM_STATUSES.has(item.call_status);
-          const sameBucket =
-            CRM_STATUS_TO_NATI_BUCKET[existing.call_status] ===
-            CRM_STATUS_TO_NATI_BUCKET[item.call_status];
+          const localBucket = CRM_STATUS_TO_NATI_BUCKET[existing.call_status];
+          const incomingBucket = CRM_STATUS_TO_NATI_BUCKET[item.call_status];
+          // Guard against statuses missing from the bucket map (e.g. a future
+          // CRM status): undefined === undefined must NOT count as "same bucket".
+          const sameBucket = localBucket !== undefined && localBucket === incomingBucket;
           if ((localTerminal && !incomingTerminal) || (!incomingTerminal && sameBucket)) {
             delete item.call_status;
           }
