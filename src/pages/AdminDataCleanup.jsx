@@ -206,16 +206,45 @@ export default function AdminDataCleanup() {
     setLog([]);
     addLog('=== מתחיל תהליך מחיקת נתונים ===');
 
-    // Delete Cases first (they reference Customers)
-    await deleteEntity('Case', base44.entities.Case);
-    await sleep(2000);
+    // Deletion order matters: child records first, then the parents they
+    // reference. The dashboard and calls screens read from the Call entity,
+    // so it must be deleted too (not only Case).
+    const entitiesToDelete = [
+      ['CallHistory', base44.entities.CallHistory],
+      ['CallPhoto', base44.entities.CallPhoto],
+      ['CallProduct', base44.entities.CallProduct],
+      ['CallFeedback', base44.entities.CallFeedback],
+      ['CallAssignmentAttempt', base44.entities.CallAssignmentAttempt],
+      ['Message', base44.entities.Message],
+      ['Deposit', base44.entities.Deposit],
+      ['EligibilityCheck', base44.entities.EligibilityCheck],
+      ['Reminder', base44.entities.Reminder],
+      ['WorkQueue', base44.entities.WorkQueue],
+      ['Call', base44.entities.Call],
+      ['Case', base44.entities.Case],
+      ['Customer', base44.entities.Customer],
+    ];
 
-    if (!abortRef.current) {
-      // Then delete Customers
-      await deleteEntity('Customer', base44.entities.Customer);
+    for (const [entityName, entity] of entitiesToDelete) {
+      if (abortRef.current) break;
+      await deleteEntity(entityName, entity);
+      await sleep(1000);
     }
 
-    addLog('=== תהליך המחיקה הסתיים ===', 'success');
+    // Clear all cached queries so the dashboard and calls screens
+    // reflect the deletion immediately (otherwise stale data can be
+    // shown for several minutes due to staleTime).
+    await queryClient.invalidateQueries();
+
+    if (abortRef.current) {
+      addLog('=== תהליך המחיקה נעצר על ידי המשתמש ===', 'warn');
+    } else {
+      addLog('=== תהליך המחיקה הסתיים ===', 'success');
+      addLog(
+        'שים לב: אם סנכרון אוטומטי מנתיד פעיל, קריאות פתוחות ייווצרו מחדש בסנכרון הבא.',
+        'warn'
+      );
+    }
     setIsDeleting(false);
   };
 
@@ -439,13 +468,16 @@ export default function AdminDataCleanup() {
         <CardHeader className="p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-red-700 text-base sm:text-lg">
             <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-            <span>מחיקת כל הנתונים - Cases & Customers</span>
+            <span>מחיקת כל הנתונים - קריאות ולקוחות</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
           <p className="text-red-600 font-medium text-sm sm:text-base leading-relaxed">
-            פעולה זו תמחק את כל הקריאות (Cases) ואת כל הלקוחות (Customers) מהמערכת. פעולה זו בלתי
-            הפיכה!
+            פעולה זו תמחק את כל הקריאות (Call + Case) כולל היסטוריה, תמונות, מוצרים, משובים ותור
+            עבודה, ואת כל הלקוחות (Customers) מהמערכת. פעולה זו בלתי הפיכה!
+          </p>
+          <p className="text-red-600 text-xs sm:text-sm leading-relaxed">
+            שים לב: אם סנכרון אוטומטי מנתיד פעיל, קריאות פתוחות ייובאו מחדש בסנכרון הבא.
           </p>
 
           {!confirmed ? (
