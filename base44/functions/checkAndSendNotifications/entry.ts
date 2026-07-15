@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+// redeploy 2026-07-15: Call-based checks + automation-run gate
 
 Deno.serve(async (req) => {
   try {
