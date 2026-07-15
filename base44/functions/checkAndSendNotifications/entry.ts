@@ -9,15 +9,18 @@ Deno.serve(async (req) => {
     // (the scheduler includes an "automation" object in the body; an explicit
     // SYNC_AUTOMATION_KEY / x-internal-secret is accepted as a fallback) or an
     // authenticated platform admin. Anonymous public invocation is rejected.
-    // When a secret is configured it MUST match — a bare body.automation is
-    // honored only when neither secret is set, so configuring one closes the
-    // "anyone can POST {automation:true}" spoofing hole.
+    // Platform scheduled-automations cannot attach secrets to their payload,
+    // so a body.automation object must be honored even when a secret is
+    // configured (secrets remain for external cron callers). body.automation
+    // is spoofable by design — the worst an attacker can trigger here is the
+    // same admin-notification scan the scheduler runs every 5 minutes, with
+    // the 30-minute dedup below bounding any spam.
     const internalSecret = Deno.env.get('INTERNAL_JOB_SECRET');
     const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
     const isAutomation =
+      !!body.automation ||
       (!!automationKey && body.automation_key === automationKey) ||
-      (!!internalSecret && req.headers.get('x-internal-secret') === internalSecret) ||
-      (!automationKey && !internalSecret && !!body.automation);
+      (!!internalSecret && req.headers.get('x-internal-secret') === internalSecret);
     if (!isAutomation) {
       const user = await base44.auth.me().catch(() => null);
       if (!user || user.role !== 'admin') {

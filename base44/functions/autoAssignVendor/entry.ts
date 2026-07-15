@@ -39,13 +39,15 @@ Deno.serve(async (req) => {
     // an "automation" object in the body — same convention as detectSmartAlerts;
     // an explicit SYNC_AUTOMATION_KEY is accepted as a fallback. Such runs are
     // unattended: they always commit and use a shared rate-limit bucket.
-    // When SYNC_AUTOMATION_KEY is configured it MUST match — a bare
-    // body.automation is honored only when no key is set, so setting the key
-    // closes the "anyone can POST {automation:true}" spoofing hole.
+    // Platform entity-automations cannot attach secrets to their payload, so a
+    // body.automation object must be honored even when SYNC_AUTOMATION_KEY is
+    // configured (the key remains for external cron callers). body.automation
+    // is spoofable by design — protection is payload distrust below: the call
+    // is re-fetched by id, caller exclusions are ignored, only calls actually
+    // awaiting assignment are acted on, and runs are rate-limited.
     const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
     const isAutomation =
-      (!!automationKey && body.automation_key === automationKey) ||
-      (!automationKey && !!body.automation);
+      !!body.automation || (!!automationKey && body.automation_key === automationKey);
 
     if (isAutomation) {
       const rl = await limiter.check('autoAssignVendor', 'automation', 60, 60_000);
