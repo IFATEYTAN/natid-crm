@@ -19,24 +19,30 @@ export default function QualityControlSection({ call, callId, currentUser }) {
 
   const handleApprove = async () => {
     setProcessing(true);
-    await base44.entities.Call.update(callId, {
-      passed_quality_control: true,
-      quality_control_source: 'manual',
-      quality_controller_name: currentUser?.full_name || 'בקר',
-      returned_to_agent: false,
-    });
-    await base44.entities.CallHistory.create({
-      call_id: callId,
-      call_number: call?.call_number,
-      change_type: 'status',
-      old_value: 'בקרה',
-      new_value: 'אושר לתפעול',
-      notes: `אושר ידנית (חריג) ע"י ${currentUser?.full_name || 'בקר'}`,
-      changed_by: currentUser?.full_name || 'בקר',
-    });
-    queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
-    toast.success('הקריאה אושרה לתפעול (אישור ידני)');
-    setProcessing(false);
+    try {
+      await base44.entities.Call.update(callId, {
+        passed_quality_control: true,
+        quality_control_source: 'manual',
+        quality_controller_name: currentUser?.full_name || 'בקר',
+        returned_to_agent: false,
+      });
+      await base44.entities.CallHistory.create({
+        call_id: callId,
+        call_number: call?.call_number,
+        change_type: 'status',
+        old_value: 'בקרה',
+        new_value: 'אושר לתפעול',
+        notes: `אושר ידנית (חריג) ע"י ${currentUser?.full_name || 'בקר'}`,
+        changed_by: currentUser?.full_name || 'בקר',
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
+      toast.success('הקריאה אושרה לתפעול (אישור ידני)');
+    } catch (error) {
+      console.error('Manual QC approve failed:', error);
+      toast.error('שגיאה באישור הקריאה, נסה שוב');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleReject = async () => {
@@ -45,26 +51,32 @@ export default function QualityControlSection({ call, callId, currentUser }) {
       return;
     }
     setProcessing(true);
-    await base44.entities.Call.update(callId, {
-      passed_quality_control: false,
-      quality_control_source: 'manual',
-      quality_controller_name: currentUser?.full_name || 'בקר',
-      returned_to_agent: true,
-      call_status: 'waiting_treatment',
-    });
-    await base44.entities.CallHistory.create({
-      call_id: callId,
-      call_number: call?.call_number,
-      change_type: 'status',
-      old_value: 'בקרה',
-      new_value: 'הוחזר למוקדן',
-      notes: `נדחה: ${rejectionReason}`,
-      changed_by: currentUser?.full_name || 'בקר',
-    });
-    queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
-    toast.success('הקריאה הוחזרה למוקדן');
-    setProcessing(false);
-    setShowRejectForm(false);
+    try {
+      await base44.entities.Call.update(callId, {
+        passed_quality_control: false,
+        quality_control_source: 'manual',
+        quality_controller_name: currentUser?.full_name || 'בקר',
+        returned_to_agent: true,
+        call_status: 'waiting_treatment',
+      });
+      await base44.entities.CallHistory.create({
+        call_id: callId,
+        call_number: call?.call_number,
+        change_type: 'status',
+        old_value: 'בקרה',
+        new_value: 'הוחזר למוקדן',
+        notes: `נדחה: ${rejectionReason}`,
+        changed_by: currentUser?.full_name || 'בקר',
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.calls.detail(callId) });
+      toast.success('הקריאה הוחזרה למוקדן');
+      setShowRejectForm(false);
+    } catch (error) {
+      console.error('Manual QC reject failed:', error);
+      toast.error('שגיאה בהחזרת הקריאה, נסה שוב');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const isManualApproval = call?.quality_control_source === 'manual';
