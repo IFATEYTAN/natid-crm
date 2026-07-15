@@ -20,7 +20,7 @@ export default function UserProfilePage() {
     profile_image: '',
   });
   const [uploading, setUploading] = useState(false);
-  const { currentUser } = usePermissions();
+  const { currentUser, refreshCurrentUser } = usePermissions();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -36,8 +36,11 @@ export default function UserProfilePage() {
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: () => {
+    onSuccess: async () => {
       showToast.success('הפרופיל עודכן בהצלחה');
+      // currentUser lives in PermissionsContext (not React Query), so the
+      // context must be refreshed for the new name to show across screens
+      await refreshCurrentUser();
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
     },
     onError: () => {

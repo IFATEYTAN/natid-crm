@@ -171,86 +171,88 @@ export function PermissionsProvider({ children }) {
   const [effectiveRole, setEffectiveRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // טעינת המשתמש הנוכחי, הרשאות, וקביעת תפקיד אפקטיבי
-  useEffect(() => {
-    const loadUserAndPermissions = async () => {
-      try {
-        const user = await base44.auth.me();
-        setCurrentUser(user);
+  // טעינת המשתמש הנוכחי, הרשאות, וקביעת תפקיד אפקטיבי.
+  // נחשף גם כ-refreshCurrentUser כדי שמסכים שמעדכנים את המשתמש (למשל
+  // "הפרופיל שלי") יוכלו לרענן את ה-context בלי טעינת עמוד מלאה.
+  const loadUserAndPermissions = useCallback(async () => {
+    try {
+      const user = await base44.auth.me();
+      setCurrentUser(user);
 
-        let perm = null;
-        if (user?.id) {
-          // טעינה מקבילית של תפקידים והרשאות
-          let allRoles = [];
-          let permissions = [];
+      let perm = null;
+      if (user?.id) {
+        // טעינה מקבילית של תפקידים והרשאות
+        let allRoles = [];
+        let permissions = [];
 
-          const [rolesResult, permByIdResult] = await Promise.allSettled([
-            base44.entities.Role.list(),
-            base44.entities.UserPermission.filter({ user_id: user.id }),
-          ]);
+        const [rolesResult, permByIdResult] = await Promise.allSettled([
+          base44.entities.Role.list(),
+          base44.entities.UserPermission.filter({ user_id: user.id }),
+        ]);
 
-          if (rolesResult.status === 'fulfilled') allRoles = rolesResult.value;
-          if (permByIdResult.status === 'fulfilled') permissions = permByIdResult.value;
+        if (rolesResult.status === 'fulfilled') allRoles = rolesResult.value;
+        if (permByIdResult.status === 'fulfilled') permissions = permByIdResult.value;
 
-          // חיפוש חלופי לפי email
-          if (permissions.length === 0 && user.email) {
-            try {
-              permissions = await base44.entities.UserPermission.filter({
-                user_email: user.email,
-              });
-            } catch (e) {
-              // silently ignore
-            }
+        // חיפוש חלופי לפי email
+        if (permissions.length === 0 && user.email) {
+          try {
+            permissions = await base44.entities.UserPermission.filter({
+              user_email: user.email,
+            });
+          } catch (e) {
+            // silently ignore
           }
-
-          if (permissions.length > 0) {
-            perm = permissions[0];
-            // חיפוש Role תואם - לפי role_id או לפי role_name
-            let matchedRole = null;
-            if (perm.role_id) {
-              matchedRole = allRoles.find((r) => r.id === perm.role_id);
-            }
-            if (!matchedRole && perm.role_name) {
-              matchedRole = allRoles.find(
-                (r) => r.display_name === perm.role_name || r.name === perm.role_name
-              );
-            }
-            if (matchedRole) {
-              perm = { ...perm, roleData: matchedRole };
-            }
-          } else if (allRoles.length > 0 && user.role === 'user') {
-            // אין UserPermission אבל המשתמש קיים - יצירת הרשאה סינתטית
-            const defaultRole =
-              allRoles.find((r) => r.name === 'agent') ||
-              allRoles.find((r) => r.name === 'operator');
-            if (defaultRole) {
-              perm = {
-                user_id: user.id,
-                user_email: user.email,
-                role_name: defaultRole.display_name,
-                roleData: defaultRole,
-              };
-            }
-          }
-          setUserPermissions(perm);
         }
 
-        // קביעת תפקיד אפקטיבי - גישור בין role של Base44 לתפקידי האפליקציה
-        const resolved = resolveEffectiveRole(user?.role, perm);
-        setEffectiveRole(resolved);
-        // Force sync user role locally if needed (optional)
-        if (user && resolved && resolved !== user.role) {
-          // Update local object to match resolved role so other checks rely on the correct role
-          user.role = resolved;
+        if (permissions.length > 0) {
+          perm = permissions[0];
+          // חיפוש Role תואם - לפי role_id או לפי role_name
+          let matchedRole = null;
+          if (perm.role_id) {
+            matchedRole = allRoles.find((r) => r.id === perm.role_id);
+          }
+          if (!matchedRole && perm.role_name) {
+            matchedRole = allRoles.find(
+              (r) => r.display_name === perm.role_name || r.name === perm.role_name
+            );
+          }
+          if (matchedRole) {
+            perm = { ...perm, roleData: matchedRole };
+          }
+        } else if (allRoles.length > 0 && user.role === 'user') {
+          // אין UserPermission אבל המשתמש קיים - יצירת הרשאה סינתטית
+          const defaultRole =
+            allRoles.find((r) => r.name === 'agent') || allRoles.find((r) => r.name === 'operator');
+          if (defaultRole) {
+            perm = {
+              user_id: user.id,
+              user_email: user.email,
+              role_name: defaultRole.display_name,
+              roleData: defaultRole,
+            };
+          }
         }
-      } catch (e) {
-        console.error('Failed to load user:', e);
-      } finally {
-        setIsLoading(false);
+        setUserPermissions(perm);
       }
-    };
-    loadUserAndPermissions();
+
+      // קביעת תפקיד אפקטיבי - גישור בין role של Base44 לתפקידי האפליקציה
+      const resolved = resolveEffectiveRole(user?.role, perm);
+      setEffectiveRole(resolved);
+      // Force sync user role locally if needed (optional)
+      if (user && resolved && resolved !== user.role) {
+        // Update local object to match resolved role so other checks rely on the correct role
+        user.role = resolved;
+      }
+    } catch (e) {
+      console.error('Failed to load user:', e);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadUserAndPermissions();
+  }, [loadUserAndPermissions]);
 
   // בדיקת הרשאה - משתמש ב-effectiveRole במקום ב-currentUser.role
   const hasPermission = useCallback(
@@ -346,6 +348,7 @@ export function PermissionsProvider({ children }) {
     hasAllPermissions,
     isAdmin: effectiveRole === 'admin',
     isLoading,
+    refreshCurrentUser: loadUserAndPermissions,
   };
 
   return <PermissionsContext.Provider value={value}>{children}</PermissionsContext.Provider>;
@@ -366,6 +369,7 @@ export function usePermissions() {
       hasAllPermissions: () => false,
       isAdmin: false,
       isLoading: true,
+      refreshCurrentUser: () => {},
     };
   }
   return context;
