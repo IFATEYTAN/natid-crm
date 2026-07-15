@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+// redeploy 2026-07-15: automation-triggered runs (Call → Created)
 
 // Deno KV is unavailable at isolate boot on this platform - a top-level
 // `await Deno.openKv()` crashes every deploy (UNCAUGHT_EXCEPTION: "Default
