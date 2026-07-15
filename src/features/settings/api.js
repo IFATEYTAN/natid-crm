@@ -80,6 +80,27 @@ export const runNatiSync = (filters = {}) => {
   });
 };
 
+// ========== Nati Push (bidirectional sync — outbound half) ==========
+// Invokes the pushNatiUpdates backend function. See base44/functions/pushNatiUpdates/entry.ts.
+// Pushes CRM-side changes on Calls back to Nati's MySQL (status forward-only,
+// vendor assignment / timestamps / notes fill-empty-only, manual QC approval).
+// Options:
+//   full_scan:   ignore the incremental watermark and re-diff every Nati-origin call
+//   max_updates: cap of UPDATE statements per run (default 30, max 100)
+export const runNatiPushDryRun = (options = {}) => {
+  return base44.functions.invoke('pushNatiUpdates', {
+    ...options,
+    dry_run: true,
+  });
+};
+
+export const runNatiPush = (options = {}) => {
+  return base44.functions.invoke('pushNatiUpdates', {
+    ...options,
+    dry_run: false,
+  });
+};
+
 // ========== Demo Data Seed ==========
 // Invokes the seedDemoData backend function (admin only).
 // See base44/functions/seedDemoData/entry.ts. Generates ~250 realistic
