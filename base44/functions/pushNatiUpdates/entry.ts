@@ -678,3 +678,4 @@ Deno.serve(async (req) => {
     return natiErrorResponse(error);
   }
 });
+// deployed 2026-07-15 v1 (bidirectional sync: outbound push CRM -> Nati)
