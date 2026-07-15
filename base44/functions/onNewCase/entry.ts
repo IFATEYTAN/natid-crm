@@ -37,10 +37,24 @@ Deno.serve(async (req) => {
     // Determine if this case already has a vendor assigned
     const hasVendor = !!(caseData.assigned_provider_name && caseData.assigned_provider_name.trim());
 
+    // WorkQueue rows must point at the Call entity (QueueMonitor joins
+    // WorkQueue.call_id against Call.id and drops rows it can't resolve, so a
+    // row keyed by the Case id renders as an orphan). Resolve the sibling Call
+    // by number — Case and Call are mirrored with case_number === call_number.
+    let queueCallId = caseId;
+    try {
+      if (caseData.case_number) {
+        const siblingCalls = await sdk.entities.Call.filter({ call_number: String(caseData.case_number) });
+        if (siblingCalls.length > 0) queueCallId = siblingCalls[0].id;
+      }
+    } catch (e) {
+      console.error('Sibling Call lookup failed, falling back to case id:', e.message);
+    }
+
     // ===== 1. CREATE WORK QUEUE ENTRY =====
     let queueEntry = null;
     try {
-      const existingQueue = await sdk.entities.WorkQueue.filter({ call_id: caseId });
+      const existingQueue = await sdk.entities.WorkQueue.filter({ call_id: queueCallId });
       if (existingQueue.length === 0) {
         let priorityScore = 50;
         if (caseData.priority === 'urgent') priorityScore = 90;
@@ -49,7 +63,7 @@ Deno.serve(async (req) => {
         if (caseData.is_vip) priorityScore = Math.min(100, priorityScore + 15);
 
         queueEntry = await sdk.entities.WorkQueue.create({
-          call_id: caseId,
+          call_id: queueCallId,
           queue_status: 'waiting_in_queue',
           priority_score: priorityScore,
           added_to_queue_at: new Date().toISOString(),
