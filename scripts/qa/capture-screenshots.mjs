@@ -47,17 +47,17 @@ const MOBILE_PAGES = new Set([
   'AgentCallManagement',
 ]);
 
-// Pages that need an entity id or token to show content — captured anyway
-// (empty/error state is still informative), flagged in the log.
-const DETAIL_PAGES = new Set([
-  'CallDetails',
-  'CustomerDetails',
-  'EditCustomer',
-  'VendorDetails',
-  'EditVendor',
-  'CustomerFeedback',
-  'FormView',
-]);
+// Pages that need an entity id / token to show content. In demo mode we pass
+// a demo query string so the screenshot shows real content, not an empty state.
+const DETAIL_PAGE_QUERY = {
+  CallDetails: 'id=demo_call_20',
+  CustomerDetails: 'id=demo_customer_1',
+  EditCustomer: 'id=demo_customer_1',
+  VendorDetails: 'id=demo_vendor_1',
+  EditVendor: 'id=demo_vendor_1',
+  CustomerFeedback: 'token=demo-feedback-token-123',
+};
+const DETAIL_PAGES = new Set(Object.keys(DETAIL_PAGE_QUERY));
 
 function getPageKeys() {
   const src = readFileSync(join(ROOT, 'src', 'pages.config.js'), 'utf8');
@@ -98,7 +98,8 @@ async function main() {
         await page.setViewportSize(
           isMobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }
         );
-        await page.goto(`${BASE_URL}/${key}`, { waitUntil: 'networkidle', timeout: 30_000 });
+        const idParam = USE_DEMO && DETAIL_PAGE_QUERY[key] ? `?${DETAIL_PAGE_QUERY[key]}` : '';
+        await page.goto(`${BASE_URL}/${key}${idParam}`, { waitUntil: 'networkidle', timeout: 30_000 });
         // Let lazy chunks, charts and maps settle.
         await page.waitForTimeout(2500);
         await page.screenshot({ path: join(OUT_DIR, `${key}.png`), fullPage: false });

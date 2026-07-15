@@ -7,8 +7,10 @@
 
 | סרטון | קובץ | משך |
 |---|---|---|
-| הדגמת המערכת המלאה — כל ה-flows | [docs/videos/natid-system-demo.webm](../videos/natid-system-demo.webm) | ~2:06 |
-| פורטל הספקים — ניהול קריאה מצד הספק | [docs/videos/natid-vendor-portal-demo.webm](../videos/natid-vendor-portal-demo.webm) | ~1:00 |
+| 🔴 **הקלטה חיה** — כל ה-flows מול המערכת בפרודקשן (מצב דמו) | [docs/videos/natid-system-demo-live.webm](../videos/natid-system-demo-live.webm) | ~2:15 |
+| 🔴 **הקלטה חיה** — פורטל הספקים בנייד, ניהול קריאה מצד הספק | [docs/videos/natid-vendor-portal-demo-live.webm](../videos/natid-vendor-portal-demo-live.webm) | ~1:00 |
+| מצגת וידאו — סקירת כל המסכים עם כתוביות | [docs/videos/natid-system-demo.webm](../videos/natid-system-demo.webm) | ~2:06 |
+| מצגת וידאו — פורטל הספקים | [docs/videos/natid-vendor-portal-demo.webm](../videos/natid-vendor-portal-demo.webm) | ~1:00 |
 
 *הסרטונים בפורמט WebM — נפתחים בכל דפדפן (Chrome / Edge / Firefox) בלחיצה כפולה.*
 

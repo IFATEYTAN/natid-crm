@@ -232,6 +232,15 @@ function createMockFunctions(realFunctions) {
           return Promise.resolve({ success: true });
         case 'createFeedbackToken':
           return Promise.resolve({ success: true, data: { token: 'demo-feedback-token-123' } });
+        case 'getFeedbackTokenInfo':
+          return Promise.resolve({
+            success: true,
+            data: {
+              valid: true,
+              service_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+              vendor_name: 'גרר המרכז — יוסי כהן',
+            },
+          });
         case 'validateAndSubmitFeedback':
           return Promise.resolve({ success: true });
         case 'checkContractExpiry':

@@ -211,7 +211,7 @@ const vendors = [
     vendor_name: 'מכונאי ניידות',
     contact_person: 'דוד לוי',
     phone: '054-2345678',
-    email: 'david@mobile-mechanic.co.il',
+    email: 'admin@natid-demo.com',
     service_type: ['mechanic', 'tire_service'],
     vehicle_types_supported: ['sedan', 'suv', 'van'],
     coverage_areas: ['center', 'lowlands'],
@@ -1786,7 +1786,7 @@ const workQueue = [
     id: 'demo_queue_6',
     call_id: 'demo_call_11',
     queue_status: 'in_progress',
-    assigned_to_agent: 'demo_user_operator_1',
+    assigned_to_agent: 'admin@natid-demo.com',
     priority_score: 80,
     waiting_since: hoursAgo(2),
     assigned_at: hoursAgo(2),
@@ -1799,7 +1799,7 @@ const workQueue = [
     id: 'demo_queue_7',
     call_id: 'demo_call_12',
     queue_status: 'in_progress',
-    assigned_to_agent: 'demo_user_operator_2',
+    assigned_to_agent: 'admin@natid-demo.com',
     priority_score: 65,
     waiting_since: hoursAgo(1),
     assigned_at: hoursAgo(1),
@@ -1812,7 +1812,7 @@ const workQueue = [
     id: 'demo_queue_8',
     call_id: 'demo_call_1',
     queue_status: 'completed',
-    assigned_to_agent: 'demo_user_operator_1',
+    assigned_to_agent: 'admin@natid-demo.com',
     priority_score: 60,
     waiting_since: daysAgo(5),
     assigned_at: daysAgo(5),
@@ -4209,7 +4209,7 @@ const knowledgeArticles = [
     problem_description: 'רכב לא מניע, אורות חלשים או לא נדלקים, קולות קליקים בהתנעה.',
     solution:
       '1. בדיקת מתח מצבר עם מולטימטר (מתחת ל-12V = מצבר חלש)\n2. ניסיון התנעה עם כבלים\n3. אם לא עוזר - החלפת מצבר במקום\n4. בדיקת אלטרנטור לוודא טעינה תקינה',
-    tags: ['מצבר', 'התנעה', 'חשמל', 'אלטרנטור'],
+    tags: 'מצבר, התנעה, חשמל, אלטרנטור',
     created_date: daysAgo(90),
   },
   {
@@ -4219,7 +4219,7 @@ const knowledgeArticles = [
     problem_description: 'צמיג רגיל שנקוב, צמיג שהתפוצץ, או צמיג Run-Flat שאיבד לחץ.',
     solution:
       "1. העמדת הרכב על משטח ישר ושימוש בבלם יד\n2. שחרור ברגים לפני הרמה\n3. הרמת הרכב עם ג'ק\n4. החלפה לגלגל רזרבי\n5. הידוק ברגים בצורת כוכב\n6. בדיקת לחץ אוויר",
-    tags: ['צמיג', "פנצ'ר", 'גלגל', 'החלפה'],
+    tags: "צמיג, פנצ'ר, גלגל, החלפה",
     created_date: daysAgo(85),
   },
   {
@@ -4229,7 +4229,7 @@ const knowledgeArticles = [
     problem_description: 'מפתחות ננעלו בתוך הרכב, שלט לא עובד, מנעול תקוע.',
     solution:
       '1. בדיקה אם יש חלון פתוח או דלת לא נעולה\n2. שימוש בכלי פתיחה מקצועי (Air Wedge + Long Reach Tool)\n3. לרכבים חדשים - פנייה למוסך מורשה\n4. אם לא ניתן לפתוח - שליחת מנעולן',
-    tags: ['נעילה', 'מפתח', 'מנעולן', 'פתיחה'],
+    tags: 'נעילה, מפתח, מנעולן, פתיחה',
     created_date: daysAgo(80),
   },
   {
@@ -4239,7 +4239,7 @@ const knowledgeArticles = [
     problem_description: 'רכב מושבת שצריך גרירה - מכני, תאונה, או בלאי.',
     solution:
       '1. בדיקת מצב הרכב (האם נסיעתי או לא)\n2. וידוא הילוך N ובלם יד משוחרר\n3. צילום מצב הרכב לפני העמסה\n4. בדיקת נקודות אחיזה לגרירה\n5. אבטחת הרכב על הגרר עם רצועות',
-    tags: ['גרירה', 'העמסה', 'אבטחה', 'גרר'],
+    tags: 'גרירה, העמסה, אבטחה, גרר',
     created_date: daysAgo(75),
   },
   {
@@ -4249,7 +4249,7 @@ const knowledgeArticles = [
     problem_description: 'מחוג טמפרטורה באדום, עשן מהמכסה, נורית אזהרה דולקת.',
     solution:
       '1. כיבוי המזגן והדלקת חימום (פורק חום מהמנוע)\n2. עצירה מיידית ואל תכבה את המנוע מיד\n3. פתיחת מכסה מנוע בזהירות (לא כשיש עשן!)\n4. בדיקת מפלס נוזל קירור\n5. אם אין נזילה - השלמת מים והמשך נסיעה זהירה',
-    tags: ['מנוע', 'התחממות', 'נוזל קירור', 'רדיאטור'],
+    tags: 'מנוע, התחממות, נוזל קירור, רדיאטור',
     created_date: daysAgo(70),
   },
   {
@@ -4259,7 +4259,7 @@ const knowledgeArticles = [
     problem_description: 'רכב לאחר תאונה - קלה, בינונית או חמורה.',
     solution:
       '1. וידוא שאין נפגעים\n2. הרחקת רכבים מהכביש אם אפשר\n3. תיעוד מלא - צילומים, פרטי צדדים\n4. דיווח למשטרה ולביטוח\n5. הזמנת גרר אם הרכב לא נסיעתי\n6. העברת הרכב למוסך מורשה',
-    tags: ['תאונה', 'נוהל', 'ביטוח', 'תיעוד'],
+    tags: 'תאונה, נוהל, ביטוח, תיעוד',
     created_date: daysAgo(65),
   },
   {
@@ -4269,7 +4269,7 @@ const knowledgeArticles = [
     problem_description: 'רכב נתקע ללא דלק באמצע הדרך.',
     solution:
       '1. וידוא מיקום מדויק של הרכב\n2. הבאת 10 ליטר דלק מתאים (בנזין/סולר)\n3. תדלוק באמצעות משפך\n4. המתנה דקה לפני התנעה\n5. המלצה ללקוח לתדלק בתחנה הקרובה',
-    tags: ['דלק', 'תדלוק', 'חירום'],
+    tags: 'דלק, תדלוק, חירום',
     created_date: daysAgo(60),
   },
   {
@@ -4279,7 +4279,7 @@ const knowledgeArticles = [
     problem_description: 'מוקדן צריך לפתוח קריאה חדשה במערכת.',
     solution:
       '1. זיהוי הלקוח לפי טלפון או מספר רכב\n2. בירור סוג התקלה והמיקום המדויק\n3. בדיקת זכאות וחבילת שירות\n4. פתיחת קריאה במערכת עם כל הפרטים\n5. שיבוץ ספק לפי אזור וזמינות\n6. עדכון הלקוח על זמן הגעה משוער',
-    tags: ['תהליך', 'מוקד', 'קריאה', 'קבלה'],
+    tags: 'תהליך, מוקד, קריאה, קבלה',
     created_date: daysAgo(55),
   },
 ];
