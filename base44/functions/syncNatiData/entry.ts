@@ -360,6 +360,7 @@ function mapToCall(a) {
     assigned_vendor_name: a.supplier_name || '',
     operator_notes: a.q_notes || '',
     passed_quality_control: a.inspector_approves === 1,
+    quality_control_source: 'nati',
     created_by_source: a.open_from_api === 1 ? 'bot' : 'operator',
     customer_response_code: a.car_pin || '',
     key_location: a.key_location || '',
@@ -825,7 +826,20 @@ Deno.serve(async (req) => {
     // CALLS
     if (sync_calls) {
       console.log('[SYNC] Syncing calls...');
+      const callRowByNumber = {};
+      for (const c of existingCalls) { if (c.call_number) callRowByNumber[c.call_number] = c; }
       const callItems = appeals.map(mapToCall);
+      for (const item of callItems) {
+        // A QC decision made manually in this CRM (special cases) must survive
+        // the sync: Nati still reports inspector_approves=0 for it, which would
+        // flip the call back to "pending QC" here on every run. Nati becomes
+        // the source again only once the appeal is actually approved there.
+        const existing = callRowByNumber[item.call_number];
+        if (existing?.quality_control_source === 'manual' && item.passed_quality_control !== true) {
+          delete item.passed_quality_control;
+          delete item.quality_control_source;
+        }
+      }
       // Snapshot before syncEntity mutates callLookup, so we can tell which
       // calls were created in this run (vs. pre-existing ones that got updated).
       const preExistingCallNumbers = new Set(Object.keys(callLookup));
