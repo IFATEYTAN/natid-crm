@@ -33,17 +33,42 @@ const limiter = createRateLimiter(kv);
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
 
-    const user = await base44.auth.me();
-    const appRole = await resolveAppRole(base44, user);
-    if (!user || !['admin', 'operator'].includes(appRole)) {
-      return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
+    // Automation-triggered runs (a platform "Call → Created" automation) carry
+    // an "automation" object in the body — same convention as detectSmartAlerts;
+    // an explicit SYNC_AUTOMATION_KEY is accepted as a fallback. Such runs are
+    // unattended: they always commit and use a shared rate-limit bucket.
+    // When SYNC_AUTOMATION_KEY is configured it MUST match — a bare
+    // body.automation is honored only when no key is set, so setting the key
+    // closes the "anyone can POST {automation:true}" spoofing hole.
+    const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
+    const isAutomation =
+      (!!automationKey && body.automation_key === automationKey) ||
+      (!automationKey && !!body.automation);
+
+    if (isAutomation) {
+      const rl = await limiter.check('autoAssignVendor', 'automation', 60, 60_000);
+      if (!rl.allowed) return rateLimitResponse(rl.resetAt);
+    } else {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user) {
+        return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
+      }
+      const appRole = await resolveAppRole(base44, user);
+      if (!['admin', 'operator'].includes(appRole)) {
+        return Response.json({ error: 'Unauthorized - admin or operator role required' }, { status: 403 });
+      }
+      const rl = await limiter.check('autoAssignVendor', user.id, 20, 60_000);
+      if (!rl.allowed) return rateLimitResponse(rl.resetAt);
     }
 
-    const rl = await limiter.check('autoAssignVendor', user.id, 20, 60_000);
-    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
-
-    const { call_id, exclude_vendor_ids = [], commit = false } = await req.json();
+    // Entity automations deliver the record id as event.entity_id.
+    // Automation payloads are untrusted — ignore caller-supplied exclusions so
+    // a forged request can't steer dispatch toward a chosen vendor.
+    const call_id = body.call_id || body.event?.entity_id;
+    const exclude_vendor_ids = isAutomation ? [] : body.exclude_vendor_ids || [];
+    const commit = isAutomation ? true : body.commit === true;
     if (!call_id) {
       return Response.json({ error: 'call_id is required' }, { status: 400 });
     }
@@ -53,6 +78,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Call not found' }, { status: 404 });
     }
     const call = calls[0];
+
+    // Automation runs fire on every Call create/update — only act on calls
+    // actually waiting for dispatch; anything else exits quietly so the
+    // automation log stays green.
+    if (
+      isAutomation &&
+      (call.assigned_vendor_id ||
+        !['waiting_treatment', 'awaiting_assignment'].includes(call.call_status))
+    ) {
+      return Response.json({ success: false, skipped: true, reason: 'not_awaiting_assignment' });
+    }
 
     // Duplicate assignment prevention: call already actively handled
     if (call.assigned_vendor_id && ['vendor_enroute', 'in_progress'].includes(call.call_status)) {

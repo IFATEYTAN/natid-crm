@@ -23,6 +23,13 @@
 
 ## לקחים
 
+### [2026-07-15] Architecture: המנגנונים האוטומטיים חיים על Case בעוד המערכת חיה על Call — סגירת הפער
+
+**בעיה:** אחרי "מחיקת כל הנתונים", הסנכרון מנתיד ייבא מחדש 30 קריאות פתוחות — כ-Call בלבד (0 Case) — והתגלה שכל שרשרת האוטומציה נשענת על Case: (א) `onNewCase` (יצירת WorkQueue + שיוך מוקדן במשמרת) מופעל רק על יצירת Case, ולכן קריאות מסונכרנות מנתיד לא נכנסו לתור ולא שויכו לאף מוקדן; (ב) `onNewCase` גם קישר את רשומת ה-WorkQueue ל-id של ה-Case — אבל QueueMonitor מצליב מול Call.id ומשמיט רשומות יתומות; (ג) `checkAndSendNotifications` (התראות ללא-שיבוץ/SLA, האוטומציה "System Notifications Check" שכבויה מפברואר) סרק את Case בלבד; (ד) לקריאות מסונכרנות לא חושבו מועדי SLA כלל; (ה) `autoAssignVendor` דרש משתמש מחובר ולכן לא ניתן היה להפעילו מאוטומציה — שיבוץ ספק נשאר לחיצה ידנית; (ו) דף "הגדרות תור עבודה" הוא mockup — לא שומר ולא משפיע.
+**פתרון:** (1) `syncNatiData` מכניס כל קריאה חדשה פתוחה ל-WorkQueue ומשייך למוקדן העמוס-פחות שבמשמרת (לוגיקה inline, זהה ל-onNewCase; קריאה שכבר שובץ לה ספק בנתיד נכנסת לתור בלי שיוך מוקדן), ומחשב `sla_response_deadline` = פתיחה+30 דק'; (2) `onNewCase` פותר את ה-Call האח לפי מספר קריאה ומקשר את ה-WorkQueue אליו; (3) `checkAndSendNotifications` הוסב לעבוד על Call (סטטוסים תפעוליים, קישורי CallDetails) ומקבל הפעלה מאוטומציה בדפוס `body.automation` (כמו detectSmartAlerts); (4) `autoAssignVendor` מקבל הפעלה מאוטומציית `Call → Created` (commit אוטומטי; מדלג בשקט על קריאות שאינן ממתינות לשיבוץ).
+**לקח:** Call הוא ישות התפעול היחידה — כל מנגנון אוטומטי חדש חייב להיות ממוקד בה, ו-Case הוא מראה לדוחות בלבד. פונקציה שמיועדת לאוטומציה חייבת מסלול אימות לאוטומציה (`body.automation`) מהיום הראשון, אחרת היא נגישה רק מכפתור. נדרש בצד הפלטפורמה: אוטומציית `Call → Created` ← `autoAssignVendor` (לשיבוץ ספק אוטומטי), הפעלה מחדש של "System Notifications Check", ומשמרות מוגדרות להיום כדי שהשיוך למוקדן יעבוד.
+**קבצים:** `base44/functions/{syncNatiData,onNewCase,checkAndSendNotifications,autoAssignVendor}/entry.ts`, `docs/WORKFLOWS.md` (תרשים זרימה מקצה לקצה)
+
 ### [2026-07-14] Security: הקשחת פונקציות backend חשופות (סריקת האבטחה של Base44)
 
 **בעיה:** סריקת האבטחה של Base44 (14/07) העלתה 15 ממצאים. ניתוח מול הקוד: (א) 9 ממצאי Permissions אמיתיים — ל-63 ישויות אין חוקי גישה (rls) בכלל ול-Call/WorkQueue בלוק ריק, כך שה-API פתוח לציבור; (ב) 3 ממצאי "Exposed secrets" הם ברובם אזעקות שווא (קריאת env בצד שרת — המקום הנכון; WEBHOOK_SECRET הוא עצמו ההגנה); (ג) הבעיה האמיתית — 7 פונקציות ניתנות להפעלה אנונימית: sendVendorAssignmentSMS (שיגור SMS בתשלום), autoTransferAgentCalls (מחזיקה מפתח service של Supabase), ctiWebhook (חושף פרטי לקוח לפי טלפון — rate-limit בלבד), ושלוש פונקציות תחזוקה מתוזמנות.
