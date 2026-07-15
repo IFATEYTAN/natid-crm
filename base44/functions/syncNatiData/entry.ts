@@ -608,7 +608,7 @@ async function enqueueAndAutoAssign(sdk, calls) {
   return out;
 }
 
-// ========== MAIN HANDLER ==========
+// ========== MAIN HANDLER ========== (redeploy 2026-07-15: queue enqueue + operator auto-assign)
 
 // Server-side cooldown. Module-level state persists between invocations on
 // warm starts, which is the common case under steady traffic. It will not
