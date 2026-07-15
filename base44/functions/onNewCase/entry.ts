@@ -1,4 +1,4 @@
-// Triggered on new Case creation
+// Triggered on new Case creation (redeploy 2026-07-15: WorkQueue linked to Call id, Israel-time shifts)
 // 1. Creates WorkQueue entry
 // 2. Auto-assigns to least-busy on-shift operator (only if no vendor assigned)
 // 3. Sends notification to operators
