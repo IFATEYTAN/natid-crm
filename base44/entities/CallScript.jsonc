@@ -1,0 +1,32 @@
+{
+  "name": "CallScript",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "כותרת התסריט"
+    },
+    "script_type": {
+      "type": "string",
+      "enum": ["opening", "diagnosis", "escalation", "closing", "complaint", "upsell"],
+      "default": "opening",
+      "description": "סוג התסריט: פתיחת שיחה / אבחון תקלה / הסלמה / סגירת שיחה / טיפול בתלונה / שדרוג שירות"
+    },
+    "service_type": {
+      "type": "string",
+      "default": "all",
+      "description": "סוג השירות שהתסריט רלוונטי אליו (all = כל סוגי השירות)"
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "description": "תוכן התסריט המלא למוקדן"
+    },
+    "notes": {
+      "type": "string",
+      "description": "הערות פנימיות למוקדן"
+    }
+  },
+  "required": ["title", "content"]
+}
