@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { DirectionProvider } from '@radix-ui/react-direction';
 import { lazyRetry } from '@/lib/lazyRetry';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -128,17 +129,22 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <DemoBanner />
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <ErrorBoundary>
-            <AuthenticatedApp />
-          </ErrorBoundary>
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
+    // DirectionProvider makes every Radix primitive (Select, DropdownMenu,
+    // Popover, Tooltip, ...) run in RTL — including portaled dropdown content
+    // and keyboard navigation, which do not inherit dir from <html>.
+    <DirectionProvider dir="rtl">
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <DemoBanner />
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <ErrorBoundary>
+              <AuthenticatedApp />
+            </ErrorBoundary>
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </DirectionProvider>
   );
 }
 
