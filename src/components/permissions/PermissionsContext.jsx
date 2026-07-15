@@ -177,6 +177,12 @@ export function PermissionsProvider({ children }) {
   const loadUserAndPermissions = useCallback(async () => {
     try {
       const user = await base44.auth.me();
+      // full_name is platform-managed and silently ignored by auth.updateMe,
+      // so profile edits are stored in the custom display_name field — it wins
+      // everywhere the app shows the user's name
+      if (user?.display_name) {
+        user.full_name = user.display_name;
+      }
       setCurrentUser(user);
 
       let perm = null;

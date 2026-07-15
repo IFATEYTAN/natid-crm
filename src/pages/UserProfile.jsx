@@ -51,6 +51,9 @@ export default function UserProfilePage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     updateMutation.mutate({
+      // full_name is platform-managed and ignored by updateMe; display_name
+      // is a custom field that does persist and overrides it in the UI
+      display_name: formData.full_name,
       full_name: formData.full_name,
       profile_image: formData.profile_image,
     });
