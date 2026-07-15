@@ -376,6 +376,17 @@ function mapToCall(a) {
   if (arriveTime) data.vendor_arrival_time_actual = arriveTime;
   const finishTime = parseNatiDate(a.finish_time);
   if (finishTime) { data.service_end_time = finishTime; data.closed_at = finishTime; }
+  // SLA response deadline for open appeals: 30 minutes from opening (matches
+  // the Call schema's sla_target default), so the notifications engine can
+  // track synced calls too. Closed appeals don't need one.
+  if (!finishTime) {
+    const openedAt = parseNatiDate(a.date_added);
+    if (openedAt) {
+      const deadline = new Date(new Date(openedAt).getTime() + 30 * 60 * 1000).toISOString();
+      data.sla_deadline = deadline;
+      data.sla_response_deadline = deadline;
+    }
+  }
   if (a.num_of_km && a.num_of_km > 0) data.estimated_distance_km = a.num_of_km;
   if (a.future_service_from) {
     const fs = parseNatiDate(a.future_service_from);
@@ -508,6 +519,93 @@ async function syncEntity(sdk, entityName, items, keyField, existingLookup, link
     if (i + BATCH_SIZE < items.length) await sleep(BATCH_DELAY_MS);
   }
   return { created, updated, skipped, errors };
+}
+
+// ===== Inline work-queue enqueue + least-busy on-shift auto-assign (kept
+// per-file: shared-module bundling is broken on this platform — see
+// docs/LESSONS_LEARNED.md 2026-07-09). Mirrors onNewCase's assignment logic. =====
+async function enqueueAndAutoAssign(sdk, calls) {
+  const out = { enqueued: 0, assigned: 0, skipped: 0, errors: 0 };
+
+  // Resolve on-shift operators (today, active/scheduled, within hours) and
+  // their current open-item load — once per run, updated locally per assignment
+  // so a batch of new calls spreads across operators instead of piling on one.
+  let loadMap = null;
+  try {
+    // Shift dates/hours are entered in Israel local time — compare in the same
+    // zone, and support shifts that span midnight (e.g. 22:00-06:00).
+    const now = new Date();
+    const israelParts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(now).reduce((acc, p) => ({ ...acc, [p.type]: p.value }), {});
+    const todayStr = `${israelParts.year}-${israelParts.month}-${israelParts.day}`;
+    const currentHHMM = `${israelParts.hour === '24' ? '00' : israelParts.hour}:${israelParts.minute}`;
+    const allShifts = await sdk.entities.AgentShift.filter({ shift_date: todayStr });
+    const activeShifts = allShifts.filter((s) => {
+      if (s.status !== 'active' && s.status !== 'scheduled') return false;
+      if (s.start_time && s.end_time) {
+        return s.start_time <= s.end_time
+          ? currentHHMM >= s.start_time && currentHHMM <= s.end_time
+          : currentHHMM >= s.start_time || currentHHMM <= s.end_time;
+      }
+      return true;
+    });
+    const onShiftEmails = [...new Set(activeShifts.map((s) => s.agent_email).filter(Boolean))];
+    if (onShiftEmails.length > 0) {
+      const allQueueItems = await sdk.entities.WorkQueue.filter({});
+      const openStatuses = ['assigned_to_agent', 'in_progress', 'waiting_in_queue'];
+      loadMap = {};
+      for (const email of onShiftEmails) loadMap[email] = 0;
+      for (const item of allQueueItems) {
+        if (
+          openStatuses.includes(item.queue_status) &&
+          item.assigned_to_agent &&
+          loadMap[item.assigned_to_agent] !== undefined
+        ) {
+          loadMap[item.assigned_to_agent]++;
+        }
+      }
+    } else {
+      console.log('[SYNC] No on-shift operators — new calls stay unassigned in queue');
+    }
+  } catch (e) {
+    console.error('[SYNC] Shift/load lookup failed, calls stay unassigned in queue:', e.message);
+  }
+
+  for (const call of calls) {
+    try {
+      const existing = await sdk.entities.WorkQueue.filter({ call_id: call.id });
+      if (existing.length > 0) { out.skipped++; continue; }
+
+      const priorityScore =
+        call.call_priority === 'urgent' ? 90 : call.call_priority === 'high' ? 75 : 50;
+
+      // Least-busy on-shift operator — only for calls without a vendor yet
+      // (a call Nati already dispatched doesn't need an operator to work it).
+      let assignee = null;
+      if (!call.hasVendor && loadMap && Object.keys(loadMap).length > 0) {
+        assignee = Object.entries(loadMap).sort((a, b) => a[1] - b[1])[0][0];
+        loadMap[assignee]++;
+      }
+
+      await sdk.entities.WorkQueue.create(clean({
+        call_id: call.id,
+        queue_status: assignee ? 'assigned_to_agent' : 'waiting_in_queue',
+        assigned_to_agent: assignee || undefined,
+        assigned_at: assignee ? new Date().toISOString() : undefined,
+        priority_score: priorityScore,
+        added_to_queue_at: new Date().toISOString(),
+      }));
+      out.enqueued++;
+      if (assignee) out.assigned++;
+      await sleep(ITEM_DELAY_MS);
+    } catch (e) {
+      console.error(`[SYNC] WorkQueue enqueue error (call ${call.call_number}):`, e.message);
+      out.errors++;
+    }
+  }
+  return out;
 }
 
 // ========== MAIN HANDLER ==========
@@ -742,11 +840,36 @@ Deno.serve(async (req) => {
           delete item.quality_control_source;
         }
       }
+      // Snapshot before syncEntity mutates callLookup, so we can tell which
+      // calls were created in this run (vs. pre-existing ones that got updated).
+      const preExistingCallNumbers = new Set(Object.keys(callLookup));
       results.calls = await syncEntity(sdk, 'Call', callItems, 'call_number', callLookup, (item) => {
         if (item.assigned_vendor_name && vendorLookup[item.assigned_vendor_name]) {
           item.assigned_vendor_id = vendorLookup[item.assigned_vendor_name];
         }
       });
+
+      // Newly created open calls enter the work queue and get auto-assigned to
+      // the least-busy on-shift operator — same treatment a call opened in the
+      // NewCase form gets, so synced Nati calls don't bypass the queue.
+      const OPEN_FOR_QUEUE = new Set(['waiting_treatment', 'awaiting_assignment', 'assigning']);
+      const newlyCreated = callItems
+        .filter((i) =>
+          i.call_number &&
+          !preExistingCallNumbers.has(i.call_number) &&
+          callLookup[i.call_number] &&
+          OPEN_FOR_QUEUE.has(i.call_status)
+        )
+        .map((i) => ({
+          id: callLookup[i.call_number],
+          call_number: i.call_number,
+          call_priority: i.call_priority,
+          hasVendor: !!(i.assigned_vendor_id || i.assigned_vendor_name),
+        }));
+      if (newlyCreated.length > 0) {
+        console.log(`[SYNC] Enqueuing ${newlyCreated.length} new calls into WorkQueue...`);
+        results.work_queue = await enqueueAndAutoAssign(sdk, newlyCreated);
+      }
     }
 
     // CASES
