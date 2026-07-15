@@ -693,3 +693,4 @@ async function autoOfferCall(base44: any, call: any, excludeVendorIds: string[] 
   };
 }
 // ===== End inline _shared/assignVendor =====
+// deployed 2026-07-15
