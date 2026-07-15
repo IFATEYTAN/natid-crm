@@ -215,6 +215,10 @@ export default function AdminDataCleanup() {
       ['CallProduct', base44.entities.CallProduct],
       ['CallFeedback', base44.entities.CallFeedback],
       ['CallAssignmentAttempt', base44.entities.CallAssignmentAttempt],
+      ['Message', base44.entities.Message],
+      ['Deposit', base44.entities.Deposit],
+      ['EligibilityCheck', base44.entities.EligibilityCheck],
+      ['Reminder', base44.entities.Reminder],
       ['WorkQueue', base44.entities.WorkQueue],
       ['Call', base44.entities.Call],
       ['Case', base44.entities.Case],
@@ -232,8 +236,15 @@ export default function AdminDataCleanup() {
     // shown for several minutes due to staleTime).
     await queryClient.invalidateQueries();
 
-    addLog('=== תהליך המחיקה הסתיים ===', 'success');
-    addLog('שים לב: אם סנכרון אוטומטי מנתיד פעיל, קריאות פתוחות ייווצרו מחדש בסנכרון הבא.', 'warn');
+    if (abortRef.current) {
+      addLog('=== תהליך המחיקה נעצר על ידי המשתמש ===', 'warn');
+    } else {
+      addLog('=== תהליך המחיקה הסתיים ===', 'success');
+      addLog(
+        'שים לב: אם סנכרון אוטומטי מנתיד פעיל, קריאות פתוחות ייווצרו מחדש בסנכרון הבא.',
+        'warn'
+      );
+    }
     setIsDeleting(false);
   };
 
