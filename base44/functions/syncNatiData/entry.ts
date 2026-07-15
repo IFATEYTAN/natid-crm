@@ -992,4 +992,4 @@ Deno.serve(async (req) => {
     return natiErrorResponse(error);
   }
 });
-// deployed 2026-07-15 v2
+// deployed 2026-07-15 v3 (bidirectional sync: pull-side conflict guards)
