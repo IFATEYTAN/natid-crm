@@ -126,7 +126,8 @@ Deno.serve(async (req) => {
           message: `${deptLabel} | ${customerName} | ${location}${assignedNote}`,
           type: caseData.priority === 'urgent' ? 'warning' : 'info',
           is_read: false,
-          link: `/CallDetails?id=${caseId}`,
+          // CallDetails expects a Call id — use the resolved sibling Call
+          link: `/CallDetails?id=${queueCallId}`,
           related_entity_id: caseId,
           related_entity_type: 'case',
         });
@@ -175,17 +176,25 @@ Deno.serve(async (req) => {
  * Returns { email, name, openCount } or null if nobody is on shift.
  */
 async function findLeastBusyAgent(sdk) {
+  // Shift dates/hours are entered in Israel local time — compare in the same
+  // zone, and support shifts that span midnight (e.g. 22:00-06:00).
   const now = new Date();
-  const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-  const currentHHMM = now.toISOString().substring(11, 16); // HH:MM in UTC
+  const israelParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(now).reduce((acc, p) => ({ ...acc, [p.type]: p.value }), {});
+  const todayStr = `${israelParts.year}-${israelParts.month}-${israelParts.day}`;
+  const currentHHMM = `${israelParts.hour === '24' ? '00' : israelParts.hour}:${israelParts.minute}`;
 
   // 1. Get today's active/scheduled shifts
   const allShifts = await sdk.entities.AgentShift.filter({ shift_date: todayStr });
   const activeShifts = allShifts.filter(s => {
     if (s.status !== 'active' && s.status !== 'scheduled') return false;
-    // Check if current time is within shift hours
+    // Check if current time is within shift hours (incl. spans past midnight)
     if (s.start_time && s.end_time) {
-      return currentHHMM >= s.start_time && currentHHMM <= s.end_time;
+      return s.start_time <= s.end_time
+        ? currentHHMM >= s.start_time && currentHHMM <= s.end_time
+        : currentHHMM >= s.start_time || currentHHMM <= s.end_time;
     }
     return true; // If no times specified, consider them on shift
   });

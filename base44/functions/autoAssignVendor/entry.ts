@@ -39,9 +39,13 @@ Deno.serve(async (req) => {
     // an "automation" object in the body — same convention as detectSmartAlerts;
     // an explicit SYNC_AUTOMATION_KEY is accepted as a fallback. Such runs are
     // unattended: they always commit and use a shared rate-limit bucket.
+    // When SYNC_AUTOMATION_KEY is configured it MUST match — a bare
+    // body.automation is honored only when no key is set, so setting the key
+    // closes the "anyone can POST {automation:true}" spoofing hole.
     const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
     const isAutomation =
-      !!body.automation || (!!automationKey && body.automation_key === automationKey);
+      (!!automationKey && body.automation_key === automationKey) ||
+      (!automationKey && !!body.automation);
 
     if (isAutomation) {
       const rl = await limiter.check('autoAssignVendor', 'automation', 60, 60_000);
@@ -59,9 +63,11 @@ Deno.serve(async (req) => {
       if (!rl.allowed) return rateLimitResponse(rl.resetAt);
     }
 
-    // Entity automations deliver the record id as event.entity_id
+    // Entity automations deliver the record id as event.entity_id.
+    // Automation payloads are untrusted — ignore caller-supplied exclusions so
+    // a forged request can't steer dispatch toward a chosen vendor.
     const call_id = body.call_id || body.event?.entity_id;
-    const exclude_vendor_ids = body.exclude_vendor_ids || [];
+    const exclude_vendor_ids = isAutomation ? [] : body.exclude_vendor_ids || [];
     const commit = isAutomation ? true : body.commit === true;
     if (!call_id) {
       return Response.json({ error: 'call_id is required' }, { status: 400 });

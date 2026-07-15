@@ -531,13 +531,23 @@ async function enqueueAndAutoAssign(sdk, calls) {
   // so a batch of new calls spreads across operators instead of piling on one.
   let loadMap = null;
   try {
+    // Shift dates/hours are entered in Israel local time — compare in the same
+    // zone, and support shifts that span midnight (e.g. 22:00-06:00).
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    const currentHHMM = now.toISOString().substring(11, 16);
+    const israelParts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(now).reduce((acc, p) => ({ ...acc, [p.type]: p.value }), {});
+    const todayStr = `${israelParts.year}-${israelParts.month}-${israelParts.day}`;
+    const currentHHMM = `${israelParts.hour === '24' ? '00' : israelParts.hour}:${israelParts.minute}`;
     const allShifts = await sdk.entities.AgentShift.filter({ shift_date: todayStr });
     const activeShifts = allShifts.filter((s) => {
       if (s.status !== 'active' && s.status !== 'scheduled') return false;
-      if (s.start_time && s.end_time) return currentHHMM >= s.start_time && currentHHMM <= s.end_time;
+      if (s.start_time && s.end_time) {
+        return s.start_time <= s.end_time
+          ? currentHHMM >= s.start_time && currentHHMM <= s.end_time
+          : currentHHMM >= s.start_time || currentHHMM <= s.end_time;
+      }
       return true;
     });
     const onShiftEmails = [...new Set(activeShifts.map((s) => s.agent_email).filter(Boolean))];

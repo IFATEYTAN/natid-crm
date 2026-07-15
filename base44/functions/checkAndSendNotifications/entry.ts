@@ -9,12 +9,15 @@ Deno.serve(async (req) => {
     // (the scheduler includes an "automation" object in the body; an explicit
     // SYNC_AUTOMATION_KEY / x-internal-secret is accepted as a fallback) or an
     // authenticated platform admin. Anonymous public invocation is rejected.
+    // When a secret is configured it MUST match — a bare body.automation is
+    // honored only when neither secret is set, so configuring one closes the
+    // "anyone can POST {automation:true}" spoofing hole.
     const internalSecret = Deno.env.get('INTERNAL_JOB_SECRET');
     const automationKey = Deno.env.get('SYNC_AUTOMATION_KEY');
     const isAutomation =
-      !!body.automation ||
       (!!automationKey && body.automation_key === automationKey) ||
-      (!!internalSecret && req.headers.get('x-internal-secret') === internalSecret);
+      (!!internalSecret && req.headers.get('x-internal-secret') === internalSecret) ||
+      (!automationKey && !internalSecret && !!body.automation);
     if (!isAutomation) {
       const user = await base44.auth.me().catch(() => null);
       if (!user || user.role !== 'admin') {
@@ -86,8 +89,9 @@ Deno.serve(async (req) => {
           if (call.assigned_vendor_id || !unassignedStatuses.includes(call.call_status)) continue;
           if (recentlyNotifiedIds.has(call.id)) continue;
 
-          const minutesWaiting = (now - new Date(call.created_date)) / 60000;
-          if (minutesWaiting < timeThreshold) continue;
+          if (!call.created_date) continue;
+          const minutesWaiting = (now.getTime() - new Date(call.created_date).getTime()) / 60000;
+          if (isNaN(minutesWaiting) || minutesWaiting < timeThreshold) continue;
 
           const { title, body } = buildMessage(setting, {
             call_number: call.call_number || call.id.substring(0, 8),
@@ -133,8 +137,8 @@ Deno.serve(async (req) => {
             const dedupKey = `${call.id}_${check.type}`;
             if (recentlyNotifiedIds.has(dedupKey)) continue;
 
-            const minutesUntil = (new Date(check.deadline) - now) / 60000;
-            if (minutesUntil <= 0 || minutesUntil > minutesBefore) continue;
+            const minutesUntil = (new Date(check.deadline).getTime() - now.getTime()) / 60000;
+            if (isNaN(minutesUntil) || minutesUntil <= 0 || minutesUntil > minutesBefore) continue;
 
             const { title, body } = buildMessage(setting, {
               call_number: call.call_number || call.id.substring(0, 8),
