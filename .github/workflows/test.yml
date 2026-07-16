@@ -107,6 +107,30 @@ jobs:
             echo "base_url=$E2E_BASE_URL" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Verify preview environment is awake (fail fast if asleep)
+        if: steps.check_secrets.outputs.skip != 'true'
+        env:
+          E2E_BASE_URL: ${{ steps.check_secrets.outputs.base_url }}
+        run: |
+          # Base44 preview sandboxes sleep when idle and serve 503 ("Preview Loading").
+          # A sleeping sandbox makes every UI test time out — the whole job burned its
+          # full 45-minute timeout on retries before this gate existed (16.07).
+          # HTTP requests do NOT wake the sandbox; only opening the preview in the
+          # Base44 editor does. So: poll briefly in case it is mid-boot, then fail
+          # fast with an actionable message instead of wasting the timeout budget.
+          code=000
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$E2E_BASE_URL/" || echo 000)
+            echo "attempt $i: HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "Preview environment is serving — proceeding to E2E."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$E2E_BASE_URL returned HTTP $code (expected 200). The Base44 preview sandbox is asleep — open the app preview in the Base44 editor to wake it, then re-run this workflow. See docs/E2E_SETUP.md."
+          exit 1
+
       - name: Full E2E (Base44 + auth)
         if: steps.check_secrets.outputs.skip != 'true'
         env:
