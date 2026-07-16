@@ -300,7 +300,11 @@ function parseNatiDate(dateStr) {
   const s = String(dateStr);
   if (s.startsWith('0000')) return null;
   if (!s.includes('-') || s.length < 10) return null;
-  const iso = s.replace(' ', 'T').substring(0, 19);
+  let iso = s.replace(' ', 'T').substring(0, 19);
+  // A date-only value (e.g. a DATE column) has no time part — pad midnight,
+  // otherwise the appended offset would produce an invalid ISO string
+  // ("2026-07-15+03:00") that downstream new Date() calls reject.
+  if (iso.length === 10) iso += 'T00:00:00';
   const yyyy = iso.substring(0, 4);
   const mm = iso.substring(5, 7);
   const dd = iso.substring(8, 10);
