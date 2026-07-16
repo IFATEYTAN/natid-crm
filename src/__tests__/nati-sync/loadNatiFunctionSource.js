@@ -58,8 +58,8 @@ export function loadSyncMappers() {
  */
 export function loadPullStatusGuardTables() {
   const src = readFunctionSource('base44/functions/syncNatiData/entry.ts');
-  const mapMatch = src.match(/const CRM_STATUS_TO_NATI_BUCKET = \{[\s\S]*?\};/);
-  const setMatch = src.match(/const TERMINAL_CRM_STATUSES = new Set\(\[[\s\S]*?\]\);/);
+  const mapMatch = src.match(/const\s+CRM_STATUS_TO_NATI_BUCKET\s*=\s*\{[\s\S]*?\};/);
+  const setMatch = src.match(/const\s+TERMINAL_CRM_STATUSES\s*=\s*new\s+Set\(\[[\s\S]*?\]\);/);
   if (!mapMatch || !setMatch) {
     throw new Error(
       'Could not locate CRM_STATUS_TO_NATI_BUCKET / TERMINAL_CRM_STATUSES in syncNatiData/entry.ts'

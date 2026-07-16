@@ -43,11 +43,9 @@ describe('parseNatiDate (naive Jerusalem-local datetime -> ISO with offset)', ()
     expect(m.parseNatiDate('2026-11-01 12:00:00')).toBe('2026-11-01T12:00:00+02:00');
   });
 
-  it('accepts date-only strings (10 chars) and still tags the Jerusalem offset', () => {
-    const parsed = m.parseNatiDate('2026-07-15');
-    expect(parsed).not.toBeNull();
-    expect(parsed).toContain('2026-07-15');
-    expect(parsed).toContain('+03:00');
+  it('pads date-only strings (10 chars) to a valid ISO datetime with the Jerusalem offset', () => {
+    expect(m.parseNatiDate('2026-07-15')).toBe('2026-07-15T00:00:00+03:00');
+    expect(m.parseNatiDate('2026-01-15')).toBe('2026-01-15T00:00:00+02:00');
   });
 });
 
