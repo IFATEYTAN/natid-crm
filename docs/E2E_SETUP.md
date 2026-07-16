@@ -149,7 +149,7 @@ npx playwright test --grep "structural"
 3. **לפני release** — תרוצי manually `workflow_dispatch` של "Tests" על main כדי לאמת שכל ה-full E2E ירוק.
 4. **ה-reports נשמרים 14 יום** — אם CI נשבר ולא הסתכלת תוך שבועיים, הם נמחקים.
 5. **לראות trace ל-failure**: הורידי את ה-artifact → `playwright show-report playwright-report-full/` → לחצי על test failed → לשונית "Trace".
-6. **ה-preview sandbox נרדם כשלא משתמשים בו** (מחזיר 503 עם דף "Preview Loading"). בקשות HTTP **לא** מעירות אותו — רק פתיחת ה-preview בעורך Base44. ה-workflow בודק זאת לפני הריצה ונכשל מהר עם הודעה ברורה (במקום לשרוף 45 דקות על timeouts, כמו שקרה ב-16.07). אם ה-job נכשל בשלב "Verify preview environment is awake": פתחי את האפליקציה בעורך Base44 → המתיני שה-preview נטען → הריצי שוב את ה-workflow.
+6. **ה-preview sandbox נרדם כשלא משתמשים בו** (מחזיר 503 עם דף "Preview Loading"). בקשות HTTP **לא** מעירות אותו — רק פתיחת ה-preview בעורך Base44. ה-workflow בודק זאת לפני הריצה ונכשל מהר עם הודעה ברורה (במקום לשרוף 45 דקות על timeouts). אם ה-job נכשל בשלב "Verify preview environment is awake": פתחי את האפליקציה בעורך Base44 → המתיני שה-preview ייטען → הריצי שוב את ה-workflow.
 
 ---
 
