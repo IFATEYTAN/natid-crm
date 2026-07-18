@@ -13,6 +13,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import process from 'node:process';
 
 // vitest runs with cwd at the repo root (where vitest.config.js lives).
 function readFunctionSource(relPath) {

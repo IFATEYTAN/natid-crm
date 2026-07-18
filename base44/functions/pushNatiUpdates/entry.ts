@@ -675,7 +675,23 @@ Deno.serve(async (req) => {
         error: error instanceof Error ? error.message : String(error),
       });
     }
+    // Scheduled runs during a known Nati-side block/cooldown are an expected,
+    // self-healing condition — report them as a graceful skip (200) so the
+    // automation doesn't register a failure every 5 minutes. The push is
+    // diff-based, so skipped runs lose nothing: the next successful run
+    // pushes everything that accumulated. Manual runs still get the 503
+    // so the admin sees the real state.
+    if (isAutomationRun && error instanceof NatiBlockedError) {
+      console.warn(`[PUSH] Skipping automation run — Nati unavailable (${error.reason}), retry in ${error.retryAfterSec}s`);
+      return Response.json({
+        success: true,
+        skipped: true,
+        reason: error.reason,
+        message: error.message,
+        retry_after_seconds: error.retryAfterSec,
+      });
+    }
     return natiErrorResponse(error);
   }
 });
-// deployed 2026-07-15 v1 (bidirectional sync: outbound push CRM -> Nati)
+// deployed 2026-07-15 v2 (automation runs skip gracefully during Nati host-block cooldown)
