@@ -22,7 +22,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  על push ל-main + nightly (full-e2e, ~10 דקות)              │
 │  ┌─────────────────────────────────────────────────────────┐│
-│  │ E2E מאומת על Base44 preview-sandbox                      ││
+│  │ E2E מאומת על האפליקציה המפורסמת ב-Base44                 ││
 │  │ עם משתמשי בדיקה (admin/operator/vendor)                  ││
 │  │ ועם Test DB של Base44 (לא נוגע בפרודקשן)                ││
 │  └─────────────────────────────────────────────────────────┘│
@@ -60,7 +60,7 @@
 
 | Secret name | ערך |
 |---|---|
-| `E2E_BASE_URL` | `https://preview-sandbox--6955a04a2de0845ff4cb8a71.base44.app` |
+| `E2E_BASE_URL` | `https://nat-id-360-control-f4cb8a71.base44.app` (האפליקציה המפורסמת — לא נרדמת) |
 | `E2E_ADMIN_EMAIL` | `e2e-admin@natid.test` |
 | `E2E_ADMIN_PASSWORD` | (הסיסמה שהגדרת) |
 | `E2E_OPERATOR_EMAIL` | `e2e-operator@natid.test` |
@@ -97,7 +97,7 @@
 npm run e2e
 
 # מלא — נגד Base44 עם משתמשי בדיקה
-export E2E_BASE_URL=https://preview-sandbox--6955a04a2de0845ff4cb8a71.base44.app
+export E2E_BASE_URL=https://nat-id-360-control-f4cb8a71.base44.app
 export E2E_ADMIN_EMAIL=e2e-admin@natid.test
 export E2E_ADMIN_PASSWORD=...
 npm run e2e
@@ -149,7 +149,7 @@ npx playwright test --grep "structural"
 3. **לפני release** — תרוצי manually `workflow_dispatch` של "Tests" על main כדי לאמת שכל ה-full E2E ירוק.
 4. **ה-reports נשמרים 14 יום** — אם CI נשבר ולא הסתכלת תוך שבועיים, הם נמחקים.
 5. **לראות trace ל-failure**: הורידי את ה-artifact → `playwright show-report playwright-report-full/` → לחצי על test failed → לשונית "Trace".
-6. **ה-preview sandbox נרדם כשלא משתמשים בו** (מחזיר 503 עם דף "Preview Loading"). בקשות HTTP **לא** מעירות אותו — רק פתיחת ה-preview בעורך Base44. ה-workflow בודק זאת לפני הריצה ונכשל מהר עם הודעה ברורה (במקום לשרוף 45 דקות על timeouts). אם ה-job נכשל בשלב "Verify preview environment is awake": פתחי את האפליקציה בעורך Base44 → המתיני שה-preview ייטען → הריצי שוב את ה-workflow.
+6. **להריץ מול האפליקציה המפורסמת, לא מול ה-preview sandbox.** ה-preview sandbox נרדם כשעורך Base44 לא פתוח ופעיל (מחזיר 503 עם דף "Preview Loading"), ובקשות HTTP **לא** מעירות אותו — ריצה #435 (19.07) בוטלה אחרי 45 דקות כי ה-sandbox נרדם באמצע הריצה. האפליקציה המפורסמת לא נרדמת לעולם, ושתיהן עובדות מול אותו backend ואותם נתונים. ה-workflow עדיין בודק שהסביבה מגיבה לפני הריצה ונכשל מהר עם הודעה ברורה. **שימי לב:** האפליקציה המפורסמת מגישה את הגרסה האחרונה שפורסמה (Publish) — אחרי שינוי מהותי ב-UI יש לפרסם לפני שתריצי E2E, אחרת הבדיקות ירוצו מול גרסה ישנה.
 
 ---
 
