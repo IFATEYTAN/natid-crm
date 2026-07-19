@@ -19,9 +19,7 @@ import {
   Calendar,
   BarChart3,
   RefreshCw,
-  PlayCircle,
 } from 'lucide-react';
-import { isDemoMode } from '@/demo/demoMode';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -225,17 +223,6 @@ export default function Dashboard() {
         </div>
         {/* Row 2: Action Buttons */}
         <div dir="rtl" className="flex gap-2 sm:gap-3 justify-start flex-wrap">
-          {!isDemoMode() && (
-            <Link to={createPageUrl('Demo')}>
-              <Button
-                variant="outline"
-                className="rounded-full px-4 transition-all border-indigo-300 text-indigo-700 hover:bg-indigo-50"
-              >
-                <PlayCircle className="w-4 h-4 me-2" />
-                מצב הדגמה
-              </Button>
-            </Link>
-          )}
           <PermissionGuard category="calls" permission="create">
             <Button
               variant="outline"
