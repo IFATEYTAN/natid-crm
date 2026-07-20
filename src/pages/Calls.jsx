@@ -89,6 +89,7 @@ const PAGE_SIZE = 50; // Smaller pages = faster rendering
 
 const SERVICE_TYPE_LABELS = {
   towing: 'גרירה',
+  mobile_unit: 'ניידת שירות',
   flat_tire: 'פנצ׳ר',
   battery: 'סוללה',
   lockout: 'נעילה',

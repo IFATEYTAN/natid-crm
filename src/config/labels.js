@@ -75,6 +75,7 @@ export const issueTypeLabels = {
 
 export const serviceTypeLabels = {
   towing: 'גרירה',
+  mobile_unit: 'ניידת שירות',
   flat_tire: "פנצ'ר",
   battery: 'מצבר',
   lockout: 'פתיחת רכב',
