@@ -15,6 +15,7 @@
         "vendor_enroute",
         "in_progress",
         "vendor_arrived",
+        "awaiting_closure_call",
         "cannot_complete",
         "future_service",
         "in_followup",

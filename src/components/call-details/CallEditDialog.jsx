@@ -37,6 +37,7 @@ const statusOptions = [
   { value: 'in_storage', label: 'באחסנה' },
   { value: 'continued_treatment', label: 'המשך טיפול' },
   { value: 'awaiting_payment', label: 'המתנה לחיוב' },
+  { value: 'awaiting_closure_call', label: 'ממתין לשיחת סגירה' },
   { value: 'completed', label: 'סגור' },
   { value: 'cancelled', label: 'בוטל' },
 ];

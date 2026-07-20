@@ -101,6 +101,7 @@ const LOCKED_STATUSES = [
   'assigned',
   'vendor_enroute',
   'vendor_arrived',
+  'awaiting_closure_call',
   'in_progress',
 ];
 

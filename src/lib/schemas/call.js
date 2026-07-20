@@ -12,6 +12,7 @@ const callStatus = z.enum([
   'assigned',
   'vendor_enroute',
   'vendor_arrived',
+  'awaiting_closure_call',
   'in_progress',
   'in_storage',
   'continued_treatment',

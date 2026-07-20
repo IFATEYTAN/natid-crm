@@ -877,7 +877,7 @@ Deno.serve(async (req) => {
       // flattened by the pull.
       const CRM_STATUS_TO_NATI_BUCKET = {
         waiting_treatment: 0, awaiting_assignment: 0,
-        assigning: 1, vendor_enroute: 1, vendor_arrived: 1, in_progress: 1,
+        assigning: 1, vendor_enroute: 1, vendor_arrived: 1, awaiting_closure_call: 1, in_progress: 1,
         cannot_complete: 1, future_service: 1, in_followup: 1, in_storage: 1,
         continued_treatment: 1, awaiting_payment: 1,
         completed: 2, cancelled: 3,
@@ -958,7 +958,7 @@ Deno.serve(async (req) => {
     if (close_missing) {
       console.log('[SYNC] Checking for calls/cases to auto-close...');
       const natiOpenIds = new Set(allAppeals.map(a => String(a.id)));
-      const OPEN_CALL_STATUSES = ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress', 'vendor_arrived', 'future_service', 'in_followup', 'in_storage', 'continued_treatment', 'awaiting_payment'];
+      const OPEN_CALL_STATUSES = ['waiting_treatment', 'awaiting_assignment', 'assigning', 'vendor_enroute', 'in_progress', 'vendor_arrived', 'awaiting_closure_call', 'future_service', 'in_followup', 'in_storage', 'continued_treatment', 'awaiting_payment'];
       const OPEN_CASE_STATUSES = ['new', 'assigned', 'en_route', 'on_site', 'in_progress'];
       let callsClosed = 0, casesClosed = 0;
 

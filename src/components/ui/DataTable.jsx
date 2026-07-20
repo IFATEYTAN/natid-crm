@@ -26,6 +26,7 @@ const statusRowColors = {
   in_storage: 'bg-stone-50/60 hover:bg-stone-100/60',
   continued_treatment: 'bg-teal-50/50 hover:bg-teal-100/50',
   awaiting_payment: 'bg-rose-50/50 hover:bg-rose-100/50',
+  awaiting_closure_call: 'bg-white hover:bg-gray-50',
 };
 
 export default function DataTable({
