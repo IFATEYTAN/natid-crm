@@ -83,7 +83,8 @@ export async function signInAs(page, role) {
 
   await page.getByRole('button', { name: SUBMIT_BUTTON }).first().click();
 
-  // The platform login redirects back to the app when done.
-  await page.waitForURL(/base44\.app/, { timeout: 20000 }).catch(() => {});
+  // The platform login redirects back to the app when done. Match local hosts
+  // too so local runs against Vite don't burn the full timeout.
+  await page.waitForURL(/localhost|127\.0\.0\.1|base44\.app/, { timeout: 20000 }).catch(() => {});
   await page.waitForLoadState('networkidle');
 }
