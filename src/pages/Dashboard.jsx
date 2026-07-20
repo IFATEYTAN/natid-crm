@@ -357,7 +357,7 @@ export default function Dashboard() {
             </Suspense>
             <Suspense fallback={<Skeleton className="h-24" />}>
               <StatCard
-                title="ממתינות לשיוך"
+                title="ממתינות לטיפול"
                 value={waitingCalls.length}
                 subtitle="נדרשת פעולה מיידית"
                 icon={Users}
