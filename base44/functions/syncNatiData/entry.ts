@@ -701,10 +701,13 @@ Deno.serve(async (req) => {
       // don't flood back into the CRM. Override via the NATI_SYNC_MIN_DATE_ADDED
       // env var (YYYY-MM-DD, Jerusalem local; set to '1970-01-01' to disable);
       // remove this block entirely once Nati's table is cleaned.
-      const minDateAdded =
-        (Deno.env.get('NATI_SYNC_MIN_DATE_ADDED') || '').trim() || '2026-07-15';
+      let minDateAdded = (Deno.env.get('NATI_SYNC_MIN_DATE_ADDED') || '').trim();
+      if (!/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/.test(minDateAdded)) {
+        minDateAdded = '2026-07-15';
+      }
+      if (!minDateAdded.includes(' ')) minDateAdded += ' 00:00:00';
       sql += ' AND a.date_added >= ?';
-      params.push(`${minDateAdded} 00:00:00`);
+      params.push(minDateAdded);
       sql += ' ORDER BY a.date_added DESC';
       const [rows] = await connection.query(sql, params);
       return rows;
