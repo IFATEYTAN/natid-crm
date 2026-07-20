@@ -2,22 +2,28 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * Minimalist Status Badge - 4 Colors Only
+ * Status Badge
+ * Base palette (4 colors):
  * Primary (Blue #3b82f6): In progress, active states
  * Dark (Black #111827): Completed, success states
  * Danger (Red #ef4444): Cancelled, error states
  * Light (Gray #6b7280): Neutral, secondary states
+ *
+ * Call lifecycle statuses use Nati's color scheme (QA request, 20.07 —
+ * dispatchers work both systems side by side, so the colors must match):
+ * purple = future service, green = waiting, yellow = en route / in
+ * treatment, orange = provider arrived.
  */
 
 const statusConfig = {
-  // Call statuses - PRIMARY (Blue) for in-progress
-  waiting_treatment: { label: 'ממתין לטיפול', variant: 'primary' },
+  // Call statuses - colored to match Nati's dispatcher screen
+  waiting_treatment: { label: 'ממתין לטיפול', variant: 'success' },
   awaiting_assignment: { label: 'ממתין לשיוך', variant: 'primary' },
   assigning: { label: 'ספק שובץ', variant: 'primary' },
-  vendor_enroute: { label: 'ספק בדרך', variant: 'primary' },
-  in_progress: { label: 'בטיפול', variant: 'primary' },
-  vendor_arrived: { label: 'נותן השירות הגיע', variant: 'dark' },
-  future_service: { label: 'שירות עתידי', variant: 'light' },
+  vendor_enroute: { label: 'נותן השירות בדרך', variant: 'warning' },
+  in_progress: { label: 'בטיפול', variant: 'warning' },
+  vendor_arrived: { label: 'נותן השירות הגיע', variant: 'accent' },
+  future_service: { label: 'שירות עתידי', variant: 'scheduled' },
   in_followup: { label: 'במעקב', variant: 'primary' },
   in_storage: { label: 'באחסנה', variant: 'light' },
   continued_treatment: { label: 'המשך טיפול', variant: 'primary' },
@@ -72,6 +78,11 @@ const variantStyles = {
   dark: 'bg-[#111827] text-white',
   danger: 'bg-[#ef4444] text-white',
   light: 'bg-[#6b7280] text-white',
+  // Nati-aligned call lifecycle colors
+  success: 'bg-[#16a34a] text-white',
+  warning: 'bg-[#eab308] text-gray-900',
+  accent: 'bg-[#f97316] text-white',
+  scheduled: 'bg-[#a855f7] text-white',
 };
 
 export default function StatusBadge({ status, size = 'default', showIcon = false }) {

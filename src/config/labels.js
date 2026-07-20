@@ -12,7 +12,7 @@ export const statusLabels = {
   waiting_treatment: 'ממתין לטיפול',
   awaiting_assignment: 'ממתין לשיבוץ',
   assigning: 'ספק שובץ',
-  vendor_enroute: 'ספק בדרך',
+  vendor_enroute: 'נותן השירות בדרך',
   in_progress: 'בטיפול',
   vendor_arrived: 'נותן השירות הגיע',
   cannot_complete: 'לא ניתן לטפל',
@@ -25,15 +25,19 @@ export const statusLabels = {
   cancelled: 'בוטל',
 };
 
+// Call lifecycle colors follow Nati's dispatcher screen (QA request 20.07):
+// purple = future service, green = waiting, yellow = en route / in
+// treatment, orange = provider arrived. Kept as pastel table variants of the
+// solid StatusBadge palette.
 export const statusColors = {
-  waiting_treatment: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  awaiting_assignment: 'bg-orange-100 text-orange-800 border-orange-300',
+  waiting_treatment: 'bg-green-100 text-green-800 border-green-300',
+  awaiting_assignment: 'bg-sky-100 text-sky-800 border-sky-300',
   assigning: 'bg-blue-100 text-blue-800 border-blue-300',
-  vendor_enroute: 'bg-indigo-100 text-indigo-800 border-indigo-300',
-  in_progress: 'bg-purple-100 text-purple-800 border-purple-300',
-  vendor_arrived: 'bg-amber-100 text-amber-800 border-amber-300',
+  vendor_enroute: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  in_progress: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  vendor_arrived: 'bg-orange-100 text-orange-800 border-orange-300',
   cannot_complete: 'bg-red-100 text-red-800 border-red-300',
-  future_service: 'bg-violet-100 text-violet-800 border-violet-300',
+  future_service: 'bg-purple-100 text-purple-800 border-purple-300',
   in_followup: 'bg-cyan-100 text-cyan-800 border-cyan-300',
   in_storage: 'bg-stone-100 text-stone-800 border-stone-300',
   continued_treatment: 'bg-teal-100 text-teal-800 border-teal-300',
@@ -75,6 +79,7 @@ export const issueTypeLabels = {
 
 export const serviceTypeLabels = {
   towing: 'גרירה',
+  mobile_unit: 'ניידת שירות',
   flat_tire: "פנצ'ר",
   battery: 'מצבר',
   lockout: 'פתיחת רכב',

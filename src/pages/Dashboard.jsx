@@ -28,6 +28,7 @@ import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { serviceTypeLabels, statusLabels } from '@/config/labels';
 
 // Lazy load sub-components
 const CallsTrendChart = lazyRetry(() =>
@@ -60,6 +61,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [serviceFilter, setServiceFilter] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { currentUser, hasPermission, canAccessPage } = usePermissions();
 
@@ -101,11 +103,31 @@ export default function Dashboard() {
   };
 
   // Read from Call entity (real data)
-  const { data: cases = [], isLoading: casesLoading } = useQuery({
+  const { data: casesData, isLoading: casesLoading } = useQuery({
     queryKey: ['dashboard-cases'],
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
     staleTime: 5 * 60 * 1000,
   });
+  const allCases = casesData || [];
+
+  // Service-type filter (Nati QA request 20.07: dispatchers handle one
+  // department at a time — e.g. towing only — so every dashboard counter,
+  // chart and list must be filterable by service_category).
+  const cases = useMemo(
+    () =>
+      serviceFilter === 'all'
+        ? allCases
+        : allCases.filter((c) => (c.service_category || 'other') === serviceFilter),
+    [allCases, serviceFilter]
+  );
+  const serviceFilterOptions = useMemo(() => {
+    const counts = new Map();
+    for (const c of allCases) {
+      const key = c.service_category || 'other';
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [allCases]);
 
   // Read from Vendor entity (real data)
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
@@ -177,17 +199,20 @@ export default function Dashboard() {
       : 0;
 
   // Chart data using Case entity fields
-  const statusLabelsMap = {
-    waiting_treatment: 'ממתין לטיפול',
-    awaiting_assignment: 'ממתין לשיוך',
-    assigning: 'ספק שובץ',
-    vendor_enroute: 'ספק בדרך',
-    in_progress: 'בטיפול',
-    vendor_arrived: 'ספק הגיע',
-    completed: 'סגור',
-    cancelled: 'בוטל',
-  };
-  const statusData = Object.entries(statusLabelsMap)
+  // Chart statuses in lifecycle order; labels come from the central map so
+  // the chart, tables and badges always agree.
+  const CHART_STATUSES = [
+    'future_service',
+    'waiting_treatment',
+    'awaiting_assignment',
+    'assigning',
+    'vendor_enroute',
+    'in_progress',
+    'vendor_arrived',
+    'completed',
+    'cancelled',
+  ];
+  const statusData = CHART_STATUSES.map((status) => [status, statusLabels[status] || status])
     .map(([status, name]) => ({
       name,
       value: cases.filter((c) => c.call_status === status).length,
@@ -253,6 +278,38 @@ export default function Dashboard() {
           </PermissionGuard>
         </div>
       </div>
+
+      {/* Service-type filter chips — scopes every counter, chart and list below */}
+      {serviceFilterOptions.length > 1 && (
+        <div dir="rtl" className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm text-gray-500 ml-1">מחלקה:</span>
+          <button
+            type="button"
+            onClick={() => setServiceFilter('all')}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition-colors ${
+              serviceFilter === 'all'
+                ? 'bg-[#111827] text-white border-[#111827]'
+                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            הכל ({allCases.length})
+          </button>
+          {serviceFilterOptions.map(([key, count]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setServiceFilter(key)}
+              className={`rounded-full px-3.5 py-1.5 text-sm font-medium border transition-colors ${
+                serviceFilter === key
+                  ? 'bg-[#111827] text-white border-[#111827]'
+                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {serviceTypeLabels[key] || key} ({count})
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Tabs Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" dir="rtl">
