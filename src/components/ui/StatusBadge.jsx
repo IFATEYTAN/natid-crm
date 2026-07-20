@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 const statusConfig = {
   // Call statuses - colored to match Nati's dispatcher screen
   waiting_treatment: { label: 'ממתין לטיפול', variant: 'success' },
-  awaiting_assignment: { label: 'ממתין לשיוך', variant: 'primary' },
+  awaiting_assignment: { label: 'ממתין לשיבוץ', variant: 'primary' },
   assigning: { label: 'ספק שובץ', variant: 'primary' },
   vendor_enroute: { label: 'נותן השירות בדרך ללקוח', variant: 'warning' },
   in_progress: { label: 'בטיפול', variant: 'warning' },

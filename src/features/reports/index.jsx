@@ -354,7 +354,7 @@ export default function Reports() {
                       <SelectContent>
                         <SelectItem value="all">כל הסטטוסים</SelectItem>
                         <SelectItem value="waiting_treatment">ממתין לטיפול</SelectItem>
-                        <SelectItem value="awaiting_assignment">ממתין לשיוך</SelectItem>
+                        <SelectItem value="awaiting_assignment">ממתין לשיבוץ</SelectItem>
                         <SelectItem value="assigning">ספק שובץ</SelectItem>
                         <SelectItem value="vendor_enroute">ספק בדרך</SelectItem>
                         <SelectItem value="in_progress">בטיפול</SelectItem>
