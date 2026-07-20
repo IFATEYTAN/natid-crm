@@ -707,7 +707,9 @@ Deno.serve(async (req) => {
         if (deptScope !== '*') {
           const ids = deptScope
             .split(',')
-            .map((s) => Number(s.trim()))
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0)
+            .map(Number)
             .filter((n) => Number.isInteger(n) && n >= 0);
           if (ids.length > 0) {
             sql += ` AND a.department_id IN (${ids.map(() => '?').join(',')})`;
