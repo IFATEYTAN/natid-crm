@@ -209,6 +209,7 @@ export default function Dashboard() {
     'vendor_enroute',
     'in_progress',
     'vendor_arrived',
+    'awaiting_closure_call',
     'completed',
     'cancelled',
   ];

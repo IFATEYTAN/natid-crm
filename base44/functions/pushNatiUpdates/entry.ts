@@ -318,6 +318,7 @@ const CRM_STATUS_TO_NATI = {
   assigning: 1,
   vendor_enroute: 1,
   vendor_arrived: 1,
+  awaiting_closure_call: 1,
   in_progress: 1,
   cannot_complete: 1,
   future_service: 1,

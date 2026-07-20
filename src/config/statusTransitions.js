@@ -30,10 +30,11 @@ export const STATUS_TRANSITIONS = {
   assigning: ['vendor_arrived', 'cancelled'],
   vendor_enroute: ['vendor_arrived', 'cancelled'],
   // ספק הגיע ללקוח → אחסנה / סגירה (=הגיע ליעד) / ביטול
-  vendor_arrived: ['in_storage', 'completed', 'cancelled'],
-  in_progress: ['in_storage', 'completed', 'cancelled'],
+  vendor_arrived: ['in_storage', 'awaiting_closure_call', 'completed', 'cancelled'],
+  in_progress: ['in_storage', 'awaiting_closure_call', 'completed', 'cancelled'],
   // באחסנה → סגירה (אחסנה נוספת / יעד סופי דרך סטטוסי הסגירה) / ביטול
   in_storage: ['completed', 'cancelled'],
+  awaiting_closure_call: ['completed', 'cancelled'],
   cannot_complete: ['waiting_treatment', 'completed', 'cancelled'],
   future_service: ['waiting_treatment', 'cancelled'],
   in_followup: ['waiting_treatment', 'completed', 'cancelled'],
@@ -47,6 +48,7 @@ export const STATUS_TRANSITIONS = {
 export const TRANSITION_LABELS = {
   vendor_arrived: 'ספק הגיע ללקוח',
   in_storage: 'ספק הגיע לאחסנה',
+  awaiting_closure_call: 'ממתין לשיחת סגירה',
   completed: 'סגירת קריאה',
   cancelled: 'ביטול פניה',
 };

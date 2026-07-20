@@ -20,8 +20,17 @@ describe('STATUS_TRANSITIONS — הזרימה המדורגת של דורית', (
     expect(STATUS_TRANSITIONS.vendor_enroute).toEqual(['vendor_arrived', 'cancelled']);
   });
 
-  it('ספק הגיע ללקוח → אחסנה / סגירה / ביטול בלבד', () => {
-    expect(STATUS_TRANSITIONS.vendor_arrived).toEqual(['in_storage', 'completed', 'cancelled']);
+  it('ספק הגיע ללקוח → אחסנה / המתנה לשיחת סגירה / סגירה / ביטול בלבד', () => {
+    expect(STATUS_TRANSITIONS.vendor_arrived).toEqual([
+      'in_storage',
+      'awaiting_closure_call',
+      'completed',
+      'cancelled',
+    ]);
+  });
+
+  it('ממתין לשיחת סגירה → סגירה / ביטול בלבד (מצב הלבן של נתי)', () => {
+    expect(STATUS_TRANSITIONS.awaiting_closure_call).toEqual(['completed', 'cancelled']);
   });
 
   it('באחסנה → סגירה / ביטול בלבד', () => {
@@ -82,6 +91,7 @@ describe('getAllowedTransitions', () => {
   it('מחזיר את רשימת המעברים לסטטוס ממופה', () => {
     expect(getAllowedTransitions('vendor_arrived')).toEqual([
       'in_storage',
+      'awaiting_closure_call',
       'completed',
       'cancelled',
     ]);

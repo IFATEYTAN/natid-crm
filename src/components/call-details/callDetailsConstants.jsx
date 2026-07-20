@@ -14,6 +14,7 @@ export const statusColors = {
   in_storage: 'bg-slate-100 text-slate-700',
   continued_treatment: 'bg-amber-100 text-amber-800',
   awaiting_payment: 'bg-red-100 text-red-800',
+  awaiting_closure_call: 'bg-white text-gray-800 border border-gray-300',
   completed: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-200 text-red-900',
 };

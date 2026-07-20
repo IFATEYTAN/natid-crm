@@ -20,9 +20,10 @@ const statusConfig = {
   waiting_treatment: { label: 'ממתין לטיפול', variant: 'success' },
   awaiting_assignment: { label: 'ממתין לשיוך', variant: 'primary' },
   assigning: { label: 'ספק שובץ', variant: 'primary' },
-  vendor_enroute: { label: 'נותן השירות בדרך', variant: 'warning' },
+  vendor_enroute: { label: 'נותן השירות בדרך ללקוח', variant: 'warning' },
   in_progress: { label: 'בטיפול', variant: 'warning' },
-  vendor_arrived: { label: 'נותן השירות הגיע', variant: 'accent' },
+  vendor_arrived: { label: 'נותן השירות הגיע ליעד', variant: 'accent' },
+  awaiting_closure_call: { label: 'ממתין לשיחת סגירה', variant: 'paper' },
   future_service: { label: 'שירות עתידי', variant: 'scheduled' },
   in_followup: { label: 'במעקב', variant: 'primary' },
   in_storage: { label: 'באחסנה', variant: 'light' },
@@ -83,6 +84,7 @@ const variantStyles = {
   warning: 'bg-[#eab308] text-gray-900',
   accent: 'bg-[#f97316] text-white',
   scheduled: 'bg-[#a855f7] text-white',
+  paper: 'bg-white text-gray-900 border border-gray-300',
 };
 
 export default function StatusBadge({ status, size = 'default', showIcon = false }) {

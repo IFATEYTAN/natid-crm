@@ -81,6 +81,7 @@ const STATUS_COLORS_INLINE = {
   in_storage: 'bg-stone-100 text-stone-800',
   continued_treatment: 'bg-teal-100 text-teal-800',
   awaiting_payment: 'bg-rose-100 text-rose-800',
+  awaiting_closure_call: 'bg-white text-gray-800 border border-gray-300',
 };
 
 // ─── Helper: safe date formatting ───────────────────────────────────────────
