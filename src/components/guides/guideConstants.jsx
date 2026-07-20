@@ -1,16 +1,42 @@
 // ======== סטטוסי קריאה עדכניים ========
+// הסדר, הנוסח והצבעים זהים למערכת של נתי שירותי דרך (יישור 20.07):
+// ירוק=ממתין, צהוב=בדרך/בטיפול, כתום=הגיע, לבן=ממתין לשיחת סגירה, סגול=עתידי.
 export const callStatusFlow = [
   {
     key: 'waiting_treatment',
-    label: 'בהמתנה',
-    description: 'הקריאה נפתחה וממתינה לטיפול ראשוני ע"י מוקדן',
+    label: 'ממתין לטיפול',
+    description: 'הקריאה נפתחה (או הגיעה מסנכרון נתי) וממתינה לטיפול ראשוני ע"י מוקדן',
   },
-  { key: 'in_followup', label: 'במעקב', description: 'המוקדן מטפל בקריאה ועוקב אחרי ההתקדמות' },
+  { key: 'awaiting_assignment', label: 'ממתין לשיבוץ', description: 'הקריאה מוכנה לשיבוץ ספק שטח' },
+  { key: 'assigning', label: 'ספק שובץ', description: 'ספק נבחר והמערכת מחכה לאישורו' },
+  {
+    key: 'vendor_enroute',
+    label: 'נותן השירות בדרך ללקוח',
+    description: 'הספק אישר את הקריאה ויצא לדרך',
+  },
+  {
+    key: 'vendor_arrived',
+    label: 'נותן השירות הגיע ליעד',
+    description: 'הספק הגיע לנקודת האיסוף / ליעד',
+  },
+  { key: 'in_progress', label: 'בטיפול', description: 'הספק מבצע את העבודה בשטח' },
+  {
+    key: 'awaiting_closure_call',
+    label: 'ממתין לשיחת סגירה',
+    description:
+      'הטיפול בשטח הסתיים והוזנו שעות ההגעה וסטטוס הסגירה — הקריאה נשארת פתוחה עד שיחת הסגירה עם הלקוח (המצב ה"לבן" של נתי)',
+  },
   {
     key: 'in_storage',
     label: 'באחסנה',
     description: 'הרכב נמצא באחסנה (מגרש/מוסך) וממתין לפעולה נוספת',
   },
+  {
+    key: 'future_service',
+    label: 'שירות עתידי',
+    description: 'תואם שירות עתידי - מתוזמן לתאריך קרוב',
+  },
+  { key: 'in_followup', label: 'במעקב', description: 'המוקדן מטפל בקריאה ועוקב אחרי ההתקדמות' },
   {
     key: 'continued_treatment',
     label: 'המשך טיפול',
@@ -21,20 +47,6 @@ export const callStatusFlow = [
     label: 'המתנה לחיוב',
     description: 'הטיפול הסתיים אך ממתין לתשלום/חיוב מהלקוח',
   },
-  {
-    key: 'future_service',
-    label: 'שירות עתידי',
-    description: 'תואם שירות עתידי - מתוזמן לתאריך קרוב',
-  },
-  { key: 'awaiting_assignment', label: 'ממתין לשיבוץ', description: 'הקריאה מוכנה לשיבוץ ספק שטח' },
-  { key: 'assigning', label: 'ספק שובץ', description: 'ספק נבחר והמערכת מחכה לאישורו' },
-  {
-    key: 'vendor_enroute',
-    label: 'נותן השירות בדרך',
-    description: 'הספק אישר את הקריאה ויצא לדרך',
-  },
-  { key: 'vendor_arrived', label: 'נותן השירות הגיע', description: 'הספק הגיע לנקודת האיסוף' },
-  { key: 'in_progress', label: 'בטיפול', description: 'הספק מבצע את העבודה בשטח' },
   { key: 'completed', label: 'סגור', description: 'הקריאה טופלה בהצלחה ונסגרה' },
   { key: 'cancelled', label: 'בוטל', description: 'הקריאה בוטלה (ע"י הלקוח, המוקד, או הספק)' },
 ];
@@ -98,7 +110,8 @@ export const systemModules = [
     key: 'dashboard',
     label: 'לוח מחוונים',
     icon: 'BarChart3',
-    description: 'סקירה כללית של כל הפעילות - קריאות פתוחות, סטטיסטיקות, וגרפים',
+    description:
+      'סקירה כללית של כל הפעילות - קריאות פתוחות, סטטיסטיקות וגרפים, עם סינון לפי מחלקה (הכל / גרירה / ניידת שירות / אחר)',
   },
   {
     key: 'calls',
@@ -190,6 +203,13 @@ export const systemModules = [
     label: 'יומן',
     icon: 'Calendar',
     description: 'תצוגת יומן של קריאות עתידיות ומשמרות',
+  },
+  {
+    key: 'nati_integration',
+    label: 'אינטגרציית נתי',
+    icon: 'RefreshCw',
+    description:
+      'סנכרון דו-כיווני אוטומטי מול מערכת נתי שירותי דרך - משיכת קריאות פתוחות ודחיפת עדכונים חזרה (מסך "אינטגרציות CRM")',
   },
   {
     key: 'feedback',
