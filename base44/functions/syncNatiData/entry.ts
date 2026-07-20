@@ -694,6 +694,20 @@ Deno.serve(async (req) => {
       const params = [];
       if (dep !== -1) { sql += ' AND a.department_id = ?'; params.push(dep); }
       if (callStatus !== -1) { sql += ' AND a.status = ?'; params.push(callStatus); }
+      // TEMPORARY (20.07): Nati's call_open_appeals still contains ~115 stale
+      // pre-cleanup rows marked open (some years old, e.g. appeal 144760), while
+      // their staging UI shows only the real open calls from 15.07 onward. Until
+      // Nati cleans the table, ignore appeals opened before the cutoff so they
+      // don't flood back into the CRM. Override via the NATI_SYNC_MIN_DATE_ADDED
+      // env var (YYYY-MM-DD, Jerusalem local; set to '1970-01-01' to disable);
+      // remove this block entirely once Nati's table is cleaned.
+      let minDateAdded = (Deno.env.get('NATI_SYNC_MIN_DATE_ADDED') || '').trim();
+      if (!/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/.test(minDateAdded)) {
+        minDateAdded = '2026-07-15';
+      }
+      if (!minDateAdded.includes(' ')) minDateAdded += ' 00:00:00';
+      sql += ' AND a.date_added >= ?';
+      params.push(minDateAdded);
       sql += ' ORDER BY a.date_added DESC';
       const [rows] = await connection.query(sql, params);
       return rows;
