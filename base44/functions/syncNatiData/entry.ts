@@ -692,7 +692,29 @@ Deno.serve(async (req) => {
     const allAppeals = await withNatiConnection(async (connection) => {
       let sql = 'SELECT a.*, s.fullname as supplier_name FROM call_open_appeals a LEFT JOIN suppliers s ON a.supplier_id = s.id WHERE 1=1';
       const params = [];
-      if (dep !== -1) { sql += ' AND a.department_id = ?'; params.push(dep); }
+      if (dep !== -1) {
+        sql += ' AND a.department_id = ?';
+        params.push(dep);
+      } else {
+        // Department scope (Adiel, Nati DBA, 20.07): call_open_appeals holds the
+        // open appeals of ALL Nati departments (121 rows vs 10 towing), but the
+        // CRM operates on the towing department — an unscoped pull floods the
+        // dashboard with calls the dispatchers will never handle. Default scope:
+        // towing only (department_id 3, see DEPT_MAP). Widen via the
+        // NATI_SYNC_DEPARTMENT_IDS env var (comma-separated ids, e.g. '3,10';
+        // '*' = all departments). An explicit dep request param always wins.
+        const deptScope = (Deno.env.get('NATI_SYNC_DEPARTMENT_IDS') || '3').trim();
+        if (deptScope !== '*') {
+          const ids = deptScope
+            .split(',')
+            .map((s) => Number(s.trim()))
+            .filter((n) => Number.isInteger(n) && n >= 0);
+          if (ids.length > 0) {
+            sql += ` AND a.department_id IN (${ids.map(() => '?').join(',')})`;
+            params.push(...ids);
+          }
+        }
+      }
       if (callStatus !== -1) { sql += ' AND a.status = ?'; params.push(callStatus); }
       // TEMPORARY (20.07): Nati's call_open_appeals still contains ~115 stale
       // pre-cleanup rows marked open (some years old, e.g. appeal 144760), while
