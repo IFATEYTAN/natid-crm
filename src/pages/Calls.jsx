@@ -94,7 +94,7 @@ const SERVICE_TYPE_LABELS = serviceTypeLabels;
 
 const STATUS_LABELS = {
   waiting_treatment: 'ממתין לטיפול',
-  awaiting_assignment: 'ממתין לשיוך',
+  awaiting_assignment: 'ממתין לשיבוץ',
   assigning: 'ספק שובץ',
   vendor_enroute: 'נותן השירות בדרך ללקוח',
   in_progress: 'בטיפול',

@@ -46,6 +46,8 @@ import {
   systemRoles,
   systemModules,
 } from '@/components/guides/guideConstants';
+import StatusBadge from '@/components/ui/StatusBadge';
+import { RefreshCw } from 'lucide-react';
 
 function Section({ title, icon: Icon, children, defaultOpen = false, color = 'blue' }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -128,19 +130,67 @@ export default function UserGuidePage() {
         {/* ===== טאב 1: מדריך למוקדן / מתפעל ===== */}
         <TabsContent value="operator" className="space-y-4">
           <Section title="סטטוסי קריאה - מילון מונחים" icon={Layers} defaultOpen color="blue">
-            <p className="text-sm text-gray-500 mb-4">כל הסטטוסים העדכניים במערכת ומשמעותם:</p>
+            <p className="text-sm text-gray-500 mb-4">
+              כל הסטטוסים העדכניים במערכת ומשמעותם. השמות והצבעים זהים למסך המוקדנים של נתי שירותי
+              דרך — ירוק=ממתין, צהוב=בדרך/בטיפול, כתום=הגיע ליעד, לבן=ממתין לשיחת סגירה, סגול=שירות
+              עתידי:
+            </p>
             <div className="grid gap-2">
               {callStatusFlow.map((s) => (
                 <div
                   key={s.key}
                   className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
                 >
-                  <Badge className="bg-[#3b82f6] text-white text-[11px] min-w-[100px] justify-center">
-                    {s.label}
-                  </Badge>
+                  <span className="min-w-[150px] flex justify-center">
+                    <StatusBadge status={s.key} />
+                  </span>
                   <span className="text-sm text-gray-700">{s.description}</span>
                 </div>
               ))}
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+              <h4 className="font-medium text-gray-800 mb-1">זרימת הסגירה החדשה</h4>
+              <p className="text-sm text-gray-600">
+                אחרי "נותן השירות הגיע ליעד" ניתן להעביר את הקריאה ל
+                <strong>"ממתין לשיחת סגירה"</strong> (תג לבן): מזינים את שעות ההגעה ואת סטטוס
+                הסגירה, אך הקריאה נשארת פתוחה עד שמבצעים את שיחת הסגירה עם הלקוח — ורק אז "סגירת
+                קריאה". אפשר גם לסגור ישירות מההגעה, כמו קודם.
+              </p>
+            </div>
+          </Section>
+
+          <Section title="סנכרון דו-כיווני מול נתי" icon={RefreshCw} defaultOpen color="orange">
+            <p className="text-sm text-gray-500 mb-3">
+              המערכת מסונכרנת אוטומטית עם מערכת נתי שירותי דרך — בשני הכיוונים, כל כ-5 דקות:
+            </p>
+            <div className="space-y-3">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-medium text-blue-800 mb-1">⬅️ מנתי אלינו (משיכה)</h4>
+                <p className="text-sm text-blue-700">
+                  קריאות פתוחות של <strong>מחלקת הגרירה</strong> בנתי נוצרות כאן אוטומטית עם כל
+                  הפרטים: לקוח, רכב, מיקום, יעד, ספק שכבר שובץ בנתי והערות מוקד. אין צורך להקליד
+                  אותן מחדש.
+                </p>
+              </div>
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-medium text-green-800 mb-1">➡️ מאיתנו לנתי (דחיפה)</h4>
+                <p className="text-sm text-green-700">
+                  העבודה שנעשית כאן <strong>מתעדכנת חזרה בנתי אוטומטית</strong>: סגירת קריאה, ביטול,
+                  ספק ששובץ, זמני הגעה משוערים ובפועל, זמן סיום, הערות מוקד ואישורי בקרת איכות.
+                  כלומר — עובדים במערכת אחת, ונתי מתעדכנת מאחורי הקלעים.
+                </p>
+              </div>
+              <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <h4 className="font-medium text-orange-800 mb-1">כללי הבטיחות של הסנכרון</h4>
+                <ul className="text-sm text-orange-700 list-disc pr-5 space-y-1">
+                  <li>סטטוס מתקדם רק קדימה — קריאה שנסגרה בנתי לא תיפתח מחדש, ולהפך.</li>
+                  <li>
+                    הדחיפה ממלאת רק שדות ריקים בנתי — בחירה של מוקדנית נתי (למשל ספק) לעולם לא
+                    נדרסת.
+                  </li>
+                  <li>קריאה שנסגרה כאן נסגרת גם בנתי בסנכרון הבא — ולהפך.</li>
+                </ul>
+              </div>
             </div>
           </Section>
 
@@ -163,7 +213,7 @@ export default function UserGuidePage() {
                 { title: 'כתובת יעד (אם רלוונטית)', desc: 'שם מוסך, כתובת יעד, טלפון מוסך' },
                 {
                   title: 'שמור ושבץ',
-                  desc: 'לאחר שמירה - שבץ ספק מהרשימה לפי מרחק, זמינות ודירוג. הספק יקבל התראה.',
+                  desc: 'לאחר שמירה - שבץ ספק. רשימת הספקים מסוננת אוטומטית לפי סוג רכב השירות שנבחר (גרר/ניידת) ולפי אזור הקריאה; ניתן ללחוץ "הצג את כל הספקים" לביטול הסינון. הספק יקבל התראה.',
                 },
               ]}
             />
@@ -335,6 +385,41 @@ export default function UserGuidePage() {
                 <p className="text-sm text-gray-600">
                   תעריפי בסיס + תוספות לפי: שעות (לילה/חגים), אזורים, כביש אגרה, סוג רכב, סוג שירות.
                   כל תעריף עם סדר עדיפות.
+                </p>
+              </div>
+            </div>
+          </Section>
+
+          <Section title="אינטגרציית נתי - ניהול ותחזוקה" icon={RefreshCw} color="orange">
+            <div className="space-y-3">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-bold text-sm mb-2">מה רץ אוטומטית</h4>
+                <p className="text-sm text-gray-600">
+                  שתי אוטומציות רצות כל כ-5 דקות: <strong>"סנכרון נתי אוטומטי"</strong> (משיכת
+                  קריאות מנתי) ו<strong>"דחיפה לנתי"</strong> (עדכון נתי בעבודה שנעשתה כאן). ניתן
+                  להדליק/לכבות אותן במסך ה-Automations של Base44.
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-bold text-sm mb-2">מה נמשך מנתי</h4>
+                <p className="text-sm text-gray-600">
+                  כברירת מחדל נמשכות רק קריאות של <strong>מחלקת הגרירה</strong> (ניתן להרחיב דרך
+                  משתנה הסביבה NATI_SYNC_DEPARTMENT_IDS), ורק קריאות שנפתחו מה-15.07 והלאה (משתנה
+                  NATI_SYNC_MIN_DATE_ADDED — הגנה זמנית עד לניקוי טבלת הקריאות בצד של נתי).
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-bold text-sm mb-2">מסך "אינטגרציות CRM"</h4>
+                <p className="text-sm text-gray-600">
+                  פאנל הסנכרון מאפשר: הרצת סנכרון ידני, תצוגה מקדימה (Dry Run) שמראה מה יסתנכרן בלי
+                  לשנות כלום, דחיפת עדכונים לנתי עם פירוט השדות שעודכנו, וסינון לפי מחלקה וסטטוס.
+                </p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-bold text-sm mb-2">מסך "ניקוי וסנכרון נתונים"</h4>
+                <p className="text-sm text-gray-600">
+                  כלי תחזוקה למנהל: מחיקת כל נתוני הקריאות (לסביבת בדיקות — הסנכרון ימלא מחדש תוך
+                  דקות), וסגירת קריאות תקועות — קריאות שפתוחות כאן אך כבר לא פתוחות בנתי.
                 </p>
               </div>
             </div>

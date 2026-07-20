@@ -51,7 +51,7 @@ import { issueTypeLabels } from '@/config/labels';
 const statusOptions = [
   { value: 'all', label: 'כל הסטטוסים' },
   { value: 'waiting_treatment', label: 'ממתין לטיפול' },
-  { value: 'awaiting_assignment', label: 'ממתין לשיוך' },
+  { value: 'awaiting_assignment', label: 'ממתין לשיבוץ' },
   { value: 'assigning', label: 'ספק שובץ' },
   { value: 'vendor_enroute', label: 'ספק בדרך' },
   { value: 'in_progress', label: 'בטיפול' },

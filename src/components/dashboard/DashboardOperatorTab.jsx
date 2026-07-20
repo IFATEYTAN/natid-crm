@@ -68,7 +68,7 @@ export default function DashboardOperatorTab({
         </Suspense>
         <Suspense fallback={<Skeleton className="h-24" />}>
           <StatCard
-            title="ממתינות לשיוך"
+            title="ממתינות לשיבוץ"
             value={unassignedCalls.length}
             subtitle="כללי במערכת"
             icon={Users}
