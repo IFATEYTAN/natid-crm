@@ -28,7 +28,7 @@ import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 import { format, parseISO, subDays, startOfDay, endOfDay } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { serviceTypeLabels } from '@/config/labels';
+import { serviceTypeLabels, statusLabels } from '@/config/labels';
 
 // Lazy load sub-components
 const CallsTrendChart = lazyRetry(() =>
@@ -103,11 +103,12 @@ export default function Dashboard() {
   };
 
   // Read from Call entity (real data)
-  const { data: allCases = [], isLoading: casesLoading } = useQuery({
+  const { data: casesData, isLoading: casesLoading } = useQuery({
     queryKey: ['dashboard-cases'],
     queryFn: () => base44.entities.Call.list('-created_date', 1000),
     staleTime: 5 * 60 * 1000,
   });
+  const allCases = casesData || [];
 
   // Service-type filter (Nati QA request 20.07: dispatchers handle one
   // department at a time — e.g. towing only — so every dashboard counter,
@@ -198,18 +199,20 @@ export default function Dashboard() {
       : 0;
 
   // Chart data using Case entity fields
-  const statusLabelsMap = {
-    future_service: 'שירות עתידי',
-    waiting_treatment: 'ממתין לטיפול',
-    awaiting_assignment: 'ממתין לשיוך',
-    assigning: 'ספק שובץ',
-    vendor_enroute: 'נותן השירות בדרך',
-    in_progress: 'בטיפול',
-    vendor_arrived: 'נותן השירות הגיע',
-    completed: 'סגור',
-    cancelled: 'בוטל',
-  };
-  const statusData = Object.entries(statusLabelsMap)
+  // Chart statuses in lifecycle order; labels come from the central map so
+  // the chart, tables and badges always agree.
+  const CHART_STATUSES = [
+    'future_service',
+    'waiting_treatment',
+    'awaiting_assignment',
+    'assigning',
+    'vendor_enroute',
+    'in_progress',
+    'vendor_arrived',
+    'completed',
+    'cancelled',
+  ];
+  const statusData = CHART_STATUSES.map((status) => [status, statusLabels[status] || status])
     .map(([status, name]) => ({
       name,
       value: cases.filter((c) => c.call_status === status).length,

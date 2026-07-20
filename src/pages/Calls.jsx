@@ -42,6 +42,7 @@ import ColumnSelector from '@/components/calls/ColumnSelector';
 import { useColumnVisibility } from '@/components/calls/useColumnVisibility';
 import { buildCallColumns } from '@/components/calls/callTableColumns';
 import AssignVendorDialog from '@/components/calls/AssignVendorDialog';
+import { serviceTypeLabels } from '@/config/labels';
 
 const CLOSED_FOR_ACTIONS = ['completed', 'cancelled'];
 
@@ -87,17 +88,9 @@ function CallRowActions({ call, onAssign }) {
 
 const PAGE_SIZE = 50; // Smaller pages = faster rendering
 
-const SERVICE_TYPE_LABELS = {
-  towing: 'גרירה',
-  mobile_unit: 'ניידת שירות',
-  flat_tire: 'פנצ׳ר',
-  battery: 'סוללה',
-  lockout: 'נעילה',
-  fuel: 'דלק',
-  accident: 'תאונה',
-  mechanical: 'מכאני',
-  other: 'אחר',
-};
+// Service-type labels come from the central map (src/config/labels.js) so the
+// filter, tables and dashboard all use the same terminology.
+const SERVICE_TYPE_LABELS = serviceTypeLabels;
 
 const STATUS_LABELS = {
   waiting_treatment: 'ממתין לטיפול',
