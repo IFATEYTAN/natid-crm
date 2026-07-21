@@ -136,7 +136,7 @@ const AREA_KEY_LOOKUP = coverageAreas.reduce(
   (acc, a) => {
     acc[a.key] = a.key;
     acc[a.label] = a.key;
-    for (const city of a.cities) acc[city] = a.key;
+    for (const city of a.cities || []) acc[city] = a.key;
     return acc;
   },
   { ירושלים: 'jerusalem', all_country: 'all_country', 'כל הארץ': 'all_country' }

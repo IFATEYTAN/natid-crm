@@ -935,7 +935,9 @@ Deno.serve(async (req) => {
           const localTerminal = TERMINAL_CRM_STATUSES.has(existing.call_status);
           const incomingTerminal = TERMINAL_CRM_STATUSES.has(item.call_status);
           if (!incomingTerminal) {
-            const localRank = PULL_STATUS_RANK[existing.call_status];
+            // A row with no local status yet (legacy/bad data) must accept any
+            // ranked incoming status — rank it below the whole ladder.
+            const localRank = existing.call_status ? PULL_STATUS_RANK[existing.call_status] : -1;
             const incomingRank = PULL_STATUS_RANK[item.call_status];
             // Both ranks must be defined for an advance: an unranked local
             // status is a CRM-only state the pull must not touch, and an
