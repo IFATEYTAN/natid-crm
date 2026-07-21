@@ -89,12 +89,18 @@ const slaStatusColors = {
   breached: 'bg-red-100 text-red-800',
 };
 
+// שלושה מצבים: כן / לא / לא נמסר. קריאות שסונכרנו מנתי מגיעות בלי תשובות
+// שאלון — להציג עליהן "לא" אדום מטעה (QA 21.07), אז חוסר מידע מוצג באפור.
 const BoolField = ({ value, label }) => (
   <div className="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
     <span className="text-sm text-[#6B778C]">{label}</span>
-    <span className={`text-sm font-medium ${value ? 'text-green-700' : 'text-red-600'}`}>
-      {value ? 'כן' : 'לא'}
-    </span>
+    {value === undefined || value === null ? (
+      <span className="text-sm font-medium text-gray-400">לא נמסר</span>
+    ) : (
+      <span className={`text-sm font-medium ${value ? 'text-green-700' : 'text-red-600'}`}>
+        {value ? 'כן' : 'לא'}
+      </span>
+    )}
   </div>
 );
 

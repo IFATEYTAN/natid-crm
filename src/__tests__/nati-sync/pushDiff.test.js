@@ -306,18 +306,57 @@ describe('pull <-> push direction consistency (bidirectional sync safety)', () =
     guards = loadPullStatusGuardTables();
   });
 
-  it('the pull-side bucket map is identical to the push-side status map', () => {
-    // If these drift, the pull can flatten a finer-grained local status that
-    // the push side considers equivalent — statuses would ping-pong.
-    expect(guards.CRM_STATUS_TO_NATI_BUCKET).toEqual(p.CRM_STATUS_TO_NATI);
+  it('every pull-rankable status has an open (0/1) bucket on the push side', () => {
+    // The pull's forward-only ladder only contains non-terminal statuses; if
+    // one of them mapped to a closed Nati bucket, a pull-advance would make
+    // the push side close the appeal — statuses would ping-pong.
+    for (const [status, rank] of Object.entries(guards.PULL_STATUS_RANK)) {
+      const bucket = p.CRM_STATUS_TO_NATI[status];
+      expect([0, 1], `${status} (rank ${rank})`).toContain(bucket);
+    }
   });
 
-  it('every Nati status round-trips to its own bucket', () => {
-    for (const [natiStatus, crmStatus] of Object.entries(pull.CALL_STATUS_MAP)) {
+  it('advancing along the pull ladder never regresses the push-side bucket', () => {
+    // Otherwise a pull-advance would trigger a push-side status downgrade.
+    const byRank = Object.entries(guards.PULL_STATUS_RANK).sort((a, b) => a[1] - b[1]);
+    let maxBucketSoFar = 0;
+    for (const [status] of byRank) {
+      const bucket = p.CRM_STATUS_TO_NATI[status];
+      expect(bucket, status).toBeGreaterThanOrEqual(maxBucketSoFar);
+      maxBucketSoFar = Math.max(maxBucketSoFar, bucket);
+    }
+  });
+
+  it('every status the pull can produce round-trips to its own bucket', () => {
+    // Terminal Nati statuses come from CALL_STATUS_MAP...
+    for (const natiStatus of [2, 3, 6, 7]) {
+      const crmStatus = pull.CALL_STATUS_MAP[natiStatus];
       const bucket = p.CRM_STATUS_TO_NATI[crmStatus];
-      const expected = [6, 7].includes(Number(natiStatus)) ? 2 : Number(natiStatus);
+      const expected = [6, 7].includes(natiStatus) ? 2 : natiStatus;
       expect(bucket, `Nati status ${natiStatus} -> ${crmStatus}`).toBe(expected);
     }
+    // ...and open ones are derived from the appeal's fields. No supplier maps
+    // to bucket 0; every supplier-implying derived status maps to bucket 1.
+    expect(p.CRM_STATUS_TO_NATI[pull.deriveCallStatus({ status: 0 })]).toBe(0);
+    expect(p.CRM_STATUS_TO_NATI[pull.deriveCallStatus({ status: 1 })]).toBe(0);
+    const enroute = pull.deriveCallStatus({ status: 1, supplier_id: 5 });
+    const arrived = pull.deriveCallStatus({
+      status: 1,
+      supplier_id: 5,
+      arrive_actual_time: '2026-07-21 10:00:00',
+    });
+    const awaiting = pull.deriveCallStatus({
+      status: 1,
+      supplier_id: 5,
+      arrive_actual_time: '2026-07-21 10:00:00',
+      finish_time: '2026-07-21 11:00:00',
+    });
+    expect(p.CRM_STATUS_TO_NATI[enroute]).toBe(1);
+    expect(p.CRM_STATUS_TO_NATI[arrived]).toBe(1);
+    expect(p.CRM_STATUS_TO_NATI[awaiting]).toBe(1);
+    // The derivation ladder itself must advance in pull-rank order.
+    expect(guards.PULL_STATUS_RANK[enroute]).toBeLessThan(guards.PULL_STATUS_RANK[arrived]);
+    expect(guards.PULL_STATUS_RANK[arrived]).toBeLessThan(guards.PULL_STATUS_RANK[awaiting]);
   });
 
   it('closed-status sets agree between directions', () => {

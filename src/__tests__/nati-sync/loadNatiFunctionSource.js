@@ -47,6 +47,7 @@ export function loadSyncMappers() {
   return new Function(`${section}
     return {
       DEPT_MAP, CASE_STATUS_MAP, CALL_STATUS_MAP, VEHICLE_TYPE_MAP,
+      NATI_TERMINAL_STATUSES, hasAssignedSupplier, deriveCallStatus, deriveCaseStatus,
       jerusalemOffsetForDate, parseNatiDate, clean, mapServiceType,
       mapIssueType, mapToCall, mapToCase, extractVendors, extractCustomers,
     };`)();
@@ -54,22 +55,23 @@ export function loadSyncMappers() {
 
 /**
  * Pull-side conflict-guard tables (defined inline in the syncNatiData handler):
- * the CRM-status -> Nati-bucket map and the terminal-status set used to keep
- * local closures / finer-grained local statuses from being flattened by a pull.
+ * the dispatch-progression rank map (a pull may only advance a call along it)
+ * and the terminal-status set used to keep local closures from being reopened
+ * by a pull.
  */
 export function loadPullStatusGuardTables() {
   const src = readFunctionSource('base44/functions/syncNatiData/entry.ts');
-  const mapMatch = src.match(/const\s+CRM_STATUS_TO_NATI_BUCKET\s*=\s*\{[\s\S]*?\};/);
+  const rankMatch = src.match(/const\s+PULL_STATUS_RANK\s*=\s*\{[\s\S]*?\};/);
   const setMatch = src.match(/const\s+TERMINAL_CRM_STATUSES\s*=\s*new\s+Set\(\[[\s\S]*?\]\);/);
-  if (!mapMatch || !setMatch) {
+  if (!rankMatch || !setMatch) {
     throw new Error(
-      'Could not locate CRM_STATUS_TO_NATI_BUCKET / TERMINAL_CRM_STATUSES in syncNatiData/entry.ts'
+      'Could not locate PULL_STATUS_RANK / TERMINAL_CRM_STATUSES in syncNatiData/entry.ts'
     );
   }
   // eslint-disable-next-line no-new-func
-  return new Function(`${mapMatch[0]}
+  return new Function(`${rankMatch[0]}
     ${setMatch[0]}
-    return { CRM_STATUS_TO_NATI_BUCKET, TERMINAL_CRM_STATUSES };`)();
+    return { PULL_STATUS_RANK, TERMINAL_CRM_STATUSES };`)();
 }
 
 /**

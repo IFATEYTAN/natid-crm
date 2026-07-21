@@ -129,6 +129,26 @@ const normalizeAreaForVendor = (area) => {
   return String(area).split('_')[0];
 };
 
+// coverage_areas בכרטיסי ספק אמיתיים מכילים גם תוויות עבריות ('מרכז') ואף שמות
+// ערים ('תל אביב'), לא רק מפתחות ('center'). ממפים כל ערך למפתח אזור מוכר;
+// ערך שלא זוהה אינו ראיה — הסינון פוסל ספק רק על סתירה מזוהה (QA 21.07).
+const AREA_KEY_LOOKUP = coverageAreas.reduce(
+  (acc, a) => {
+    acc[a.key] = a.key;
+    acc[a.label] = a.key;
+    for (const city of a.cities || []) acc[city] = a.key;
+    return acc;
+  },
+  { ירושלים: 'jerusalem', all_country: 'all_country', 'כל הארץ': 'all_country' }
+);
+
+const normalizeCoverageEntry = (entry) => {
+  const s = String(entry || '').trim();
+  if (AREA_KEY_LOOKUP[s]) return AREA_KEY_LOOKUP[s];
+  // ערכי תת-אזור כמו north_haifa — נופלים לאזור הראשי.
+  return s.includes('_') ? AREA_KEY_LOOKUP[s.split('_')[0]] : undefined;
+};
+
 /**
  * דיאלוג שיבוץ ספק לקריאה - מקור יחיד לשימוש חוזר מרשימת הקריאות וממסך "צפה".
  *
@@ -189,7 +209,10 @@ export default function AssignVendorDialog({ call, open, onOpenChange }) {
       if (!callArea || !Array.isArray(v.coverage_areas) || v.coverage_areas.length === 0) {
         return true;
       }
-      return v.coverage_areas.includes(callArea) || v.coverage_areas.includes('all_country');
+      const knownAreas = v.coverage_areas.map(normalizeCoverageEntry).filter(Boolean);
+      // אף ערך כיסוי לא זוהה — אין ראיה לסתירה, לא פוסלים את הספק.
+      if (knownAreas.length === 0) return true;
+      return knownAreas.includes(callArea) || knownAreas.includes('all_country');
     });
   }, [availableVendors, dispatchType, callArea, showAllVendors]);
 
