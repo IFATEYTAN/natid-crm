@@ -80,11 +80,15 @@ export async function signInAs(page, role) {
     .or(page.getByRole('link', { name: /התחברות|הרשמה|sign in|log in/i }))
     .first();
 
-  await email
-    .or(continueWithEmail)
-    .or(appLoginButton)
-    .first()
-    .waitFor({ state: 'visible', timeout: 25000 });
+  // Promise.any (not .or().first().waitFor()): first() resolves by DOM order
+  // even for hidden elements, so a hidden early match could hang the wait.
+  await Promise.any([
+    email.waitFor({ state: 'visible', timeout: 25000 }),
+    continueWithEmail.waitFor({ state: 'visible', timeout: 25000 }),
+    appLoginButton.waitFor({ state: 'visible', timeout: 25000 }),
+  ]).catch(() => {
+    throw new Error(`signInAs(${role}): no login entry point appeared at ${page.url()}`);
+  });
 
   if (!(await email.isVisible().catch(() => false))) {
     if (await continueWithEmail.isVisible().catch(() => false)) {
