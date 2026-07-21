@@ -61,8 +61,9 @@ jobs:
   full-e2e:
     name: Full E2E (Base44 + auth)
     runs-on: ubuntu-latest
-    # 54 live tests on 1 worker with real logins — 20m got cancelled mid-run twice (14.07)
-    timeout-minutes: 45
+    # 54 live tests on 1 worker with real logins — 20m got cancelled mid-run twice
+    # (14.07); 45m hit the ceiling with 60s per-test timeouts on retries (21.07).
+    timeout-minutes: 60
     needs: quick-tests
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||

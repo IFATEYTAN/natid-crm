@@ -10,6 +10,9 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // Live runs (E2E_BASE_URL set) do a full platform login inside each test's
+  // beforeEach — the default 30s is spent almost entirely on auth (run #465).
+  timeout: process.env.E2E_BASE_URL ? 60_000 : 30_000,
   fullyParallel: false, // serial — auth state and demo data leak otherwise
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
