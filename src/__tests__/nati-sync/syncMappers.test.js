@@ -81,15 +81,58 @@ describe('mapToCall (Nati appeal -> CRM Call)', () => {
     expect(m.mapToCall({ ...minimalAppeal, requester: ' דנה כהן ' }).customer_name).toBe('דנה כהן');
   });
 
-  it('maps every known Nati status, defaulting unknowns to waiting_treatment', () => {
+  it('maps terminal Nati statuses regardless of appeal fields', () => {
     const statusOf = (status) => m.mapToCall({ ...minimalAppeal, status }).call_status;
-    expect(statusOf(0)).toBe('waiting_treatment');
-    expect(statusOf(1)).toBe('assigning');
     expect(statusOf(2)).toBe('completed');
     expect(statusOf(3)).toBe('cancelled');
     expect(statusOf(6)).toBe('completed');
     expect(statusOf(7)).toBe('completed');
-    expect(statusOf(99)).toBe('waiting_treatment');
+    // Terminal wins even when open-looking evidence fields are present.
+    expect(m.mapToCall({ ...minimalAppeal, status: 2, supplier_id: 5 }).call_status).toBe(
+      'completed'
+    );
+  });
+
+  it('derives open statuses from the appeal fields, not from Nati status 0/1 (QA 21.07)', () => {
+    // Nati status 1 without a supplier must NOT become "ספק שובץ".
+    expect(m.mapToCall({ ...minimalAppeal, status: 0 }).call_status).toBe('waiting_treatment');
+    expect(m.mapToCall({ ...minimalAppeal, status: 1 }).call_status).toBe('waiting_treatment');
+    // Supplier assigned -> the provider is on the way (Nati's yellow).
+    expect(m.mapToCall({ ...minimalAppeal, status: 1, supplier_id: 5 }).call_status).toBe(
+      'vendor_enroute'
+    );
+    expect(
+      m.mapToCall({ ...minimalAppeal, status: 0, supplier_name: 'גרר דרום' }).call_status
+    ).toBe('vendor_enroute');
+    // Actual arrival recorded -> arrived (Nati's orange).
+    expect(
+      m.mapToCall({
+        ...minimalAppeal,
+        status: 1,
+        supplier_id: 5,
+        arrive_actual_time: '2026-07-21 10:00:00',
+      }).call_status
+    ).toBe('vendor_arrived');
+    // Closure data entered but appeal still open -> awaiting closure call (Nati's white).
+    expect(
+      m.mapToCall({
+        ...minimalAppeal,
+        status: 1,
+        supplier_id: 5,
+        arrive_actual_time: '2026-07-21 10:00:00',
+        finish_time: '2026-07-21 11:00:00',
+      }).call_status
+    ).toBe('awaiting_closure_call');
+    // Unknown statuses fall back to the same field derivation.
+    expect(m.mapToCall({ ...minimalAppeal, status: 99 }).call_status).toBe('waiting_treatment');
+    // MySQL zero-dates in the evidence fields must not count as evidence.
+    expect(
+      m.mapToCall({
+        ...minimalAppeal,
+        status: 1,
+        arrive_actual_time: '0000-00-00 00:00:00',
+      }).call_status
+    ).toBe('waiting_treatment');
   });
 
   it('maps department to service_category and issue_type', () => {
@@ -142,10 +185,16 @@ describe('mapToCall (Nati appeal -> CRM Call)', () => {
     expect(closed.sla_response_deadline).toBeUndefined();
   });
 
-  it('maps finish_time to both service_end_time and closed_at', () => {
+  it('maps finish_time to both service_end_time and closed_at on terminal appeals', () => {
     const call = m.mapToCall({ ...minimalAppeal, status: 2, finish_time: '2026-07-10 18:45:00' });
     expect(call.service_end_time).toBe('2026-07-10T18:45:00+03:00');
     expect(call.closed_at).toBe('2026-07-10T18:45:00+03:00');
+  });
+
+  it('does NOT stamp closed_at while the appeal is still open (white state)', () => {
+    const call = m.mapToCall({ ...minimalAppeal, status: 1, finish_time: '2026-07-10 18:45:00' });
+    expect(call.service_end_time).toBe('2026-07-10T18:45:00+03:00');
+    expect(call.closed_at).toBeUndefined();
   });
 
   it('maps vendor assignment timestamps when present', () => {
@@ -192,29 +241,47 @@ describe('mapToCase (Nati appeal -> CRM Case)', () => {
     const c = m.mapToCase(appeal);
     expect(c.case_number).toBe('777');
     expect(c.customer_name).toBe('דנה כהן');
-    expect(c.status).toBe('assigned');
+    // No supplier on the appeal -> the case is still new (QA 21.07).
+    expect(c.status).toBe('new');
     expect(c.service_type).toBe('mechanical');
     expect(c.department).toBe('ניידת שירות');
     expect(c.vehicle_type).toBe('private');
     expect(c.opening_source).toBe('call_center');
   });
 
-  it('derives source_status from finish_time', () => {
+  it('derives source_status from the Nati status, not from finish_time alone', () => {
     expect(m.mapToCase(appeal).source_status).toBe('open');
+    // White state: closure data entered but the appeal is still open on Nati.
     expect(m.mapToCase({ ...appeal, finish_time: '2026-07-10 18:45:00' }).source_status).toBe(
-      'closed'
+      'open'
     );
+    expect(
+      m.mapToCase({ ...appeal, status: 2, finish_time: '2026-07-10 18:45:00' }).source_status
+    ).toBe('closed');
   });
 
-  it('maps all Nati case statuses, defaulting unknowns to new', () => {
+  it('does NOT stamp completed_at while the appeal is still open (white state)', () => {
+    expect(
+      m.mapToCase({ ...appeal, finish_time: '2026-07-10 18:45:00' }).completed_at
+    ).toBeUndefined();
+    expect(
+      m.mapToCase({ ...appeal, status: 2, finish_time: '2026-07-10 18:45:00' }).completed_at
+    ).toBe('2026-07-10T18:45:00+03:00');
+  });
+
+  it('maps terminal Nati case statuses and derives open ones from the fields', () => {
     const statusOf = (status) => m.mapToCase({ ...appeal, status }).status;
     expect(statusOf(0)).toBe('new');
-    expect(statusOf(1)).toBe('assigned');
+    expect(statusOf(1)).toBe('new');
     expect(statusOf(2)).toBe('completed');
     expect(statusOf(3)).toBe('cancelled');
     expect(statusOf(6)).toBe('completed');
     expect(statusOf(7)).toBe('completed');
     expect(statusOf(42)).toBe('new');
+    expect(m.mapToCase({ ...appeal, supplier_id: 9 }).status).toBe('en_route');
+    expect(
+      m.mapToCase({ ...appeal, supplier_id: 9, arrive_actual_time: '2026-07-21 10:00:00' }).status
+    ).toBe('on_site');
   });
 });
 

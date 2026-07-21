@@ -331,12 +331,39 @@ function mapIssueType(deptId) {
   return 'other';
 }
 
+// Nati's open appeal statuses (0/1) don't encode the dispatch stage — their
+// dispatcher screen derives the color from the appeal's fields instead
+// (supplier assigned -> yellow, arrived -> orange, closure data entered but
+// still open -> white). Mirror that derivation here so both screens agree
+// (QA 21.07: an appeal with no supplier must not appear as "ספק שובץ").
+const NATI_TERMINAL_STATUSES = new Set([2, 3, 6, 7]);
+
+function hasAssignedSupplier(a) {
+  if (a.supplier_id !== null && a.supplier_id !== undefined && Number(a.supplier_id) > 0) return true;
+  return String(a.supplier_name || '').trim() !== '';
+}
+
+function deriveCallStatus(a) {
+  if (NATI_TERMINAL_STATUSES.has(Number(a.status))) return CALL_STATUS_MAP[a.status];
+  if (parseNatiDate(a.finish_time)) return 'awaiting_closure_call';
+  if (parseNatiDate(a.arrive_actual_time)) return 'vendor_arrived';
+  if (hasAssignedSupplier(a)) return 'vendor_enroute';
+  return 'waiting_treatment';
+}
+
+function deriveCaseStatus(a) {
+  if (NATI_TERMINAL_STATUSES.has(Number(a.status))) return CASE_STATUS_MAP[a.status];
+  if (parseNatiDate(a.arrive_actual_time) || parseNatiDate(a.finish_time)) return 'on_site';
+  if (hasAssignedSupplier(a)) return 'en_route';
+  return 'new';
+}
+
 // ========== MAPPERS ==========
 
 function mapToCall(a) {
   const data = {
     call_number: String(a.id),
-    call_status: CALL_STATUS_MAP[a.status] || 'waiting_treatment',
+    call_status: deriveCallStatus(a),
     call_priority: 'normal',
     service_category: a.department_id === 3 ? 'towing' : (a.department_id === 4 ? 'mobile_unit' : 'other'),
     issue_type: mapIssueType(a.department_id),
@@ -379,7 +406,13 @@ function mapToCall(a) {
   const arriveTime = parseNatiDate(a.arrive_actual_time);
   if (arriveTime) data.vendor_arrival_time_actual = arriveTime;
   const finishTime = parseNatiDate(a.finish_time);
-  if (finishTime) { data.service_end_time = finishTime; data.closed_at = finishTime; }
+  // A finish_time on a still-open appeal is Nati's white state (closure data
+  // entered, closing call pending) — the call is NOT closed yet, so closed_at
+  // is only stamped once Nati actually moves the appeal to a terminal status.
+  if (finishTime) {
+    data.service_end_time = finishTime;
+    if (NATI_TERMINAL_STATUSES.has(Number(a.status))) data.closed_at = finishTime;
+  }
   // SLA response deadline for open appeals: 30 minutes from opening (matches
   // the Call schema's sla_target default), so the notifications engine can
   // track synced calls too. Closed appeals don't need one.
@@ -424,14 +457,14 @@ function mapToCase(a) {
     location_city: a.city || '',
     destination_address: a.grar_address || '',
     destination_city: a.grar_city || '',
-    status: CASE_STATUS_MAP[a.status] || 'new',
+    status: deriveCaseStatus(a),
     assigned_provider_name: a.supplier_name || '',
     department: DEPT_MAP[a.department_id] || 'אחר',
     problem_description: a.diagnose || '',
     internal_notes: a.q_notes || '',
     passed_qa: a.inspector_approves === 1,
     opening_source: a.open_from_api === 1 ? 'app' : 'call_center',
-    source_status: a.finish_time ? 'closed' : 'open',
+    source_status: NATI_TERMINAL_STATUSES.has(Number(a.status)) ? 'closed' : 'open',
     case_reference_code: a.sub_num ? String(a.sub_num) : '',
     customer_id: a.client_id ? String(a.client_id) : '',
     early_alert_minutes: a.reminder ? parseInt(a.reminder) : 30,
@@ -441,8 +474,9 @@ function mapToCase(a) {
   if (a.num_of_km && a.num_of_km > 0) data.distance_km = a.num_of_km;
   const arrivedAt = parseNatiDate(a.arrive_actual_time);
   if (arrivedAt) data.arrived_at = arrivedAt;
+  // Same white-state guard as mapToCall: finish_time alone doesn't close a case.
   const completedAt = parseNatiDate(a.finish_time);
-  if (completedAt) data.completed_at = completedAt;
+  if (completedAt && NATI_TERMINAL_STATUSES.has(Number(a.status))) data.completed_at = completedAt;
   const assignedAt = parseNatiDate(a.supplier_assigned_date);
   if (assignedAt) data.assigned_at = assignedAt;
   const etaTime = parseNatiDate(a.arrive_expected_time);
@@ -870,17 +904,16 @@ Deno.serve(async (req) => {
       console.log('[SYNC] Syncing calls...');
       const callRowByNumber = {};
       for (const c of existingCalls) { if (c.call_number) callRowByNumber[c.call_number] = c; }
-      // Bidirectional guard (pushNatiUpdates is the outbound half): CRM statuses
-      // grouped by the Nati status bucket they map back to. When the local and
-      // incoming statuses land in the same bucket, the local one is finer-grained
-      // (e.g. vendor_arrived vs. Nati's generic "in treatment") and must not be
-      // flattened by the pull.
-      const CRM_STATUS_TO_NATI_BUCKET = {
-        waiting_treatment: 0, awaiting_assignment: 0,
-        assigning: 1, vendor_enroute: 1, vendor_arrived: 1, awaiting_closure_call: 1, in_progress: 1,
-        cannot_complete: 1, future_service: 1, in_followup: 1, in_storage: 1,
-        continued_treatment: 1, awaiting_payment: 1,
-        completed: 2, cancelled: 3,
+      // Bidirectional guard (pushNatiUpdates is the outbound half): the pull
+      // derives statuses along Nati's dispatch progression (waiting -> assigned
+      // -> en route -> arrived -> awaiting closure call), so a pull may only
+      // ADVANCE a call along that ladder — never regress it (mirror of the push
+      // side's forward-only rule). Statuses without a rank are CRM-only workflow
+      // states (storage, follow-up, payment, future service...) that Nati has no
+      // equivalent for, so a pull must never flatten them.
+      const PULL_STATUS_RANK = {
+        waiting_treatment: 0, awaiting_assignment: 1, assigning: 2,
+        vendor_enroute: 3, in_progress: 3, vendor_arrived: 4, awaiting_closure_call: 5,
       };
       const TERMINAL_CRM_STATUSES = new Set(['completed', 'cancelled']);
       const callItems = appeals.map(mapToCall);
@@ -901,13 +934,17 @@ Deno.serve(async (req) => {
         if (existing && item.call_status) {
           const localTerminal = TERMINAL_CRM_STATUSES.has(existing.call_status);
           const incomingTerminal = TERMINAL_CRM_STATUSES.has(item.call_status);
-          const localBucket = CRM_STATUS_TO_NATI_BUCKET[existing.call_status];
-          const incomingBucket = CRM_STATUS_TO_NATI_BUCKET[item.call_status];
-          // Guard against statuses missing from the bucket map (e.g. a future
-          // CRM status): undefined === undefined must NOT count as "same bucket".
-          const sameBucket = localBucket !== undefined && localBucket === incomingBucket;
-          if ((localTerminal && !incomingTerminal) || (!incomingTerminal && sameBucket)) {
-            delete item.call_status;
+          if (!incomingTerminal) {
+            const localRank = PULL_STATUS_RANK[existing.call_status];
+            const incomingRank = PULL_STATUS_RANK[item.call_status];
+            // Both ranks must be defined for an advance: an unranked local
+            // status is a CRM-only state the pull must not touch, and an
+            // unranked incoming status can't prove it's further along.
+            const advances =
+              localRank !== undefined && incomingRank !== undefined && incomingRank > localRank;
+            if (localTerminal || !advances) {
+              delete item.call_status;
+            }
           }
         }
       }
@@ -923,7 +960,13 @@ Deno.serve(async (req) => {
       // Newly created open calls enter the work queue and get auto-assigned to
       // the least-busy on-shift operator — same treatment a call opened in the
       // NewCase form gets, so synced Nati calls don't bypass the queue.
-      const OPEN_FOR_QUEUE = new Set(['waiting_treatment', 'awaiting_assignment', 'assigning']);
+      // Every open synced call needs an operator (שיוך למוקדן), including ones
+      // that already arrive with a supplier assigned on the Nati side — the
+      // pull now derives those as vendor_enroute/vendor_arrived/awaiting_closure_call.
+      const OPEN_FOR_QUEUE = new Set([
+        'waiting_treatment', 'awaiting_assignment', 'assigning',
+        'vendor_enroute', 'vendor_arrived', 'awaiting_closure_call',
+      ]);
       const newlyCreated = callItems
         .filter((i) =>
           i.call_number &&
