@@ -1,7 +1,11 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44 } from '@/lib/api';
-import { appParams, clearStoredToken } from '@/lib/app-params';
-import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import {
+  login as srvLogin,
+  fetchMe,
+  getStoredToken,
+  setStoredToken,
+  clearStoredToken,
+} from '@/lib/srvAuth';
 import { isDemoMode } from '@/demo/demoMode';
 import { demoUser } from '@/demo/demoData';
 
@@ -11,155 +15,72 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
-  const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
 
-  useEffect(() => {
-    checkAppState();
-  }, []);
-
-  const checkAppState = async () => {
+  const checkExistingSession = useCallback(async () => {
     // Demo mode: skip real auth, use demo user immediately
     if (isDemoMode()) {
       setUser(demoUser);
       setIsAuthenticated(true);
-      setAppPublicSettings({ id: 'demo', public_settings: {} });
-      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+      return;
+    }
+
+    const token = getStoredToken();
+    if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
       setIsLoadingAuth(false);
       return;
     }
 
     try {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
-
-      // First, check app public settings (with token if available)
-      // This will tell us if auth is required, user not registered, etc.
-      const appClient = createAxiosClient({
-        baseURL: `/api/apps/public`,
-        headers: {
-          'X-App-Id': appParams.appId,
-        },
-        token: appParams.token, // Include token if available
-        interceptResponses: true,
-      });
-
-      try {
-        const publicSettings = await appClient.get(
-          `/prod/public-settings/by-id/${appParams.appId}`
-        );
-        setAppPublicSettings(publicSettings);
-
-        // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
-          await checkUserAuth();
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-        }
-        setIsLoadingPublicSettings(false);
-      } catch (appError) {
-        console.error('App state check failed:', appError);
-
-        // Handle app-level errors
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
-          if (reason === 'auth_required') {
-            // The stored token (if any) is invalid/expired. Drop it so the next
-            // load starts clean and the login redirect can't be undermined by a
-            // stale token that keeps failing — the production redirect loop.
-            clearStoredToken();
-            setAuthError({
-              type: 'auth_required',
-              message: 'Authentication required',
-            });
-          } else if (reason === 'user_not_registered') {
-            setAuthError({
-              type: 'user_not_registered',
-              message: 'User not registered for this app',
-            });
-          } else {
-            setAuthError({
-              type: reason,
-              message: appError.message,
-            });
-          }
-        } else {
-          setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app',
-          });
-        }
-        setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      setAuthError({
-        type: 'unknown',
-        message: error.message || 'An unexpected error occurred',
-      });
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-    }
-  };
-
-  const checkUserAuth = async () => {
-    try {
-      // Now check if the user is authenticated
-      setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
+      const me = await fetchMe(token);
+      setUser(me);
       setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-      // Clear redirect flag on successful auth
-      sessionStorage.removeItem('auth_redirect_time');
     } catch (error) {
-      console.error('User auth check failed:', error);
-      setIsLoadingAuth(false);
-      setIsAuthenticated(false);
-
-      // The token didn't pass the /me check — clear it so a stale token can't
-      // keep failing on subsequent loads (production redirect loop).
+      console.error('Session check failed:', error);
+      // The stored token didn't pass /me (expired, revoked role, deactivated
+      // account) — drop it so the next load starts clean instead of retrying
+      // a token that will keep failing.
       clearStoredToken();
-
-      // Any auth failure should show the login page
-      setAuthError({
-        type: 'auth_required',
-        message: 'Authentication required',
-      });
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoadingAuth(false);
     }
-  };
+  }, []);
 
-  const logout = (shouldRedirect = true) => {
+  useEffect(() => {
+    checkExistingSession();
+  }, [checkExistingSession]);
+
+  const login = useCallback(async (username, password) => {
+    const { access_token, user: loggedInUser } = await srvLogin(username, password);
+    setStoredToken(access_token);
+    setUser(loggedInUser);
+    setIsAuthenticated(true);
+    return loggedInUser;
+  }, []);
+
+  const logout = useCallback(() => {
+    clearStoredToken();
     setUser(null);
     setIsAuthenticated(false);
+  }, []);
 
-    if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      base44.auth.logout();
+  // Re-fetches /me with the current token so a profile/role change is
+  // reflected without forcing a re-login. No-ops in demo mode (no real token).
+  const refreshUser = useCallback(async () => {
+    if (isDemoMode()) return;
+    const token = getStoredToken();
+    if (!token) return;
+    try {
+      const me = await fetchMe(token);
+      setUser(me);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
     }
-  };
-
-  const navigateToLogin = async () => {
-    // Unregister service worker before redirecting
-    if ('serviceWorker' in navigator) {
-      try {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          await registration.unregister();
-        }
-      } catch (e) {
-        console.warn('Failed to unregister service worker:', e);
-      }
-    }
-    // Use the SDK's redirectToLogin method with origin (not href to avoid nested from_url)
-    base44.auth.redirectToLogin(window.location.origin);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -167,12 +88,9 @@ export const AuthProvider = ({ children }) => {
         user,
         isAuthenticated,
         isLoadingAuth,
-        isLoadingPublicSettings,
-        authError,
-        appPublicSettings,
+        login,
         logout,
-        navigateToLogin,
-        checkAppState,
+        refreshUser,
       }}
     >
       {children}
@@ -189,12 +107,11 @@ export const useAuth = () => {
       user: null,
       isAuthenticated: false,
       isLoadingAuth: true,
-      isLoadingPublicSettings: true,
-      authError: null,
-      appPublicSettings: null,
+      login: async () => {
+        throw new Error('AuthProvider not mounted');
+      },
       logout: () => {},
-      navigateToLogin: () => {},
-      checkAppState: () => {},
+      refreshUser: async () => {},
     };
   }
   return context;

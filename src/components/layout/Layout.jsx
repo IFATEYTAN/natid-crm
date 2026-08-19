@@ -18,6 +18,7 @@ const queryKeys = {
   },
 };
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/providers/AuthProvider';
 import { usePermissions, PermissionsProvider } from '@/components/permissions/PermissionsContext';
 
 // Lazy-load AccessibilityWidget
@@ -50,6 +51,7 @@ function LayoutContent({ children, currentPageName }) {
   const mainContentRef = useRef(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const hasRedirected = useRef(false);
 
   // In-app safety-net scheduler for stale vendor offers (admin/operator only).
@@ -308,8 +310,12 @@ function LayoutContent({ children, currentPageName }) {
         ? agentNavigationGroups
         : fullNavigationGroups;
 
-  const handleLogout = async () => {
-    await base44.auth.logout();
+  const handleLogout = () => {
+    logout();
+    // isAuthenticated flipping false makes AuthenticatedApp render the
+    // landing/login page regardless of path — navigate('/') just keeps the
+    // URL tidy rather than leaving it on whatever page they signed out from.
+    navigate('/');
   };
 
   if (currentPageName === 'LandingPage') {

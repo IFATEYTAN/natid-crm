@@ -6,6 +6,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig({
   logLevel: 'error', // Suppress warnings, only show errors
+  server: {
+    host: true, // listen on all network interfaces (0.0.0.0), not just localhost
+  },
   build: {
     rollupOptions: {
       output: {

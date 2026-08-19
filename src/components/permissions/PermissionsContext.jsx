@@ -1,65 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { createContext, useContext, useCallback } from 'react';
+import { useAuth } from '@/providers/AuthProvider';
 import { PAGE_PERMISSIONS } from '@/components/config/permissions';
 
 const PermissionsContext = createContext(null);
-
-// מיפוי שמות תפקידים (עברית/אנגלית) לתפקידי אפליקציה
-const APP_ROLE_MAP = {
-  // אנגלית (מ-Role.name או מ-Base44 platform)
-  admin: 'admin',
-  operator: 'operator',
-  agent: 'agent',
-  vendor: 'vendor',
-  manager: 'operator',
-  // עברית (מ-UserPermission.role_name או מ-Role.display_name)
-  מנהל: 'admin',
-  'מנהל מערכת': 'admin',
-  מוקדן: 'operator',
-  מתפעל: 'operator',
-  'מנהל תפעול': 'operator',
-  טכנאי: 'agent',
-  'נציג שטח': 'agent',
-  ספק: 'vendor',
-  'ספק שירות': 'vendor',
-  Vendor: 'vendor',
-  'Vendor ': 'vendor',
-};
-
-/**
- * קובע את התפקיד האפקטיבי של המשתמש באפליקציה.
- * Base44 מחזיר role: "user" לרוב המשתמשים שאינם admin.
- * הפונקציה ממפה את ה-role של Base44 + UserPermission לתפקיד אפליקטיבי.
- */
-function resolveEffectiveRole(platformRole, userPermission) {
-  // admin ו-vendor מהפלטפורמה - מיפוי ישיר
-  if (platformRole === 'admin') return 'admin';
-  if (platformRole === 'vendor') return 'vendor';
-
-  // בדיקת Role entity (name ואז display_name)
-  if (userPermission?.roleData?.name) {
-    const mapped = APP_ROLE_MAP[userPermission.roleData.name];
-    if (mapped) return mapped;
-  }
-  if (userPermission?.roleData?.display_name) {
-    const mapped = APP_ROLE_MAP[userPermission.roleData.display_name];
-    if (mapped) return mapped;
-  }
-
-  // בדיקת role_name מ-UserPermission
-  if (userPermission?.role_name) {
-    const mapped = APP_ROLE_MAP[userPermission.role_name];
-    if (mapped) return mapped;
-  }
-
-  // מיפוי ישיר של role מהפלטפורמה (אם Base44 מחזיר 'operator'/'agent'/'vendor')
-  const normalizedRole = (platformRole || '').toLowerCase().trim();
-  if (normalizedRole === 'vendor' || normalizedRole === 'ספק') return 'vendor';
-  if (APP_ROLE_MAP[platformRole]) return APP_ROLE_MAP[platformRole];
-
-  // ברירת מחדל: 'user' ותפקידים לא מוכרים → operator
-  return 'operator';
-}
 
 // הגדרות הרשאות ברירת מחדל למוקדן
 // חייב להתאים ל-PAGE_PERMISSIONS ב-src/config/permissions.js
@@ -166,116 +109,16 @@ const PAGE_GRANULAR_PERMISSIONS = {
 };
 
 export function PermissionsProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userPermissions, setUserPermissions] = useState(null);
-  const [effectiveRole, setEffectiveRole] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Role is now single-source-of-truth: users.role in the Nati DB, verified
+  // fresh by srv on every request and carried on the session user object.
+  // No more Base44 UserPermission/Role lookup, no platform-role mapping —
+  // the value here already is the app role (admin/operator/agent/vendor).
+  const { user: currentUser, isLoadingAuth: isLoading, refreshUser } = useAuth();
+  const effectiveRole = currentUser?.role ?? null;
 
-  // טעינת המשתמש הנוכחי, הרשאות, וקביעת תפקיד אפקטיבי.
-  // נחשף גם כ-refreshCurrentUser כדי שמסכים שמעדכנים את המשתמש (למשל
-  // "הפרופיל שלי") יוכלו לרענן את ה-context בלי טעינת עמוד מלאה.
-  const loadUserAndPermissions = useCallback(async () => {
-    try {
-      const user = await base44.auth.me();
-      // full_name is platform-managed and silently ignored by auth.updateMe,
-      // so profile edits are stored in the custom display_name field — it wins
-      // everywhere the app shows the user's name
-      if (user?.display_name) {
-        user.full_name = user.display_name;
-      }
-      setCurrentUser(user);
-
-      let perm = null;
-      if (user?.id) {
-        // טעינה מקבילית של תפקידים והרשאות
-        let allRoles = [];
-        let permissions = [];
-
-        const [rolesResult, permByIdResult] = await Promise.allSettled([
-          base44.entities.Role.list(),
-          base44.entities.UserPermission.filter({ user_id: user.id }),
-        ]);
-
-        if (rolesResult.status === 'fulfilled') allRoles = rolesResult.value;
-        if (permByIdResult.status === 'fulfilled') permissions = permByIdResult.value;
-
-        // חיפוש חלופי לפי email
-        if (permissions.length === 0 && user.email) {
-          try {
-            permissions = await base44.entities.UserPermission.filter({
-              user_email: user.email,
-            });
-          } catch (e) {
-            // silently ignore
-          }
-        }
-
-        if (permissions.length > 0) {
-          perm = permissions[0];
-          // חיפוש Role תואם - לפי role_id או לפי role_name
-          let matchedRole = null;
-          if (perm.role_id) {
-            matchedRole = allRoles.find((r) => r.id === perm.role_id);
-          }
-          if (!matchedRole && perm.role_name) {
-            matchedRole = allRoles.find(
-              (r) => r.display_name === perm.role_name || r.name === perm.role_name
-            );
-          }
-          if (matchedRole) {
-            perm = { ...perm, roleData: matchedRole };
-          }
-        } else if (allRoles.length > 0 && user.role === 'user') {
-          // אין UserPermission אבל המשתמש קיים - יצירת הרשאה סינתטית
-          const defaultRole =
-            allRoles.find((r) => r.name === 'agent') || allRoles.find((r) => r.name === 'operator');
-          if (defaultRole) {
-            perm = {
-              user_id: user.id,
-              user_email: user.email,
-              role_name: defaultRole.display_name,
-              roleData: defaultRole,
-            };
-          }
-        }
-        setUserPermissions(perm);
-      }
-
-      // קביעת תפקיד אפקטיבי - גישור בין role של Base44 לתפקידי האפליקציה
-      const resolved = resolveEffectiveRole(user?.role, perm);
-      setEffectiveRole(resolved);
-      // Force sync user role locally if needed (optional)
-      if (user && resolved && resolved !== user.role) {
-        // Update local object to match resolved role so other checks rely on the correct role
-        user.role = resolved;
-      }
-    } catch (e) {
-      console.error('Failed to load user:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadUserAndPermissions();
-  }, [loadUserAndPermissions]);
-
-  // בדיקת הרשאה - משתמש ב-effectiveRole במקום ב-currentUser.role
   const hasPermission = useCallback(
     (category, permission) => {
       if (effectiveRole === 'admin') return true;
-
-      // בדיקת הרשאות מותאמות אישית (עוקפות את התפקיד)
-      if (userPermissions?.custom_permissions?.[category]?.[permission] !== undefined) {
-        return userPermissions.custom_permissions[category][permission];
-      }
-
-      // בדיקת הרשאות מהתפקיד (מה-Role entity)
-      if (userPermissions?.roleData?.permissions?.[category]?.[permission] !== undefined) {
-        return userPermissions.roleData.permissions[category][permission];
-      }
-
-      // ברירת מחדל לפי תפקיד אפקטיבי
       if (effectiveRole === 'agent') {
         return DEFAULT_AGENT_PERMISSIONS[category]?.[permission] ?? false;
       }
@@ -285,18 +128,13 @@ export function PermissionsProvider({ children }) {
       // מוקדן - ברירת מחדל
       return DEFAULT_OPERATOR_PERMISSIONS[category]?.[permission] ?? false;
     },
-    [effectiveRole, userPermissions]
+    [effectiveRole]
   );
 
   // בדיקת גישה לדף - שילוב בדיקת תפקיד (PAGE_PERMISSIONS) + הרשאות גרנולריות
   const canAccessPage = useCallback(
     (pageName) => {
       if (effectiveRole === 'admin') return true;
-
-      // בדיקת דפים מוגבלים למשתמש ספציפי
-      if (userPermissions?.restricted_pages?.includes(pageName)) {
-        return false;
-      }
 
       // שלב 1: בדיקת תפקיד - האם התפקיד האפקטיבי מורשה לדף הזה?
       const allowedRoles = PAGE_PERMISSIONS[pageName];
@@ -310,21 +148,16 @@ export function PermissionsProvider({ children }) {
 
       return hasPermission(pageConfig.category, pageConfig.permission);
     },
-    [effectiveRole, userPermissions, hasPermission]
+    [effectiveRole, hasPermission]
   );
 
   // בדיקת גישה לדוח
   const canAccessReport = useCallback(
     (reportType) => {
       if (effectiveRole === 'admin') return true;
-
-      if (userPermissions?.allowed_reports?.length > 0) {
-        return userPermissions.allowed_reports.includes(reportType);
-      }
-
       return hasPermission('reports', reportType);
     },
-    [effectiveRole, userPermissions, hasPermission]
+    [effectiveRole, hasPermission]
   );
 
   // בדיקת הרשאות מרובות בבת אחת
@@ -345,7 +178,6 @@ export function PermissionsProvider({ children }) {
 
   const value = {
     currentUser,
-    userPermissions,
     effectiveRole,
     hasPermission,
     canAccessPage,
@@ -354,7 +186,7 @@ export function PermissionsProvider({ children }) {
     hasAllPermissions,
     isAdmin: effectiveRole === 'admin',
     isLoading,
-    refreshCurrentUser: loadUserAndPermissions,
+    refreshCurrentUser: refreshUser,
   };
 
   return <PermissionsContext.Provider value={value}>{children}</PermissionsContext.Provider>;
@@ -366,7 +198,6 @@ export function usePermissions() {
     // אם לא בתוך provider, מחזירים ערכי ברירת מחדל
     return {
       currentUser: null,
-      userPermissions: null,
       effectiveRole: null,
       hasPermission: () => false,
       canAccessPage: () => true,
