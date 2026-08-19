@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import QueryErrorState from '@/components/ui/QueryErrorState';
 import { Button } from '@/components/ui/button';
@@ -15,233 +14,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Plus,
-  Search,
-  RefreshCw,
-  ChevronRight,
-  ChevronLeft,
-  User,
-  MoreVertical,
-  Eye,
-  Truck,
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Search, RefreshCw, ChevronRight, ChevronLeft, Eye } from 'lucide-react';
 import { cn } from '@/components/utils';
-import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
-import { usePermissions } from '@/components/permissions/PermissionsContext';
-import ColumnSelector from '@/components/calls/ColumnSelector';
-import { useColumnVisibility } from '@/components/calls/useColumnVisibility';
-import { buildCallColumns } from '@/components/calls/callTableColumns';
-import AssignVendorDialog from '@/components/calls/AssignVendorDialog';
-import { serviceTypeLabels } from '@/config/labels';
+import { queryKeys } from '@/lib/queryKeys';
+import { getAppealsList } from '@/features/calls/api';
+import { listSuppliers } from '@/lib/srvApi';
+import { DEPARTMENT_LABELS, APPEAL_STATUS_LABELS as STATUS_LABELS } from '@/config/appealLabels';
 
-const CLOSED_FOR_ACTIONS = ['completed', 'cancelled'];
+const PAGE_SIZE = 50;
 
-/** תפריט פעולות בכל שורה ברשימת הקריאות - צפייה ושיבוץ ספק ישירות מהטבלה. */
-function CallRowActions({ call, onAssign }) {
-  const navigate = useNavigate();
-  const { hasPermission } = usePermissions();
-  const canAssign = hasPermission('calls', 'assign');
-  const isClosed = CLOSED_FOR_ACTIONS.includes(call?.call_status);
+const COLOR_CLASS_STYLES = {
+  greenColor: 'bg-emerald-400',
+  yellowColor: 'bg-yellow-400',
+  redColor: 'bg-red-400',
+  blueColor: 'bg-blue-400',
+};
 
-  return (
-    <DropdownMenu dir="rtl">
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          aria-label="פעולות"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="w-4 h-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-48">
-        <DropdownMenuLabel>פעולות</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => navigate(createPageUrl(`CallDetails?id=${call.id}`))}>
-          <Eye className="w-4 h-4 ms-2" />
-          צפה בפרטים
-        </DropdownMenuItem>
-        {canAssign && !isClosed && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onAssign(call)}>
-              <Truck className="w-4 h-4 ms-2" />
-              שבץ ספק
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+const EMPTY = '—';
+
+function useDebouncedValue(value, delayMs) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(t);
+  }, [value, delayMs]);
+  return debounced;
 }
 
-const PAGE_SIZE = 50; // Smaller pages = faster rendering
-
-// Service-type labels come from the central map (src/config/labels.js) so the
-// filter, tables and dashboard all use the same terminology.
-const SERVICE_TYPE_LABELS = serviceTypeLabels;
-
-const STATUS_LABELS = {
-  waiting_treatment: 'ממתין לטיפול',
-  awaiting_assignment: 'ממתין לשיבוץ',
-  assigning: 'ספק שובץ',
-  vendor_enroute: 'נותן השירות בדרך ללקוח',
-  in_progress: 'בטיפול',
-  vendor_arrived: 'נותן השירות הגיע ליעד',
-  awaiting_closure_call: 'ממתין לשיחת סגירה',
-  future_service: 'שירות עתידי',
-  in_followup: 'במעקב',
-  in_storage: 'באחסנה',
-  continued_treatment: 'המשך טיפול',
-  awaiting_payment: 'ממתין לתשלום',
-  completed: 'סגור',
-  cancelled: 'בוטל',
-};
-
-const STATUS_COLORS = {
-  waiting_treatment: 'bg-yellow-100 text-yellow-800',
-  awaiting_assignment: 'bg-orange-100 text-orange-800',
-  assigning: 'bg-blue-100 text-blue-800',
-  vendor_enroute: 'bg-indigo-100 text-indigo-800',
-  in_progress: 'bg-purple-100 text-purple-800',
-  vendor_arrived: 'bg-orange-100 text-orange-800',
-  awaiting_closure_call: 'bg-white text-gray-800 border border-gray-300',
-  future_service: 'bg-teal-100 text-teal-800',
-  in_followup: 'bg-sky-100 text-sky-800',
-  in_storage: 'bg-gray-100 text-gray-700',
-  continued_treatment: 'bg-violet-100 text-violet-800',
-  awaiting_payment: 'bg-amber-100 text-amber-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-gray-100 text-gray-600',
-};
-
-const PRIORITY_LABELS = {
-  normal: 'רגיל',
-  urgent: 'דחוף',
-  critical: 'קריטי',
-};
-
-const PRIORITY_COLORS = {
-  low: 'bg-gray-100 text-gray-600',
-  normal: 'bg-blue-100 text-blue-700',
-  high: 'bg-orange-100 text-orange-700',
-  urgent: 'bg-red-100 text-red-700',
-};
-
-const CLOSED_STATUSES = ['completed', 'cancelled'];
-
-// האם הקריאה סגורה (טופלה / בוטלה). משמש להבחנה ויזואלית פתוח/סגור ברשימה.
-const isCallClosed = (c) => CLOSED_STATUSES.includes(c?.call_status);
+function currency(value) {
+  if (value == null || value === '') return null;
+  return `₪${Number(value).toLocaleString()}`;
+}
 
 export default function CallsPage() {
   const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
-  const [openClosedTab, setOpenClosedTab] = useState('open');
-  const [assignTarget, setAssignTarget] = useState({ open: false, call: null });
+  const [searchInput, setSearchInput] = useState('');
+  const [department, setDepartment] = useState('-1');
+  const [supplierFilter, setSupplierFilter] = useState('all');
 
-  // עמודות אחידות לכל מסכי הקריאות (מקור אמת יחיד - callTableColumns)
-  const allCallColumns = useMemo(
-    () =>
-      buildCallColumns({
-        getCall: (c) => c,
-        getCallId: (c) => c.id,
-        renderActions: (c) => (
-          <CallRowActions call={c} onAssign={(call) => setAssignTarget({ open: true, call })} />
-        ),
-      }),
-    []
+  const searchQuery = useDebouncedValue(searchInput, 400);
+
+  const filters = useMemo(
+    () => ({
+      dep: department,
+      q: searchQuery || undefined,
+      kablanFilter: supplierFilter !== 'all' ? supplierFilter : undefined,
+      limit: 500,
+    }),
+    [department, searchQuery, supplierFilter]
   );
-  const CALL_COLUMNS = useMemo(() => allCallColumns.map((c) => c.header), [allCallColumns]);
-  const { isHidden, toggleColumn, resetColumns } = useColumnVisibility({
-    pageName: 'Calls',
-    allColumns: CALL_COLUMNS,
-  });
-  const visibleColumns = allCallColumns.filter((c) => !isHidden(c.header));
 
-  const {
-    data: cases = [],
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ['calls-list', statusFilter, serviceTypeFilter],
-    queryFn: () => {
-      // Load only recent 2000 calls for performance (previously unlimited)
-      // Server-side filtering when status/service filters are active
-      if (statusFilter && statusFilter !== 'all') {
-        return base44.entities.Call.filter({ call_status: statusFilter }, '-created_date', 2000);
-      }
-      return base44.entities.Call.list('-created_date', 2000);
-    },
-    staleTime: 30000, // Cache for 30 seconds to reduce re-fetches
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: queryKeys.appeals.list(filters),
+    queryFn: () => getAppealsList(filters),
+    staleTime: 15000,
   });
 
-  const filtered = useMemo(() => {
-    return cases.filter((c) => {
-      const q = searchQuery.toLowerCase();
-      const matchesSearch =
-        !searchQuery ||
-        c.call_number?.toLowerCase().includes(q) ||
-        c.customer_name?.toLowerCase().includes(q) ||
-        c.customer_phone?.includes(searchQuery) ||
-        c.vehicle_plate?.includes(searchQuery);
-      const matchesStatus = statusFilter === 'all' || c.call_status === statusFilter;
-      const matchesService =
-        serviceTypeFilter === 'all' || c.service_category === serviceTypeFilter;
-      const isClosed = CLOSED_STATUSES.includes(c.call_status);
-      const matchesTab =
-        openClosedTab === 'all' ||
-        (openClosedTab === 'open' && !isClosed) ||
-        (openClosedTab === 'closed' && isClosed);
-      return matchesSearch && matchesStatus && matchesService && matchesTab;
-    });
-  }, [cases, searchQuery, statusFilter, serviceTypeFilter, openClosedTab]);
+  const appeals = data?.data ?? [];
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const { data: suppliersData } = useQuery({
+    queryKey: queryKeys.lookups.suppliers({}),
+    queryFn: () => listSuppliers(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const suppliers = suppliersData?.data ?? [];
+
+  const totalPages = Math.max(1, Math.ceil(appeals.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginated = appeals.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  // Reset page on filter change
   const handleFilterChange = (setter) => (val) => {
     setter(val);
     setPage(1);
   };
 
-  const stats = useMemo(
-    () => ({
-      total: cases.length,
-      new: cases.filter((c) => c.call_status === 'waiting_treatment').length,
-      inProgress: cases.filter((c) =>
-        [
-          'awaiting_assignment',
-          'assigning',
-          'vendor_enroute',
-          'in_progress',
-          'vendor_arrived',
-        ].includes(c.call_status)
-      ).length,
-      completed: cases.filter((c) => c.call_status === 'completed').length,
-    }),
-    [cases]
-  );
-
   if (isError) {
-    return <QueryErrorState error={error} onRetry={refetch} entityName="Call" />;
+    return <QueryErrorState error={error} onRetry={refetch} entityName="Appeal" />;
   }
 
   return (
@@ -250,85 +98,16 @@ export default function CallsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div className="text-right">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827]">ניהול קריאות</h1>
-          <p className="text-[#6b7280] text-xs sm:text-sm">צפייה וניהול כל הקריאות במערכת</p>
+          <p className="text-[#6b7280] text-xs sm:text-sm">
+            קריאות פתוחות · {isLoading ? '...' : appeals.length}
+          </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 justify-end">
           <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2 h-10">
             <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן
           </Button>
-          <ColumnSelector
-            allColumns={CALL_COLUMNS}
-            isHidden={isHidden}
-            onToggle={toggleColumn}
-            onReset={resetColumns}
-          />
-          <Link to={createPageUrl('NewCase')}>
-            <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2 h-10">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">קריאה חדשה</span>
-              <span className="sm:hidden">חדשה</span>
-            </Button>
-          </Link>
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-        {[
-          { label: 'סה"כ קריאות', value: stats.total, color: 'text-[#172B4D]' },
-          { label: 'חדשות', value: stats.new, color: 'text-yellow-600' },
-          { label: 'בטיפול', value: stats.inProgress, color: 'text-blue-600' },
-          { label: 'נסגרו', value: stats.completed, color: 'text-green-600' },
-        ].map(({ label, value, color }) => (
-          <Card key={label} className="bg-white">
-            <CardContent className="p-4">
-              <div className={cn('text-2xl font-bold', color)}>{isLoading ? '...' : value}</div>
-              <div className="text-sm text-[#6B778C]">{label}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Open/Closed Tabs */}
-      <div
-        className="flex gap-2 border-b border-gray-200"
-        role="tablist"
-        aria-label="סינון פתוחות וסגורות"
-      >
-        {[
-          {
-            key: 'open',
-            label: 'פתוחות',
-            count: cases.filter((c) => !CLOSED_STATUSES.includes(c.call_status)).length,
-          },
-          {
-            key: 'closed',
-            label: 'סגורות',
-            count: cases.filter((c) => CLOSED_STATUSES.includes(c.call_status)).length,
-          },
-          { key: 'all', label: 'הכל', count: cases.length },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            role="tab"
-            aria-selected={openClosedTab === tab.key}
-            onClick={() => {
-              setOpenClosedTab(tab.key);
-              setPage(1);
-            }}
-            className={cn(
-              'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
-              openClosedTab === tab.key
-                ? 'border-[#FF0000] text-[#FF0000]'
-                : 'border-transparent text-[#6b7280] hover:text-[#111827]'
-            )}
-          >
-            {tab.label}
-            <span className="ms-2 text-xs tabular-nums">({tab.count})</span>
-          </button>
-        ))}
       </div>
 
       {/* Filters */}
@@ -338,41 +117,37 @@ export default function CallsPage() {
             <div className="relative flex-1 min-w-0">
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
               <Input
-                placeholder="חיפוש לפי מספר קריאה, שם לקוח, טלפון..."
-                value={searchQuery}
+                placeholder="חיפוש לפי מס' קריאה, שם לקוח, טלפון, מספר רכב..."
+                value={searchInput}
                 onChange={(e) => {
-                  setSearchQuery(e.target.value);
+                  setSearchInput(e.target.value);
                   setPage(1);
                 }}
                 className="ps-9"
               />
             </div>
             <div className="flex gap-3">
-              <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
+              <Select value={department} onValueChange={handleFilterChange(setDepartment)}>
                 <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="סטטוס" />
+                  <SelectValue placeholder="מחלקה" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">כל הסטטוסים</SelectItem>
-                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                  {Object.entries(DEPARTMENT_LABELS).map(([k, v]) => (
                     <SelectItem key={k} value={k}>
                       {v}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select
-                value={serviceTypeFilter}
-                onValueChange={handleFilterChange(setServiceTypeFilter)}
-              >
-                <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="סוג שירות" />
+              <Select value={supplierFilter} onValueChange={handleFilterChange(setSupplierFilter)}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="ספק" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">כל הסוגים</SelectItem>
-                  {Object.entries(SERVICE_TYPE_LABELS).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>
-                      {v}
+                  <SelectItem value="all">כל הספקים</SelectItem>
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.kablan_id} value={String(s.kablan_id)}>
+                      {s.kablan_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -385,24 +160,11 @@ export default function CallsPage() {
       {/* Table */}
       <Card className="bg-white">
         <CardHeader className="pb-2 px-3 sm:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle className="text-sm sm:text-base font-semibold text-[#172B4D]">
-              {isLoading
-                ? 'טוען...'
-                : `${filtered.length} קריאות | עמוד ${currentPage} מתוך ${totalPages}`}
-            </CardTitle>
-            {/* מקרא צבעים - הבחנה מהירה בין קריאה פתוחה לסגורה */}
-            <div className="flex items-center gap-3 text-xs text-[#6B778C]">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2.5 h-3 rounded-sm bg-emerald-400" />
-                פתוחה
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2.5 h-3 rounded-sm bg-gray-300" />
-                סגורה
-              </span>
-            </div>
-          </div>
+          <CardTitle className="text-sm sm:text-base font-semibold text-[#172B4D]">
+            {isLoading
+              ? 'טוען...'
+              : `${appeals.length} קריאות | עמוד ${currentPage} מתוך ${totalPages}`}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {/* Mobile Card View */}
@@ -417,66 +179,48 @@ export default function CallsPage() {
             ) : paginated.length === 0 ? (
               <div className="text-center py-8 text-[#6B778C]">אין קריאות להצגה</div>
             ) : (
-              paginated.map((c) => (
-                <Link key={c.id} to={createPageUrl(`CallDetails?id=${c.id}`)} className="block">
+              paginated.map((a) => (
+                <Link
+                  key={a.appeal_id}
+                  to={createPageUrl(`CallDetails?id=${a.appeal_id}`)}
+                  className="block"
+                >
                   <div
                     className={cn(
-                      'border rounded-lg p-3 hover:shadow-md transition-all border-r-4',
-                      isCallClosed(c)
-                        ? 'bg-gray-50 border-gray-200 border-r-gray-300 opacity-80 active:bg-gray-100'
-                        : 'bg-white border-gray-200 border-r-emerald-400 active:bg-gray-50'
+                      'border rounded-lg p-3 hover:shadow-md transition-all border-r-4 bg-white border-gray-200',
+                      a.colorClass === 'greenColor' && 'border-r-emerald-400',
+                      a.colorClass === 'yellowColor' && 'border-r-yellow-400',
+                      a.colorClass === 'redColor' && 'border-r-red-400',
+                      a.colorClass === 'blueColor' && 'border-r-blue-400',
+                      !a.colorClass && 'border-r-gray-300'
                     )}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-sm text-[#172B4D] truncate">
-                          {c.customer_name || 'ללא שם'}
+                          {a.requester || 'ללא שם'}
                         </div>
                         <div className="text-xs text-[#6B778C] mt-0.5 tabular-nums" dir="ltr">
-                          {c.vehicle_plate ||
-                            c.vehicle_number ||
-                            `#${c.call_number || c.id?.slice(0, 8) || ''}`}
+                          {a.car_num || `#${a.appeal_id}`}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 ms-2 flex-shrink-0">
-                        {c.call_status && (
-                          <Badge
-                            className={cn(
-                              'text-[10px] px-2 py-0.5',
-                              STATUS_COLORS[c.call_status] || 'bg-gray-100 text-gray-600'
-                            )}
-                          >
-                            {STATUS_LABELS[c.call_status] || c.call_status}
-                          </Badge>
-                        )}
-                        {c.call_priority && c.call_priority !== 'normal' && (
-                          <Badge
-                            className={cn(
-                              'text-[10px] px-2 py-0.5',
-                              PRIORITY_COLORS[c.call_priority] || 'bg-gray-100 text-gray-600'
-                            )}
-                          >
-                            {PRIORITY_LABELS[c.call_priority] || c.call_priority}
+                        <Badge className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-700">
+                          {STATUS_LABELS[a.status] ?? a.status}
+                        </Badge>
+                        {a.vip === 1 && (
+                          <Badge className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-800">
+                            VIP
                           </Badge>
                         )}
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6B778C]">
-                      {c.insurance_company && (
-                        <span className="truncate max-w-[140px]">🛡️ {c.insurance_company}</span>
+                      <span>{DEPARTMENT_LABELS[String(a.department_id)] || a.department}</span>
+                      {a.supplier_name && (
+                        <span className="truncate max-w-[140px]">🚚 {a.supplier_name}</span>
                       )}
-                      {c.assigned_to_agent && (
-                        <span className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
-                          {c.assigned_to_agent}
-                        </span>
-                      )}
-                      {c.assigned_vendor_name && (
-                        <span className="truncate max-w-[120px]">🚚 {c.assigned_vendor_name}</span>
-                      )}
-                      {c.created_date && (
-                        <span>{format(new Date(c.created_date), 'dd/MM HH:mm')}</span>
-                      )}
+                      {a.date_added && <span>{a.date_added}</span>}
                     </div>
                   </div>
                 </Link>
@@ -485,15 +229,29 @@ export default function CallsPage() {
           </div>
           {/* Desktop Table View */}
           <div className="hidden md:block max-h-[70vh] overflow-auto">
-            <table className="w-full text-sm text-right min-w-[800px]">
+            <table className="w-full text-sm text-right min-w-[900px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {visibleColumns.map((col) => (
+                  {[
+                    '',
+                    'קוד קריאה',
+                    'מחלקה',
+                    'שם פונה',
+                    "מס' רכב",
+                    'טלפון',
+                    'תקלה',
+                    'ספק',
+                    'סטטוס',
+                    'זמן פתיחה',
+                    'מוקדן',
+                    'עלות',
+                    '',
+                  ].map((h, i) => (
                     <th
-                      key={col.header}
+                      key={i}
                       className="px-4 py-3 text-xs font-semibold text-[#6B778C] whitespace-nowrap sticky top-0 z-10 bg-gray-50"
                     >
-                      {col.header}
+                      {h}
                     </th>
                   ))}
                 </tr>
@@ -502,7 +260,7 @@ export default function CallsPage() {
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
                     <tr key={i}>
-                      {visibleColumns.map((_, j) => (
+                      {Array.from({ length: 13 }).map((_, j) => (
                         <td key={j} className="px-4 py-3">
                           <div className="h-4 bg-gray-100 rounded animate-pulse w-20" />
                         </td>
@@ -511,40 +269,90 @@ export default function CallsPage() {
                   ))
                 ) : paginated.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={visibleColumns.length}
-                      className="px-4 py-12 text-center text-[#6B778C]"
-                    >
+                    <td colSpan={13} className="px-4 py-12 text-center text-[#6B778C]">
                       אין קריאות להצגה
                     </td>
                   </tr>
                 ) : (
-                  paginated.map((c) => {
-                    const closed = isCallClosed(c);
-                    return (
-                      <tr
-                        key={c.id}
-                        className={cn(
-                          'transition-colors border-r-4',
-                          closed
-                            ? 'bg-gray-50 border-r-gray-300 hover:bg-gray-100'
-                            : 'bg-white border-r-emerald-400 hover:bg-emerald-50/40'
-                        )}
-                      >
-                        {visibleColumns.map((col) => (
-                          <td
-                            key={col.header}
-                            className={cn(
-                              'px-4 py-3 whitespace-nowrap align-top',
-                              closed ? 'text-gray-400' : 'text-[#6B778C]'
-                            )}
+                  paginated.map((a) => (
+                    <tr
+                      key={a.appeal_id}
+                      className={cn(
+                        'transition-colors border-r-4 bg-white hover:bg-gray-50',
+                        a.colorClass === 'greenColor' && 'border-r-emerald-400',
+                        a.colorClass === 'yellowColor' && 'border-r-yellow-400',
+                        a.colorClass === 'redColor' && 'border-r-red-400',
+                        a.colorClass === 'blueColor' && 'border-r-blue-400',
+                        !a.colorClass && 'border-r-gray-300'
+                      )}
+                    >
+                      <td className="px-4 py-3">
+                        <Link to={createPageUrl(`CallDetails?id=${a.appeal_id}`)}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            aria-label="צפה"
                           >
-                            {col.cell(c)}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  })
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Link
+                          to={createPageUrl(`CallDetails?id=${a.appeal_id}`)}
+                          className="font-medium text-blue-600 hover:underline tabular-nums"
+                          dir="ltr"
+                        >
+                          {a.appeal_id}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-[#6B778C]">
+                        {DEPARTMENT_LABELS[String(a.department_id)] || a.department || EMPTY}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">{a.requester || EMPTY}</td>
+                      <td className="px-4 py-3 whitespace-nowrap tabular-nums" dir="ltr">
+                        {a.car_num || EMPTY}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap tabular-nums" dir="ltr">
+                        {a.tel || a.tel1 || EMPTY}
+                      </td>
+                      <td className="px-4 py-3 max-w-[200px] truncate text-[#6B778C]">
+                        {a.problem_desc || EMPTY}
+                      </td>
+                      <td className="px-4 py-3 max-w-[140px] truncate text-[#6B778C]">
+                        {a.supplier_name || EMPTY}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          {a.colorClass && (
+                            <span
+                              className={cn(
+                                'inline-block w-2 h-2 rounded-full',
+                                COLOR_CLASS_STYLES[a.colorClass]
+                              )}
+                            />
+                          )}
+                          <Badge className="text-xs bg-gray-100 text-gray-700">
+                            {STATUS_LABELS[a.status] ?? a.status}
+                          </Badge>
+                          {a.vip === 1 && (
+                            <Badge className="text-xs bg-amber-100 text-amber-800">VIP</Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-[#6B778C]">
+                        {a.date_added || EMPTY}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-[#6B778C]">
+                        {a.user_name || EMPTY}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap tabular-nums">
+                        {currency(a.claim_total_cost) || EMPTY}
+                      </td>
+                      <td />
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
@@ -555,7 +363,7 @@ export default function CallsPage() {
             <div className="flex items-center justify-between px-3 sm:px-4 py-3 border-t border-gray-200">
               <span className="text-sm text-[#6B778C]">
                 מציג {(currentPage - 1) * PAGE_SIZE + 1}–
-                {Math.min(currentPage * PAGE_SIZE, filtered.length)} מתוך {filtered.length}
+                {Math.min(currentPage * PAGE_SIZE, appeals.length)} מתוך {appeals.length}
               </span>
               <div className="flex items-center gap-2">
                 <Button
@@ -582,13 +390,6 @@ export default function CallsPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* שיבוץ ספק ישירות מרשימת הקריאות */}
-      <AssignVendorDialog
-        call={assignTarget.call}
-        open={assignTarget.open}
-        onOpenChange={(open) => setAssignTarget((prev) => ({ ...prev, open }))}
-      />
     </div>
   );
 }

@@ -8,6 +8,27 @@
  */
 
 export const queryKeys = {
+  // Appeals (srv.natid.co.il GET /appeals — real Nati data, replacing the
+  // base44 `calls` key below screen by screen as each one migrates)
+  appeals: {
+    list: (filters) => ['appeals', { filters }],
+    detail: (id) => ['appeals', id],
+  },
+
+  // Filter-dropdown lookups (srv GET /cities, /suppliers, /regions)
+  lookups: {
+    cities: (query) => ['lookups', 'cities', query],
+    suppliers: (params) => ['lookups', 'suppliers', params],
+    supplierDetail: (id) => ['lookups', 'supplier', id],
+    regions: () => ['lookups', 'regions'],
+  },
+
+  // Client/subscription search (srv GET /clients)
+  clientSearch: {
+    results: (q, params) => ['clientSearch', q, params],
+    detail: (subId) => ['clientSearch', 'detail', subId],
+  },
+
   // Calls feature
   calls: {
     all: () => ['calls'],

@@ -1,4 +1,5 @@
 import { base44 } from '@/lib/api';
+import { listAppeals, getAppeal } from '@/lib/srvApi';
 
 /**
  * Calls API functions
@@ -90,3 +91,13 @@ export const getCallPhotos = (callId) => {
 export const createCallPhoto = (data) => {
   return base44.entities.CallPhoto.create(data);
 };
+
+// ---------------------------------------------------------------------------
+// srv.natid.co.il — real Nati appeals data. Used by pages/Calls.jsx and the
+// (in-progress) call detail read view; everything above this line is the
+// base44 entity the rest of the app still runs on until it's migrated too.
+// ---------------------------------------------------------------------------
+
+export const getAppealsList = (filters = {}) => listAppeals(filters);
+
+export const getAppealById = (appealId, options) => getAppeal(appealId, options);
