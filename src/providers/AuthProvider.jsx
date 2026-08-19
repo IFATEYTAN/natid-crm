@@ -6,6 +6,7 @@ import {
   setStoredToken,
   clearStoredToken,
 } from '@/lib/srvAuth';
+import { setUnauthorizedHandler } from '@/lib/srvClient';
 import { isDemoMode } from '@/demo/demoMode';
 import { demoUser } from '@/demo/demoData';
 
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const me = await fetchMe(token);
+      const me = await fetchMe();
       setUser(me);
       setIsAuthenticated(true);
     } catch (error) {
@@ -68,6 +69,13 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   }, []);
 
+  // Closes the gap a mid-session 401 used to fall into: any srv request
+  // (not just the /me check at boot) now logs the user out. Registered here
+  // rather than imported by srvClient directly, which would create a cycle.
+  useEffect(() => {
+    setUnauthorizedHandler(logout);
+  }, [logout]);
+
   // Re-fetches /me with the current token so a profile/role change is
   // reflected without forcing a re-login. No-ops in demo mode (no real token).
   const refreshUser = useCallback(async () => {
@@ -75,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     const token = getStoredToken();
     if (!token) return;
     try {
-      const me = await fetchMe(token);
+      const me = await fetchMe();
       setUser(me);
     } catch (error) {
       console.error('Failed to refresh user:', error);

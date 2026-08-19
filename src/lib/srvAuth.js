@@ -4,20 +4,9 @@
  * goes through Base44 until it's migrated (see the workspace migration plan).
  */
 
-const SRV_BASE_URL = import.meta.env.VITE_SRV_BASE_URL || 'http://localhost:8000';
-const TOKEN_STORAGE_KEY = 'srv_access_token';
+import { srvFetch, SrvError, getStoredToken, setStoredToken, clearStoredToken } from './srvClient';
 
-export function getStoredToken() {
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
-}
-
-export function setStoredToken(token) {
-  localStorage.setItem(TOKEN_STORAGE_KEY, token);
-}
-
-export function clearStoredToken() {
-  localStorage.removeItem(TOKEN_STORAGE_KEY);
-}
+export { getStoredToken, setStoredToken, clearStoredToken };
 
 // srv returns one generic 401 for every credential failure (unknown user,
 // wrong password, no CRM role) — deliberately, so the message never
@@ -43,33 +32,28 @@ function withFullName(user) {
  * @returns {Promise<{access_token: string, expires_in: number, user: object}>}
  */
 export async function login(username, password) {
-  let response;
+  let body;
   try {
-    response = await fetch(`${SRV_BASE_URL}/login`, {
+    body = await srvFetch('/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: { username, password },
+      auth: false,
     });
-  } catch {
-    throw new Error('לא ניתן להתחבר לשרת. בדוק את החיבור לרשת');
+  } catch (error) {
+    if (error instanceof SrvError && error.status === 0) {
+      throw new Error('לא ניתן להתחבר לשרת. בדוק את החיבור לרשת');
+    }
+    if (error instanceof SrvError) {
+      throw new Error(messageForStatus(error.status));
+    }
+    throw error;
   }
 
-  if (!response.ok) {
-    throw new Error(messageForStatus(response.status));
-  }
-
-  const body = await response.json();
   return { ...body, user: withFullName(body.user) };
 }
 
 /** @returns {Promise<object>} the current user, re-verified fresh by srv on every call */
-export async function fetchMe(token) {
-  const response = await fetch(`${SRV_BASE_URL}/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!response.ok) {
-    throw new Error('Session invalid');
-  }
-  const body = await response.json();
+export async function fetchMe() {
+  const body = await srvFetch('/me');
   return withFullName(body.user);
 }
