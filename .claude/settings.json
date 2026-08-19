@@ -18,13 +18,20 @@
     "SessionStart": [
       {
         "matcher": "",
-        "command": "bash scripts/session-start.sh"
+        "hooks": [
+          { "type": "command", "command": "bash scripts/session-start.sh" }
+        ]
       }
     ],
     "PreToolUse": [
       {
         "matcher": "Bash(git commit *)",
-        "command": "echo '[Reminder] Run ci-build-check before committing: npm run lint && npm run build'"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Reminder] Run ci-build-check before committing: npm run lint && npm run build'"
+          }
+        ]
       }
     ]
   },
