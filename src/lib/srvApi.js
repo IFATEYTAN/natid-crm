@@ -16,6 +16,39 @@ export function getAppeal(appealId, { isHistory = false, edit = false } = {}) {
   return srvFetch(`/appeals/${appealId}`, { params: { is_history: isHistory, edit } });
 }
 
+// ---- Appeal writes (Phase 2) -----------------------------------------------
+
+export function lockAppeal(appealId, { continueId, departmentId } = {}) {
+  return srvFetch(`/appeals/${appealId}/lock`, {
+    method: 'POST',
+    params: { continue_id: continueId, department_id: departmentId },
+  });
+}
+
+export function unlockAppeal(appealId) {
+  return srvFetch(`/appeals/${appealId}/unlock`, { method: 'POST' });
+}
+
+export function patchAppeal(appealId, body) {
+  return srvFetch(`/appeals/${appealId}`, { method: 'PATCH', body });
+}
+
+export function assignSupplier(appealId, body) {
+  return srvFetch(`/appeals/${appealId}/supplier`, { method: 'POST', body });
+}
+
+export function listAppealEvents(appealId) {
+  return srvFetch(`/appeals/${appealId}/events`);
+}
+
+export function createAppealEvent(appealId, note) {
+  return srvFetch(`/appeals/${appealId}/events`, { method: 'POST', body: { note } });
+}
+
+export function updateAppealReminder(appealId, body) {
+  return srvFetch(`/appeals/${appealId}/reminder`, { method: 'PATCH', body });
+}
+
 // ---- Filter-dropdown lookups -----------------------------------------------
 
 export function listCities(params = {}) {

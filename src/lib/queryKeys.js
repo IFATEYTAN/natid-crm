@@ -13,6 +13,7 @@ export const queryKeys = {
   appeals: {
     list: (filters) => ['appeals', { filters }],
     detail: (id) => ['appeals', id],
+    events: (id) => ['appeals', id, 'events'],
   },
 
   // Filter-dropdown lookups (srv GET /cities, /suppliers, /regions)
