@@ -1,573 +1,89 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
-import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { listSuppliers } from '@/lib/srvApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import DataTable from '@/components/ui/DataTable';
-import {
-  Plus,
-  Search,
-  Truck,
-  Phone,
-  Star,
-  MapPin,
-  MoreVertical,
-  Eye,
-  Pencil,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  PhoneCall,
-  Clock,
-  Car,
-  AlertTriangle,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getCoverageLabel } from '@/config/coverageConstants';
-import {
-  SlideUp,
-  AnimatedCard,
-  StaggeredList,
-  StaggeredItem,
-} from '@/components/animations/AnimatedComponents';
-import { showToast } from '@/components/ui/FeedbackToast';
-import { InlineLoader } from '@/components/ui/LoadingSpinner';
-import { vendorServiceTypeLabels, availabilityLabels } from '@/config/labels';
+import { Input } from '@/components/ui/input';
+import { Search, Truck } from 'lucide-react';
 
-const availabilityColors = {
-  available: 'bg-green-100 text-green-800',
-  busy: 'bg-orange-100 text-orange-800',
-  offline: 'bg-gray-100 text-gray-800',
-  on_break: 'bg-yellow-100 text-yellow-800',
-};
+function useDebouncedValue(value, delayMs) {
+  const [debounced, setDebounced] = useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(t);
+  }, [value, delayMs]);
+  return debounced;
+}
 
-const hasTowService = (v) => {
-  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-  return types.includes('tow_truck') || types.some((t) => t === 'גרירה');
-};
-
-const hasMobileService = (v) => {
-  const types = Array.isArray(v.service_type) ? v.service_type : [v.service_type].filter(Boolean);
-  return types.includes('mobile_unit') || types.some((t) => t === 'ניידת');
-};
-
+/**
+ * Supplier directory, sourced from srv GET /suppliers (real Nati data).
+ * Read-only: activation toggles, ratings, and contracts are vendor-portal
+ * / vendor-management concerns out of scope for the dispatcher rebuild —
+ * see "Out of scope" in the migration plan.
+ */
 export default function ServiceProvidersPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [availabilityFilter, setAvailabilityFilter] = useState('all');
-  const [activeKpi, setActiveKpi] = useState('all');
+  const [searchInput, setSearchInput] = useState('');
+  const query = useDebouncedValue(searchInput.trim(), 400);
 
-  const queryClient = useQueryClient();
-
-  const vendorsQuery = useQuery({
-    queryKey: queryKeys.serviceProviders.all(),
-    queryFn: () => base44.entities.Vendor.list('-updated_date', 1000),
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: queryKeys.lookups.suppliers({ query }),
+    queryFn: () => listSuppliers(query ? { query } : {}),
   });
 
-  const deleteVendor = useMutation({
-    mutationFn: (id) => base44.entities.Vendor.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() }),
-  });
-
-  const updateAvailability = useMutation({
-    mutationFn: ({ id, is_available_now, availability_status }) =>
-      base44.entities.Vendor.update(id, { is_available_now, availability_status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.serviceProviders.all() }),
-  });
-
-  const vendors = vendorsQuery.data || [];
-
-  // Fetch cases to calculate open/closed per vendor (from Case entity)
-  const { data: calls = [] } = useQuery({
-    queryKey: ['service-providers-cases'],
-    queryFn: () => base44.entities.Case.list('-created_date', 5000),
-  });
-
-  // Calculate case stats per vendor using assigned_provider_id from Case entity
-  const vendorCallStats = useMemo(() => {
-    const stats = {};
-    calls.forEach((c) => {
-      const vendorId = c.assigned_provider_id;
-      if (vendorId) {
-        if (!stats[vendorId]) stats[vendorId] = { open: 0, closed: 0 };
-        if (c.status === 'completed' || c.status === 'cancelled') {
-          stats[vendorId].closed++;
-        } else {
-          stats[vendorId].open++;
-        }
-      }
-      // Also try by vendor name match
-      const vendorName = c.assigned_provider_name;
-      if (vendorName && !vendorId) {
-        if (!stats[vendorName]) stats[vendorName] = { open: 0, closed: 0 };
-        if (c.status === 'completed' || c.status === 'cancelled') {
-          stats[vendorName].closed++;
-        } else {
-          stats[vendorName].open++;
-        }
-      }
-    });
-    return stats;
-  }, [calls]);
-
-  const filteredVendors = useMemo(() => {
-    return vendors.filter((vendor) => {
-      const coverageText = (vendor.coverage_areas || []).map(getCoverageLabel).join(' ');
-      const matchesSearch =
-        !searchQuery ||
-        vendor.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        vendor.phone?.includes(searchQuery) ||
-        coverageText.includes(searchQuery) ||
-        vendor.coverage_cities?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType =
-        typeFilter === 'all' ||
-        (activeKpi === 'tow_truck'
-          ? hasTowService(vendor) && !hasMobileService(vendor)
-          : activeKpi === 'mobile_unit'
-            ? hasMobileService(vendor) && !hasTowService(vendor)
-            : Array.isArray(vendor.service_type)
-              ? vendor.service_type.includes(typeFilter)
-              : vendor.service_type === typeFilter);
-      const matchesAvailability =
-        availabilityFilter === 'all' || vendor.availability_status === availabilityFilter;
-      const matchesActive =
-        activeKpi === 'inactive'
-          ? !vendor.is_active
-          : activeKpi === 'combined'
-            ? hasTowService(vendor) && hasMobileService(vendor)
-            : true;
-      return matchesSearch && matchesType && matchesAvailability && matchesActive;
-    });
-  }, [vendors, searchQuery, typeFilter, availabilityFilter, activeKpi]);
-
-  const stats = useMemo(() => {
-    const active = vendors.filter((v) => v.is_active);
-    const towOnly = active.filter((v) => hasTowService(v) && !hasMobileService(v));
-    const mobileOnly = active.filter((v) => hasMobileService(v) && !hasTowService(v));
-    const combined = active.filter((v) => hasTowService(v) && hasMobileService(v));
-    const inactive = vendors.filter((v) => !v.is_active);
-
-    return {
-      total: vendors.length,
-      active: active.length,
-      available: vendors.filter((v) => v.availability_status === 'available').length,
-      busy: vendors.filter((v) => v.availability_status === 'busy').length,
-      towTrucks: towOnly.length,
-      mobileUnits: mobileOnly.length,
-      combined: combined.length,
-      inactive: inactive.length,
-      avgRating:
-        vendors.length > 0
-          ? (vendors.reduce((sum, v) => sum + (v.average_rating || 0), 0) / vendors.length).toFixed(
-              1
-            )
-          : 0,
-    };
-  }, [vendors]);
-
-  const toggleAvailability = (vendor) => {
-    const newStatus = vendor.is_available_now ? 'offline' : 'available';
-    updateAvailability.mutate(
-      {
-        id: vendor.id,
-        is_available_now: !vendor.is_available_now,
-        availability_status: newStatus,
-      },
-      {
-        onSuccess: () => {
-          showToast.success(
-            `${vendor.vendor_name} ${!vendor.is_available_now ? 'זמין כעת' : 'לא זמין'}`
-          );
-        },
-      }
-    );
-  };
-
-  const handleDelete = (vendor) => {
-    if (confirm(`האם אתה בטוח שברצונך למחוק את ${vendor.vendor_name}?`)) {
-      deleteVendor.mutate(vendor.id, {
-        onSuccess: () => {
-          showToast.success(`${vendor.vendor_name} נמחק בהצלחה`);
-        },
-        onError: () => {
-          showToast.error('שגיאה במחיקת הספק');
-        },
-      });
-    }
-  };
-
-  const columns = [
-    {
-      header: 'ספק',
-      accessor: 'vendor_name',
-      cell: (vendor) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#F4F5F7] flex items-center justify-center">
-            <Truck className="w-5 h-5 text-[#6B778C]" />
-          </div>
-          <div>
-            <Link
-              to={createPageUrl(`VendorDetails?id=${vendor.id}`)}
-              className="font-medium text-[#172B4D] hover:text-red-600"
-            >
-              {vendor.vendor_name}
-            </Link>
-            <div className="text-xs text-[#6B778C]">
-              {Array.isArray(vendor.service_type)
-                ? vendor.service_type.map((t) => vendorServiceTypeLabels[t] || t).join(', ')
-                : vendorServiceTypeLabels[vendor.service_type] || vendor.service_type}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'טלפון',
-      accessor: 'phone',
-      cell: (vendor) => (
-        <div className="flex items-center gap-1 text-sm">
-          <Phone className="w-3 h-3 text-[#6B778C]" />
-          <span dir="ltr">{vendor.phone}</span>
-        </div>
-      ),
-    },
-    {
-      header: 'אזור כיסוי',
-      accessor: 'coverage_areas',
-      cell: (vendor) => {
-        const areas = vendor.coverage_areas || [];
-        if (areas.length === 0) {
-          return <span className="text-sm text-[#6B778C]">-</span>;
-        }
-        return (
-          <div className="flex flex-wrap gap-1">
-            {areas.slice(0, 3).map((area) => (
-              <Badge key={area} variant="outline" className="text-xs font-normal">
-                {getCoverageLabel(area)}
-              </Badge>
-            ))}
-            {areas.length > 3 && (
-              <Badge variant="outline" className="text-xs font-normal text-[#6B778C]">
-                +{areas.length - 3}
-              </Badge>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      header: 'דירוג',
-      accessor: 'average_rating',
-      cell: (vendor) => (
-        <div className="flex items-center gap-1">
-          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-          <span className="font-medium">{vendor.average_rating?.toFixed(1) || '-'}</span>
-          <span className="text-xs text-[#6B778C]">({vendor.total_ratings || 0})</span>
-        </div>
-      ),
-    },
-    {
-      header: 'קריאות פתוחות',
-      accessor: 'open_calls',
-      cell: (vendor) => {
-        const stats = vendorCallStats[vendor.id] || vendorCallStats[vendor.vendor_name] || { open: 0, closed: 0 };
-        return (
-          <div className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5 text-[#3b82f6]" />
-            <span className="font-medium text-[#3b82f6]">{stats.open}</span>
-          </div>
-        );
-      },
-    },
-    {
-      header: 'קריאות סגורות',
-      accessor: 'closed_calls',
-      cell: (vendor) => {
-        const stats = vendorCallStats[vendor.id] || vendorCallStats[vendor.vendor_name] || { open: 0, closed: 0 };
-        return (
-          <div className="flex items-center gap-1">
-            <CheckCircle className="w-3.5 h-3.5 text-[#111827]" />
-            <span className="font-medium text-[#111827]">{stats.closed}</span>
-          </div>
-        );
-      },
-    },
-    {
-      header: 'זמינות',
-      accessor: 'availability_status',
-      cell: (vendor) => (
-        <div className="flex items-center gap-2">
-          <Badge className={cn('text-xs', availabilityColors[vendor.availability_status])}>
-            {availabilityLabels[vendor.availability_status]}
-          </Badge>
-          <Switch
-            checked={vendor.is_available_now}
-            onCheckedChange={() => toggleAvailability(vendor)}
-            className="data-[state=checked]:bg-green-500"
-            aria-label={`שנה זמינות ${vendor.vendor_name}`}
-          />
-        </div>
-      ),
-    },
-    {
-      header: '',
-      cell: (vendor) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="פעולות נוספות">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link to={createPageUrl(`VendorDetails?id=${vendor.id}`)}>
-                <Eye className="w-4 h-4 me-2" />
-                צפייה בפרטים
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to={createPageUrl(`EditVendor?id=${vendor.id}`)}>
-                <Pencil className="w-4 h-4 me-2" />
-                עריכה
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(vendor)}>
-              <Trash2 className="w-4 h-4 me-2" />
-              מחיקה
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
-
-  if (vendorsQuery.isError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
-        <p className="text-gray-500 text-sm">{vendorsQuery.error?.message || 'נסה לרענן את הדף'}</p>
-      </div>
-    );
-  }
+  const suppliers = data?.data ?? [];
 
   return (
-    <SlideUp>
-      <div className="space-y-4 sm:space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#111827]">נותני שירות</h1>
-            <p className="text-[#6b7280] text-sm">ניהול גררים וספקי שירות</p>
-          </div>
-          <Link to={createPageUrl('NewVendor')}>
-            <Button className="bg-[#f97316] hover:bg-[#ea580c] gap-2 h-11 w-full sm:w-auto">
-              <Plus className="w-4 h-4" />
-              ספק חדש
-            </Button>
-          </Link>
-        </div>
-
-        {/* KPI Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3" dir="rtl">
-          <Card
-            className={cn(
-              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'all'
-                ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]'
-                : 'border-[#e5e7eb] hover:border-[#3b82f6]'
-            )}
-            onClick={() => {
-              setActiveKpi('all');
-              setTypeFilter('all');
-              setAvailabilityFilter('all');
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-[#3b82f6]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.total}</div>
-                  <div className="text-sm text-[#6b7280]">סה"כ ספקים</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card
-            className={cn(
-              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'tow_truck'
-                ? 'border-[#f59e0b] ring-1 ring-[#f59e0b]'
-                : 'border-[#e5e7eb] hover:border-[#f59e0b]'
-            )}
-            onClick={() => {
-              setActiveKpi('tow_truck');
-              setTypeFilter('tow_truck');
-              setAvailabilityFilter('all');
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-[#f59e0b]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.towTrucks}</div>
-                  <div className="text-sm text-[#6b7280]">גררים</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card
-            className={cn(
-              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'mobile_unit'
-                ? 'border-[#3b82f6] ring-1 ring-[#3b82f6]'
-                : 'border-[#e5e7eb] hover:border-[#3b82f6]'
-            )}
-            onClick={() => {
-              setActiveKpi('mobile_unit');
-              setTypeFilter('mobile_unit');
-              setAvailabilityFilter('all');
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#eff6ff] flex items-center justify-center">
-                  <Car className="w-5 h-5 text-[#3b82f6]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.mobileUnits}</div>
-                  <div className="text-sm text-[#6b7280]">ניידות</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card
-            className={cn(
-              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'combined'
-                ? 'border-[#8b5cf6] ring-1 ring-[#8b5cf6]'
-                : 'border-[#e5e7eb] hover:border-[#8b5cf6]'
-            )}
-            onClick={() => {
-              setActiveKpi('combined');
-              setTypeFilter('all');
-              setAvailabilityFilter('all');
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f5f3ff] flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-[#8b5cf6]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.combined}</div>
-                  <div className="text-sm text-[#6b7280]">משולבים</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card
-            className={cn(
-              'bg-white border cursor-pointer transition-all hover:shadow-md active:scale-[0.98]',
-              activeKpi === 'inactive'
-                ? 'border-[#ef4444] ring-1 ring-[#ef4444]'
-                : 'border-[#e5e7eb] hover:border-[#ef4444]'
-            )}
-            onClick={() => {
-              setActiveKpi('inactive');
-              setTypeFilter('all');
-              setAvailabilityFilter('offline');
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#fef2f2] flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-[#ef4444]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.inactive}</div>
-                  <div className="text-sm text-[#6b7280]">לא פעילים</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters & Table */}
-        <Card className="bg-white">
-          <CardHeader className="pb-3">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
-                <Input
-                  placeholder="חיפוש לפי שם, טלפון או אזור..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="ps-10"
-                  aria-label="חיפוש ספקים"
-                />
-              </div>
-              <div className="flex gap-3">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full sm:w-40">
-                  <SelectValue placeholder="סוג שירות" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הסוגים</SelectItem>
-                  {Object.entries(vendorServiceTypeLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-                <SelectTrigger className="w-full sm:w-32">
-                  <SelectValue placeholder="זמינות" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">הכל</SelectItem>
-                  {Object.entries(availabilityLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <QueryStateWrapper query={vendorsQuery}>
-              <DataTable columns={columns} data={filteredVendors} emptyMessage="לא נמצאו ספקים" />
-            </QueryStateWrapper>
-          </CardContent>
-        </Card>
+    <div className="space-y-4 sm:space-y-6 max-w-full" dir="rtl">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#172B4D]">נותני שירות</h1>
+        <p className="text-[#6B778C] text-sm">
+          {isLoading ? '...' : `${suppliers.length} ספקים פעילים`}
+        </p>
       </div>
-    </SlideUp>
+
+      <Card className="bg-white">
+        <CardHeader className="pb-3">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
+            <Input
+              placeholder="חיפוש ספק לפי שם..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="ps-10"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isError ? (
+            <div className="text-center py-12 text-red-600">{error?.message || 'שגיאה בטעינה'}</div>
+          ) : isLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-12 bg-gray-50 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : suppliers.length === 0 ? (
+            <div className="text-center py-12 text-[#6B778C]">לא נמצאו ספקים</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {suppliers.map((s) => (
+                <Link
+                  key={s.kablan_id}
+                  to={createPageUrl(`VendorDetails?id=${s.kablan_id}`)}
+                  className="flex items-center gap-3 border rounded-lg p-3 hover:shadow-md hover:bg-gray-50 transition-all"
+                >
+                  <div className="w-9 h-9 rounded-full bg-[#F4F5F7] flex items-center justify-center shrink-0">
+                    <Truck className="w-4 h-4 text-[#6B778C]" />
+                  </div>
+                  <span className="font-medium text-[#172B4D] truncate">{s.kablan_name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

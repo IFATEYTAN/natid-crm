@@ -1,456 +1,165 @@
 import React from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { queryKeys } from '@/lib/queryKeys';
-import { Button } from '@/components/ui/button';
+import { getSupplier } from '@/lib/srvApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  ArrowRight,
-  Pencil,
-  Phone,
-  Mail,
-  MapPin,
-  Clock,
-  Truck,
-  Star,
-  CheckCircle,
-  XCircle,
-  User,
-  Loader2,
-  FileText,
-  Building2,
-  Briefcase,
-} from 'lucide-react';
-import {
-  SlideUp,
-  AnimatedCard,
-  StaggeredList,
-  StaggeredItem,
-} from '@/components/animations/AnimatedComponents';
-import { coverageLabels } from '@/config/coverageConstants';
-import { vendorServiceTypeLabels } from '@/config/labels';
+import { Button } from '@/components/ui/button';
+import { PageLoader } from '@/components/ui/LoadingSpinner';
+import { AlertCircle, ArrowRight, Phone, Mail, MapPin, Clock, Warehouse } from 'lucide-react';
 
+const Field = ({ label, value, dir }) => (
+  <div className="space-y-1">
+    <div className="text-sm text-[#6b7280]">{label}</div>
+    <div className="font-medium text-right" dir={dir}>
+      {value || '-'}
+    </div>
+  </div>
+);
+
+const TEL_LABELS = ['ראשי', 'נוסף 1', 'נוסף 2', 'נוסף 3', 'נוסף 4', 'נוסף 5', 'נוסף 6', 'נוסף 7'];
+
+/**
+ * Supplier contact card, sourced from srv GET /suppliers/{id} (real Nati
+ * data, port of PHP f_kablan_info()). Read-only — see ServiceProviders.jsx.
+ */
 export default function VendorDetailsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const id = searchParams.get('id');
+  const kablanId = searchParams.get('id');
 
-  const { data: vendor, isLoading } = useQuery({
-    queryKey: queryKeys.vendors.detail(id),
-    queryFn: () => base44.entities.Vendor.get(id),
-    enabled: !!id,
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: queryKeys.lookups.supplierDetail(kablanId),
+    queryFn: () => getSupplier(kablanId),
+    enabled: !!kablanId,
   });
+  const supplier = data?.data;
 
-  if (isLoading) {
+  if (!kablanId) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="flex items-center justify-center min-h-[300px]" dir="rtl">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="w-12 h-12 mx-auto text-orange-500 mb-3" />
+            <h2 className="text-lg font-bold mb-1">חסר מזהה ספק</h2>
+            <Link to={createPageUrl('ServiceProviders')}>
+              <Button variant="outline">חזרה לרשימת הספקים</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (!vendor) {
+  if (isLoading) return <PageLoader text="טוען פרטי ספק..." />;
+
+  if (isError || !supplier) {
     return (
-      <div className="p-8 text-center">
-        <h2 className="text-xl font-bold mb-4">הספק לא נמצא</h2>
-        <Button onClick={() => navigate(createPageUrl('ServiceProviders'))}>חזרה לרשימה</Button>
+      <div className="flex items-center justify-center min-h-[300px]" dir="rtl">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="w-12 h-12 mx-auto text-red-500 mb-3" />
+            <h2 className="text-lg font-bold mb-1">הספק לא נמצא</h2>
+            <p className="text-[#6b7280] mb-4">{error?.message}</p>
+            <Link to={createPageUrl('ServiceProviders')}>
+              <Button variant="outline">חזרה לרשימת הספקים</Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
+
+  const phones = Array.from({ length: 8 }, (_, i) => supplier[`tel${i}`]).filter(Boolean);
+  const storages = [supplier.storage1, supplier.storage2, supplier.storage3].filter(Boolean);
 
   return (
-    <SlideUp>
-      <div className="max-w-4xl mx-auto space-y-6 pb-10">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="חזרה">
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-[#111827]">{vendor.vendor_name}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge
-                  variant={vendor.is_active ? 'default' : 'secondary'}
-                  className={vendor.is_active ? 'bg-green-600' : ''}
-                >
-                  {vendor.is_active ? 'פעיל' : 'לא פעיל'}
-                </Badge>
-                <span className="text-sm text-gray-500">
-                  {vendor.availability_status === 'available' ? 'זמין כעת' : 'לא זמין'}
+    <div className="space-y-6" dir="rtl">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{supplier.kablan_name}</h1>
+        <Button variant="outline" className="gap-1" onClick={() => navigate(-1)}>
+          <ArrowRight className="w-4 h-4" /> חזרה
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">פרטי קשר</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1 md:col-span-2">
+            <div className="text-sm text-[#6b7280]">טלפונים</div>
+            <div className="flex flex-wrap gap-x-6 gap-y-1">
+              {phones.length === 0 && <span className="font-medium">-</span>}
+              {phones.map((tel, i) => (
+                <span key={i} className="flex items-center gap-1.5 font-medium" dir="ltr">
+                  <Phone className="w-3.5 h-3.5 text-[#6b7280]" />
+                  {tel}
+                  <span className="text-xs text-[#6b7280]" dir="rtl">
+                    ({TEL_LABELS[i]})
+                  </span>
                 </span>
-              </div>
+              ))}
             </div>
           </div>
-          <Button
-            className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2 w-full sm:w-auto"
-            onClick={() => navigate(createPageUrl(`EditVendor?id=${vendor.id}`))}
-          >
-            <Pencil className="w-4 h-4" />
-            עריכה
-          </Button>
-        </div>
+          <div className="space-y-1">
+            <div className="text-sm text-[#6b7280]">פקס</div>
+            <div className="font-medium" dir="ltr">
+              {supplier.fax || '-'}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-sm text-[#6b7280]">אימייל</div>
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-[#6b7280]" />
+              <a className="text-blue-600 hover:underline" href={`mailto:${supplier.email || ''}`}>
+                {supplier.email || '-'}
+              </a>
+            </div>
+          </div>
+          <div className="space-y-1 md:col-span-2">
+            <div className="text-sm text-[#6b7280]">כתובת</div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#6b7280]" />
+              <span>{supplier.address || '-'}</span>
+            </div>
+          </div>
+          <Field label="שעות פעילות" value={supplier.work_hours} />
+        </CardContent>
+      </Card>
 
-        <StaggeredList className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Main Info */}
-          <StaggeredItem className="md:col-span-2 space-y-6">
-            <AnimatedCard className="bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <User className="w-5 h-5 text-gray-500" />
-                  פרטי התקשרות
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                      <Phone className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">טלפון ראשי</div>
-                      <div className="font-medium" dir="ltr">
-                        {vendor.phone}
-                      </div>
-                    </div>
-                  </div>
+      {storages.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Warehouse className="w-5 h-5" />
+              מגרשי אחסנה
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {storages.map((s, i) => (
+              <div key={i} className="text-sm">
+                {s}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-                  {vendor.phone_2 && (
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                        <Phone className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500">טלפון משני</div>
-                        <div className="font-medium" dir="ltr">
-                          {vendor.phone_2}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-                      <Mail className="w-4 h-4 text-orange-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">אימייל</div>
-                      <div className="font-medium break-all">{vendor.email || '-'}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4 text-purple-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">איש קשר</div>
-                      <div className="font-medium">{vendor.contact_person || '-'}</div>
-                    </div>
-                  </div>
-
-                  {vendor.fax && (
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center shrink-0">
-                        <Phone className="w-4 h-4 text-gray-600" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500">פקס</div>
-                        <div className="font-medium" dir="ltr">
-                          {vendor.fax}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {(vendor.address || vendor.city) && (
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500">כתובת</div>
-                        <div className="font-medium">
-                          {[vendor.address, vendor.city].filter(Boolean).join(', ')}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </AnimatedCard>
-
-            {/* Company Details */}
-            {(vendor.company_id || vendor.insurance_agency || vendor.status_text) && (
-              <AnimatedCard className="bg-white">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Building2 className="w-5 h-5 text-gray-500" />
-                    פרטי חברה
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {vendor.company_id && (
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="text-xs text-gray-500">ח.פ./ת.ז.</div>
-                        <div className="font-medium">{vendor.company_id}</div>
-                      </div>
-                    )}
-                    {vendor.insurance_agency && (
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <div className="text-xs text-gray-500">סוכנות ביטוח</div>
-                        <div className="font-medium">{vendor.insurance_agency}</div>
-                      </div>
-                    )}
-                    {vendor.status_text && (
-                      <div className="p-3 bg-gray-50 rounded-lg sm:col-span-2">
-                        <div className="text-xs text-gray-500">סטטוס</div>
-                        <div className="font-medium">{vendor.status_text}</div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </AnimatedCard>
-            )}
-
-            {/* Inspector & Handler */}
-            {(vendor.inspector_name || vendor.handler_name) && (
-              <AnimatedCard className="bg-white">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Briefcase className="w-5 h-5 text-gray-500" />
-                    מפקחה ומטפל
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {vendor.inspector_name && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-2">מפקחה</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                          <div className="text-xs text-gray-500">שם</div>
-                          <div className="font-medium">{vendor.inspector_name}</div>
-                        </div>
-                        {vendor.inspector_phone && (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500">טלפון</div>
-                            <div className="font-medium" dir="ltr">
-                              {vendor.inspector_phone}
-                            </div>
-                          </div>
-                        )}
-                        {vendor.inspector_fax && (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500">פקס</div>
-                            <div className="font-medium" dir="ltr">
-                              {vendor.inspector_fax}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {vendor.handler_name && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-2">מטפל</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div className="p-3 bg-gray-50 rounded-lg">
-                          <div className="text-xs text-gray-500">שם</div>
-                          <div className="font-medium">{vendor.handler_name}</div>
-                        </div>
-                        {vendor.handler_phone && (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500">טלפון</div>
-                            <div className="font-medium" dir="ltr">
-                              {vendor.handler_phone}
-                            </div>
-                          </div>
-                        )}
-                        {vendor.handler_fax && (
-                          <div className="p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500">פקס</div>
-                            <div className="font-medium" dir="ltr">
-                              {vendor.handler_fax}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </AnimatedCard>
-            )}
-
-            {/* Department Contracts */}
-            {vendor.department_contracts && (
-              <AnimatedCard className="bg-white">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <FileText className="w-5 h-5 text-gray-500" />
-                    חוזים מול המחלקות
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                    {vendor.department_contracts}
-                  </p>
-                </CardContent>
-              </AnimatedCard>
-            )}
-
-            <AnimatedCard className="bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Truck className="w-5 h-5 text-gray-500" />
-                  שירותים ואזורים
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-3">סוגי שירות</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {vendor.service_type?.map((type) => (
-                      <Badge
-                        key={type}
-                        variant="secondary"
-                        className="bg-blue-50 text-blue-700 hover:bg-blue-100"
-                      >
-                        {vendorServiceTypeLabels[type] || type}
-                      </Badge>
-                    ))}
-                    {!vendor.service_type?.length && (
-                      <span className="text-gray-400 text-sm">לא הוגדרו שירותים</span>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-3">רכבים נתמכים</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {vendor.vehicle_types_supported?.map((type) => (
-                      <Badge key={type} variant="outline">
-                        {type === 'private'
-                          ? 'רכב פרטי'
-                          : type === 'commercial_light'
-                            ? 'מסחרי קל'
-                            : type === 'truck'
-                              ? 'משאית'
-                              : type === 'motorcycle'
-                                ? 'אופנוע'
-                                : type}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    אזורי כיסוי
-                  </h3>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {vendor.coverage_areas?.map((area) => (
-                      <Badge
-                        key={area}
-                        className="bg-gray-100 text-gray-800 hover:bg-gray-200 border-0"
-                      >
-                        {coverageLabels[area] || area}
-                      </Badge>
-                    ))}
-                  </div>
-                  {vendor.coverage_cities && (
-                    <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-md">
-                      {vendor.coverage_cities}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </AnimatedCard>
-          </StaggeredItem>
-
-          {/* Sidebar Info */}
-          <StaggeredItem className="space-y-6">
-            <AnimatedCard className="bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Clock className="w-5 h-5 text-gray-500" />
-                  זמינות ושעות
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium">עובד 24/7</span>
-                  {vendor.works_24_7 ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-gray-400" />
-                  )}
-                </div>
-
-                {!vendor.works_24_7 && (
-                  <div className="text-center p-3 border rounded-lg">
-                    <div className="text-sm text-gray-500 mb-1">שעות פעילות</div>
-                    <div className="font-bold text-lg dir-ltr">
-                      {vendor.working_hours_start} - {vendor.working_hours_end}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </AnimatedCard>
-
-            <AnimatedCard className="bg-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Star className="w-5 h-5 text-yellow-500" />
-                  ביצועים
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center p-4 bg-yellow-50 rounded-xl">
-                  <div className="text-3xl font-bold text-yellow-600 mb-1">
-                    {vendor.average_rating?.toFixed(1) || '0.0'}
-                  </div>
-                  <div className="text-xs text-yellow-700">דירוג ממוצע</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    ({vendor.total_ratings || 0} דירוגים)
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="text-xl font-bold text-blue-600">{vendor.total_jobs || 0}</div>
-                    <div className="text-xs text-blue-700">עבודות</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-xl font-bold text-green-600">
-                      {vendor.success_rate || 0}%
-                    </div>
-                    <div className="text-xs text-green-700">הצלחה</div>
-                  </div>
-                </div>
-              </CardContent>
-            </AnimatedCard>
-
-            {vendor.notes && (
-              <AnimatedCard className="bg-white">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <FileText className="w-5 h-5 text-gray-500" />
-                    הערות
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{vendor.notes}</p>
-                </CardContent>
-              </AnimatedCard>
-            )}
-          </StaggeredItem>
-        </StaggeredList>
-      </div>
-    </SlideUp>
+      {supplier.notes && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Clock className="w-5 h-5" />
+              הערות
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-wrap">{supplier.notes}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
