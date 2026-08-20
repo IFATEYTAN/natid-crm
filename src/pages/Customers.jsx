@@ -1,282 +1,118 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl, formatDate } from '@/components/utils';
-import { useCustomers, useDeleteCustomer } from '@/features/customers/hooks/useCustomers';
-import { QueryStateWrapper } from '@/components/layout/QueryStateWrapper';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { createPageUrl } from '@/components/utils';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import DataTable from '@/components/ui/DataTable';
-import {
-  Plus,
-  Search,
-  Building2,
-  User,
-  Phone,
-  Mail,
-  MoreVertical,
-  Eye,
-  Pencil,
-  Trash2,
-  FileText,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Search, User, Car, Phone } from 'lucide-react';
+import { queryKeys } from '@/lib/queryKeys';
+import { searchClients } from '@/lib/srvApi';
 
-const customerTypeLabels = {
-  insurance_company: 'חברת ביטוח',
-  fleet: 'ציי רכב',
-  individual: 'פרטי',
-  garage: 'מוסך',
-  other: 'אחר',
-};
+function useDebouncedValue(value, delayMs) {
+  const [debounced, setDebounced] = useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(t);
+  }, [value, delayMs]);
+  return debounced;
+}
 
-const statusLabels = {
-  active: 'פעיל',
-  inactive: 'לא פעיל',
-  suspended: 'מושהה',
-};
-
-const statusColors = {
-  active: 'bg-green-100 text-green-800',
-  inactive: 'bg-gray-100 text-gray-800',
-  suspended: 'bg-red-100 text-red-800',
-};
-
+/**
+ * Client/subscription search — real Nati data via srv GET /clients. Not the
+ * same concept as the old base44 "Customer" entity (a B2B insurance-
+ * company/fleet account); this searches individual policyholders and their
+ * subscriptions by name, ID number, phone, subscription number, or plate,
+ * matching PHP f_client_search().
+ */
 export default function CustomersPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchInput, setSearchInput] = useState('');
+  const q = useDebouncedValue(searchInput.trim(), 400);
 
-  const customersQuery = useCustomers();
-  const deleteCustomer = useDeleteCustomer();
+  const { data, isLoading, isFetching, isError, error } = useQuery({
+    queryKey: queryKeys.clientSearch.results(q, {}),
+    queryFn: () => searchClients({ q }),
+    enabled: q.length > 0,
+  });
 
-  const customers = customersQuery.data || [];
-
-  const filteredCustomers = useMemo(() => {
-    return customers.filter((customer) => {
-      const matchesSearch =
-        !searchQuery ||
-        customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        customer.phone?.includes(searchQuery) ||
-        customer.email?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = typeFilter === 'all' || customer.customer_type === typeFilter;
-      const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
-      return matchesSearch && matchesType && matchesStatus;
-    });
-  }, [customers, searchQuery, typeFilter, statusFilter]);
-
-  const stats = useMemo(
-    () => ({
-      total: customers.length,
-      active: customers.filter((c) => c.status === 'active').length,
-      insuranceCompanies: customers.filter((c) => c.customer_type === 'insurance_company').length,
-      fleets: customers.filter((c) => c.customer_type === 'fleet').length,
-    }),
-    [customers]
-  );
-
-  const columns = [
-    {
-      header: 'לקוח',
-      accessor: 'name',
-      cell: (customer) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#F4F5F7] flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-[#6B778C]" />
-          </div>
-          <div>
-            <Link
-              to={createPageUrl(`CustomerDetails?id=${customer.id}`)}
-              className="font-medium text-[#172B4D] hover:text-red-600"
-            >
-              {customer.name}
-            </Link>
-            <div className="text-xs text-[#6B778C]">
-              {customerTypeLabels[customer.customer_type]}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'איש קשר',
-      accessor: 'contact_person',
-      cell: (customer) => (
-        <div className="text-sm">
-          <div className="flex items-center gap-1 text-[#172B4D]">
-            <User className="w-3 h-3" />
-            {customer.contact_person || '-'}
-          </div>
-          <div className="flex items-center gap-1 text-[#6B778C] mt-0.5">
-            <Phone className="w-3 h-3" />
-            {customer.phone}
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'עיר',
-      accessor: 'city',
-      cell: (customer) => customer.city || '-',
-    },
-    {
-      header: 'סה"כ קריאות',
-      accessor: 'total_cases',
-      cell: (customer) => <span className="font-medium">{customer.total_cases || 0}</span>,
-    },
-    {
-      header: 'סטטוס',
-      accessor: 'status',
-      cell: (customer) => (
-        <Badge className={cn('text-xs', statusColors[customer.status])}>
-          {statusLabels[customer.status]}
-        </Badge>
-      ),
-    },
-    {
-      header: '',
-      cell: (customer) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="אפשרויות נוספות">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link to={createPageUrl(`CustomerDetails?id=${customer.id}`)}>
-                <Eye className="w-4 h-4 ms-2" />
-                צפייה בפרטים
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to={createPageUrl(`EditCustomer?id=${customer.id}`)}>
-                <Pencil className="w-4 h-4 ms-2" />
-                עריכה
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={() => {
-                if (confirm('האם אתה בטוח שברצונך למחוק לקוח זה?')) {
-                  deleteCustomer.mutate(customer.id);
-                }
-              }}
-            >
-              <Trash2 className="w-4 h-4 ms-2" />
-              מחיקה
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
+  const results = data?.data ?? [];
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#172B4D]">לקוחות</h1>
-          <p className="text-[#6B778C] text-sm">ניהול לקוחות וחברות ביטוח</p>
-        </div>
-        <Link to={createPageUrl('NewCustomer')}>
-          <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2 h-11 w-full sm:w-auto">
-            <Plus className="w-4 h-4" />
-            לקוח חדש
-          </Button>
-        </Link>
+    <div className="space-y-4 sm:space-y-6 max-w-full" dir="rtl">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#172B4D]">חיפוש לקוחות ומנויים</h1>
+        <p className="text-[#6B778C] text-sm">חיפוש לפי שם, ת.ז., טלפון, מספר מנוי או מספר רכב</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-[#172B4D]">{stats.total}</div>
-            <div className="text-sm text-[#6B778C]">סה"כ לקוחות</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <div className="text-sm text-[#6B778C]">לקוחות פעילים</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{stats.insuranceCompanies}</div>
-            <div className="text-sm text-[#6B778C]">חברות ביטוח</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{stats.fleets}</div>
-            <div className="text-sm text-[#6B778C]">ציי רכב</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters & Table */}
       <Card className="bg-white">
         <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1 min-w-0">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
-              <Input
-                placeholder="חיפוש לפי שם, טלפון או אימייל..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="ps-10"
-              />
-            </div>
-            <div className="flex gap-3">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="סוג לקוח" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הסוגים</SelectItem>
-                {Object.entries(customerTypeLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-32">
-                <SelectValue placeholder="סטטוס" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הסטטוסים</SelectItem>
-                {Object.entries(statusLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            </div>
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B778C]" />
+            <Input
+              placeholder="הקלד לחיפוש..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="ps-10"
+              autoFocus
+            />
           </div>
         </CardHeader>
         <CardContent>
-          <QueryStateWrapper query={customersQuery}>
-            <DataTable columns={columns} data={filteredCustomers} emptyMessage="לא נמצאו לקוחות" />
-          </QueryStateWrapper>
+          {q.length === 0 ? (
+            <div className="text-center py-12 text-[#6B778C]">
+              <Search className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p>הקלידו לפחות תו אחד כדי לחפש</p>
+            </div>
+          ) : isError ? (
+            <div className="text-center py-12 text-red-600">{error?.message || 'שגיאה בחיפוש'}</div>
+          ) : isLoading || isFetching ? (
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-16 bg-gray-50 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : results.length === 0 ? (
+            <div className="text-center py-12 text-[#6B778C]">לא נמצאו תוצאות</div>
+          ) : (
+            <div className="space-y-2">
+              {results.map((r) => (
+                <Link
+                  key={r.sub_id}
+                  to={createPageUrl(`CustomerDetails?id=${r.sub_id}`)}
+                  className="block border rounded-lg p-3 hover:shadow-md hover:bg-gray-50 transition-all"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-[#6B778C] shrink-0" />
+                        <span className="font-semibold text-[#172B4D] truncate">
+                          {r.full_name || '—'}
+                        </span>
+                        {r.vip === 1 && (
+                          <Badge className="bg-amber-100 text-amber-800 text-[10px]">VIP</Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6B778C] mt-1">
+                        <span className="flex items-center gap-1">
+                          <Car className="w-3 h-3" /> <span dir="ltr">{r.car_number || '—'}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" /> <span dir="ltr">{r.client_tel || '—'}</span>
+                        </span>
+                        <span dir="ltr">מנוי #{r.sub_num}</span>
+                        {r.pac_name && <span>{r.pac_name}</span>}
+                      </div>
+                    </div>
+                    {r.agent_name && (
+                      <span className="text-xs text-[#6B778C] whitespace-nowrap">
+                        {r.agent_name}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
