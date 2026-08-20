@@ -75,7 +75,10 @@ export const PAGES = {
 };
 
 export const pagesConfig = {
-  mainPage: 'Dashboard',
+  // Dashboard's widgets still call base44 (no srv equivalent yet — see
+  // srv.natid.co.il's migration plan, Phase 1 "Dashboard" line). Calls is
+  // the screen that actually works post-migration; land there instead.
+  mainPage: 'Calls',
   Pages: PAGES,
   Layout: __Layout,
 };

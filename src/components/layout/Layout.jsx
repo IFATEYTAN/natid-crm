@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/components/utils';
 import { useStaleAssignmentPoller } from '@/hooks/useStaleAssignmentPoller';
+import { SRV_MIGRATED_PAGES } from '@/config/srvMigration';
 
 const queryKeys = {
   notifications: {
@@ -113,7 +114,10 @@ function LayoutContent({ children, currentPageName }) {
           ? 'VendorPortal'
           : effectiveRoleName === 'agent'
             ? 'AgentDashboard'
-            : 'Dashboard';
+            : // Dashboard's widgets still call base44 (no srv equivalent yet —
+              // see the srv migration plan's Phase 1 "Dashboard" line). Land
+              // admin/operator on the screen that actually works post-migration.
+              'Calls';
       navigate(createPageUrl(home), { replace: true });
     }
   }, [isLoadingAuth, currentUser, currentPageName, navigate, effectiveRoleName]);
@@ -303,12 +307,21 @@ function LayoutContent({ children, currentPageName }) {
     },
   ];
 
+  // Admin/operator nav only — vendor/agent aren't part of the srv migration
+  // (see the plan's "Out of scope" section), so their nav is untouched.
+  const migratedFullNavigationGroups = fullNavigationGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => SRV_MIGRATED_PAGES.has(item.href)),
+    }))
+    .filter((group) => group.items.length > 0);
+
   const navigationGroups =
     effectiveRoleName === 'vendor'
       ? vendorNavigationGroups
       : effectiveRoleName === 'agent'
         ? agentNavigationGroups
-        : fullNavigationGroups;
+        : migratedFullNavigationGroups;
 
   const handleLogout = () => {
     logout();
