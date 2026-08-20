@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, RefreshCw, ChevronRight, ChevronLeft, Eye } from 'lucide-react';
+import { Search, RefreshCw, ChevronRight, ChevronLeft, Eye, Plus } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { queryKeys } from '@/lib/queryKeys';
 import { getAppealsList } from '@/features/calls/api';
@@ -107,6 +107,13 @@ export default function CallsPage() {
             <RefreshCw className={cn('w-4 h-4', isFetching && 'animate-spin')} />
             רענן
           </Button>
+          <Link to={createPageUrl('NewCase')}>
+            <Button className="bg-[#FF0000] hover:bg-[#CC0000] gap-2 h-10">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">קריאה חדשה</span>
+              <span className="sm:hidden">חדשה</span>
+            </Button>
+          </Link>
         </div>
       </div>
 

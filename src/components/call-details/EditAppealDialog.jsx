@@ -65,10 +65,21 @@ export default function EditAppealDialog({ appeal, appealId, open, onOpenChange 
         reminder: form.reminder === '' ? null : Number(form.reminder),
         q_notes: form.q_notes,
       });
-      if (form.future_service_from || form.future_service_to) {
+      const hasFrom = Boolean(form.future_service_from);
+      const hasTo = Boolean(form.future_service_to);
+      if (hasFrom !== hasTo) {
+        // srv requires both fields together — call_open_appeals.future_service_from/to
+        // are NOT NULL with no valid "empty" value under strict SQL mode (see
+        // srv.natid.co.il CLAUDE.md's ReminderUpdateRequest docs), so there's no
+        // way to submit just one side.
+        throw new Error(
+          'יש למלא גם תאריך התחלה וגם תאריך סיום לשירות עתידי, או להשאיר את שניהם ריקים'
+        );
+      }
+      if (hasFrom && hasTo) {
         await updateAppealReminder(appealId, {
-          future_service_from: form.future_service_from || null,
-          future_service_to: form.future_service_to || null,
+          future_service_from: form.future_service_from,
+          future_service_to: form.future_service_to,
         });
       }
     },

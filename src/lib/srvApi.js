@@ -49,6 +49,32 @@ export function updateAppealReminder(appealId, body) {
   return srvFetch(`/appeals/${appealId}/reminder`, { method: 'PATCH', body });
 }
 
+// ---- Opening a call (Phase 3) -----------------------------------------------
+
+export function createAppeal(body) {
+  return srvFetch('/appeals', { method: 'POST', body });
+}
+
+export function createClient(body) {
+  return srvFetch('/clients', { method: 'POST', body });
+}
+
+export function getVehicle(carNumber, { agentId, packageId } = {}) {
+  return srvFetch(`/vehicles/${carNumber}`, {
+    params: { agent_id: agentId, package_id: packageId },
+  });
+}
+
+export function getCoverage({ agentId, packageId, reasonId }) {
+  return srvFetch('/coverage', {
+    params: { agent_id: agentId, package_id: packageId, reason_id: reasonId },
+  });
+}
+
+export function listCallProblems(params = {}) {
+  return srvFetch('/call-problems', { params });
+}
+
 // ---- Filter-dropdown lookups -----------------------------------------------
 
 export function listCities(params = {}) {

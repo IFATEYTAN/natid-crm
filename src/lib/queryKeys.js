@@ -22,6 +22,25 @@ export const queryKeys = {
     suppliers: (params) => ['lookups', 'suppliers', params],
     supplierDetail: (id) => ['lookups', 'supplier', id],
     regions: () => ['lookups', 'regions'],
+    callProblems: (query) => ['lookups', 'call-problems', query],
+  },
+
+  // Opening a call (srv GET /vehicles, /coverage — Phase 3)
+  openCall: {
+    vehicle: (carNumber, agentId, packageId) => [
+      'openCall',
+      'vehicle',
+      carNumber,
+      agentId,
+      packageId,
+    ],
+    coverage: (agentId, packageId, reasonId) => [
+      'openCall',
+      'coverage',
+      agentId,
+      packageId,
+      reasonId,
+    ],
   },
 
   // Client/subscription search (srv GET /clients)
