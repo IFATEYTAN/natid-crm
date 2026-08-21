@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Creates the scoped IAM role for RUNNING deploy/provision.sh and the
-# accompanying ACM/Route53 commands by hand. This is NOT the role GitHub
+# accompanying ACM commands by hand. This is NOT the role GitHub
 # Actions assumes at deploy time (that one, app-natid-co-il-deploy, is
 # created BY provision.sh itself, not by this script).
 #
@@ -10,8 +10,9 @@
 # one action only). Everything after this uses the scoped role instead of
 # that broader session.
 #
-# The role grants only what deploy/provision.sh and the ACM/Route53 steps
+# The role grants only what deploy/provision.sh and the ACM steps
 # in docs/DEPLOYMENT.md actually call — see bootstrap-iam-policy.json.
+# No Route 53 permissions — DNS for this project isn't hosted in Route 53.
 # Deliberately excludes anything destructive (no DeleteBucket,
 # DeleteDistribution, DeleteRole) and scopes the IAM actions themselves to
 # exactly the one deploy role by ARN, not IAM roles/policies in general —

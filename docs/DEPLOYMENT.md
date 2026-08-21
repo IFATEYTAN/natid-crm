@@ -60,13 +60,15 @@ federation, scoped to exactly this bucket and this distribution.
 
 ## Phase 0 — the identity that runs all of this (one-time)
 
-Don't run `provision.sh` or the ACM/Route53 commands under your personal
-admin credentials. `deploy/bootstrap-iam-setup.sh` creates a scoped IAM
-role for exactly that — least-privilege permissions
-(`deploy/bootstrap-iam-policy.json`: S3/CloudFront/ACM/Route53 create+read,
-plus IAM actions scoped to only the one deploy role by ARN — nothing
-destructive, no ability to create or modify other IAM roles), assumed with
-temporary session credentials rather than a standing access key.
+Don't run `provision.sh` or the ACM commands under your personal admin
+credentials. `deploy/bootstrap-iam-setup.sh` creates a scoped IAM role for
+exactly that — least-privilege permissions (`deploy/bootstrap-iam-policy.json`:
+S3/CloudFront/ACM create+read, plus IAM actions scoped to only the one
+deploy role by ARN — nothing destructive, no ability to create or modify
+other IAM roles), assumed with temporary session credentials rather than a
+standing access key. No Route 53 permissions — DNS for this project isn't
+hosted in Route 53, so those records get added with your actual DNS
+provider instead (see Phase 2 below).
 
 ```bash
 ASSUMER_ARNS='arn:aws:iam::<account>:user/<you>' ./deploy/bootstrap-iam-setup.sh
@@ -147,15 +149,11 @@ profile block at the end; every command below assumes you're running with
    phase 1 already created — same bucket, same distribution ID, same
    deploy role, nothing else changes.
 
-3. **Point the domain at CloudFront** — **the second DNS ask** — using the
-   distribution domain the script prints. If DNS is on Route 53:
-   ```bash
-   aws route53 change-resource-record-sets --hosted-zone-id <ZONE_ID> \
-     --change-batch '{"Changes":[{"Action":"UPSERT","ResourceRecordSet":{"Name":"app.natid.co.il","Type":"A","AliasTarget":{"HostedZoneId":"Z2FDTNDATAQYW2","DNSName":"<cloudfront-domain>","EvaluateTargetHealth":false}}}]}'
-   ```
-   (`Z2FDTNDATAQYW2` is CloudFront's fixed alias hosted-zone ID — the same
-   for every distribution.) If DNS isn't on Route 53, hand this as a plain
-   ALIAS/CNAME request to whoever manages it instead.
+3. **Point the domain at CloudFront** — **the second DNS ask**. DNS for
+   `natid.co.il` isn't hosted in Route 53, so this is a plain request to
+   whoever manages it: add a CNAME (or ALIAS, if the provider supports one
+   at the apex/subdomain) for `app.natid.co.il` → the distribution domain
+   the script printed in step 2.
 
 4. **Update `VITE_SRV_BASE_URL`** to the real srv URL if it was still a
    placeholder, and re-deploy (`workflow_dispatch`) so the build picks it

@@ -295,8 +295,8 @@ This was a PHASE 2 run — $DOMAIN is now attached to $DIST_ID
 (propagation can take several minutes).
 
 Still needed to actually go live (see docs/DEPLOYMENT.md):
-  1. Point $DOMAIN at $DIST_DOMAIN in DNS (alias/CNAME — whoever holds DNS
-     access; Route 53 alias if that's where the zone lives).
+  1. Point $DOMAIN at $DIST_DOMAIN in DNS (CNAME — via whoever holds DNS
+     access for the actual provider this domain uses).
   2. Update the VITE_SRV_BASE_URL repo variable to the real srv URL if it
      was still a placeholder from phase 1.
   3. Add https://$DOMAIN to srv's ALLOWED_ORIGINS.
