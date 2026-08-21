@@ -1,8 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,519 +16,292 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import {
-  Users,
-  UserPlus,
-  Search,
-  Mail,
-  ShieldCheck,
-  Key,
-  Pencil,
-  Headphones,
-  Wrench,
-  Building2,
-} from 'lucide-react';
+import { Users, Search, Pencil, ShieldCheck, Headphones, Wrench, Building2 } from 'lucide-react';
 import { PageLoader } from '@/components/ui/LoadingSpinner';
-import ExportMenu from '@/components/ui/ExportMenu';
-import { SlideUp } from '@/components/animations/AnimatedComponents';
-import { showToast } from '@/components/ui/FeedbackToast';
+import QueryErrorState from '@/components/ui/QueryErrorState';
 import { cn } from '@/lib/utils';
 import { queryKeys } from '@/lib/queryKeys';
-import { useAuditLog } from '@/hooks/useAuditLog';
-import { roleLabels } from '@/config/labels';
-import { fetchUsersList } from '@/lib/usersListApi';
+import { listRoles, searchUsers, setUserRole } from '@/lib/srvApi';
+import { toast } from 'sonner';
+
+/**
+ * NatID CRM staff / role assignment — srv GET /users + PATCH /users/{id}/role
+ * (Phase 4 of the dispatcher rebuild plan), backed directly by users.role.
+ * Unlike the Base44 screen this replaces, there is no "invite" flow: every
+ * account here already exists (Nati onboarding / the legacy CRM), so this
+ * only ever searches for an existing employee and grants or revokes their
+ * CRM role. Role *definitions* (what each role grants) are edited on the
+ * Role Management screen, not here. See srv.natid.co.il CLAUDE.md's Phase 4
+ * user/role admin section.
+ */
 
 const roleBadgeColors = {
   admin: 'bg-[#3b82f6] text-white',
-  manager: 'bg-[#6366f1] text-white',
   operator: 'bg-[#8b5cf6] text-white',
   agent: 'bg-[#10b981] text-white',
   vendor: 'bg-[#f59e0b] text-white',
-  user: 'bg-[#f3f4f6] text-[#111827]',
 };
 
+const roleIcons = {
+  admin: ShieldCheck,
+  operator: Headphones,
+  agent: Wrench,
+  vendor: Building2,
+};
+
+function useDebouncedValue(value, delayMs) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(t);
+  }, [value, delayMs]);
+  return debounced;
+}
+
 export default function UserManagementPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [filterRole, setFilterRole] = useState('all');
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('operator');
   const [editUser, setEditUser] = useState(null);
+  const [editRole, setEditRole] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { logCreate, logUpdate } = useAuditLog();
+
+  const searchQuery = useDebouncedValue(searchInput, 400);
+  const params = { q: searchQuery || undefined, limit: 200 };
 
   const {
     data: users = [],
-    isLoading: isLoadingUsers,
+    isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: queryKeys.users.all(),
-    queryFn: async () => (await fetchUsersList()).users,
+    queryKey: queryKeys.users.crmStaff(params),
+    queryFn: () => searchUsers(params).then((r) => r.data),
   });
 
-  const { data: userPermissions = [] } = useQuery({
-    queryKey: queryKeys.users.permissions(),
-    queryFn: async () => (await fetchUsersList()).permissions,
+  const { data: roles = [] } = useQuery({
+    queryKey: queryKeys.roles.all(),
+    queryFn: () => listRoles().then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Map user permissions by email for quick lookup
-  const permByEmail = {};
-  userPermissions.forEach((p) => {
-    permByEmail[p.user_email] = p;
-  });
-
-  // Get effective role for a user (from UserPermission, not platform role)
-  const getEffectiveRole = (user) => {
-    const perm = permByEmail[user.email];
-    if (perm?.role_name) {
-      // Try to match role_name to a known role key
-      const roleEntry = Object.entries(roleLabels).find(
-        ([key, label]) => label === perm.role_name || key === perm.role_name
-      );
-      if (roleEntry) return roleEntry[0];
-    }
-    return user.role === 'admin' ? 'admin' : 'agent';
-  };
-
-  const isLoading = isLoadingUsers;
-
-  const inviteMutation = useMutation({
-    mutationFn: async ({ email, role }) => {
-      // Platform only supports "admin" or "user" - map app roles accordingly
-      const platformRole = role === 'admin' ? 'admin' : 'user';
-      await base44.users.inviteUser(email, platformRole);
-
-      // Find the matching Role entity for this app role
-      const allRoles = await base44.entities.Role.list();
-      const matchedRole = allRoles.find((r) => r.name === role);
-
-      // Create UserPermission record with the app-specific role
-      await base44.entities.UserPermission.create({
-        user_id: '', // will be updated when user logs in
-        user_email: email,
-        role_id: matchedRole?.id || '',
-        role_name: matchedRole?.display_name || role,
-      });
-    },
-    onSuccess: (_, variables) => {
-      logCreate(
-        'User',
-        null,
-        variables.email,
-        `הוזמן משתמש חדש: ${variables.email} בתפקיד ${roleLabels[variables.role] || variables.role}`
-      );
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
-      setInviteDialogOpen(false);
-      setInviteEmail('');
-      setInviteRole('operator');
-      showToast.success('ההזמנה נשלחה בהצלחה');
-    },
-    onError: (error) => {
-      console.error('Invite error:', error);
-      const errorMsg = error.response?.data?.message || error.message || 'שגיאה לא ידועה';
-      showToast.error('שגיאה בשליחת ההזמנה: ' + errorMsg);
-    },
-  });
+  const roleLabel = (role) => roles.find((r) => r.name === role)?.display_name_he || role;
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.User.update(id, data),
-    onSuccess: (_, variables) => {
-      logUpdate(
-        'User',
-        variables.id,
-        'עדכון פרטי משתמש',
-        `עודכן משתמש: ${variables.data.full_name}, תפקיד: ${variables.data.role}`
-      );
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.all() });
+    mutationFn: ({ id, role }) => setUserRole(id, role || null),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['srvUsers'] });
       setEditDialogOpen(false);
       setEditUser(null);
-      showToast.success('המשתמש עודכן בהצלחה');
+      toast.success('התפקיד עודכן בהצלחה');
     },
-    onError: (error) => {
-      console.error('Update error:', error);
-      showToast.error('שגיאה בעדכון המשתמש');
-    },
+    onError: (err) => toast.error(err?.message || 'שגיאה בעדכון התפקיד'),
   });
 
-  const handleUpdateUser = async () => {
-    if (!editUser) return;
-
-    // Platform role: admin stays admin, everything else is "user"
-    const platformRole = editUser.role === 'admin' ? 'admin' : 'user';
-
-    updateMutation.mutate({
-      id: editUser.id,
-      data: {
-        full_name: editUser.full_name,
-        role: platformRole,
-      },
-    });
-
-    // Also update UserPermission with the app-specific role
-    const allRoles = await base44.entities.Role.list();
-    const matchedRole = allRoles.find((r) => r.name === editUser.role);
-
-    const existingPerms = await base44.entities.UserPermission.filter({
-      user_email: editUser.email,
-    });
-    if (existingPerms.length > 0) {
-      await base44.entities.UserPermission.update(existingPerms[0].id, {
-        role_id: matchedRole?.id || '',
-        role_name: matchedRole?.display_name || editUser.role,
-        user_id: editUser.id,
-      });
-    } else {
-      await base44.entities.UserPermission.create({
-        user_id: editUser.id,
-        user_email: editUser.email,
-        role_id: matchedRole?.id || '',
-        role_name: matchedRole?.display_name || editUser.role,
-      });
-    }
-  };
-
-  const filteredUsers = users.filter((user) => {
-    const effRole = getEffectiveRole(user);
-    return (
-      (filterRole === 'all' || effRole === filterRole) &&
-      (!searchQuery ||
-        user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  });
+  const filteredUsers = users.filter((user) => filterRole === 'all' || user.role === filterRole);
 
   const stats = {
     total: users.length,
-    admins: users.filter((u) => getEffectiveRole(u) === 'admin').length,
-    managers: users.filter((u) => getEffectiveRole(u) === 'manager').length,
-    operators: users.filter((u) => getEffectiveRole(u) === 'operator').length,
-    agents: users.filter((u) => getEffectiveRole(u) === 'agent').length,
-    vendors: users.filter((u) => getEffectiveRole(u) === 'vendor').length,
+    admin: users.filter((u) => u.role === 'admin').length,
+    operator: users.filter((u) => u.role === 'operator').length,
+    agent: users.filter((u) => u.role === 'agent').length,
+    vendor: users.filter((u) => u.role === 'vendor').length,
   };
 
-  const handleInvite = () => {
-    if (!inviteEmail) {
-      showToast.error('יש להזין כתובת אימייל');
-      return;
-    }
-    // Trim and lowercase email to prevent format errors
-    const cleanEmail = inviteEmail.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      showToast.error('כתובת אימייל לא תקינה');
-      return;
-    }
-    inviteMutation.mutate({ email: cleanEmail, role: inviteRole });
+  const openEdit = (user) => {
+    setEditUser(user);
+    setEditRole(user.role || 'none');
+    setEditDialogOpen(true);
   };
 
-  if (isLoading) {
-    return <PageLoader text="טוען משתמשים..." />;
-  }
+  const handleSave = () => {
+    if (!editUser) return;
+    updateMutation.mutate({ id: editUser.id, role: editRole === 'none' ? null : editRole });
+  };
 
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-red-500 text-lg font-medium mb-2">שגיאה בטעינת נתונים</p>
-        <p className="text-gray-500 text-sm">{error?.message || 'נסה לרענן את הדף'}</p>
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader text="טוען משתמשים..." />;
+  if (isError) return <QueryErrorState error={error} entityName="User" />;
 
   return (
-    <SlideUp>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-[#111827]">ניהול משתמשים</h1>
-            <p className="text-[#6b7280] text-sm">ניהול והזמנת משתמשים למערכת</p>
-          </div>
-          <div className="flex gap-2">
-            <ExportMenu
-              data={users}
-              columns={[
-                { header: 'שם מלא', accessor: 'full_name' },
-                { header: 'אימייל', accessor: 'email' },
-                { header: 'תפקיד', accessor: 'role' },
-                { header: 'תאריך הצטרפות', accessor: 'created_date' },
-              ]}
-              filename="users_list"
-              title="רשימת משתמשים"
-            />
-            <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#3b82f6] hover:bg-[#2563eb] gap-2">
-                  <UserPlus className="w-4 h-4" />
-                  הזמן משתמש
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>הזמנת משתמש חדש</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div>
-                    <Label>כתובת אימייל</Label>
-                    <Input
-                      type="email"
-                      placeholder="email@example.com"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      dir="ltr"
-                    />
-                  </div>
-                  <div>
-                    <Label>תפקיד</Label>
-                    <Select value={inviteRole} onValueChange={setInviteRole}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">מנהל מערכת</SelectItem>
-                        <SelectItem value="manager">מנהל תפעול</SelectItem>
-                        <SelectItem value="operator">מוקדן</SelectItem>
-                        <SelectItem value="agent">נציג שטח</SelectItem>
-                        <SelectItem value="vendor">ספק שירות</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    className="w-full bg-[#3b82f6] hover:bg-[#2563eb]"
-                    onClick={handleInvite}
-                    disabled={inviteMutation.isPending}
-                  >
-                    {inviteMutation.isPending ? 'שולח...' : 'שלח הזמנה'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+    <div className="space-y-6" dir="rtl">
+      <div>
+        <h1 className="text-2xl font-bold text-[#111827]">ניהול משתמשים</h1>
+        <p className="text-[#6b7280] text-sm">
+          שיוך הרשאות מערכת לעובדים קיימים. חיפוש מאפשר למצוא כל עובד; ללא חיפוש מוצגים בעלי גישה
+          כיום בלבד.
+        </p>
+      </div>
 
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>עריכת משתמש</DialogTitle>
-            </DialogHeader>
-            {editUser && (
-              <div className="space-y-4 pt-4">
-                <div>
-                  <Label>שם מלא</Label>
-                  <Input
-                    value={editUser.full_name || ''}
-                    onChange={(e) => setEditUser({ ...editUser, full_name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label>אימייל</Label>
-                  <Input value={editUser.email} disabled className="bg-gray-50" dir="ltr" />
-                </div>
-                <div>
-                  <Label>תפקיד</Label>
-                  <Select
-                    value={editUser.role}
-                    onValueChange={(val) => setEditUser({ ...editUser, role: val })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">מנהל מערכת</SelectItem>
-                      <SelectItem value="manager">מנהל תפעול</SelectItem>
-                      <SelectItem value="operator">מוקדן</SelectItem>
-                      <SelectItem value="agent">נציג שטח</SelectItem>
-                      <SelectItem value="vendor">ספק שירות</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  className="w-full bg-[#3b82f6] hover:bg-[#2563eb]"
-                  onClick={handleUpdateUser}
-                  disabled={updateMutation.isPending}
-                >
-                  {updateMutation.isPending ? 'שומר...' : 'שמור שינויים'}
-                </Button>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Card className="bg-white border border-[#e5e7eb]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
-                  <Users className="w-5 h-5 text-[#3b82f6]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.total}</div>
-                  <div className="text-sm text-[#6b7280]">סה"כ</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#eff6ff] flex items-center justify-center">
-                  <ShieldCheck className="w-5 h-5 text-[#3b82f6]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.admins}</div>
-                  <div className="text-sm text-[#6b7280]">מנהלי מערכת</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#eef2ff] flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-[#6366f1]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.managers}</div>
-                  <div className="text-sm text-[#6b7280]">מנהלי תפעול</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#f5f3ff] flex items-center justify-center">
-                  <Headphones className="w-5 h-5 text-[#8b5cf6]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.operators}</div>
-                  <div className="text-sm text-[#6b7280]">מוקדנים</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#ecfdf5] flex items-center justify-center">
-                  <Wrench className="w-5 h-5 text-[#10b981]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.agents}</div>
-                  <div className="text-sm text-[#6b7280]">נציגי שטח</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white border border-[#e5e7eb]">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[8px] bg-[#fffbeb] flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-[#f59e0b]" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-[#111827]">{stats.vendors}</div>
-                  <div className="text-sm text-[#6b7280]">ספקי שירות</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Search & Filter */}
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <Card className="bg-white border border-[#e5e7eb]">
-          <CardContent className="p-3">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1 min-w-0">
-                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
-                <Input
-                  placeholder="חיפוש לפי שם או אימייל..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="ps-10"
-                />
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
+                <Users className="w-5 h-5 text-[#3b82f6]" />
               </div>
-              <Select value={filterRole} onValueChange={setFilterRole}>
-                <SelectTrigger className="w-full sm:w-[160px]">
-                  <SelectValue placeholder="כל התפקידים" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל התפקידים</SelectItem>
-                  <SelectItem value="admin">מנהל מערכת</SelectItem>
-                  <SelectItem value="manager">מנהל תפעול</SelectItem>
-                  <SelectItem value="operator">מוקדן</SelectItem>
-                  <SelectItem value="agent">נציג שטח</SelectItem>
-                  <SelectItem value="vendor">ספק שירות</SelectItem>
-                </SelectContent>
-              </Select>
+              <div>
+                <div className="text-2xl font-bold text-[#111827]">{stats.total}</div>
+                <div className="text-sm text-[#6b7280]">סה&quot;כ</div>
+              </div>
             </div>
           </CardContent>
         </Card>
+        {['admin', 'operator', 'agent', 'vendor'].map((r) => {
+          const Icon = roleIcons[r];
+          return (
+            <Card key={r} className="bg-white border border-[#e5e7eb]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-[8px] bg-[#f3f4f6] flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-[#3b82f6]" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-[#111827]">{stats[r]}</div>
+                    <div className="text-sm text-[#6b7280]">{roleLabel(r)}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
-        {/* Users List */}
-        <Card className="bg-white border border-[#e5e7eb]">
-          <CardHeader>
-            <CardTitle className="text-lg">רשימת משתמשים</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filteredUsers.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 mx-auto text-[#6b7280] mb-3" />
-                <p className="text-[#6b7280]">לא נמצאו משתמשים</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {filteredUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-center gap-3 p-3 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-[#f3f4f6] flex items-center justify-center">
-                      <span className="text-sm font-medium text-[#6b7280]">
-                        {user.full_name ? user.full_name.charAt(0) : '?'}
-                      </span>
+      {/* Search & Filter */}
+      <Card className="bg-white border border-[#e5e7eb]">
+        <CardContent className="p-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7280]" />
+              <Input
+                placeholder="חיפוש לפי שם או שם משתמש..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="ps-10"
+              />
+            </div>
+            <Select value={filterRole} onValueChange={setFilterRole}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="כל התפקידים" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">כל התפקידים</SelectItem>
+                {roles.map((r) => (
+                  <SelectItem key={r.name} value={r.name}>
+                    {r.display_name_he}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Users List */}
+      <Card className="bg-white border border-[#e5e7eb]">
+        <CardHeader>
+          <CardTitle className="text-lg">רשימת משתמשים</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredUsers.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 mx-auto text-[#6b7280] mb-3" />
+              <p className="text-[#6b7280]">לא נמצאו משתמשים</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center gap-3 p-3 rounded-[8px] border border-[#e5e7eb] hover:bg-[#f9fafb] transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#f3f4f6] flex items-center justify-center">
+                    <span className="text-sm font-medium text-[#6b7280]">
+                      {user.fname ? user.fname.charAt(0) : '?'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-[#111827]">
+                      {[user.fname, user.lname].filter(Boolean).join(' ') || 'ללא שם'}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-[#111827]">{user.full_name || 'ללא שם'}</div>
-                      <div className="text-sm text-[#6b7280] flex items-center gap-1">
-                        <Mail className="w-3 h-3" />
-                        <span dir="ltr">{user.email}</span>
-                      </div>
-                    </div>
-                    <Badge className={cn('text-xs', roleBadgeColors[getEffectiveRole(user)])}>
-                      {roleLabels[getEffectiveRole(user)] || getEffectiveRole(user)}
-                    </Badge>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1 text-xs hover:bg-blue-50 text-blue-600"
-                        onClick={() => {
-                          setEditUser({ ...user, role: getEffectiveRole(user) });
-                          setEditDialogOpen(true);
-                        }}
-                      >
-                        <Pencil className="w-3 h-3" />
-                        ערוך
-                      </Button>
-                      <Link to={createPageUrl('RoleManagement')}>
-                        <Button variant="ghost" size="sm" className="gap-1 text-xs">
-                          <Key className="w-3 h-3" />
-                          הרשאות
-                        </Button>
-                      </Link>
+                    <div className="text-sm text-[#6b7280]" dir="ltr">
+                      {user.username}
                     </div>
                   </div>
-                ))}
+                  {user.role ? (
+                    <Badge className={cn('text-xs', roleBadgeColors[user.role])}>
+                      {roleLabel(user.role)}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs text-gray-400">
+                      ללא גישה
+                    </Badge>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 text-xs hover:bg-blue-50 text-blue-600"
+                    onClick={() => openEdit(user)}
+                  >
+                    <Pencil className="w-3 h-3" />
+                    ערוך
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>עריכת תפקיד</DialogTitle>
+          </DialogHeader>
+          {editUser && (
+            <div className="space-y-4 pt-4">
+              <div>
+                <Label>שם</Label>
+                <Input
+                  value={[editUser.fname, editUser.lname].filter(Boolean).join(' ')}
+                  disabled
+                  className="bg-gray-50"
+                />
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </SlideUp>
+              <div>
+                <Label>שם משתמש</Label>
+                <Input value={editUser.username} disabled className="bg-gray-50" dir="ltr" />
+              </div>
+              <div>
+                <Label>תפקיד</Label>
+                <Select value={editRole} onValueChange={setEditRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">ללא גישה</SelectItem>
+                    {roles.map((r) => (
+                      <SelectItem key={r.name} value={r.name}>
+                        {r.display_name_he}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                className="w-full bg-[#3b82f6] hover:bg-[#2563eb]"
+                onClick={handleSave}
+                disabled={updateMutation.isPending}
+              >
+                {updateMutation.isPending ? 'שומר...' : 'שמור שינויים'}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

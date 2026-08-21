@@ -17,9 +17,13 @@ import {
 import { Search, RefreshCw, ChevronRight, ChevronLeft, Eye, Plus } from 'lucide-react';
 import { cn } from '@/components/utils';
 import { queryKeys } from '@/lib/queryKeys';
-import { getAppealsList } from '@/features/calls/api';
+import { getAppealsList, getClosedAppealsList } from '@/features/calls/api';
 import { listSuppliers } from '@/lib/srvApi';
-import { DEPARTMENT_LABELS, APPEAL_STATUS_LABELS as STATUS_LABELS } from '@/config/appealLabels';
+import {
+  DEPARTMENT_LABELS,
+  APPEAL_STATUS_LABELS,
+  CLOSED_APPEAL_STATUS_LABELS,
+} from '@/config/appealLabels';
 
 const PAGE_SIZE = 50;
 
@@ -51,6 +55,12 @@ export default function CallsPage() {
   const [searchInput, setSearchInput] = useState('');
   const [department, setDepartment] = useState('-1');
   const [supplierFilter, setSupplierFilter] = useState('all');
+  // Closed-call history (srv GET /appeals/history — Phase 4) shares this
+  // screen rather than getting its own page/route: same columns/filters,
+  // minus supplier (the closed endpoint has no kablanFilter — see
+  // closed_queries.py).
+  const [historyMode, setHistoryMode] = useState(false);
+  const STATUS_LABELS = historyMode ? CLOSED_APPEAL_STATUS_LABELS : APPEAL_STATUS_LABELS;
 
   const searchQuery = useDebouncedValue(searchInput, 400);
 
@@ -58,15 +68,17 @@ export default function CallsPage() {
     () => ({
       dep: department,
       q: searchQuery || undefined,
-      kablanFilter: supplierFilter !== 'all' ? supplierFilter : undefined,
+      kablanFilter: !historyMode && supplierFilter !== 'all' ? supplierFilter : undefined,
       limit: 500,
     }),
-    [department, searchQuery, supplierFilter]
+    [department, searchQuery, supplierFilter, historyMode]
   );
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: queryKeys.appeals.list(filters),
-    queryFn: () => getAppealsList(filters),
+    queryKey: historyMode
+      ? queryKeys.appeals.historyList(filters)
+      : queryKeys.appeals.list(filters),
+    queryFn: () => (historyMode ? getClosedAppealsList(filters) : getAppealsList(filters)),
     staleTime: 15000,
   });
 
@@ -88,6 +100,15 @@ export default function CallsPage() {
     setPage(1);
   };
 
+  const toggleHistoryMode = (next) => {
+    setHistoryMode(next);
+    setSupplierFilter('all');
+    setPage(1);
+  };
+
+  const callDetailsUrl = (appealId) =>
+    createPageUrl(`CallDetails?id=${appealId}${historyMode ? '&history=true' : ''}`);
+
   if (isError) {
     return <QueryErrorState error={error} onRetry={refetch} entityName="Appeal" />;
   }
@@ -99,7 +120,7 @@ export default function CallsPage() {
         <div className="text-right">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111827]">ניהול קריאות</h1>
           <p className="text-[#6b7280] text-xs sm:text-sm">
-            קריאות פתוחות · {isLoading ? '...' : appeals.length}
+            {historyMode ? 'קריאות סגורות' : 'קריאות פתוחות'} · {isLoading ? '...' : appeals.length}
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 justify-end">
@@ -115,6 +136,30 @@ export default function CallsPage() {
             </Button>
           </Link>
         </div>
+      </div>
+
+      {/* Open / closed toggle */}
+      <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 self-start">
+        <button
+          type="button"
+          onClick={() => toggleHistoryMode(false)}
+          className={cn(
+            'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
+            !historyMode ? 'bg-white shadow-sm text-[#172B4D]' : 'text-[#6B778C]'
+          )}
+        >
+          פתוחות
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleHistoryMode(true)}
+          className={cn(
+            'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
+            historyMode ? 'bg-white shadow-sm text-[#172B4D]' : 'text-[#6B778C]'
+          )}
+        >
+          היסטוריה
+        </button>
       </div>
 
       {/* Filters */}
@@ -146,19 +191,24 @@ export default function CallsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={supplierFilter} onValueChange={handleFilterChange(setSupplierFilter)}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="ספק" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הספקים</SelectItem>
-                  {suppliers.map((s) => (
-                    <SelectItem key={s.kablan_id} value={String(s.kablan_id)}>
-                      {s.kablan_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {!historyMode && (
+                <Select
+                  value={supplierFilter}
+                  onValueChange={handleFilterChange(setSupplierFilter)}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="ספק" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל הספקים</SelectItem>
+                    {suppliers.map((s) => (
+                      <SelectItem key={s.kablan_id} value={String(s.kablan_id)}>
+                        {s.kablan_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
         </CardContent>
@@ -187,11 +237,7 @@ export default function CallsPage() {
               <div className="text-center py-8 text-[#6B778C]">אין קריאות להצגה</div>
             ) : (
               paginated.map((a) => (
-                <Link
-                  key={a.appeal_id}
-                  to={createPageUrl(`CallDetails?id=${a.appeal_id}`)}
-                  className="block"
-                >
+                <Link key={a.appeal_id} to={callDetailsUrl(a.appeal_id)} className="block">
                   <div
                     className={cn(
                       'border rounded-lg p-3 hover:shadow-md transition-all border-r-4 bg-white border-gray-200',
@@ -294,7 +340,7 @@ export default function CallsPage() {
                       )}
                     >
                       <td className="px-4 py-3">
-                        <Link to={createPageUrl(`CallDetails?id=${a.appeal_id}`)}>
+                        <Link to={callDetailsUrl(a.appeal_id)}>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -307,7 +353,7 @@ export default function CallsPage() {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <Link
-                          to={createPageUrl(`CallDetails?id=${a.appeal_id}`)}
+                          to={callDetailsUrl(a.appeal_id)}
                           className="font-medium text-blue-600 hover:underline tabular-nums"
                           dir="ltr"
                         >

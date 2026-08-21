@@ -18,4 +18,7 @@ export const SRV_MIGRATED_PAGES = new Set([
   'ServiceProviders',
   'VendorDetails',
   'NewCase',
+  'ProductCatalog',
+  'UserManagement',
+  'RoleManagement',
 ]);

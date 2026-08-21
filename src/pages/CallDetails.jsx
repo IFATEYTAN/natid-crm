@@ -9,7 +9,11 @@ import { ArrowRight, AlertTriangle, Car, Truck, Pencil, Lock } from 'lucide-reac
 import { queryKeys } from '@/lib/queryKeys';
 import { getAppealById } from '@/features/calls/api';
 import { lockAppeal, unlockAppeal } from '@/lib/srvApi';
-import { DEPARTMENT_LABELS, APPEAL_STATUS_LABELS } from '@/config/appealLabels';
+import {
+  DEPARTMENT_LABELS,
+  APPEAL_STATUS_LABELS,
+  CLOSED_APPEAL_STATUS_LABELS,
+} from '@/config/appealLabels';
 import AppealInfoView from '@/components/call-details/AppealInfoView';
 import AppealEventsSection from '@/components/call-details/AppealEventsSection';
 import AssignSupplierDialog from '@/components/call-details/AssignSupplierDialog';
@@ -20,13 +24,16 @@ import { PermissionGuard } from '@/components/permissions/PermissionGuard';
 /**
  * Call detail, sourced from srv GET /appeals/{id}. Read display is Phase 1
  * of the dispatcher rebuild plan; assign-supplier/edit/notes/reminder are
- * Phase 2 (POST/PATCH /appeals/{id}/*). Status transitions, closing, and
- * opening new calls remain Phase 3+ — this page still doesn't do those.
+ * Phase 2 (POST/PATCH /appeals/{id}/*). `?history=true` (linked from the
+ * closed-call history view, Phase 4) reads call_closed_appeals instead and
+ * hides assign/edit/lock — srv's write endpoints for those only ever target
+ * call_open_appeals.
  */
 export default function CallDetailsPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const appealId = searchParams.get('id');
+  const isHistory = searchParams.get('history') === 'true';
   const { hasPermission } = usePermissions();
   const canEdit = hasPermission('calls', 'edit');
   const canAssign = hasPermission('calls', 'assign');
@@ -36,8 +43,8 @@ export default function CallDetailsPage() {
   const [lockedByOther, setLockedByOther] = useState(null);
 
   const appealQuery = useQuery({
-    queryKey: queryKeys.appeals.detail(appealId),
-    queryFn: () => getAppealById(appealId),
+    queryKey: queryKeys.appeals.detail(appealId, isHistory),
+    queryFn: () => getAppealById(appealId, { isHistory }),
     enabled: !!appealId,
   });
 
@@ -47,9 +54,11 @@ export default function CallDetailsPage() {
   // Mimics the PHP CRM's appeal lock: warns if someone else holds it, never
   // blocks (appeals_list.js:395 shows a warning box and opens the call
   // window regardless either way) — see srv.natid.co.il CLAUDE.md's
-  // POST /appeals/{id}/lock docs for the TTL rationale.
+  // POST /appeals/{id}/lock docs for the TTL rationale. Skipped for closed
+  // appeals — locking a closed call isn't a real operation (same reasoning
+  // as srv only ever targeting call_open_appeals for lock/supplier writes).
   useEffect(() => {
-    if (!appealId) return;
+    if (!appealId || isHistory) return;
     let active = true;
     lockAppeal(appealId, { continueId: appeal?.continue_id, departmentId: appeal?.department_id })
       .then((res) => {
@@ -63,7 +72,7 @@ export default function CallDetailsPage() {
       unlockAppeal(appealId).catch(() => {});
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appealId]);
+  }, [appealId, isHistory]);
 
   if (!appealId) {
     return (
@@ -101,9 +110,12 @@ export default function CallDetailsPage() {
                 </h1>
                 {appeal?.status != null && (
                   <Badge className="bg-gray-100 text-gray-700">
-                    {APPEAL_STATUS_LABELS[appeal.status] ?? appeal.status}
+                    {(isHistory ? CLOSED_APPEAL_STATUS_LABELS : APPEAL_STATUS_LABELS)[
+                      appeal.status
+                    ] ?? appeal.status}
                   </Badge>
                 )}
+                {isHistory && <Badge className="bg-gray-200 text-gray-600">קריאה סגורה</Badge>}
                 {appeal?.vip === 1 && <Badge className="bg-amber-100 text-amber-800">VIP</Badge>}
               </div>
               <p className="text-[#6B778C] text-sm">
@@ -114,28 +126,32 @@ export default function CallDetailsPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <PermissionGuard category="calls" permission="assign">
-              <Button
-                variant="outline"
-                className="gap-2 h-10 text-sm"
-                onClick={() => setShowAssignDialog(true)}
-              >
-                <Truck className="w-4 h-4" />
-                שבץ ספק
-              </Button>
-            </PermissionGuard>
-            <PermissionGuard category="calls" permission="edit">
-              <Button
-                variant="outline"
-                className="gap-2 h-10 text-sm"
-                onClick={() => setShowEditDialog(true)}
-              >
-                <Pencil className="w-4 h-4" />
-                ערוך קריאה
-              </Button>
-            </PermissionGuard>
-          </div>
+          {/* Assign/edit are write actions srv only supports against
+              call_open_appeals — not offered from the history view. */}
+          {!isHistory && (
+            <div className="flex flex-wrap gap-2">
+              <PermissionGuard category="calls" permission="assign">
+                <Button
+                  variant="outline"
+                  className="gap-2 h-10 text-sm"
+                  onClick={() => setShowAssignDialog(true)}
+                >
+                  <Truck className="w-4 h-4" />
+                  שבץ ספק
+                </Button>
+              </PermissionGuard>
+              <PermissionGuard category="calls" permission="edit">
+                <Button
+                  variant="outline"
+                  className="gap-2 h-10 text-sm"
+                  onClick={() => setShowEditDialog(true)}
+                >
+                  <Pencil className="w-4 h-4" />
+                  ערוך קריאה
+                </Button>
+              </PermissionGuard>
+            </div>
+          )}
 
           {lockedByOther && (
             <div className="flex items-center gap-2 text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2">
@@ -151,14 +167,14 @@ export default function CallDetailsPage() {
         <AppealEventsSection appealId={appealId} />
       </div>
 
-      {canAssign && (
+      {!isHistory && canAssign && (
         <AssignSupplierDialog
           appealId={appealId}
           open={showAssignDialog}
           onOpenChange={setShowAssignDialog}
         />
       )}
-      {canEdit && (
+      {!isHistory && canEdit && (
         <EditAppealDialog
           appeal={appeal}
           appealId={appealId}

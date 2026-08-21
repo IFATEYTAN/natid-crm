@@ -19,3 +19,19 @@ export const APPEAL_STATUS_LABELS = {
   4: 'סגור ללא תשלום',
   5: 'ממשיך',
 };
+
+/**
+ * call_closed_appeals.status — a distinct vocabulary from the open-appeals
+ * status above (see srv.natid.co.il CLAUDE.md's "three status vocabularies"
+ * note). 2/3/6 are the documented values (natid-schema column comment);
+ * 1/4/5 are carried over from the open vocabulary since a small number of
+ * rows are archived without transitioning through a "closed" status first.
+ */
+export const CLOSED_APPEAL_STATUS_LABELS = {
+  1: 'בטיפול',
+  2: 'טופל',
+  3: 'בוטל',
+  4: 'ממתין לתשלום',
+  5: 'המשך טיפול',
+  6: 'בוטל במקום',
+};

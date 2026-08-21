@@ -12,8 +12,14 @@ export const queryKeys = {
   // base44 `calls` key below screen by screen as each one migrates)
   appeals: {
     list: (filters) => ['appeals', { filters }],
-    detail: (id) => ['appeals', id],
+    // isHistory is part of the key, not just the request — a closed appeal
+    // can share a numeric id with an unrelated open appeal (separate
+    // auto-increment sequences on call_open_appeals/call_closed_appeals),
+    // so the two must not share a cache entry.
+    detail: (id, isHistory = false) => ['appeals', id, { isHistory: !!isHistory }],
     events: (id) => ['appeals', id, 'events'],
+    // Closed-call history (srv GET /appeals/history — Phase 4)
+    historyList: (filters) => ['appeals', 'history', { filters }],
   },
 
   // Filter-dropdown lookups (srv GET /cities, /suppliers, /regions)
@@ -23,6 +29,8 @@ export const queryKeys = {
     supplierDetail: (id) => ['lookups', 'supplier', id],
     regions: () => ['lookups', 'regions'],
     callProblems: (query) => ['lookups', 'call-problems', query],
+    branches: () => ['lookups', 'branches'],
+    departments: () => ['lookups', 'departments'],
   },
 
   // Opening a call (srv GET /vehicles, /coverage — Phase 3)
@@ -168,13 +176,17 @@ export const queryKeys = {
     byVendor: (vendorId) => ['assignmentAttempts', 'vendor', vendorId],
   },
 
-  // Users/Agents feature
+  // Users/Agents feature — `all`/`detail`/`agents`/`permissions`/
+  // `allPermissions` are still base44-backed (queue scheduling, dashboard
+  // widgets — out of scope for this migration). `crmStaff` is the
+  // srv-backed GET /users search UserManagement.jsx uses (Phase 4).
   users: {
     all: () => ['users'],
     detail: (id) => ['users', id],
     agents: () => ['agents'],
     permissions: () => ['userPermissions'],
     allPermissions: () => ['allUserPermissions'],
+    crmStaff: (params) => ['srvUsers', params],
   },
 
   // Auth
@@ -239,11 +251,16 @@ export const queryKeys = {
     available: () => ['providers-available'],
   },
 
-  // Products feature
+  // Products feature — `all`/`detail`/`catalog` are the base44 CallProducts
+  // entity (still used by CallProductsSection.jsx's in-call product-sale
+  // flow, out of scope for this migration — see srv.natid.co.il CLAUDE.md's
+  // Phase 4 products section). `list` is the srv-backed product-catalog
+  // admin screen (GET/POST/PATCH /products).
   products: {
     all: () => ['products'],
     detail: (id) => ['products', id],
     catalog: () => ['allProducts'],
+    list: () => ['srvProducts'],
   },
 
   // Contracts feature
@@ -252,9 +269,11 @@ export const queryKeys = {
     detail: (id) => ['contracts', id],
   },
 
-  // Roles & Permissions
+  // Roles & Permissions — srv-backed GET /roles (Phase 4). Only
+  // RoleManagement.jsx reads this key, so repointed in place rather than
+  // added alongside.
   roles: {
-    all: () => ['roles'],
+    all: () => ['srvRoles'],
     detail: (id) => ['roles', id],
     permissions: () => ['roles', 'permissions'],
   },

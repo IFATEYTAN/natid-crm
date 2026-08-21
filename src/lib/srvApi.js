@@ -16,6 +16,10 @@ export function getAppeal(appealId, { isHistory = false, edit = false } = {}) {
   return srvFetch(`/appeals/${appealId}`, { params: { is_history: isHistory, edit } });
 }
 
+export function listClosedAppeals(params = {}) {
+  return srvFetch('/appeals/history', { params });
+}
+
 // ---- Appeal writes (Phase 2) -----------------------------------------------
 
 export function lockAppeal(appealId, { continueId, departmentId } = {}) {
@@ -91,6 +95,58 @@ export function getSupplier(kablanId) {
 
 export function listRegions() {
   return srvFetch('/regions');
+}
+
+export function listBranches() {
+  return srvFetch('/branches');
+}
+
+export function listDepartments() {
+  return srvFetch('/departments');
+}
+
+// ---- Product catalog (Phase 4) ----------------------------------------------
+
+export function listProducts() {
+  return srvFetch('/products');
+}
+
+export function createProduct(body) {
+  return srvFetch('/products', { method: 'POST', body });
+}
+
+export function updateProduct(productId, body) {
+  return srvFetch(`/products/${productId}`, { method: 'PATCH', body });
+}
+
+export function deactivateProduct(productId) {
+  return srvFetch(`/products/${productId}/deactivate`, { method: 'POST' });
+}
+
+export function restoreProduct(productId) {
+  return srvFetch(`/products/${productId}/restore`, { method: 'POST' });
+}
+
+export function deleteProductPermanently(productId) {
+  return srvFetch(`/products/${productId}`, { method: 'DELETE' });
+}
+
+// ---- Roles & user/role admin (Phase 4, admin-only) --------------------------
+
+export function listRoles() {
+  return srvFetch('/roles');
+}
+
+export function updateRole(name, body) {
+  return srvFetch(`/roles/${name}`, { method: 'PATCH', body });
+}
+
+export function searchUsers(params = {}) {
+  return srvFetch('/users', { params });
+}
+
+export function setUserRole(userId, role) {
+  return srvFetch(`/users/${userId}/role`, { method: 'PATCH', body: { role } });
 }
 
 // ---- Clients / subscriptions ------------------------------------------------

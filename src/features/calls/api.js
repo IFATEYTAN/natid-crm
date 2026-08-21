@@ -1,5 +1,5 @@
 import { base44 } from '@/lib/api';
-import { listAppeals, getAppeal } from '@/lib/srvApi';
+import { listAppeals, getAppeal, listClosedAppeals } from '@/lib/srvApi';
 
 /**
  * Calls API functions
@@ -101,3 +101,6 @@ export const createCallPhoto = (data) => {
 export const getAppealsList = (filters = {}) => listAppeals(filters);
 
 export const getAppealById = (appealId, options) => getAppeal(appealId, options);
+
+// Closed-call history (srv GET /appeals/history — Phase 4)
+export const getClosedAppealsList = (filters = {}) => listClosedAppeals(filters);
