@@ -58,27 +58,10 @@ the domain or certificate. No long-lived AWS access keys are stored in
 GitHub either — it assumes an IAM role via GitHub's OIDC identity
 federation, scoped to exactly this bucket and this distribution.
 
-## Phase 0 — the identity that runs all of this (one-time)
-
-Don't run `provision.sh` or the ACM commands under your personal admin
-credentials. `deploy/bootstrap-iam-setup.sh` creates a scoped IAM role for
-exactly that — least-privilege permissions (`deploy/bootstrap-iam-policy.json`:
-S3/CloudFront/ACM create+read, plus IAM actions scoped to only the one
-deploy role by ARN — nothing destructive, no ability to create or modify
-other IAM roles), assumed with temporary session credentials rather than a
-standing access key. No Route 53 permissions — DNS for this project isn't
-hosted in Route 53, so those records get added with your actual DNS
-provider instead (see Phase 2 below).
-
-```bash
-ASSUMER_ARNS='arn:aws:iam::<account>:user/<you>' ./deploy/bootstrap-iam-setup.sh
-```
-
-Requires *some* existing credential capable of `iam:CreateRole` to run —
-that's an unavoidable one-time bootstrap (an account admin session, or
-root, for this one action only). It prints a ready-to-paste `~/.aws/config`
-profile block at the end; every command below assumes you're running with
-`AWS_PROFILE` set to that profile, not a bare admin session.
+Run `provision.sh` and the ACM commands under your own AWS Identity Center
+(SSO) session with sufficient privileges (e.g. `AdministratorAccess`) —
+already temporary, nothing extra to set up. Every command below assumes
+`AWS_PROFILE` is set to that SSO profile.
 
 ## Phase 1 — demonstrate the pipeline (no DNS access needed)
 

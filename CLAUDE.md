@@ -149,10 +149,9 @@ npm run build && npm run typecheck
 CloudFront (replacing Base44's own "Publish" hosting) — no long-lived AWS keys, OIDC
 role assumption. Chosen over AWS Amplify Hosting: fully scriptable (no console-only
 SPA-rewrite setting to lose track of) and cheaper at this app's traffic. Provisioning
-runs under a scoped IAM role (`deploy/bootstrap-iam-setup.sh` +
-`bootstrap-iam-policy.json`), not personal admin credentials — least-privilege,
-temporary session credentials, no standing access key. `deploy/provision.sh` itself is
-two phases, since attaching the real domain needs DNS
+(`deploy/provision.sh`) is run by hand under an AWS Identity Center (SSO) admin
+session — no separate bootstrap role, since SSO sessions are already temporary.
+`deploy/provision.sh` itself is two phases, since attaching the real domain needs DNS
 records from whoever holds DNS access and that shouldn't block proving the pipeline
 works: phase 1 stands up the whole pipeline against CloudFront's own default domain
 (no DNS needed at all), phase 2 attaches `app.natid.co.il` + a validated cert to that
