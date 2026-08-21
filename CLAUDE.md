@@ -144,6 +144,24 @@ npm run build && npm run typecheck
 - **Every PR/push:** lint → vitest → structural Playwright against a local Vite.
 - **`main`, nightly 03:00 UTC, or manual:** full authenticated E2E against Base44 — only if the `E2E_*` secrets exist, and only after polling the preview URL to confirm the sandbox is awake.
 
+## Deployment
+`.github/workflows/deploy.yml`: on push to `main`, builds and syncs `dist/` to S3 +
+CloudFront (replacing Base44's own "Publish" hosting) — no long-lived AWS keys, OIDC
+role assumption. Chosen over AWS Amplify Hosting: fully scriptable (no console-only
+SPA-rewrite setting to lose track of) and cheaper at this app's traffic. Provisioning
+runs under a scoped IAM role (`deploy/bootstrap-iam-setup.sh` +
+`bootstrap-iam-policy.json`), not personal admin credentials — least-privilege,
+temporary session credentials, no standing access key. `deploy/provision.sh` itself is
+two phases, since attaching the real domain needs DNS
+records from whoever holds DNS access and that shouldn't block proving the pipeline
+works: phase 1 stands up the whole pipeline against CloudFront's own default domain
+(no DNS needed at all), phase 2 attaches `app.natid.co.il` + a validated cert to that
+same distribution (needs exactly two DNS records, not ongoing access). See
+`docs/DEPLOYMENT.md` for both phases and the verification checklist. Does not touch
+`base44/`/`@base44/sdk` — unmigrated screens (anything not in
+`src/config/srvMigration.js`'s `SRV_MIGRATED_PAGES`) still error at runtime after this
+deploy, same as before; that's a separate, ongoing migration.
+
 ## Important Conventions
 1. **RTL first** — every layout must work in Hebrew RTL (`DirectionProvider` is already wired in `App.jsx`).
 2. **Use existing shadcn/ui components** from `src/components/ui/` before adding a dependency.
