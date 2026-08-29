@@ -5,7 +5,15 @@
  * `@base44/sdk`'s axios client used to give every `base44.entities.*` call for free.
  */
 
-const SRV_BASE_URL = import.meta.env.VITE_SRV_BASE_URL || 'http://localhost:8000';
+// A hosted build with no VITE_SRV_BASE_URL used to fall back to localhost:8000,
+// which can never be right off the dev machine — the browser just fails every
+// request (and mixed-content-blocks it on an https page). Base44's own build
+// pipeline doesn't set this var, so the deployed app hit exactly that. Default
+// to production srv when the var is missing in a production build; keep the
+// localhost default for `vite dev`, where a local srv is the normal target.
+const SRV_BASE_URL =
+  import.meta.env.VITE_SRV_BASE_URL ||
+  (import.meta.env.DEV ? 'http://localhost:8000' : 'https://srv.natid.co.il');
 const TOKEN_STORAGE_KEY = 'srv_access_token';
 
 export function getStoredToken() {
