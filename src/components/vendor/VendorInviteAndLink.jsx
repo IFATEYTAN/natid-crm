@@ -30,7 +30,9 @@ export default function VendorInviteAndLink({ vendors = [], vendorUsers = [], on
   // Step 1: Invite user
   const inviteMutation = useMutation({
     mutationFn: async () => {
-      await base44.users.inviteUser(email.trim().toLowerCase(), 'vendor');
+      // Platform invites only accept "user" or "admin".
+      // The vendor role is applied in step 3 by linkVendorToUser.
+      await base44.users.inviteUser(email.trim().toLowerCase(), 'user');
     },
     onSuccess: () => {
       setInviteStatus('success');
