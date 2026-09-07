@@ -26,8 +26,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@base44/sdk": "^0.8.46",
-    "@base44/vite-plugin": "^1.0.34",
+    "@base44/sdk": "^0.8.48",
+    "@base44/vite-plugin": "^1.0.35",
     "@capacitor-community/background-geolocation": "^1.2.26",
     "@capacitor/android": "^6.2.1",
     "@capacitor/cli": "^6.2.1",
